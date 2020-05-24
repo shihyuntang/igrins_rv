@@ -27,7 +27,7 @@ def partial_loader(inpath0,order):
     return wavelist,fluxlist,s2nlist
 
 
-def init_fitsread(path,kind,beam,night,order,tag,Ncuts):
+def init_fitsread(path,kind,beam,night,order,tag,band,Ncuts):
     if beam not in ['combined','separate']:
         print('beam MUST BE "combined" OR "separate",  FORCE QUITTING!')
         print(breaker)
@@ -42,14 +42,14 @@ def init_fitsread(path,kind,beam,night,order,tag,Ncuts):
             print('IO_AB ERROR: KIND SHOULD BE TARGET, THIS ERROR SHOULD ONLY THROW FROM INITGUESSER')
             print(breaker)
 
-        subpath = path + night + '/AB/'
-        fullpathprefix = subpath + 'SDCK_' + night + '_'
+        subpath        = '{}{}/AB/'.format(path, night)
+        fullpathprefix = '{}SDC{}_{}_'.format(subpath, band, night)
 
         onlyfiles = [f for f in listdir(subpath) if isfile(join(subpath, f))]
         contmeds = []
         for f in onlyfiles:
             q = re.split('_', f)
-            if q[0] != 'SDCK':
+            if q[0] != 'SDC{}'.format(band):
                 continue
             qr = re.split('\.', q[2])
             tag = qr[0]
@@ -90,9 +90,9 @@ def init_fitsread(path,kind,beam,night,order,tag,Ncuts):
         if kind == 'target':
             pass
         else:
-            path = path + 'std/' + night + '/AB/'
+            path = '{}std/{}/AB/'.format(path, night)
 
-        wavelist0,fluxlist0,s2nlist0 = partial_loader(path+'SDCK_'+night+'_'+tag,order)
+        wavelist0,fluxlist0,s2nlist0 = partial_loader('{}SDC{}_{}_{}'.format(path, band, night, tag), order)
 
         if Ncuts != None:
             Nstartcut = Ncuts[0]; Nendcut = Ncuts[-1];
@@ -105,23 +105,30 @@ def init_fitsread(path,kind,beam,night,order,tag,Ncuts):
             xlist = np.arange(len(wavelist),dtype=float)
 
     MAD = np.nanmedian(abs(np.nanmedian(s2nlist)-s2nlist))
-    x3    = xlist[   (np.isnan(fluxlist) == False) & (np.isnan(s2nlist) == False) & (fluxlist > 1e-4)]
-    wave3 = wavelist[(np.isnan(fluxlist) == False) & (np.isnan(s2nlist) == False) & (fluxlist > 1e-4)]
-    s2n3    = s2nlist[   (np.isnan(fluxlist) == False) & (np.isnan(s2nlist) == False) & (fluxlist > 1e-4)]
-    s3    = fluxlist[(np.isnan(fluxlist) == False) & (np.isnan(s2nlist) == False) & (fluxlist > 1e-4)]
+    x3    = xlist[   (np.isnan(fluxlist) == False) & (np.isnan(s2nlist) == False)]
+    wave3 = wavelist[(np.isnan(fluxlist) == False) & (np.isnan(s2nlist) == False)]
+    s2n3    = s2nlist[   (np.isnan(fluxlist) == False) & (np.isnan(s2nlist) == False)]
+    s3    = fluxlist[(np.isnan(fluxlist) == False) & (np.isnan(s2nlist) == False)]
+    s3[(s3 < 0)] = 0.
 
     # Cut absurdities that will mess with fit
-    wave = wave3[(10 < s2n3) & (s2n3 < np.nanmedian(s2n3)+MAD*5)]
-    s = s3[(10 < s2n3) & (s2n3 < np.nanmedian(s2n3)+MAD*5)]
-    x = x3[(10 < s2n3) & (s2n3 < np.nanmedian(s2n3)+MAD*5)]
-    s2n = s2n3[(10 < s2n3) & (s2n3 < np.nanmedian(s2n3)+MAD*5)]
+    #wave = wave3[(10 < s2n3) & (s2n3 < np.nanmedian(s2n3)+MAD*5)]
+    #s = s3[(10 < s2n3) & (s2n3 < np.nanmedian(s2n3)+MAD*5)]
+    #x = x3[(10 < s2n3) & (s2n3 < np.nanmedian(s2n3)+MAD*5)]
+    #s2n = s2n3[(10 < s2n3) & (s2n3 < np.nanmedian(s2n3)+MAD*5)]
+    wave = wave3[(s2n3 < np.nanmedian(s2n3)+MAD*5)]
+    s = s3[(s2n3 < np.nanmedian(s2n3)+MAD*5)]
+    x = x3[(s2n3 < np.nanmedian(s2n3)+MAD*5)]
+    s2n = s2n3[(s2n3 < np.nanmedian(s2n3)+MAD*5)]
+
     if Ncuts == None:
-        wave = wave[5:]
-        s = s[5:]
-        s2n = s2n[5:]
-        x = x[5:]
+        wave = wave[5:-5]
+        s = s[5:-5]
+        s2n = s2n[5:-5]
+        x = x[5:-5]
 
     u = s/s2n
+    u[(s2n < 10)] = 1e3*max(u)
 
     return x,wave,s,u
 
@@ -129,14 +136,14 @@ def init_fitsread(path,kind,beam,night,order,tag,Ncuts):
 def setup_templates():
 
     curdir = os.getcwd()
-    spotdata = Table.read(curdir+'/Engine/SpotAtl Organized.txt',format='ascii')
+    spotdata = Table.read('./Engine/SpotAtl Organized.txt',format='ascii')
     mwave0 = np.array(spotdata['wave'])*10000.0
     mflux0 = np.array(spotdata['flux'])
     mwave0 = mwave0[(np.isfinite(mflux0))]
     mflux0 = mflux0[(np.isfinite(mflux0))]
     mflux0[(mflux0 < 0)] = 0
 
-    telluricdata = Table.read(curdir+'/Engine/PhotoAtl Organized.txt',format='ascii')
+    telluricdata = Table.read('./Engine/PhotoAtl Organized.txt',format='ascii')
     watm = np.array(telluricdata['wave'])*10000.0
     satm = np.array(telluricdata['flux'])
     watm = watm[(np.isfinite(satm))]
@@ -165,7 +172,7 @@ def airtovac(wave):
 def setup_templates_syn():
 
     curdir = os.getcwd()
-    spotdata = Table.read(curdir+'/Engine/syntheticstellar_orders23456',format='ascii')
+    spotdata = Table.read('./Engine/syntheticstellar_kband.txt',format='ascii')
     mwave0 = np.array(spotdata['wave'])
     mflux0 = np.array(spotdata['flux'])
     mwave0 = mwave0[(np.isfinite(mflux0))]
@@ -174,7 +181,7 @@ def setup_templates_syn():
 
     mwave0 = airtovac(mwave0)
 
-    telluricdata = Table.read(curdir+'/Engine/PhotoAtl Organized.txt',format='ascii')
+    telluricdata = Table.read('./Engine/PhotoAtl Organized.txt',format='ascii')
     watm = np.array(telluricdata['wave'])*10000.0
     satm = np.array(telluricdata['flux'])
     watm = watm[(np.isfinite(satm))]

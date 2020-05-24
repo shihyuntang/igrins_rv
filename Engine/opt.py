@@ -1,11 +1,13 @@
 
 import nlopt
 import numpy as np
-from scipy.interpolate import interp1d
+from scipy.interpolate import interp1d, splrep,splev
 from Engine.classes import fitobjs,inparams
 from Engine.rotint import rotint
-from Engine.macbro import macbro
+from Engine.macbro_dynamic    import macbro_dyn
 from Engine.rebin_jv import rebin_jv
+import time
+import sys
 
 #-------------------------------------------------------------------------------
 def fmodel_chi(par,grad):
@@ -27,6 +29,8 @@ def fmodel_chi(par,grad):
           10: Continuum zero point
           11: Continuum linear component
           12: Continuum quadratic component
+          13: IP linear component
+          14: IP quadratic component
 
      OUTPUTS:
        The model spectrum on the observed wavelength scale.
@@ -67,7 +71,7 @@ def fmodel_chi(par,grad):
 
     #Now interpolate the spot spectrum onto the telluric wavelength scale
     interpfunc = interp1d(wspot,sspot, kind='linear',bounds_error=False,fill_value='extrapolate')
-    sspot2=interpfunc(watm)
+    sspot2 = interpfunc(watm)
 
     #Handle rotational broadening
     vsini = abs(par[4])
@@ -84,172 +88,121 @@ def fmodel_chi(par,grad):
     dw = (w[-1] - w[0])/(npts-1.)
     vel = (watm-mnw)/mnw*c
 
+    fwhmraw = par[5] + par[13]*(fitobj_cp.x) + par[14]*(fitobj_cp.x**2)
+    try:
+        spl = splrep(w,fwhmraw)
+    except ValueError:
+        return 1e7
+    fwhm = splev(watm,spl)
+    if min(fwhm) < 1 or max(fwhm) > 7:
+        return 1e7
+
     #Handle instrumental broadening
-    vhwhm = dw*abs(par[5])/mnw*c/2.
-    nsmod = macbro(vel,smod,vhwhm)
+    vhwhm = dw*abs(fwhm)/mnw*c/2.
+    #print(min(fwhm),dw*abs(min(fwhm))/mnw*c/2.,max(fwhm),dw*abs(max(fwhm))/mnw*c/2.)
+    nsmod = macbro_dyn(vel,smod,vhwhm)
 
     #Rebin continuum to observed wavelength scale
-    c2 = rebin_jv(fitobj_cp.a0contwave*1e4,fitobj_cp.continuum,w,False)
+    #c2 = rebin_jv(fitobj_cp.a0contwave*1e4,fitobj_cp.continuum,w,False)
+    #spl = splrep(fitobj_cp.a0contwave*1e4,fitobj_cp.continuum)
+    #c2 = splev(w,spl)
+    c2 = fitobj_cp.continuum
 
     #Rebin model to observed wavelength scale
-    smod = rebin_jv(watm,nsmod,w,False)
+    #smod = rebin_jv(watm,nsmod,w,False)
+    spl = splrep(watm,nsmod)
+    smod = splev(w,spl)
     smod *= c2/np.median(c2)
 
     # Apply continuum adjustment
     cont = par[10] + par[11]*fitobj_cp.x+ par[12]*(fitobj_cp.x**2)
     smod *= cont
 
+    mask = np.ones_like(smod,dtype=bool)
+    mask[(fitobj_cp.s < .05)] = False
+
     # Compute chisq
-    chisq = np.sum((fitobj_cp.s - smod)**2. / fitobj_cp.u**2.)
+    chisq = np.sum((fitobj_cp.s[mask] - smod[mask])**2. / fitobj_cp.u[mask]**2.)
+    #chisq = np.sum((fitobj_cp.s - smod)**2. / fitobj_cp.u**2.)
 
     if optimize_cp == True:
         return chisq
     else:
         return smod,chisq
 
+def fmod(par,fitobj):
 
-def fmodel_separate(par):
-    global fitobj
+    watm = fitobj.watm_in;
+    satm = fitobj.satm_in;
+    mwave = fitobj.mwave_in;
+    mflux = fitobj.mflux_in;
 
-    watm = fitobj_cp.watm_in;
-    satm = fitobj_cp.satm_in;
-    mwave = fitobj_cp.mwave_in;
-    mflux = fitobj_cp.mflux_in;
-
-    #Make the wavelength scale
-    w = par[6] + par[7]*fitobj_cp.x + par[8]*(fitobj_cp.x**2.) + par[9]*(fitobj_cp.x**3.)
-
-    # Define the speed of light in km/s and other useful quantities
-    c = 2.99792e5
-    npts = len(w)
-
-    # Apply velocity shifts and scale
-    wspot = mwave*(1.+par[0]/c)
-    sspot = mflux**par[1]
-    watm = watm*(1.+par[2]/c)
-    satm = satm**par[3]
-
-    #Now interpolate the spot spectrum onto the telluric wavelength scale
-    interpfunc = interp1d(wspot,sspot, kind='linear',bounds_error=False,fill_value='extrapolate')
-    sspot2=interpfunc(watm)
-
-    #Handle rotational broadening
-    vsini = abs(par[4])
-    if vsini != 0:
-        rspot = rotint(watm,sspot2,vsini,eps=.4,nr=5,ntheta=25)
-    else:
-        rspot = sspot2
-
-    #Mutliply rotationally broadened spot by telluric to create total spectrum
-    smod = rspot*satm
-
-    #Find mean observed wavelength and create a telluric velocity scale
-    mnw = np.mean(w)
-    dw = (w[-1] - w[0])/(npts-1.)
-    vel = (watm-mnw)/mnw*c
-
-    #Handle instrumental broadening
-    vhwhm = dw*abs(par[5])/mnw*c/2.
-    nsmod = macbro(vel,smod,vhwhm)
-
-    #Rebin continuum to observed wavelength scale
-    c2 = rebin_jv(fitobj_cp.a0contwave*1e4,fitobj_cp.continuum,w,False)
-    # Apply continuum adjustment
-    #c2 /= np.median(c2)
-    cont1 = par[10] + par[11]*fitobj_cp.x+ par[12]*(fitobj_cp.x**2)
-    cont = cont1 * c2
-
-    #Rebin model to observed wavelength scale
-    smod = rebin_jv(watm,nsmod,w,False)
-
-
-    return w,smod,cont,cont1
-
-
-def fmodel_chi_plot(par,grad):
-    # Bring in global class of variables needed to generate model.
-    # Can't call these directly in function, as NLopt doesn't allow anything to be in the model function call besides par and grad.
-
-    #global fitobj, optimize
-    global fitobj_cp
-    optimize_cp = False
-
-    watm = fitobj_cp.watm_in;
-    satm = fitobj_cp.satm_in;
-    mwave = fitobj_cp.mwave_in;
-    mflux = fitobj_cp.mflux_in;
-
-    #Make the wavelength scale
-    w = par[6] + par[7]*fitobj_cp.x + par[8]*(fitobj_cp.x**2.) + par[9]*(fitobj_cp.x**3.)
+    w = par[6] + par[7]*fitobj.x + par[8]*(fitobj.x**2.) + par[9]*(fitobj.x**3.)
 
     if w[-1] < w[0]:
-        #print('Hitting negative wavelength solution for some reason !')
+        sys.exit('WAVE ERROR 1 {}'.format(par[6:10]))
         return 1e7
 
-    # Define the speed of light in km/s and other useful quantities
     c = 2.99792e5
     npts = len(w)
 
-    # Apply velocity shifts and scale
     wspot = mwave*(1.+par[0]/c)
     sspot = mflux**par[1]
     watm = watm*(1.+par[2]/c)
     satm = satm**par[3]
 
-    #Verify that new wavelength scale is a subset of old wavelength scale.
     if (w[0] < watm[0]) or (w[-1] > watm[-1]):
-        # print('w not subset of watm, w goes from '+str(w[0])+' to '+str(w[-1])+' and watm goes from '+str(watm[0])+' to '+str(watm[-1]))
+        sys.exit('WAVE ERROR 2 {} {} {} {} {}'.format(par[6:10],watm[0],watm[-1],w[0],w[-1]))
         return 1e7
 
-    #Now interpolate the spot spectrum onto the telluric wavelength scale
     interpfunc = interp1d(wspot,sspot, kind='linear',bounds_error=False,fill_value='extrapolate')
-    sspot2=interpfunc(watm)
+    sspot2 = interpfunc(watm)
 
-    #Handle rotational broadening
     vsini = abs(par[4])
     if vsini != 0:
         rspot = rotint(watm,sspot2,vsini,eps=.4,nr=5,ntheta=25)
     else:
         rspot = sspot2
 
-    #Mutliply rotationally broadened spot by telluric to create total spectrum
     smod = rspot*satm
 
-    #Find mean observed wavelength and create a telluric velocity scale
     mnw = np.mean(w)
     dw = (w[-1] - w[0])/(npts-1.)
     vel = (watm-mnw)/mnw*c
 
-    #Handle instrumental broadening
-    vhwhm = dw*abs(par[5])/mnw*c/2.
-    nsmod = macbro(vel,smod,vhwhm)
+    fwhmraw = par[5] + par[13]*(fitobj.x) + par[14]*(fitobj.x**2)
+    if min(fwhmraw) < 1 or max(fwhmraw) > 7:
+        sys.exit('IP ERROR 1 {} {} {} {} {}'.format(par[5],par[13],par[14],min(fwhmraw),max(fwhmraw) ))
+        return 1e7
+    try:
+        spl = splrep(w,fwhmraw)
+    except ValueError:
+        sys.exit('IP ERROR 2 {} {} {}'.format(par[5],par[13],par[14]))
+        return 1e7
+    fwhm = splev(watm,spl)
 
-    #Rebin continuum to observed wavelength scale
-    c2 = rebin_jv(fitobj_cp.a0contwave*1e4,fitobj_cp.continuum,w,False)
+    vhwhm = dw*abs(fwhm)/mnw*c/2.
+    nsmod = macbro_dyn(vel,smod,vhwhm)
 
-    #Rebin model to observed wavelength scale
-    smod = rebin_jv(watm,nsmod,w,False)
+    c2 = fitobj.continuum
+    spl = splrep(watm,nsmod)
+    smod = splev(w,spl)
     smod *= c2/np.median(c2)
-
-    # Apply continuum adjustment
-    cont = par[10] + par[11]*fitobj_cp.x+ par[12]*(fitobj_cp.x**2)
+    cont = par[10] + par[11]*fitobj.x+ par[12]*(fitobj.x**2)
     smod *= cont
 
-    # Compute chisq
-    chisq = np.sum((fitobj_cp.s - smod)**2. / fitobj_cp.u**2.)
+    mask = np.ones_like(smod,dtype=bool)
+    mask[(fitobj.s < .05)] = False
+    chisq = np.sum((fitobj.s[mask] - smod[mask])**2. / fitobj.u[mask]**2.)
 
-    if optimize_cp == True:
-        return chisq
-    else:
-        return smod,chisq
-
+    return smod,chisq
 
 def optimizer(par0, dpar0, fitobj, optimize):
     # NLopt convenience function.
     global fitobj_cp, optimize_cp
     fitobj_cp   = fitobj
     optimize_cp = optimize
-    opt = nlopt.opt(nlopt.LN_NELDERMEAD, 13)
+    opt = nlopt.opt(nlopt.LN_NELDERMEAD, 15)
     opt.set_min_objective(fmodel_chi)
     lows  = par0-dpar0
     highs = par0+dpar0

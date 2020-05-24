@@ -3,21 +3,20 @@ from Engine.importmodule import *
 from Engine.IO_AB     import setup_templates, init_fitsread, stellarmodel_setup, setup_outdir
 from Engine.clips     import basicclip_above
 from Engine.contfit   import A0cont
-from Engine.classes   import fitobjs,inparamsA0
+from Engine.classes   import fitobjs,inparamsA0,orderdict_cla
 from Engine.macbro    import macbro
 from Engine.rebin_jv  import rebin_jv
 from Engine.rotint    import rotint
 from Engine.Telfitter import telfitter
-from Engine.opt       import optimizer, fmodel_chi_plot
+from Engine.opt       import optimizer, fmod
 
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
-def outplotter(parfit,title,fitobj):
-    fit,chi = fmodel_chi_plot(parfit,None)
+def outplotter(parfit,fitobj,title,debug):
+    fit,chi = fmod(parfit, fitobj)
     w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
 
     fig, axes = plt.subplots(1, 1, figsize=(5,3), facecolor='white', dpi=300)
-
     axes.plot(w,fitobj.s, '-k',  lw=0.5, label='data',alpha=.6)
     axes.plot(w,fit,      '--r', lw=0.5, label='model',alpha=.6)
 
@@ -26,28 +25,32 @@ def outplotter(parfit,title,fitobj):
     axes.set_ylabel(r'Normalized Flux',   size=5, style='normal' , family='sans-serif' )
     axes.set_xlabel('Wavelength',       size=5, style='normal' , family='sans-serif' )
     axes.legend(fontsize=4, edgecolor='white')
-    fig.savefig('./temp/debug/{}.png'.format(title), bbox_inches='tight', format='png', overwrite=True)
+    if debug == 0:
+        fig.savefig('{}/figs/{}.png'.format(inparam.outpath, title), bbox_inches='tight', format='png', overwrite=True)
+    elif debug == 1:
+        fig.savefig('./Temp/Debug/{}/{}.png'.format(args.targname, title), bbox_inches='tight', format='png', overwrite=True)
+
 
 def DataPrep(args):
     # Find all nights of observations of target in master log
     master_log_fh = './Engine/IGRINS_MASTERLOG.csv'
     master_log    = pd.read_csv(master_log_fh)
 
-    star_files    = master_log[(master_log['OBJNAME'].str.contains(star, regex=True, na=False)) & (master_log['OBJTYPE'].str.contains('TAR', regex=True, na=False))]
+    star_files    = master_log[(master_log['OBJNAME'].str.contains(args.targname, regex=True, na=False)) & (master_log['OBJTYPE'].str.contains('TAR', regex=True, na=False))]
     allnights     = np.array(master_log['CIVIL'],dtype='str')
 
     # If star input not found in Masterlog, try putting a space in its name somewhere
     n = 1
     while len(star_files['CIVIL']) == 0:
-        starnew = star[:n]+' '+star[n:]
+        starnew = args.targname[:n]+' '+args.targname[n:]
         star_files = master_log[(master_log['OBJNAME'].str.contains(starnew, regex=True, na=False)) & (master_log['OBJTYPE'].str.contains('TAR', regex=True, na=False))]
         n += 1
-        if n == len(star):
+        if n == len(args.targname):
             sys.exit('TARGET NAME NOT FOUND IN CATALOG - CHECK INPUT!')
 
     #---------------------------------------------------------------------------
     ## Collect target star information
-    fileT = open('.temp/Prepdata/Prepdata_targ_{}.txt'.format(args.targname), 'w')
+    fileT = open('./Temp/Prepdata/Prepdata_targ_{}.txt'.format(args.targname), 'w')
     fileT.write('night beam tag mjd facility airmass bvc\n')
 
     nightsT = [];
@@ -61,7 +64,7 @@ def DataPrep(args):
         tag = '{:04d}'.format(tag0)
 
         try:
-            hdulist = fits.open('{}{}/{}/SDC{}_{}_{}.spec.fits'.format(args.inpath, night, frame, args.band, night, tag))
+            hdulist = fits.open('{}{}/{}/SDC{}_{}_{}.spec.fits'.format(inpath, night, frame, args.band, night, tag))
         except FileNotFoundError:
             continue
 
@@ -94,7 +97,7 @@ def DataPrep(args):
 
     #---------------------------------------------------------------------------
     ## Now collect A0 information
-    fileA0 = open('.temp/Prepdata/Prepdata_A0_{}.txt'.format(args.targname), 'w')
+    fileA0 = open('./Temp/Prepdata/Prepdata_A0_{}.txt'.format(args.targname), 'w')
     fileA0.write('night tag humid temp zd press obs airmass\n')
     noA0nights = []
 
@@ -114,7 +117,7 @@ def DataPrep(args):
             # Then check whether any A0s files for that night outputted by reduction pipeline.
             # If not, Joe either didn't have the data for them or didn't copy them over.
             anyK = False
-            subpath        = '{}std/{}/AB/'.format(args.inpath, night)
+            subpath        = '{}std/{}/AB/'.format(inpath, night)
             fullpathprefix = '{}SDC{}_{}_'.format(subpath, args.band, night)
 
             onlyfiles = [f for f in listdir(subpath) if isfile(join(subpath, f))]
@@ -147,10 +150,10 @@ def DataPrep(args):
 
                 if abs(am0-am_star) > 0.2:
                     print(night,stdname,am_star,am0,tagA0)
-                    sys.exit('WARNING, A0 AIRMASS FOR NIGHT {} IS OFF FROM TARGET! SHOULD NOT HAPPEN!'.format(night))
+                    sys.exit('WARNING, A0 AIRMASS FOR NIGHT {} HAS A DIFFERENCE LARGER THAN 0.2 FROM TARGET!'.format(night))
 
                 tagA = '{:04d}'.format(tagA0)
-                subpath = '{}std/{}/AB/SDC{}_{}_{}.spec.fits'.format(args.inpath, night, args.band, night, tagA)
+                subpath = '{}std/{}/AB/SDC{}_{}_{}.spec.fits'.format(inpath, night, args.band, night, tagA)
 
                 try:
                     hdulist = fits.open(subpath)
@@ -199,23 +202,69 @@ def DataPrep(args):
         print(n)
     print('To achieve highest precision, this pipeline defaults to not analyzing target spectra for these nights.\n')
 
+def MPinst(args, chunk_ind, orders, i):
+#    labels = list(sorted(inparam.xbounddict.keys()))
+#    label  = labels[chunk_ind]
+    order = orders[chunk_ind]
 
-def MPinst(order, i):
-
-    print('Working on order {}/5, night {}/{} ...'.format( order-1,
-                                                           i+1,
-                                                           len(inparam.nights)) )
+#    order = np.unique(label.split('-')[0])
+#    chunk = label.split('-')[1]
+#    xbounds = inparam.xbounddict[label]
     night = str(inparam.nights[i])
+    firstorder = orders[0]
+#    firstorder = int(firstorder.split('-')[0])
 
+    print('Working on order {}/{}, night {} {}/{} PID:{}...'.format(chunk_ind+1,
+                                                             len(orders),
+                                                             night,
+                                                             i+1,
+                                                             len(inparam.nights),
+                                                             mp.current_process().pid) )
+    if int(night) < 20180401 or int(night) > 20190531:
+        IPpars = inparam.ips_tightmount_pars[args.band][order]
+    else:
+        IPpars = inparam.ips_loosemount_pars[args.band][order]
     ### Load relevant A0 spectrum
-    # x (list of wavelength used position)
+
+    if args.band=='K':
+        if order==11:
+            bound_cut = [200, 100]
+        elif order==12:
+            bound_cut = [900, 300]
+        elif order==13:
+            bound_cut = [200, 400]
+        elif order==14:
+            bound_cut = [150, 300]
+        else:
+            bound_cut = [150, 100]
+    elif args.band=='H':
+        if order==10:
+            bound_cut = [250, 150]#ok
+        elif order==11:
+            bound_cut = [600, 150]
+        elif order==13:
+            bound_cut = [200, 600]#ok
+        elif order==14:
+            bound_cut = [700, 100]
+        elif order==16:
+            bound_cut = [400, 100]
+        elif order==17:
+            bound_cut = [1000, 100]
+        elif order==20:
+            bound_cut = [500, 150]
+        elif (order==7) or (order==8) or (order==9) or (order==12) or (order==15) or (order==18) or (order==19):
+            bound_cut = [500, 500]
+        else:
+            bound_cut = [150, 100]
+
     x, a0wavelist, a0fluxlist, u = init_fitsread(inparam.inpath,
                                                 'A0',
                                                 'separate',
                                                 night,
                                                 order,
                                                 '{:04d}'.format(int(inparam.tags[night])),
-                                                None)
+                                                args.band,
+                                                bound_cut)
 
     nzones = 12
     a0wavelist = basicclip_above(a0wavelist,a0fluxlist,nzones);   a0x = basicclip_above(x,a0fluxlist,nzones);
@@ -230,7 +279,6 @@ def MPinst(order, i):
 
     # Compute rough blaze fn estimate
     continuum    = A0cont(a0wavelist,a0fluxlist,night,order)
-    a0contwave   = a0wavelist.copy()
     a0masterwave = a0wavelist.copy()
     a0masterwave *= 1e4
 
@@ -241,84 +289,62 @@ def MPinst(order, i):
     satm_in = inparam.satm[(inparam.watm > min(a0wavelist)*1e4 - 11) & (inparam.watm < max(a0wavelist)*1e4 + 11)]
     watm_in = inparam.watm[(inparam.watm > min(a0wavelist)*1e4 - 11) & (inparam.watm < max(a0wavelist)*1e4 + 11)]
 
+    f = np.polyfit(a0x, a0wavelist, 3)
+    par9in = f[0]*1e4; par8in = f[1]*1e4; par7in = f[2]*1e4; par6in = f[3]*1e4;
+
     ### Initialize parameter array for optimization as well as half-range values for each parameter during
     ### the various steps of the optimization.
     ### Many of the parameters initialized here will be changed throughout the code before optimization and
     ### in between optimization steps.
-    pars0 = np.array([np.nan,           # 0: The shift of the sunspot spectrum (km/s)
-                      1.0,              # 1: The scale factor for the sunspot spectrum
-                      0.0,              # 2: The shift of the telluric spectrum (km/s)
-                      1.0,              # 3: The scale factor for the telluric spectrum
-                      0.0,              # 4: vsini (km/s)
-                      3.3,              # 5: The instrumental resolution (FWHM) in pixels
-                      2.29315012e+04,   # 6: Wavelength 0-pt
-                      1.75281163e-01,   # 7: Wavelength linear component
-                      -9.92637874e-06,  # 8: Wavelength quadratic component
-                      0,                # 9: Wavelength cubic component
-                      1.0,              #10: Continuum zero point
-                      0.,               #11: Continuum linear component
-                      0.])              #12: Continuum quadratic component
+    parA0 = np.array([0.0,           # 0: The shift of the sunspot spectrum (km/s)
+                      0.0,           # 1: The scale factor for the sunspot spectrum
+                      0.0,           # 2: The shift of the telluric spectrum (km/s)
+                      1.0,           # 3: The scale factor for the telluric spectrum
+                      0.0,           # 4: vsini (km/s)
+                      IPpars[2],     # 5: The instrumental resolution (FWHM) in pixels
+                      par6in,        # 6: Wavelength 0-pt
+                      par7in,        # 7: Wavelength linear component
+                      par8in,        # 8: Wavelength quadratic component
+                      par9in,        # 9: Wavelength cubic component
+                      1.0,           #10: Continuum zero point
+                      0.,            #11: Continuum linear component
+                      0.,            #12: Continuum quadratic component
+                      IPpars[1],     #13: IP linear component
+                      IPpars[0]])    #14: IP quadratic component
 
-    # Save a copy of initial parameter array. Make sure stellar template isn't being used.
-    parA0 = pars0.copy()
-    parA0[0] = 0.; parA0[1] = 0.
-
-    # Cut target spectrum to be within telluric template wavelengths (should be unncessary)
     a0fluxlist = a0fluxlist[(a0wavelist*1e4 > min(watm_in)+5) & (a0wavelist*1e4 < max(watm_in)-5)]
     a0u        = a0u[       (a0wavelist*1e4 > min(watm_in)+5) & (a0wavelist*1e4 < max(watm_in)-5)]
     a0x        = a0x[       (a0wavelist*1e4 > min(watm_in)+5) & (a0wavelist*1e4 < max(watm_in)-5)]
+    continuum  = continuum[ (a0wavelist*1e4 > min(watm_in)+5) & (a0wavelist*1e4 < max(watm_in)-5)]
     a0wavelist = a0wavelist[(a0wavelist*1e4 > min(watm_in)+5) & (a0wavelist*1e4 < max(watm_in)-5)]
-
-    # Define initial wavelength guesses (need only be approximate)
-    initwave_dict = {
-                        2: [-3.82127210e-10, -1.06269946e-05,  1.85070280e-01 ,  2.41718272e+04],
-                        3: [7.170697761010893e-10,  -1.2196786264552286e-05,  0.18322308314595248, 23850.632494961632],
-                        4: [-3.9083145742380996e-10, -8.907333871733518e-06,  0.17881172908636753 , 23537.219082651878],
-                        5: [ -2.5348031649790425e-10, -9.180635514849177e-06, 0.17699954870465473, 23231.746232578 ],
-                        6: [ 3.68743282e-10, -1.10364274e-05, 1.76781196e-01,  2.29338381e+04]
-                    }
-
-    ##Set initial wavelength guess. If order not in initwavedict, fit cubic polynomial to wavelengths given in file
-      # 6: Wavelength 0-pt
-      # 7: Wavelength linear component
-      # 8: Wavelength quadratic component
-      # 9: Wavelength cubic component
-    try:
-        initwavepars = initwave_dict[order]
-        parA0[9] = initwavepars[0]
-        parA0[8] = initwavepars[1]
-        parA0[7] = initwavepars[2]
-        parA0[6] = initwavepars[3]
-    except KeyError:
-        f = np.polyfit(a0x, a0wavelist, 3)
-        parA0[9] = f[0]*1e4
-        parA0[8] = f[1]*1e4
-        parA0[7] = f[2]*1e4
-        parA0[6] = f[3]*1e4
 
     # Define main spectrum parameters
     s = a0fluxlist.copy(); x = a0x.copy(); u = a0u.copy();
 
     # Collect all fit variables into one class
-#    global fitobj, optimize;
-    fitobj = fitobjs(s, x, u, a0contwave, continuum, watm_in, satm_in, mflux_in, mwave_in)
+    fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in)
 
     # Arrays defining parameter variations during optimization steps
-    dpar_cont = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.3,   0.0, 0.0,          0., 1e7, 1, 1])
-    dpar_wave = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 10.0, 10.0, 5.00000e-5, 1e-7, 0,   0, 0])
-    dpar      = np.array([0.0, 0.0, 5.0, 3.0, 0.0, 3.0, 0.0,   0.0, 0.0,           0, 1e4, 1, 1])
+    dpar_cont = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,   0.0, 0.0,  0,    1e7, 1, 1, 0,    0])
+    dpar_wave = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 10.0, 10.0, 5e-5, 1e-7, 0,   0, 0, 0,    0])
+    dpar      = np.array([0.0, 0.0, 5.0, 3.0, 0.0, 0.5, 0.0,   0.0, 0.0,  0,    1e4, 1, 1, 1e-2, 1e-5])
+    dpar_st   = np.array([0.0, 0.0, 5.0, 3.0, 0.0, 0.0, 0.0,   0.0, 0.0,  0,    1e4, 1, 1, 0,    0])
+    dpar_ip   = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0,   0.0, 0.0,  0,    1e4, 1, 1, 1e-2, 1e-5])
 
-    # For every spectral fit, first fit just continuum, then just wavelength soln, then just continuum, then just wavelength solution,
-    # then finally let everything go but wavelength soln.
+    # For every pre-Telfit spectral fit, first fit just template strength/rv/continuum, then just wavelength soln, then template/continuum again, then ip,
+    # then finally wavelength. Normally would fit for all but wavelength at the end, but there's no need for the pre-Telfit fit, since all we want
+    # is the wavelength solution.
+
     optimize = True
     par_in = parA0.copy()
-    parfit_1 = optimizer(par_in,  dpar_cont, fitobj, optimize)
-    parfit_2 = optimizer(parfit_1,dpar_wave, fitobj, optimize)
+    parfit_1 = optimizer(par_in,   dpar_st,   fitobj, optimize)
+    parfit_2 = optimizer(parfit_1, dpar_wave, fitobj, optimize)
+    parfit_3 = optimizer(parfit_2, dpar_st,   fitobj, optimize)
+    parfit_4 = optimizer(parfit_3, dpar_ip,   fitobj, optimize)
+    parfit = optimizer(parfit_4, dpar_wave, fitobj, optimize)
 
-    par = parfit_2
-    parfit_1 = optimizer(par,     dpar_cont, fitobj, optimize)
-    parfit_2 = optimizer(parfit_1,dpar_wave, fitobj, optimize)
-    parfit   = optimizer(parfit_2,dpar,      fitobj, optimize)
+    # if inparam.plotfigs == True:
+    #     outplotter(parfit, fitobj, '{}_{}_1'.format(label,night), 0)
 
     # Get fitted wavelength solution
     a0w_out_fit = parfit[6] + parfit[7]*x + parfit[8]*(x**2.) + parfit[9]*(x**3.)
@@ -327,7 +353,7 @@ def MPinst(order, i):
     mwave_in,mflux_in = stellarmodel_setup(a0w_out_fit/1e4,inparam.mwave0,inparam.mflux0)
 
     # Using this new wavelength solution, get Telfit'd telluric template, parameters of that best fit, and blaze fn best fit
-    watm1, satm1, telfitparnames, telfitpars, a0contwave, continuum = telfitter(a0w_out_fit,a0fluxlist,a0u,inparam,night,order)
+    watm1, satm1, telfitparnames, telfitpars, a0contwave, continuum = telfitter(a0w_out_fit,a0fluxlist,a0u,inparam,night,order,args)
     # watm1, satm1 from Telfit, fack one.
 
     if len(watm1) == 1: # If Telfit encountered error mentioned in Telfitter.py, skip night/order combo
@@ -338,7 +364,7 @@ def MPinst(order, i):
         c0    = fits.Column(name='ERRORFLAG'+str(order),array=np.array([1]),format='K')
         cols  = fits.ColDefs([c0])
         hdu_1 = fits.BinTableHDU.from_columns(cols)
-        if order == 2: # If first time writing fits file, make up filler primary hdu
+        if order == firstorder: # If first time writing fits file, make up filler primary hdu
             bleh = np.ones((3,3))
             primary_hdu = fits.PrimaryHDU(bleh)
             hdul = fits.HDUList([primary_hdu,hdu_1])
@@ -349,44 +375,48 @@ def MPinst(order, i):
             hh.writeto(inparam.outpath+'/'+night+'A0_treated.fits', overwrite=True)
 
     else:
+
         a0contwave /= 1e4
+        continuum = rebin_jv(a0contwave,continuum,a0wavelist,False)
 
         # Fit whole A0 again to get even better wave soln to use for a0contwave and tweak blaze fn fit as
         # needed with quadratic adjustment
-        fitobj = fitobjs(s, x, u, a0contwave,continuum,watm1,satm1,mflux_in,mwave_in)
+        fitobj = fitobjs(s, x, u, continuum,watm1,satm1,mflux_in,mwave_in)
 
-        par_in = parA0.copy()
-        parfit_1 = optimizer(par_in,  dpar_cont, fitobj, optimize)
-        parfit_2 = optimizer(parfit_1,dpar_wave, fitobj, optimize)
+        parfit_1 = optimizer(par_in,   dpar_st,   fitobj, optimize)
+        parfit_2 = optimizer(parfit_1, dpar_wave, fitobj, optimize)
+        parfit_3 = optimizer(parfit_2, dpar_st,   fitobj, optimize)
+        parfit_4 = optimizer(parfit_3, dpar_ip,   fitobj, optimize)
+        parfit_5 = optimizer(parfit_4, dpar_wave, fitobj, optimize)
+        parfit   = optimizer(parfit_5, dpar,      fitobj, optimize)
 
-        parfit_3 = optimizer(parfit_2,dpar_cont, fitobj, optimize)
-        parfit_4 = optimizer(parfit_3,dpar_wave, fitobj, optimize)
+        if inparam.plotfigs == True:
+            fig, axes = plt.subplots(1, 1, figsize=(5,3), facecolor='white', dpi=300)
+            axes.plot(fitobj.x,
+                      parfit[5] + parfit[13]*(fitobj.x) + parfit[14]*(fitobj.x**2),
+                      '-k', lw=0.5, label='data', alpha=.6)
 
-        parfit   = optimizer(parfit_4,dpar     , fitobj, optimize)
-        outplotter(parfit, '{}_{}_Order{}_{}_Post5.png'.format(args.targname, night, order, args.band), fitobj)
+            axes.tick_params(axis='both', labelsize=4.5, right=True, top=True, direction='in')
+            axes.set_ylabel(r'Normalized Flux',   size=5, style='normal' , family='sans-serif' )
+            axes.set_xlabel('Wavelength',       size=5, style='normal' , family='sans-serif' )
+            axes.legend(fontsize=4, edgecolor='white')
+            fig.savefig(inparam.outpath+'/figs/{}_{}_ip.png'.format(order,night), bbox_inches='tight', format='png', overwrite=True)
 
+            outplotter(parfit,fitobj,'{}_{}_post_parfit'.format(order,night), 0)
 
-        if args.debug:
-            outplotter(parfit_1, '{}_{}_Order{}_{}_Post1.png'.format(args.targname, night, order, args.band), fitobj)
-            outplotter(parfit_2, '{}_{}_Order{}_{}_Post2.png'.format(args.targname, night, order, args.band), fitobj)
-            outplotter(parfit_3, '{}_{}_Order{}_{}_Post3.png'.format(args.targname, night, order, args.band), fitobj)
-            outplotter(parfit_4, '{}_{}_Order{}_{}_Post4.png'.format(args.targname, night, order, args.band), fitobj)
-
-            parfitW = open('./temp/debug/parfit_{}_Order{}_Post.txt'.format(args.band, order), 'w')
-            parfitW.write('par_in '  + str(par_in)+'\n')
-            parfitW.write('parfit_1 '+ str(parfit_1)+'\n')
-            parfitW.write('parfit_2 '+ str(parfit_2)+'\n')
-            parfitW.write('parfit_3 '+ str(parfit_3)+'\n')
-            parfitW.write('parfit_4 '+ str(parfit_4)+'\n')
-            parfitW.write('parfit '  + str(parfit)+'\n')
-
+        if args.debug == True:
+            outplotter(parfit_1,fitobj,'{}_{}_post_parfit_1'.format(order,night), 1)
+            outplotter(parfit_2,fitobj,'{}_{}_post_parfit_2'.format(order,night), 1)
+            outplotter(parfit_3,fitobj,'{}_{}_post_parfit_3'.format(order,night), 1)
+            outplotter(parfit_4,fitobj,'{}_{}_post_parfit_4'.format(order,night), 1)
+            outplotter(parfit_5,fitobj,'{}_{}_post_parfit_5'.format(order,night), 1)
+            outplotter(parfit  ,fitobj,'{}_{}_post_parfit'.format(order,night), 1)
 
         a0w_out  = parfit[6] + parfit[7]*x + parfit[8]*(x**2.) + parfit[9]*(x**3.)
         cont_adj = parfit[10] + parfit[11]*x + parfit[12]*(x**2.)
 
-        c2 = rebin_jv(a0contwave*1e4,continuum,a0w_out,False)
-        c2 /= np.median(c2)
-        cont_save = c2*cont_adj
+        continuum /= np.median(continuum)
+        cont_save = continuum*cont_adj
 
         # Write out table to fits file with errorflag = 0
         c0 = fits.Column(name='ERRORFLAG'+str(order),      array=np.array([0]),            format='K')
@@ -399,10 +429,11 @@ def MPinst(order, i):
         c7 = fits.Column(name='SATM'+str(order),           array=satm1,                    format='D')
         c8 = fits.Column(name='TELFITPARNAMES'+str(order), array=np.array(telfitparnames), format='8A')
         c9 = fits.Column(name='TELFITPARS'+str(order),     array=telfitpars,               format='D')
-        cols = fits.ColDefs([c0,c1,c2,c3,c4,c5,c6,c7,c8,c9])
+        c10 = fits.Column(name='PARFIT',                    array=parfit,                   format='D')
+        cols = fits.ColDefs([c0,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10])
         hdu_1 = fits.BinTableHDU.from_columns(cols)
 
-        if order == 2: # If first time writing fits file, make up filler primary hdu
+        if order == firstorder: # If first time writing fits file, make up filler primary hdu
             bleh = np.ones((3,3))
             primary_hdu = fits.PrimaryHDU(bleh)
             hdul = fits.HDUList([primary_hdu,hdu_1])
@@ -412,14 +443,53 @@ def MPinst(order, i):
             hh.append(hdu_1)
             hh.writeto(inparam.outpath+'/'+night+'A0_treated.fits',overwrite=True)
 
-def mp_run(Nthreads, order, nights):
+def mp_run(args, Nthreads, jerp, orders, nights):
     pool = mp.Pool(processes = Nthreads)
-    func = partial(MPinst, order)
+    func = partial(MPinst, args, jerp, orders)
     outs = pool.map(func, np.arange(len(nights)))
     pool.close()
     pool.join()
 
+def use_w(args):
+    try:
+        bounddata   = Table.read('./Input_Data/Use_w/WaveRegions_{}_{}.csv'.format(args.WRegion, args.band), format='csv')
+    except IOError:
+        sys.exit('WaveRegions FILE ./Input_Data/Use_w/WaveRegions_{}_{}.csv NOT FOUND!'.format(args.WRegion, args.band))
+    wavesols   = pd.read_csv('./Input_Data/Use_w/WaveSolns_{}_{}.csv'.format(args.WRegion, args.band))
 
+    filew = open('./Input_Data/Use_w/XRegions_{}_{}.csv'.format(args.WRegion, args.band),'w')
+    filew.write('label, start,  end\n')
+
+    m_order  = np.array(bounddata['order'])
+    starts   = np.array(bounddata['start'])
+    ends     = np.array(bounddata['end'])
+    ords     = list( sorted(orderdict_cla().orderdict[args.band].keys()) )
+
+    Ostarts  = [orderdict_cla().orderdict[args.band][k][0] for k in ords]
+    Oends    = [orderdict_cla().orderdict[args.band][k][1] for k in ords]
+    labels   = []
+    for i in range(len(starts)):
+        indS = list(np.where((starts[i] > Ostarts) & (starts[i] < Oends))[0])
+        indE = list(np.where((ends[i]   > Ostarts) & (ends[i]   < Oends))[0])
+        indboth = indS
+        indboth.extend(x for x in indE if x not in indboth)
+        for ind in indboth:
+            wavebounds = [max([starts[i],Ostarts[ind]]),min([ends[i],Oends[ind]])]
+            wO   = wavesols['w'+str(ords[ind])]
+            pixO = wavesols['x'+str(ords[ind])];
+            pix  = [pixO[(np.argmin(abs(wO-wavebounds[k])))] for k in [0,1]]
+
+            p = 1
+            if ords[ind] == m_order[i]:
+                while 1 == 1:
+                    lab = '{}-{}'.format(ords[ind],p)
+                    if lab not in labels:
+                        filew.write('{}, {}, {}\n'.format(lab,pix[0],pix[1]))
+                        labels.append(lab)
+                        break
+                    else:
+                        p += 1
+    filew.close()
 
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
@@ -434,30 +504,39 @@ if __name__ == '__main__':
                                      epilog = "Contact authors: asa.stahl@rice.edu; sytang@lowell.edu")
     parser.add_argument("targname",                          action="store",
                         help="Enter your *target name, no space",            type=str)
-    parser.add_argument('-dir',     dest="inpath",           action="store",
-                        help="Enter path that stores target spectra, default will be under ./*targname",
-                        type=str,   default='')
-    parser.add_argument("-HorK",    dest="band",            action="store",
-                        help="Which band to process? H or K?",
+    parser.add_argument("-HorK",    dest="band",             action="store",
+                        help="Which band to process? H or K?. Default = K",
                         type=str,   default='K')
+    parser.add_argument("-Wr",      dest="WRegion",          action="store",
+                        help="Which ./Input_Data/Use_w/WaveRegions_X to use, Default X = 0",
+                        type=int,   default=int(0))
+
     parser.add_argument('-c',       dest="Nthreads",         action="store",
                         help="Number of cpu (threads) to use, default is 1/2 of avalible ones (you have %i cpus (threads) avaliable)"%(mp.cpu_count()),
                         type=int,   default=int(mp.cpu_count()//2) )
     parser.add_argument('-plot',    dest="plotfigs",        action="store_true",
-                        help="If sets, will generate plots")
+                        help="If sets, will generate basic plots of A0 model fitting under ./A0_Fits/")
 
     parser.add_argument('-n_use',   dest="nights_use",       action="store",
                         help="If you don't want all process all nights under the Input_Data folder, give an array of night you wish to process here. e.g., [20181111, 20181112]",
                         type=str,   default='')
-    parser.add_argument('-DeBug',    dest="debug",        action="store_true",
-                        help="If sets, will generate files and plots under ./temp/debug for debug")
+    parser.add_argument('-DeBug',    dest="debug",           action="store_true",
+                        help="If sets, will generate files and plots under ./Temp/Debug for debug")
     parser.add_argument('--version',                         action='version',  version='%(prog)s 0.5')
     args = parser.parse_args()
 
-    if args.inpath == '':
-        args.inpath = './Input_Data/{}/'.format(args.targname)
-    if args.inpath[-1] != '/':
-        args.inpath+='/'
+    # if inpath == '':
+    #     inpath = './Input_Data/{}/'.format(args.targname)
+    # if inpath[-1] != '/':
+    #     inpath+='/'
+
+    inpath     = './Input_Data/{}/'.format(args.targname)
+
+    if args.debug:
+        try:
+            os.listdir('./Temp/Debug/{}/'.format(args.targname))
+        except OSError:
+            os.mkdir('./Temp/Debug/{}/'.format(args.targname))
 
     cdbs_loc = '~/cdbs/'
 
@@ -466,19 +545,32 @@ if __name__ == '__main__':
     print('\n')
     print('###############################################################')
     print('Data Preparation for {} (1/2)...'.format(args.targname))
-    time.sleep(1)
+
     DataPrep(args)
 
     print('Data Preparation Done!')
-    time.sleep(5)
+    print('Preparation File Saved Under ./Temp/Prepdata/')
+    time.sleep(3)
+    print('###############################################################')
+    print('Fetching Wavelength Regions to be analyzed for {} (2/3)...'.format(args.targname))
+
+    use_w(args)
+
+    print('Fetching Done!')
+    time.sleep(3)
     print('---------------------------------------------------------------')
     #------------
-    print('A0 Fitting using TelFit for {} (2/2)...'.format(args.targname))
+    print('A0 Fitting using TelFit for {} (3/3)...'.format(args.targname))
     print('This will take a while..........')
     print('\n')
+    bounddata = Table.read('./Input_Data/Use_w/XRegions_{}_{}.csv'.format(args.WRegion, args.band), format='csv')
+    starts  = np.array(bounddata['start'])
+    ends    = np.array(bounddata['end'])
+    labels  = np.array(bounddata['label'], dtype=str)
+    xbounddict = {labels[i]:np.array([starts[i],ends[i]]) for i in range(len(starts))}
 
     ## Collect relevant file information from Predata files
-    A0data = Table.read('./temp/Prepdata/Prepdata_A0_{}.txt'.format(args.targname), format='ascii')
+    A0data = Table.read('./Temp/Prepdata/Prepdata_A0_{}.txt'.format(args.targname), format='ascii')
 
     ind    = [i != 'NA' for i in A0data['humid']]
     humids = {str(k):str(v) for k,v in zip(A0data[ind]['night'],A0data[ind]['humid'])}
@@ -489,37 +581,50 @@ if __name__ == '__main__':
     press  = {str(k):str(v) for k,v in zip(A0data[ind]['night'],A0data[ind]['press'])}
     nightsFinal = np.array(list(sorted(set(A0data[ind]['night']))))
 
+    if args.nights_use != '':
+        nightstemp = np.array(args.nights_use, dtype=np.int)
+        for nnn in nightstemp:
+            if nnn not in nightsFinal:
+                sys.exit('NIGHT {} NOT FOUND UNDER ./Input_Data/{}'.format(nnn, args.targname))
+        nightsFinal = nightstemp
+        print('Only processing nights: {}'.format(nightsFinal))
+
     # Takes 10 threads 42mins to deal with one order with 57 nights.
     # Thus, with 01 thread, one night for five orders is about 2135 sec.
     th1n1o5 = 2140
-    extimated_runt = 2140 * len(nightsFinal) / Nthreads
-    print('Analyze 5 orders with {} nights'.format(len(nightsFinal)))
-    print('Estimated runtime is {:1.2f} mins ({:1.1f} hours)'.format(extimated_runt/60, extimated_runt/3600))
-    print('This is just a rough estimation...')
-    print('Program starts in 5 sec...')
+    extimated_runt = 2140 * len(nightsFinal) / args.Nthreads
+#    nightsFinal = nightsFinal[:10]
+    print('Analyze with {} nights'.format(len(nightsFinal)))
+#    print('Estimated runtime is {:1.2f} mins ({:1.1f} hours)'.format(extimated_runt/60, extimated_runt/3600))
+#    print('This is just a rough estimation...')
+#    print('Program starts in 5 sec...')
     time.sleep(6)
     print('\n')
 
     filesndirs = os.listdir('./A0_Fits/')
     name = 'A0_Fits_'+ args.targname
     if name not in filesndirs:
-        os.mkdir(name)
+        os.mkdir('./A0_Fits/{}'.format(name) )
+        os.mkdir('./A0_Fits/{}/figs'.format(name) )
+    outpath = './A0_Fits/' + name
 
     # Retrieve stellar and telluric templates
     watm, satm, mwave0, mflux0 = setup_templates()
 
-    inparam = inparamsA0(inpath,name,args.plotfigs,tags,nightsFinal,humids,
-                         temps,zds,press,obs,watm,satm,mwave0,mflux0,cdbs_loc)
+    inparam = inparamsA0(inpath,outpath,args.plotfigs,tags,nightsFinal,humids,
+                         temps,zds,press,obs,watm,satm,mwave0,mflux0,cdbs_loc,xbounddict)
 
-#    global order
 
-    for order0 in [2,3,4,5,6]:
-        order = order0
-        outs = mp_run(Nthreads, order, nightsFinal)
+    orders = [ int(labels[i].split('-')[0]) for i in range(len(labels)) ]
+    orders = np.unique(orders)
+    orders = np.sort(orders)
+    for jerp in range(len(orders)):
+#    for jerp in range(1):
+        outs = mp_run(args, args.Nthreads, jerp, orders, nightsFinal)
+
 
     print('\n')
     print('A0 Fitting Done!')
-
     end_time = datetime.now()
     print('A0 Fitting using TelFit finished, Duration: {}'.format(end_time - start_time))
     print('You can start to run main_step2.py for RV initial guess')

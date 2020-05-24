@@ -9,49 +9,59 @@ from Engine.rebin_jv import rebin_jv
 from Engine.rotint import rotint
 from Engine.opt import optimizer
 #-------------------------------------------------------------------------------
+def outplotter(parfit,fitobj,title,debug):
+    fit,chi = fmod(parfit, fitobj)
+    w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
 
-def splitter(master,N):
+    fig, axes = plt.subplots(1, 1, figsize=(5,3), facecolor='white', dpi=300)
+    axes.plot(w,fitobj.s, '-k',  lw=0.5, label='data',alpha=.6)
+    axes.plot(w,fit,      '--r', lw=0.5, label='model',alpha=.6)
 
-    # Yield successive length N pieces of an array, except for last one which
-    # uses up any excess length leftover after array factored by N
+    axes.tick_params(axis='both', labelsize=4.5, right=True, top=True, direction='in')
+    axes.set_title(title,   size=5, style='normal' , family='sans-serif' )
+    axes.set_ylabel(r'Normalized Flux',   size=5, style='normal' , family='sans-serif' )
+    axes.set_xlabel('Wavelength',       size=5, style='normal' , family='sans-serif' )
+    axes.legend(fontsize=4, edgecolor='white')
+    if debug == 0:
+        fig.savefig('{}/figs/{}.png'.format(inparam.outpath, title), bbox_inches='tight', format='png', overwrite=True)
+    elif debug == 1:
+        fig.savefig('./Temp/Debug/{}/{}.png'.format(args.targname, title), bbox_inches='tight', format='png', overwrite=True)
 
-    Npiece = int(len(master)/float(N))
-    for ddd in range(N):
-        if ddd != N-1:
-            yield master[ddd*Npiece:(ddd+1)*Npiece]
-        else:
-            yield master[ddd*Npiece:-1]
 #-------------------------------------------------------------------------------
 
-def ini_MPinst(i):
+def ini_MPinst(chunk_ind,i):
     nights   = inparam.nights
-    targname = args.targname
     night    = nights[i]
 
-    print('Working on order 1/1, night {} {}/{} ...'.format(night,
-                                                            i+1,
-                                                            len(inparam.nights)))
-    # Only use the most precise order to hone in on adequate RV initial guesses
-    order = 6
+    labels = list(sorted(inparam.xbounddict.keys()))
+    label = labels[chunk_ind]
+    order = int(label[0]); chunk = label[2]
+    xbounds = inparam.xbounddict[label]
+
+    print('Working on chunk {}/{}, night {}/{} ({})...'.format(chunk_ind+1,
+                                                             len(labels),
+                                                             i+1,
+                                                             len(inparam.nights),
+                                                             night ))
+
     # Use instrumental profile dictionary corresponding to whether IGRINS mounting was loose or not
     if int(night) < 20180401 or int(night) > 20190531:
-        ips = inparam.ips_tightmount[order]
-        chunkweights = inparam.chunkweights_tightmount[order]
+        IPpars = inparam.ips_tightmount_pars[order]
     else:
-        ips = inparam.ips_loosemount[order]
-        chunkweights = inparam.chunkweights_loosemount[order]
+        IPpars = inparam.ips_loosemount_pars[order]
 
-    # Collect initial RV guesses
-    if type(inparam.initguesses) == dict:
-        initguesses = inparam.initguesses[night]
-    elif type(inparam.initguesses) == list:
-        initguesses = inparam.initguesses
-    else:
-        print('EXPECTED FILE OR LIST FOR INITGUESSES! QUITTING!')
+    # Collect relevant beam and filenum info
+    tagsnight = []; beamsnight = [];
+    for tag in inparam.tagsA[night]:
+        tagsnight.append(tag)
+        beamsnight.append('A')
+    for tag in inparam.tagsB[night]:
+        tagsnight.append(tag)
+        beamsnight.append('B')
 
     # Load telluric template from Telfit'd A0
     curdir = os.getcwd()
-    A0loc = '{}/A0_Fits_{}/{}A0_treated.fits'.format(curdir, targname, night)
+    A0loc = './A0_Fits/A0_Fits_{}/{}A0_treated.fits'.format(args.targname, night)
     try:
         hdulist = fits.open(A0loc)
     except IOError:
@@ -66,71 +76,80 @@ def ini_MPinst(i):
 
     watm = tbdata['WATM'+str(order)]
     satm = tbdata['SATM'+str(order)]
-    a0contwave = watm.copy()
+    a0contx    = tbdata['X'+str(order)]
     continuum  = tbdata['BLAZE'+str(order)]
 
     # Remove extra rows leftover from having columns of unequal length
     satm = satm[(watm != 0)]
     watm = watm[(watm != 0)]
     satm[(satm < 1e-4)] = 0. # set very low points to zero so that they don't go to NaN when taken to an exponent by template power in fmodel_chi
-    continuum = continuum[(a0contwave != 0)]
+    a0contx = a0contx[(continuum != 0)]
+    continuum = continuum[(continuum != 0)]
 
-    # For Initialguesser, using combined beams, so take mean of tags' BVCs to get BVC we apply
-    minibcs = []
-    for tag in inparam.tagsA[night]:
-        minibcs.append(inparam.bvcs[night+tag])
-    for tag in inparam.tagsB[night]:
-        minibcs.append(inparam.bvcs[night+tag])
-    bcnight = np.mean(minibcs)
+    ### Load relevant A0 spectra,
 
-    # Define initial wavelength guesses (need only be approximate)
-    initwave_dict = {
-                        2: [-3.82127210e-10, -1.06269946e-05,  1.85070280e-01 ,  2.41718272e+04],
-                        3: [7.170697761010893e-10,  -1.2196786264552286e-05,  0.18322308314595248, 23850.632494961632],
-                        4: [-3.9083145742380996e-10, -8.907333871733518e-06,  0.17881172908636753 , 23537.219082651878],
-                        5: [ -2.5348031649790425e-10, -9.180635514849177e-06, 0.17699954870465473, 23231.746232578 ],
-                        6: [ 3.68743282e-10, -1.10364274e-05, 1.76781196e-01,  2.29338381e+04]
-                    }
+    ##Set initial wavelength guess
+    f = np.polyfit(x_piece,wave_piece,3)
+    par9in = f[0]*1e4; par8in = f[1]*1e4; par7in = f[2]*1e4; par6in = f[3]*1e4;
+
     ### Initialize parameter array for optimization as well as half-range values for each parameter during the various steps of the optimization.
     ### Many of the parameters initialized here will be changed throughout the code before optimization and in between optimization steps.
-    pars0 = np.array([np.nan,1.0,0.0,1.0,0.0,3.3,2.29315012e+04,1.75281163e-01,-9.92637874e-06,0,1.0,1e-4,-1e-7])
+
+    pars0 = np.array([np.nan,                                                # 0: The shift of the sunspot spectrum (km/s)
+                      0.3,                                                   # 1: The scale factor for the sunspot spectrum
+                      0.0,                                                   # 2: The shift of the telluric spectrum (km/s)
+                      0.6,                                                   # 3: The scale factor for the telluric spectrum
+                      inparam.initvsini,                                     # 4: vsini (km/s)
+                      IPpars[2],                                             # 5: The instrumental resolution (FWHM) in pixels
+                      par6in,                                                # 6: Wavelength 0-pt
+                      par7in,                                                # 7: Wavelength linear component
+                      par8in,                                                # 8: Wavelength quadratic component
+                      par9in,                                                # 9: Wavelength cubic component
+                      1.0,                                                   #10: Continuum zero point
+                      0.,                                                    #11: Continuum linear component
+                      0.,                                                    #12: Continuum quadratic component
+                      IPpars[1],                                             #13: IP linear component
+                      IPpars[0]])                                            #14: IP quadratic component
 
     # Arrays defining parameter variations during optimization steps
-    dpar_cont = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.3, 0.0, 0.0, 0.,1e7,1,1])
-    dpar_wave = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 10.0, 10.0, 5.00000e-5, 1e-7,0,0,0])
-    dpar      = np.array([10.0, 1.0, 5.0, 3.0, 0.0, 2.0, 0.0, 0.0, 0.0, 0,1e4,1e-3,1e-6]) # sy chnaged 5 -> 60
+    dpar_cont = np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,  0.0,  0.0,        0.,   1e7, 1, 1, 0,    0])
+    dpar_wave = np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 10.0, 10.0, 5.00000e-5, 1e-7, 0,   0, 0, 0,    0])
+    dpar      = np.array([5.0, 1.0, 5.0, 3.0, inparam.vsinivary, 0.5, 0.0,  0.0,  0.0,        0,    1e4, 1, 1, 1e-2, 1e-5])
+    dpar_st   = np.array([5.0, 1.0, 5.0, 3.0, inparam.vsinivary, 0.0, 0.0,  0.0,  0.0,        0,    0,   0, 0, 0,    0])
+    dpar_ip   = np.array([0.0, 0.0, 0.0, 0.0, 0,                 0.5, 0.0,  0.0,  0.0,        0,    0,   0, 0, 1e-2, 1e-5])
 
-    vsinimini = []; rvsmini = [];
-
-    # Iterate through initial RV guesses
+    rvcollect = []; vsinicollect = [];
+    # Iterate over initial RV guesses
     for initrvguess in initguesses:
+        rvsmini = []; vsinismini = [];
 
-        pars0[0] = initrvguess-bcnight # correct for barycentric velocity
+        # Iterate over all A/B exposures
+        for t in np.arange(len(tagsnight)):
+            tag = tagsnight[t]
+            beam = beamsnight[t]
 
-        # Load target star spectrum. Processing similar to that of A0 spectra.
-        x,wave,s,u = init_fitsread(inparam.inpath,'target','combined',night,order,None,None)
+            pars[0] = inparam.initguesses[night]-inparam.bvcs[night+tag]
 
-        nzones = 5
-        x = basicclip_above(x,s,nzones); wave = basicclip_above(wave,s,nzones); u = basicclip_above(u,s,nzones); s = basicclip_above(s,s,nzones);
-        x = basicclip_above(x,s,nzones); wave = basicclip_above(wave,s,nzones); u = basicclip_above(u,s,nzones); s = basicclip_above(s,s,nzones);
+            x,wave,s,u = init_fitsread('{}{}/{}/'.format(inparam.inpath, night, beam),
+                                                        'target',
+                                                        'separate',
+                                                        night,
+                                                        order,
+                                                        tag,
+                                                        args.band,
+                                                        None)
 
-        # Split spectrum into 8 ~equal chunks in pixel space, then analyze all chunks but the ones on the ends
-
-        Nsplit = 8
-        wavegen = splitter(wave.copy(),Nsplit);
-        fluxgen = splitter(s.copy(),   Nsplit);
-        ugen    = splitter(u.copy(),   Nsplit);
-        xgen    = splitter(x.copy(),   Nsplit);
-        rvcollect = []; vsinicollect = [];
-
-        for nn in range(Nsplit):
-            wave_piece = next(wavegen);
-            s_piece    = next(fluxgen);
-            u_piece    = next(ugen);
-            x_piece    = next(xgen);
-
-            if nn == 0 or nn == Nsplit-1:
+            s2n = s/u
+            if np.nanmedian(s2n) < 25: # If S/N less than 25, throw out
+                print('Bad S/N for ' + night)
                 continue
+
+            nzones = 5
+            x = basicclip_above(x,s,nzones); wave = basicclip_above(wave,s,nzones); u = basicclip_above(u,s,nzones); s = basicclip_above(s,s,nzones);
+            x = basicclip_above(x,s,nzones); wave = basicclip_above(wave,s,nzones); u = basicclip_above(u,s,nzones); s = basicclip_above(s,s,nzones);
+
+            s_piece = s[(x > xbounds[0]) & (x < xbounds[-1])]; u_piece = u[(x > xbounds[0]) & (x < xbounds[-1])];
+            wave_piece = wave[(x > xbounds[0]) & (x < xbounds[-1])]; x_piece = x[(x > xbounds[0]) & (x < xbounds[-1])];
 
             mwave_in,mflux_in = stellarmodel_setup(wave_piece,inparam.mwave0,inparam.mflux0)
 
@@ -138,52 +157,46 @@ def ini_MPinst(i):
             watm_in = watm[(watm > min(wave_piece)*1e4 - 11) & (watm < max(wave_piece)*1e4 + 11)]
 
             # Load initial IP guess, vsini settings
-            par     = pars0.copy()
-            par[5]  = ips[nn-1]
-            par[4]  = inparam.initvsini
-            dpar[4] = inparam.vsinivary
+            par = pars0.copy()
 
             # Cut target spec to be within A0 spec wave
-            s_piece = s_piece[(wave_piece*1e4 > min(watm_in)+5) & (wave_piece*1e4 < max(watm_in)-5)]
-            u_piece = u_piece[(wave_piece*1e4 > min(watm_in)+5) & (wave_piece*1e4 < max(watm_in)-5)]
-            x_piece = x_piece[(wave_piece*1e4 > min(watm_in)+5) & (wave_piece*1e4 < max(watm_in)-5)]
+            s_piece    = s_piece[   (wave_piece*1e4 > min(watm_in)+5) & (wave_piece*1e4 < max(watm_in)-5)]
+            u_piece    = u_piece[   (wave_piece*1e4 > min(watm_in)+5) & (wave_piece*1e4 < max(watm_in)-5)]
+            x_piece    = x_piece[   (wave_piece*1e4 > min(watm_in)+5) & (wave_piece*1e4 < max(watm_in)-5)]
             wave_piece = wave_piece[(wave_piece*1e4 > min(watm_in)+5) & (wave_piece*1e4 < max(watm_in)-5)]
 
-            ##Set initial wavelength guess
-            try:
-                initwavepars = initwave_dict[order]
-                par[9] = initwavepars[0]; par[8] = initwavepars[1]; par[7] = initwavepars[2]; par[6] = initwavepars[3];
-            except KeyError:
-                f = np.polyfit(x_piece,wave_piece,3)
-                par[9] = f[0]*1e4; par[8] = f[1]*1e4; par[7] = f[2]*1e4; par[6] = f[3]*1e4;
+            continuum_in = rebin_jv(a0contx,continuum,x_piece,False)
 
             s_piece /= np.median(s_piece)
 
-            fitobj = fitobjs(s_piece, x_piece, u_piece, a0contwave,continuum,watm_in,satm_in,mflux_in,mwave_in)
+            fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in)
 
             ######## Begin optimization  ########
 
             optimize = True
             par_in = par.copy()
-            parfit_1 = optimizer(par,     dpar_cont, fitobj, optimize)
-            parfit_2 = optimizer(parfit_1,dpar_wave, fitobj, optimize)
 
-            parfit_1 = optimizer(parfit_2,dpar_cont, fitobj, optimize)
-            parfit_2 = optimizer(parfit_1,dpar_wave, fitobj, optimize)
+            parfit_1 = optimizer(par_in,   dpar_cont, fitobj, optimize)
+            parfit_2 = optimizer(parfit_1, dpar_st,   fitobj, optimize)
+            parfit_3 = optimizer(parfit_2, dpar_wave, fitobj, optimize)
+            parfit_4 = optimizer(parfit_3, dpar_cont, fitobj, optimize)
+            parfit_5 = optimizer(parfit_4, dpar_ip,   fitobj, optimize)
+            parfit = optimizer(parfit_5,   dpar,      fitobj, optimize)   # RV fitting
 
-            parfit   = optimizer(parfit_2,  dpar,    fitobj, optimize)
+            if args.plotfigs == True:
+                outplotter(par_in, fitobj, '{}_{}_{}_par_in'.format(label,night,tag), 0)
+                outplotter(parfit, fitobj  '{}_{}_{}_parfit'.format(label,night,tag), 0)
+            rv0 = parfit[0] - parfit[2]                         # atomosphere velocity correct
 
-            rv0 = parfit[0] - parfit[2]
-            rvcollect.append(rv0 + bcnight + rv0*bcnight/(3e5**2))
-            vsinicollect.append(parfit[4])
+            rvsmini.append(rv0 + inparam.bvcs[night+tag] + rv0*inparam.bvcs[night+tag]/(3e5**2))
+            vsinismini.append(parfit[4])
 
-        rvcollect = np.array(rvcollect); vsinicollect = np.array(vsinicollect);
-        rvsmini.append(np.nansum(rvcollect*chunkweights))
-        vsinimini.append(np.nansum(vsinicollect*chunkweights))
+        rvcollect.append(np.nanmean(rvsmini))
+        vsinicollect.append(np.nanmean(vsinismini))
 
-    bestguess   = round(np.nanmean(rvsmini),5)
-
-    return night,bestguess,np.mean(vsinimini)
+    bestguess = round(np.nanmean(rvsmini),5)
+    vsinimini = round(np.nanmean(vsinismini),5)
+    return night,bestguess,vsinimini
 
 
 #-------------------------------------------------------------------------------
@@ -200,6 +213,12 @@ if __name__ == '__main__':
                                      epilog = "Contact authors: asa.stahl@rice.edu; sytang@lowell.edu")
     parser.add_argument("targname",                          action="store",
                         help="Enter your *target name",            type=str)
+    parser.add_argument("-HorK",    dest="band",             action="store",
+                        help="Which band to process? H or K?. Default = K",
+                        type=str,   default='K')
+    parser.add_argument("-Wr",      dest="WRegion",          action="store",
+                        help="Which ./Input_Data/Use_w/WaveRegions_X to use, Default X = 0",
+                        type=int,   default=int(0))
 
     parser.add_argument('-dir',     dest="inpath",           action="store",
                         help="Enter path that stores target spectra, default will be under ./*targname",
@@ -219,6 +238,12 @@ if __name__ == '__main__':
                         type=int,   default=int(mp.cpu_count()//2) )
     parser.add_argument('-plot',    dest="plotfigs",          action="store_true",
                         help="If sets, will generate plots")
+
+    parser.add_argument('-n_use',   dest="nights_use",       action="store",
+                        help="If you don't want all process all nights under the Input_Data folder, give an array of night you wish to process here. e.g., [20181111, 20181112]",
+                        type=str,   default='')
+    parser.add_argument('-DeBug',    dest="debug",           action="store_true",
+                        help="If sets, will generate files and plots under ./Temp/Debug for debug")
     parser.add_argument('--version',                          action='version',  version='%(prog)s 0.5')
     args = parser.parse_args()
 
@@ -227,14 +252,16 @@ if __name__ == '__main__':
     if args.inpath[-1] != '/':
         args.inpath+='/'
 
+    if args.debug:
+        try:
+            os.listdir('./Temp/Debug/{}/'.format(args.targname))
+        except OSError:
+            os.mkdir('./Temp/Debug/{}/'.format(args.targname))
+
     initvsini = float(args.initvsini)
     vsinivary = float(args.vsinivary)
     guesses   = args.guesses
-    targname   = args.targname
-    inpath     = args.inpath
-    Nthreads   = args.Nthreads
     cdbs_loc = '~/cdbs/'
-    #guesses = [-20,-10,0,10,20]
 
     if guesses[0]=='[':
         initguesses = ast.literal_eval(guesses) #convert str(list) to list
@@ -260,7 +287,7 @@ Input Parameters:
     Initial vsini       = {} km/s
     vsini vary range    = {} km/s
     RV initial guess    = {} km/s
-    '''.format(targname, initvsini, vsinivary, initguesses))
+    '''.format(args.targname, initvsini, vsinivary, initguesses))
     print('---------------------------------------------------------------')
     print('RV Initial Guess for Each Night...')
     print('This will take a while..........')
@@ -268,17 +295,24 @@ Input Parameters:
     curdir = os.getcwd()
 
     ## Collect relevant file information from Predata files
-    A0data   = Table.read('{}/Prepdata_A0_{}.txt'.format(curdir, targname), format='ascii')
+    A0data   = Table.read('./Temp/Prepdata/Prepdata_A0_{}.txt'.format(args.targname), format='ascii')
     A0nights = np.array(A0data['night'],dtype='str')
     ams0     = np.array(A0data['airmass'])
 
-    targdata = Table.read('{}/Prepdata_targ_{}.txt'.format(curdir, targname), format='ascii')
+    targdata = Table.read('./Temp/Prepdata/Prepdata_targ_{}.txt'.format(args.targname), format='ascii')
     Tnights = np.array(targdata['night'],dtype='str')
     tags0   = np.array(targdata['tag'], dtype='int')
     beams0  = np.array(targdata['beam'],dtype='str')
     mjds0   = np.array(targdata['mjd'])
     bvcs0   = np.array(targdata['bvc'])
     ams     = np.array(targdata['airmass'])
+
+
+    bounddata = Table.read('./Input_Data/Use_w/XRegions_{}.csv'.format(args.WRegion), format='csv')
+    starts  = np.array(bounddata['start'])
+    ends    = np.array(bounddata['end'])
+    labels  = np.array(bounddata['label'], dtype=str)
+    xbounddict = {labels[i]:np.array([starts[i],ends[i]]) for i in range(len(starts))}
 
     # Attribute A and B exposures to right file numbers
     tagsA = {}; tagsB = {}; mjds = {}; bvcs = {};
@@ -312,32 +346,35 @@ Input Parameters:
 
     # Create output directory
     try:
-        filesndirs = os.listdir(os.getcwd()+'/'+targname)
+        filesndirs = os.listdir('./Results/{}'.format(args.targname) )
     except OSError:
-        os.mkdir(targname)
-        filesndirs = os.listdir(os.getcwd()+'/'+targname)
+        os.mkdir('./Results/{}'.format(args.targname))
+        filesndirs = os.listdir( './Results/{}'.format(args.targname) )
     trk = 1; go = True;
     while go == True:
-        iniguess_dir = 'Initguesser_results_'+str(trk)
+        iniguess_dir = 'Initguesser_results_{}.csv'.format(trk)
         if iniguess_dir not in filesndirs:
             break
         trk += 1
 
-    os.chdir(curdir+'/'+targname)
-    os.mkdir(iniguess_dir)
-    print('Writing output to file "'+targname+'/'+iniguess_dir+'"')
-    filew = open(iniguess_dir+'/'+iniguess_dir,'w')
-    filew.write('night bestguess vsini')
+    print('Writing output to ./Resluts/{}/{}'.format(args.targname, iniguess_dir))
+    filew = open('./Resluts/{}/{}'.format(args.targname, iniguess_dir),'w')
+    filew.write('night, bestguess, vsini')
     filew.write('\n')
-    os.chdir(curdir)
 
+    if not os.isdir('./Results/{}/figs'.format(args.targname)):
+        os.mkdir('./Results/{}/figs'.format(args.targname) )
+    outpath = './Results/{}'.format(args.targname))
     # Retrieve stellar and telluric templates
     watm,satm, mwave0, mflux0 = setup_templates_syn()
 
-    inparam = inparams(inpath,iniguess_dir,initvsini,vsinivary,args.plotfigs,initguesses,bvcs,tagsA,tagsB,nightsFinal,mwave0,mflux0)
+    inparam = inparams(inpath,outpath,initvsini,vsinivary,args.plotfigs,initguesses,bvcs,tagsA,tagsB,nightsFinal,mwave0,mflux0,xbounddict)
 
+    # Only use first wavelength region listed
+    ### label = labels[0] IF ONLY RV STANDARD, SPECIFY OTHERWISE. OR USE METHOD2
     pool = mp.Pool(processes = Nthreads)
-    outs = pool.map(ini_MPinst, np.arange(len(nightsFinal)))
+    func = partial(rv_MPinst, 0)
+    outs = pool.map(func, np.arange(len(nights)))
     pool.close()
     pool.join()
 
@@ -362,17 +399,19 @@ Input Parameters:
     print('RV Initial Guess DONE... Duration: {}'.format(end_time - start_time))
     print('Output saved under {}/{}'.format(targname, iniguess_dir) )
     print('---------------------------------------------------------------')
-    print('You can now try to get a better RV initial guess with')
-    print('--> python main_step2.py {} -i {:1.1f} -v {} -g [{:1.1f}] -c {} -plot'.format(targname,
-                                                                                         np.nanmean(vsinis),
-                                                                                         10,
-                                                                                         np.nanmean(finalrvs),
-                                                                                         Nthreads))
-    print('OR go to next step with')
-    print('--> python main_step3tar.py {} -i {:1.1f} -v {} -gX {} -c {} -plot'.format(targname,
-                                                                                      np.nanmean(vsinis),
-                                                                                      0,
-                                                                                      trk,
-                                                                                      Nthreads))
-    print('###############################################################')
-    print('\n')
+    # print('You can now try to get a better RV initial guess with: ')
+    # print('(For RV standards) --> python main_step2.py {} -i {:1.1f} -v [input] -g [{:1.1f}] -c {} -plot'.format(args.targname,
+    #                                                                                      np.nanmean(vsinis),
+    #                                                                                      np.nanmean(finalrvs),
+    #                                                                                      args.Nthreads))
+    # print('(For other stars)  --> python main_step2.py {} -i {:1.1f} -v [input] -g {} -c {} -plot'.format(args.targname,
+    #                                                                                      np.nanmean(vsinis),
+    #                                                                                      trk-1,
+    #                                                                                      args.Nthreads))
+    # print('OR, you can go on to next analysis step with')
+    # print('--> python main_step3tar.py {} -i {:1.1f} -v [input] -g IX{} -c {} -plot'.format(args.targname,
+    #                                                                                   np.nanmean(vsinis),
+    #                                                                                   trk-1,
+    #                                                                                   args.Nthreads))
+    # print('###############################################################')
+    # print('\n')
