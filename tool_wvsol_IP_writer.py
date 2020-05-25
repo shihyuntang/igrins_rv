@@ -204,7 +204,7 @@ if __name__ == '__main__':
                                      ''',
                                      epilog = "Contact authors: asa.stahl@rice.edu; sytang@lowell.edu")
     parser.add_argument("targname",                          action="store",
-                        help="Enter target names you wish to use as a list, e.g., [GJ281, CITau]",
+                        help="Enter target names you wish to use as a list, e.g., [GJ281,CITau]",
                         type=str)
     parser.add_argument("-mode",    dest="mode",             action="store",
                         help="Which mode? 1) get IP & WaveSol, 2) only IP, 3) only WaveSol. Default = 1",
@@ -216,9 +216,9 @@ if __name__ == '__main__':
     print('\n')
     print('###############################################################')
     try:
-        tars = args.targname.strip('][').split(', ')
-    except:
         tars = args.targname.strip('][').split(',')
+    except:
+        sys.exit('NO SPACE IS ALLOWED BETWEEN NAMES!' )
 #-------------------------------------------------------------------------------
     for i in tars:
         if os.path.isdir( './A0_Fits/A0_Fits_{}'.format(i) ):
