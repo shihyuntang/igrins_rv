@@ -239,7 +239,7 @@ if __name__ == '__main__':
                 else:
                     IPval(i,'H')
                     IPval(i,'K')
-                print('DONE, saving under ./Temp/IP_{}.txt'.format(band))
+                print('DONE, saving under ./Temp/IP_X.txt')
                 time.sleep(1)
         else:
             sys.exit('NO FILES FOUND UNDER ./A0_Fits/A0_Fits_{}/'.format(i) )
