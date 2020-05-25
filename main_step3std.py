@@ -78,8 +78,7 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
         nightsout.append(night)
 
     # Load telluric template from Telfit'd A0
-    curdir = os.getcwd()
-    A0loc = './A0_Fits/A0_Fits_{}/{}A0_treated.fits'.format(args.targname, night)
+    A0loc = './A0_Fits/A0_Fits_{}/{}A0_treated_{}.fits'.format(args.targname, night, args.band)
     try:
         hdulist = fits.open(A0loc)
     except IOError:

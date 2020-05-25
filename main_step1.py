@@ -26,7 +26,7 @@ def outplotter(parfit,fitobj,title,debug):
     axes.tick_params(axis='both', labelsize=4.5, right=True, top=True, direction='in')
     axes.legend(fontsize=4, edgecolor='white')
     if debug == 0:
-        fig.savefig('{}/figs/{}.png'.format(inparam.outpath, title), bbox_inches='tight', format='png', overwrite=True)
+        fig.savefig('{}/figs_{}/{}.png'.format(inparam.outpath, args.band, title), bbox_inches='tight', format='png', overwrite=True)
     elif debug == 1:
         fig.savefig('./Temp/Debug/{}/{}.png'.format(args.targname, title), bbox_inches='tight', format='png', overwrite=True)
 #-------------------------------------------------------------------------------
@@ -147,9 +147,9 @@ def DataPrep(args):
                 am0   = am0s[(tagA0s == tagA0)][0]
                 fac   = np.array(facs)[(tagA0s == tagA0)][0]
 
-                if abs(am0-am_star) > 0.2:
+                if abs(am0-am_star) > float(args.AM_cut):
                     print(night,stdname,am_star,am0,tagA0)
-                    sys.exit('WARNING, A0 AIRMASS FOR NIGHT {} HAS A DIFFERENCE LARGER THAN 0.2 FROM TARGET!'.format(night))
+                    sys.exit('WARNING, STD (A0) AIRMASS FOR NIGHT {} HAS A DIFFERENCE LARGER THAN {} FROM TARGET!'.format(night, argd.AM_cut))
 
                 tagA = '{:04d}'.format(tagA0)
                 subpath = '{}std/{}/AB/SDC{}_{}_{}.spec.fits'.format(inpath, night, args.band, night, tagA)
@@ -361,11 +361,11 @@ def MPinst(args, chunk_ind, orders, i):
             bleh = np.ones((3,3))
             primary_hdu = fits.PrimaryHDU(bleh)
             hdul = fits.HDUList([primary_hdu,hdu_1])
-            hdul.writeto(inparam.outpath+'/'+night+'A0_treated.fits')
+            hdul.writeto('{}/{}A0_treated_{}.fits'.format(inparam.outpath, night, args.band) )
         else:
-            hh = fits.open(inparam.outpath+'/'+night+'A0_treated.fits')
+            hh = fits.open('{}/{}A0_treated_{}.fits'.format(inparam.outpath, night, args.band))
             hh.append(hdu_1)
-            hh.writeto(inparam.outpath+'/'+night+'A0_treated.fits', overwrite=True)
+            hh.writeto('{}/{}A0_treated_{}.fits'.format(inparam.outpath, night, args.band), overwrite=True)
     else:
 
         a0contwave /= 1e4
@@ -429,11 +429,11 @@ def MPinst(args, chunk_ind, orders, i):
             bleh = np.ones((3,3))
             primary_hdu = fits.PrimaryHDU(bleh)
             hdul = fits.HDUList([primary_hdu,hdu_1])
-            hdul.writeto(inparam.outpath+'/'+night+'A0_treated.fits',overwrite=True)
+            hdul.writeto('{}/{}A0_treated_{}.fits'.format(inparam.outpath, night, args.band) ,overwrite=True)
         else:
-            hh = fits.open(inparam.outpath+'/'+night+'A0_treated.fits')
+            hh = fits.open('{}/{}A0_treated_{}.fits'.format(inparam.outpath, night, args.band))
             hh.append(hdu_1)
-            hh.writeto(inparam.outpath+'/'+night+'A0_treated.fits',overwrite=True)
+            hh.writeto('{}/{}A0_treated_{}.fits'.format(inparam.outpath, night, args.band), overwrite=True)
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 
@@ -506,6 +506,9 @@ if __name__ == '__main__':
     parser.add_argument("-Wr",      dest="WRegion",          action="store",
                         help="Which ./Input_Data/Use_w/WaveRegions_X to use, Default X = 0",
                         type=int,   default=int(0))
+    parser.add_argument("-AM",      dest="AM_cut",           action="store",
+                        help="AirMass difference allowed between TAR and STD (A0) stars. Default X = 0.25 ",
+                        type=str,   default='0.25')
 
     parser.add_argument('-c',       dest="Nthreads",         action="store",
                         help="Number of cpu (threads) to use, default is 1/2 of avalible ones (you have %i cpus (threads) avaliable)"%(mp.cpu_count()),
@@ -596,7 +599,7 @@ if __name__ == '__main__':
     name = 'A0_Fits_'+ args.targname
     if name not in filesndirs:
         os.mkdir('./A0_Fits/{}'.format(name) )
-        os.mkdir('./A0_Fits/{}/figs'.format(name) )
+        os.mkdir('./A0_Fits/{}/figs_{}'.format(name. args.band) )
     outpath = './A0_Fits/' + name
 
     # Retrieve stellar and telluric templates
