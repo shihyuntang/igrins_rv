@@ -13,8 +13,8 @@ def IPval(tar,band):
     nightsT = np.where((nights < 20180401)  | (nights > 20190531))
     nightsL = np.where((nights >= 20180401) & (nights < 20190531))
 
-    Tdirs = [ './A0_Fits/A0_Fits_{}/{}A0_treated_{}.fits'.format(tar, nn, band) for nn in nightsT ]
-    Ldirs = [ './A0_Fits/A0_Fits_{}/{}A0_treated_{}.fits'.format(tar, nn, band) for nn in nightsL ]
+    Tdirs = [ './A0_Fits/A0_Fits_{}/{}A0_treated_{}.fits'.format(tar, nn, band) for nn in nights[nightsT] ]
+    Ldirs = [ './A0_Fits/A0_Fits_{}/{}A0_treated_{}.fits'.format(tar, nn, band) for nn in nights[nightsL] ]
 
     filew = open('./Temp/IP_{}.txt'.format(band),'w')
 
