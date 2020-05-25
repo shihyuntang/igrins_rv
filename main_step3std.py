@@ -96,13 +96,6 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
 
     tbdata = hdulist[ fits_layer ].data
 
-    try:
-        if np.isnan(inparam.initguesses[night]):  # Telfit hit unknown critical error
-            print('  --> Initial guess for {} is NaN , SKIP...'.format(night))
-            return nightsout, rvsminibox, parfitminibox, vsiniminibox
-    except:
-        print('  --> Initial guess for {} is NaN , SKIP...'.format(night))
-        return nightsout, rvsminibox, parfitminibox, vsiniminibox
 
     watm = tbdata['WATM'+str(order)]
     satm = tbdata['SATM'+str(order)]
@@ -215,7 +208,7 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
         par9in = f[0]*1e4; par8in = f[1]*1e4; par7in = f[2]*1e4; par6in = f[3]*1e4;
         par[9] = par9in ; par[8] = par8in ; par[7] = par7in ; par[6] = par6in
 
-        par[0] = inparam.initguesses[night]-inparam.bvcs[night+tag]
+        par[0] = inparam.initguesses-inparam.bvcs[night+tag]
         # Arrays defining parameter variations during optimization steps
         dpar_cont = np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0])
         dpar_wave = np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 10.0,  10.0, 5.00000e-5, 1e-7, 0,   0, 0, 0,    0])
@@ -288,12 +281,15 @@ if __name__ == '__main__':
     parser.add_argument('-v',       dest="vsinivary",         action="store",
                         help="Range of allowed vsini variation during optimization, default = 0.0 km/s",
                         type=str, default='0.0' )
-    parser.add_argument('-gS',       dest="guesses_source",           action="store",
-                        help="Source for initial guesses list for RV. Enter init OR rvre (init: Initguesser_results_X, rvre: RV_results_X)",
-                        type=str, default='')
-    parser.add_argument('-gX',       dest="guesses",           action="store",
-                        help="Please give the number, X, under ./*targname/Initguesser_results_X OR ./*targname/RV_results_X, that you wish to use",
-                        type=int, default='')
+    parser.add_argument('-g',       dest="guesses",           action="store",
+                        help=". Should use the single value given by step2 (float, km/s)",
+                        type=str,   default='' )
+    # parser.add_argument('-gS',       dest="guesses_source",           action="store",
+    #                     help="Source for initial guesses list for RV. Enter init OR rvre (init: Initguesser_results_X, rvre: RV_results_X)",
+    #                     type=str, default='')
+    # parser.add_argument('-gX',       dest="guesses",           action="store",
+    #                     help="Please give the number, X, under ./*targname/Initguesser_results_X OR ./*targname/RV_results_X, that you wish to use",
+    #                     type=int, default='')
 
     parser.add_argument('-c',       dest="Nthreads",         action="store",
                         help="Number of cpu (threads) to use, default is 1/2 of avalible ones (you have %i cpus (threads) avaliable)"%(mp.cpu_count()),
@@ -317,31 +313,15 @@ if __name__ == '__main__':
     else:
         sys.exit('ERROR: EXPECTED FLOAT')
 
-    # Collect init RV guesses
     if args.guesses != '':
-        if args.guesses_source == 'init':
-            guesses = './Results/{}_{}/Initguesser_results_{}.csv'.format(args.targname,
-                                                                          args.band,
-                                                                          int(args.guesses))
-            guessdata  = Table.read(guesses, format='ascii')
-            initnights = np.array(guessdata['night'])
-            initrvs    = np.array(guessdata['bestguess'])
-            initguesses = {}
-            for hrt in range(len(initnights)):
-                initguesses[str(initnights[hrt])] = float(initrvs[hrt])
-
-        elif args.guesses_source == 'rvre':
-            guesses = './Results/{}_{}/RVresultsSummary_{}.csv'.format(args.targname,
-                                                                       args.band,
-                                                                       int(args.guesses))
-            guessdata  = Table.read(guesses, format='csv')
-            initnights = np.array(guessdata['NIGHT'])
-            initrvs    = np.array(guessdata['RVfinal'])
-            initguesses = {}
-            for hrt in range(len(initnights)):
-                initguesses[str(initnights[hrt])] = float(initrvs[hrt])
+        guesses = float(args.guesses)
     else:
-        sys.exit('ERROR: INCORRECT "STYLE" INPUT PARAMETER SPECIFIED; EXPECTED A INT NUMBER')
+        sys.exit('ERROR: EXPECTED FLOAT')
+
+    if type(guesses) == float:
+        initguesses = guesses
+    else:
+        sys.exit('ERROR: INCORRECT INITIAL RV GUESSES INPUT PARAMETER SPECIFIED; EXPECTED FLOAT')
 #-------------------------------------------------------------------------------
     start_time = datetime.now()
     print('\n')
@@ -351,8 +331,8 @@ Input Parameters:
     Tartget             = {}
     Initial vsini       = {} km/s
     vsini vary range    = {} km/s
-    RV initial guess taken from {}
-    '''.format(args.targname, initvsini, vsinivary, guesses))
+    RV initial guess    = {} km/s
+    '''.format(args.targname, initvsini, vsinivary, initguesses))
     print('---------------------------------------------------------------')
     print('RV calculation for RV standard star {}...'.format(targname))
     print('This will take a while..........')
