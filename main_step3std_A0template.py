@@ -97,13 +97,6 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
 
     tbdata = hdulist[ fits_layer ].data
 
-    try:
-        if np.isnan(inparam.initguesses[night]):  # Telfit hit unknown critical error
-            print('  --> Initial guess for {} is NaN , SKIP...'.format(night))
-            return nightsout, rvsminibox, parfitminibox, vsiniminibox
-    except:
-        print('  --> Initial guess for {} is NaN , SKIP...'.format(night))
-        return nightsout, rvsminibox, parfitminibox, vsiniminibox
 
     watm = tbdata['WAVE'+str(order)]
     satm = tbdata['INTENS'+str(order)]
@@ -215,7 +208,7 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
         par9in = f[0]*1e4; par8in = f[1]*1e4; par7in = f[2]*1e4; par6in = f[3]*1e4;
         par[9] = par9in ; par[8] = par8in ; par[7] = par7in ; par[6] = par6in
 
-        par[0] = inparam.initguesses[night]-inparam.bvcs[night+tag]
+        par[0] = inparam.initguesses-inparam.bvcs[night+tag]
         # Arrays defining parameter variations during optimization steps
         dpar_cont = np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0])
         dpar_wave = np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 10.0,  10.0, 5.00000e-5, 1e-7, 0,   0, 0, 0,    0])
@@ -287,12 +280,15 @@ if __name__ == '__main__':
     parser.add_argument('-v',       dest="vsinivary",         action="store",
                         help="Range of allowed vsini variation during optimization, default = 0.0 km/s",
                         type=str, default='0.0' )
-    parser.add_argument('-gS',       dest="guesses_source",           action="store",
-                        help="Source for initial guesses list for RV. Enter init OR rvre (init: Initguesser_results_X, rvre: RV_results_X)",
-                        type=str, default='')
-    parser.add_argument('-gX',       dest="guesses",           action="store",
-                        help="Please give the number, X, under ./*targname/Initguesser_results_X OR ./*targname/RV_results_X, that you wish to use",
-                        type=int, default='')
+    parser.add_argument('-g',       dest="guesses",           action="store",
+                        help=". Should use the single value given by step2 (float, km/s)",
+                        type=str,   default='' )
+    # parser.add_argument('-gS',       dest="guesses_source",           action="store",
+    #                     help="Source for initial guesses list for RV. Enter init OR rvre (init: Initguesser_results_X, rvre: RV_results_X)",
+    #                     type=str, default='')
+    # parser.add_argument('-gX',       dest="guesses",           action="store",
+    #                     help="Please give the number, X, under ./*targname/Initguesser_results_X OR ./*targname/RV_results_X, that you wish to use",
+    #                     type=int, default='')
 
     parser.add_argument('-c',       dest="Nthreads",         action="store",
                         help="Number of cpu (threads) to use, default is 1/2 of avalible ones (you have %i cpus (threads) avaliable)"%(mp.cpu_count()),
@@ -351,7 +347,7 @@ Input Parameters:
     Initial vsini       = {} km/s
     vsini vary range    = {} km/s
     RV initial guess taken from {}
-    '''.format(args.targname, initvsini, vsinivary, guesses))
+    '''.format(args.targname, initvsini, vsinivary, initguesses))
     print('---------------------------------------------------------------')
     print('RV calculation for RV standard star {}...'.format(targname))
     print('This will take a while..........')
