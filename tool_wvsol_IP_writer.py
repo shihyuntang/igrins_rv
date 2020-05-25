@@ -9,7 +9,7 @@ def IPval(tar,band):
     filesndirs = os.listdir('./A0_Fits/A0_Fits_{}/'.format(tar))
     filesndirs = [j for j in filesndirs if j[-6:] == '{}.fits'.format(band)]
 
-    nights  = [int(j[:8]) for j in filesndirs ]
+    nights  = np.array([int(j[:8]) for j in filesndirs ])
     nightsT = np.where((nights < 20180401)  | (nights > 20190531))
     nightsL = np.where((nights >= 20180401) & (nights < 20190531))
 
