@@ -320,9 +320,9 @@ def MPinst(args, chunk_ind, orders, i):
     # Arrays defining parameter variations during optimization steps
     dpar_cont = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,   0.0,  0.0,  0,    1e7, 1, 1, 0,    0])
     dpar_wave = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 10.0,  10.0, 5e-5, 1e-7, 0,   0, 0, 0,    0])
-    dpar      = np.array([0.0, 0.0, 5.0, 3.0, 0.0, 0.5, 0.0,   0.0,  0.0,  0,    1e4, 1, 1, 1e-2, 1e-5])
+    dpar      = np.array([0.0, 0.0, 5.0, 3.0, 0.0, 0.5, 0.0,   0.0,  0.0,  0,    1e4, 1, 1, 0,    0])
     dpar_st   = np.array([0.0, 0.0, 5.0, 3.0, 0.0, 0.0, 0.0,   0.0,  0.0,  0,    1e4, 1, 1, 0,    0])
-    dpar_ip   = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0,   0.0,  0.0,  0,    1e4, 1, 1, 1e-2, 1e-5])
+    dpar_ip   = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0,   0.0,  0.0,  0,    1e4, 1, 1, 0,    0])
 
 #-------------------------------------------------------------------------------
     # For every pre-Telfit spectral fit, first fit just template strength/rv/continuum, then just wavelength soln, then template/continuum again, then ip,
@@ -378,9 +378,9 @@ def MPinst(args, chunk_ind, orders, i):
         parfit_1 = optimizer(par_in,   dpar_st,   fitobj, optimize)
         parfit_2 = optimizer(parfit_1, dpar_wave, fitobj, optimize)
         parfit_3 = optimizer(parfit_2, dpar_st,   fitobj, optimize)
-        parfit_4 = optimizer(parfit_3, dpar_ip,   fitobj, optimize)
-        parfit_5 = optimizer(parfit_4, dpar_wave, fitobj, optimize)
-        parfit   = optimizer(parfit_5, dpar,      fitobj, optimize)
+        #parfit_4 = optimizer(parfit_3, dpar_ip,   fitobj, optimize)
+        parfit_4 = optimizer(parfit_3, dpar_wave, fitobj, optimize)
+        parfit   = optimizer(parfit_4, dpar,      fitobj, optimize)
 
         if inparam.plotfigs == True:
             fig, axes = plt.subplots(1, 1, figsize=(5,3), facecolor='white', dpi=300)
