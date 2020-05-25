@@ -19,8 +19,8 @@ def IPval(tar,band):
     filew = open('./Temp/IP_{}.txt'.format(band),'w')
 
     if len(nightsT) != 0:
+        dump1 = 0
         for a0 in Tdirs:
-            dump1 = 0
             hdulist = fits.open(a0)
 
             tt= 1 ; orders = []
@@ -63,8 +63,8 @@ def IPval(tar,band):
             filew.write('{}: np.array([{:+1.8f}, {:+1.8f}, {:1.8}]),\n'.format(orders[o], np.nanmean(IP14box[:, o]), np.nanmean(IP13box[:, o]), np.nanmean(IP5box[:, o]) ))
 
     if len(nightsL) != 0:
+        dump1 = 0
         for a0 in Ldirs:
-            dump1 = 0
             hdulist = fits.open(a0)
 
             tt= 1 ; orders = []
