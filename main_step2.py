@@ -392,6 +392,8 @@ Input Parameters:
         nightsFinal = nightstemp
         print('Only processing nights: {}'.format(nightsFinal))
 #-------------------------------------------------------------------------------
+    if not os.path.isdir('./Results/'):
+        os.mkdir('./Results/')
 
     # Create output directory
     try:
