@@ -171,6 +171,11 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
                                     tag,
                                     args.band,
                                     bound_cut)
+#-------------------------------------------------------------------------------
+        s2n = s/u
+        if np.nanmedian(s2n) < args.SN_cut:
+            print('  --> Bad S/N {:1.1f} < {} for {}{} {}, SKIP'.format( np.nanmedian(s2n), args.SN_cut, night, beam, tag))
+            continue
 
         nzones = 5
         x = basicclip_above(x,s,nzones); wave = basicclip_above(wave,s,nzones); u = basicclip_above(u,s,nzones); s = basicclip_above(s,s,nzones);
@@ -276,6 +281,9 @@ if __name__ == '__main__':
     parser.add_argument("-Wr",      dest="WRegion",          action="store",
                         help="Which ./Input_Data/Use_w/WaveRegions_X to use, Default X = 0",
                         type=int,   default=int(0))
+    parser.add_argument("-SN",      dest="SN_cut",           action="store",
+                        help="Spectrum S/N quality cut. Default = 25 ",
+                        type=str,   default='25')
 
     parser.add_argument('-i',       dest="initvsini",        action="store",
                         help="Initial vsini (float, km/s). Should use the value given by step2",
