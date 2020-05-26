@@ -385,8 +385,8 @@ Input Parameters:
     tagsB[Tnights[-1]] = tagsB0
 
     nightsFinal = np.array(list(sorted(set(Tnights))))
-    nightsFinal = nightsFinal[24:45]
-    labels      = labels[:1]
+    # nightsFinal = nightsFinal[24:45]
+    # labels      = labels[:1]
 
     if args.nights_use != '':
         nightstemp = np.array(args.nights_use, dtype=np.int)

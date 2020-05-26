@@ -631,12 +631,12 @@ if __name__ == '__main__':
 
         c1 = fits.Column( name='NIGHT',         array=nights_use,        format='8A')
         c2 = fits.Column( name='MJD',           array=mjds_out-2400000.5,format='D')
-        c3 = fits.Column( name='RVBOX',         array=rvmasterbox,   format='5D')
-        c4 = fits.Column( name='STDBOX',        array=stdmasterbox,  format='5D')
+        c3 = fits.Column( name='RVBOX',         array=rvmasterbox,   format='{}D'.format(len(label_t)))
+        c4 = fits.Column( name='STDBOX',        array=stdmasterbox,  format='{}D'.format(len(label_t)))
         c5 = fits.Column( name='Sigma_O2',      array=sigma_O2,      format='D')
         c6 = fits.Column( name='Sigma_ABbar2',  array=sigma_ABbar2,  format='D')
         c7 = fits.Column( name='Sigma_method2', array=sigma_method2, format='D')
-        c8 = fits.Column( name='Sigma_ON2',     array=sigma_ON2,     format='5D')
+        c8 = fits.Column( name='Sigma_ON2',     array=sigma_ON2,     format='{}D'.format(len(label_t)))
         c9 = fits.Column( name='RVfinal',       array=rvfinal,       format='D')
         c10 = fits.Column(name='STDfinal',      array=stdfinal,      format='D')
 
