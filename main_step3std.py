@@ -88,7 +88,7 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
     num_orders = len( np.unique(label_t['0']) )
 
     try:
-        fits_layer = [ i for i in np.arange(num_orders)+1 if int(hdulist[i].columns[3].name[1:]) == order ][0]
+        fits_layer = [ i for i in np.arange(num_orders)+1 if int(hdulist[i].columns[3].name[1:]) == int(order) ][0]
         # same as flag == 1
         # order in A0_treated.fits is no longer sequential...
     except:
