@@ -396,7 +396,7 @@ Input Parameters:
     # Create output directory
     try:
         filesndirs = os.listdir('./Results/{}_{}'.format(args.targname, args.band) )
-    except OSError:
+    except:
         os.mkdir('./Results/{}_{}'.format(args.targname, args.band))
         filesndirs = os.listdir( './Results/{}_{}'.format(args.targname, args.band) )
     trk = 1; go = True;
