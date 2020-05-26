@@ -171,7 +171,7 @@ def ini_MPinst(label_t, chunk_ind, trk, i):
                                         bound_cut)
 #-------------------------------------------------------------------------------
             s2n = s/u
-            if np.nanmedian(s2n) < args.SN_cut:
+            if np.nanmedian(s2n) < float(args.SN_cut):
                 print('  --> Bad S/N {:1.1f} < {} for {}{} {}, SKIP'.format( np.nanmedian(s2n), args.SN_cut, night, beam, tag))
                 continue
 
