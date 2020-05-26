@@ -85,6 +85,11 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
         print('  --> No A0-fitted template for night '+night+', skipping...')
         return nightsout, rvsminibox, parfitminibox, vsiniminibox
 
+    print(label_t)
+    print(label_t['0'])
+    print(np.unique(label_t['0']))
+    print(len( np.unique(label_t['0']) ))
+
     num_orders = len( np.unique(label_t['0']) )
     fits_layer = [ i for i in np.arange(num_orders)+1 if int(hdulist[i].columns[3].name[1:]) == int(order) ][0]
 
