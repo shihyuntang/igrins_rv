@@ -92,7 +92,7 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
         # same as flag == 1
         # order in A0_treated.fits is no longer sequential...
     except:
-        print('  --> fits_layer locater ERROR, {} not match order: {}'.format(hdulist[i].columns[3].name[1:],  order))
+        print('  --> {} nights, fits_layer locater ERROR, {} not match order: {}'.format(night, [ i for i in np.arange(num_orders)+1 if int(hdulist[i].columns[3].name[1:]) == order ],  order))
         return nightsout, rvsminibox, parfitminibox, vsiniminibox
 
     tbdata = hdulist[ fits_layer ].data
