@@ -451,7 +451,7 @@ Input Parameters:
     else:
         nightscomblist = [nightsT]
 
-    print(labels[i].split('-') )
+    print([ abels[i].split('-')[0] for i in range(len(labels)) ])
     orders = [ int(labels[i].split('-')[0]) for i in range(len(labels)) ]
     oindex = [ int(labels[i].split('-')[1]) for i in range(len(labels)) ]
     label_t = Table(names=('0', '1'), data=(orders, oindex))
