@@ -387,7 +387,7 @@ Input Parameters:
 
     nightsFinal = np.array(list(sorted(set(Tnights))))
     nightsFinal = nightsFinal[24:45]
-    labels      = labels[-1]
+    labels      = labels[-2:]
 
     if args.nights_use != '':
         nightstemp = np.array(args.nights_use, dtype=np.int)
