@@ -636,7 +636,7 @@ Input Parameters:
         stdfinalCombined   = np.concatenate((stdfinalCombined,   stdfinal))
         vsinifinalCombined = np.concatenate((vsinifinalCombined, vsinifinal))
 
-        print('sigma_method2 with type ={} is {}'.format(kind, sigma_method2))
+        print('sigma_method2 with type ={:1.8f} is {:1.8f}'.format(kind, sigma_method2))
         #print('RV/std for observations when IGRINS mounting was '+kind+': ', np.nanmean(rvfinal),np.nanstd(rvfinal))
         print('Observations when IGRINS is mounting {}: RV mean = {:1.4f} km/s, std = {:1.4f} km/s'.format( kind,
                                                                                                             np.nanmean(rvfinal),
