@@ -387,7 +387,7 @@ Input Parameters:
 
     nightsFinal = np.array(list(sorted(set(Tnights))))
     nightsFinal = nightsFinal[24:45]
-    labels      = labels[-2:]
+    labels      = labels[-1]
 
     if args.nights_use != '':
         nightstemp = np.array(args.nights_use, dtype=np.int)
@@ -451,7 +451,7 @@ Input Parameters:
     else:
         nightscomblist = [nightsT]
 
-    print(labels[i].split('-')
+    print(labels[i].split('-') )
     orders = [ int(labels[i].split('-')[0]) for i in range(len(labels)) ]
     oindex = [ int(labels[i].split('-')[1]) for i in range(len(labels)) ]
     label_t = Table(names=('0', '1'), data=(orders, oindex))
