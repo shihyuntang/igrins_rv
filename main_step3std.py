@@ -86,6 +86,7 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
         return nightsout, rvsminibox, parfitminibox, vsiniminibox
 
     num_orders = len( np.unique(label_t['0']) )
+    fits_layer = [ i for i in np.arange(num_orders)+1 if int(hdulist[i].columns[3].name[1:]) == int(order) ][0]
 
     try:
         fits_layer = [ i for i in np.arange(num_orders)+1 if int(hdulist[i].columns[3].name[1:]) == int(order) ][0]
