@@ -276,8 +276,8 @@ if __name__ == '__main__':
                         help="Only one wavelength range will be used to RV initial guess, pick a label to use, Default is the first label",
                         type=int,   default=int(0))
     parser.add_argument("-SN",      dest="SN_cut",           action="store",
-                        help="Spectrum S/N quality cut. Default = 25 ",
-                        type=str,   default='25')
+                        help="Spectrum S/N quality cut. Default = 50 ",
+                        type=str,   default='50')
 
     parser.add_argument('-i',       dest="initvsini",        action="store",
                         help="Initial vsini (float, km/s), default = 2.6 km/s",
