@@ -252,7 +252,7 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
         rvsminibox[t]   = rv0  + inparam.bvcs[night+tag] + rv0*inparam.bvcs[night+tag]/(3e5**2) # bvcs correct
         parfitminibox[t]= parfit
         vsiniminibox[t] = parfit[4]
-    print(nightsout,rvsminibox,parfitminibox,vsiniminibox)
+    # print(nightsout,rvsminibox,parfitminibox,vsiniminibox)
     return nightsout,rvsminibox,parfitminibox,vsiniminibox
 
 #-------------------------------------------------------------------------------
@@ -450,8 +450,8 @@ Input Parameters:
     else:
         nightscomblist = [nightsT]
 
-    print(labels)
-    print([ labels[i].split('-')[0] for i in range(len(labels)) ])
+    # print(labels)
+    # print([ labels[i].split('-')[0] for i in range(len(labels)) ])
     orders = [ int(labels[i].split('-')[0]) for i in range(len(labels)) ]
     oindex = [ int(labels[i].split('-')[1]) for i in range(len(labels)) ]
     label_t = Table(names=('0', '1'), data=(orders, oindex))
