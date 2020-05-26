@@ -385,8 +385,8 @@ Input Parameters:
     tagsB[Tnights[-1]] = tagsB0
 
     nightsFinal = np.array(list(sorted(set(Tnights))))
-    # nightsFinal = nightsFinal[24:45]
-    # labels      = labels[:4]
+    nightsFinal = nightsFinal[24:45]
+    labels      = labels[:2]
 
     if args.nights_use != '':
         nightstemp = np.array(args.nights_use, dtype=np.int)
@@ -549,9 +549,11 @@ Input Parameters:
         vsinibox     = vsinicomblist[boxind]
 #-------------------------------------------------------------------------------
         # Calculate the precision within an order across nights
-        sigma_O2     = np.array([np.nanstd(rvmasterbox[:,label])**2 for label in range(len(labels))])
+        sigma_O2     = np.array([np.nanstd(rvmasterbox[:,ll])**2 for ll in range(len(labels))])
         sigma_ABbar2 = np.ones_like(sigma_O2)
         sigma_ON2    = np.ones_like(rvmasterbox)
+
+        print('sigma_O2: ', sigma_O2.shape)
 #-------------------------------------------------------------------------------
         # Note rvmasterbox indexed as [nights,orders]
         Nnights = len(rvmasterbox[:,0])
@@ -617,6 +619,12 @@ Input Parameters:
         c8 = fits.Column( name='Sigma_ON2',     array=sigma_ON2,     format='5D')
         c9 = fits.Column( name='RVfinal',       array=rvfinal,       format='D')
         c10 = fits.Column(name='STDfinal',      array=stdfinal,      format='D')
+
+        print('nights_use: ', nights_use.shape)
+        print('mjds_out: ', mjds_out.shape)
+        print('rvmasterbox: ', rvmasterbox.shape)
+        print('sigma_O2: ', sigma_O2.shape)
+        print('rvfinal: ', rvfinal.shape)
 
         cols  = fits.ColDefs([c1,c2,c3,c4,c5,c6,c7,c8,c9,c10])
         hdu_1 = fits.BinTableHDU.from_columns(cols)
