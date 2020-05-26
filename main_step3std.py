@@ -334,7 +334,7 @@ Input Parameters:
     RV initial guess    = {} km/s
     '''.format(args.targname, initvsini, vsinivary, initguesses))
     print('---------------------------------------------------------------')
-    print('RV calculation for RV standard star {}...'.format(targname))
+    print('RV calculation for RV standard star {}...'.format(args.targname))
     print('This will take a while..........')
 
     ## Collect relevant file information from Predata files
