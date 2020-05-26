@@ -171,9 +171,8 @@ def ini_MPinst(label_t, chunk_ind, trk, i):
                                         bound_cut)
 #-------------------------------------------------------------------------------
             s2n = s/u
-            SN_cut = 25
-            if np.nanmedian(s2n) < SN_cut: # If S/N less than 25, throw out
-                print('  --> Bad S/N {:1.1f} < {} for {}{} {}, SKIP'.format( np.nanmedian(s2n), SN_cut, night, beam, tag))
+            if np.nanmedian(s2n) < args.SN_cut:
+                print('  --> Bad S/N {:1.1f} < {} for {}{} {}, SKIP'.format( np.nanmedian(s2n), args.SN_cut, night, beam, tag))
                 continue
 
             nzones = 5
@@ -276,6 +275,9 @@ if __name__ == '__main__':
     parser.add_argument("-l_use",   dest="label_use",        action="store",
                         help="Only one wavelength range will be used to RV initial guess, pick a label to use, Default is the first label",
                         type=int,   default=int(0))
+    parser.add_argument("-SN",      dest="SN_cut",           action="store",
+                        help="Spectrum S/N quality cut. Default = 25 ",
+                        type=str,   default='25')
 
     parser.add_argument('-i',       dest="initvsini",        action="store",
                         help="Initial vsini (float, km/s), default = 2.6 km/s",
