@@ -454,6 +454,8 @@ Input Parameters:
     oindex = [ int(labels[i].split('-')[1]) for i in range(len(labels)) ]
     label_t = Table(names=('0', '1'), data=(orders, oindex))
     label_t.sort(['0', '1'])
+
+    print(len(label_t))
 #-------------------------------------------------------------------------------
     for jerp in range(len(label_t)): # Iterate over orders
         pool = mp.Pool(processes = args.Nthreads)
@@ -553,7 +555,6 @@ Input Parameters:
         sigma_ABbar2 = np.ones_like(sigma_O2)
         sigma_ON2    = np.ones_like(rvmasterbox)
 
-        print('sigma_O2: ', sigma_O2.shape)
 #-------------------------------------------------------------------------------
         # Note rvmasterbox indexed as [nights,orders]
         Nnights = len(rvmasterbox[:,0])
@@ -611,20 +612,14 @@ Input Parameters:
 
         c1 = fits.Column( name='NIGHT',         array=nights_use,        format='8A')
         c2 = fits.Column( name='MJD',           array=mjds_out-2400000.5,format='D')
-        c3 = fits.Column( name='RVBOX',         array=rvmasterbox,   format='5D')
-        c4 = fits.Column( name='STDBOX',        array=stdmasterbox,  format='5D')
+        c3 = fits.Column( name='RVBOX',         array=rvmasterbox,   format='{}D'.format(len(label_t)))
+        c4 = fits.Column( name='STDBOX',        array=stdmasterbox,  format='{}D'.format(len(label_t)))
         c5 = fits.Column( name='Sigma_O2',      array=sigma_O2,      format='D')
         c6 = fits.Column( name='Sigma_ABbar2',  array=sigma_ABbar2,  format='D')
         c7 = fits.Column( name='Sigma_method2', array=sigma_method2, format='D')
-        c8 = fits.Column( name='Sigma_ON2',     array=sigma_ON2,     format='5D')
+        c8 = fits.Column( name='Sigma_ON2',     array=sigma_ON2,     format='{}D'.format(len(label_t)))
         c9 = fits.Column( name='RVfinal',       array=rvfinal,       format='D')
         c10 = fits.Column(name='STDfinal',      array=stdfinal,      format='D')
-
-        print('nights_use: ', nights_use.shape)
-        print('mjds_out: ', mjds_out.shape)
-        print('rvmasterbox: ', rvmasterbox.shape)
-        print('sigma_O2: ', sigma_O2.shape)
-        print('rvfinal: ', rvfinal.shape)
 
         cols  = fits.ColDefs([c1,c2,c3,c4,c5,c6,c7,c8,c9,c10])
         hdu_1 = fits.BinTableHDU.from_columns(cols)
