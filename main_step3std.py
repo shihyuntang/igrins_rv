@@ -89,6 +89,7 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
 
     try:
         fits_layer = [ i for i in np.arange(num_orders)+1 if int(hdulist[i].columns[3].name[1:]) == order ][0]
+        print('  --> fits_layer locater ERROR, {} not match order: {}'.format(hdulist[i].columns[3].name[1:],  order))
         # same as flag == 1
         # order in A0_treated.fits is no longer sequential...
     except:
@@ -252,7 +253,7 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
         rvsminibox[t]   = rv0  + inparam.bvcs[night+tag] + rv0*inparam.bvcs[night+tag]/(3e5**2) # bvcs correct
         parfitminibox[t]= parfit
         vsiniminibox[t] = parfit[4]
-
+    print(nightsout,rvsminibox,parfitminibox,vsiniminibox)
     return nightsout,rvsminibox,parfitminibox,vsiniminibox
 
 #-------------------------------------------------------------------------------
@@ -385,8 +386,8 @@ Input Parameters:
     tagsB[Tnights[-1]] = tagsB0
 
     nightsFinal = np.array(list(sorted(set(Tnights))))
-    # nightsFinal = nightsFinal[24:45]
-    # labels      = labels[:1]
+    nightsFinal = nightsFinal[24:45]
+    labels      = labels[-1]
 
     if args.nights_use != '':
         nightstemp = np.array(args.nights_use, dtype=np.int)
