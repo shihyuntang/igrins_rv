@@ -455,7 +455,6 @@ Input Parameters:
     label_t = Table(names=('0', '1'), data=(orders, oindex))
     label_t.sort(['0', '1'])
 
-    print(len(label_t))
 #-------------------------------------------------------------------------------
     for jerp in range(len(label_t)): # Iterate over orders
         pool = mp.Pool(processes = args.Nthreads)
