@@ -273,8 +273,8 @@ if __name__ == '__main__':
                         help="Which ./Input_Data/Use_w/WaveRegions_X to use, Default X = 0",
                         type=int,   default=int(0))
     parser.add_argument("-SN",      dest="SN_cut",           action="store",
-                        help="Spectrum S/N quality cut. Default = 25 ",
-                        type=str,   default='25')
+                        help="Spectrum S/N quality cut. Default = 50 ",
+                        type=str,   default='50')
 
     parser.add_argument('-i',       dest="initvsini",        action="store",
                         help="Initial vsini (float, km/s). Should use the value given by step2",
