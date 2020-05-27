@@ -89,7 +89,7 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
 
     # order in A0_treated.fits is no longer sequential...
     fits_layer = [ i for i in np.arange(num_orders)+1 if int(hdulist[i].columns[0].name[9:]) == order ][0]
-    
+
     tbdata = hdulist[ fits_layer ].data
     flag = np.array(tbdata['ERRORFLAG'+str(order)])[0]
 
@@ -275,6 +275,9 @@ if __name__ == '__main__':
     parser.add_argument("-SN",      dest="SN_cut",           action="store",
                         help="Spectrum S/N quality cut. Default = 50 ",
                         type=str,   default='50')
+    parser.add_argument("-nAB",      dest="nAB",           action="store",
+                        help="Minium request of # of AB sets. Default = for STD is 1 and TAR is 3 ",
+                        type=str,   default='1')
 
     parser.add_argument('-i',       dest="initvsini",        action="store",
                         help="Initial vsini (float, km/s). Should use the value given by step2",
@@ -508,7 +511,7 @@ Input Parameters:
                 if T_L == 'T':
                     vsinisT[i,jerp] = np.nanmean(vsinitags)
 
-                    if (np.sum(~np.isnan(rvtags)) < 3):
+                    if (np.sum(~np.isnan(rvtags)) < int(args.nAB) ):
                         rvmasterboxT[i,jerp]  = np.nan
                         stdmasterboxT[i,jerp] = np.nan
                     else:
@@ -518,7 +521,7 @@ Input Parameters:
                 else:
                     vsinisL[i,jerp] = np.nanmean(vsinitags)
 
-                    if (np.sum(~np.isnan(rvtags)) < 3):
+                    if (np.sum(~np.isnan(rvtags)) < int(args.nAB) ):
                         rvmasterboxL[i,jerp]  = np.nan
                         stdmasterboxL[i,jerp] = np.nan
                     else:
