@@ -524,6 +524,7 @@ Input Parameters:
                     else:
                         rvmasterboxT[i,jerp]  = np.nanmean(rvtags)
                         stdmasterboxT[i,jerp] = np.nanstd(rvtags)/np.sqrt(len(rvtags))
+
                 else:
                     vsinisL[i,jerp] = np.nanmean(vsinitags)
 
@@ -534,6 +535,7 @@ Input Parameters:
                         rvmasterboxL[i,jerp]  = np.nanmean(rvtags)
                         stdmasterboxL[i,jerp] = np.nanstd(rvtags)/np.sqrt(len(rvtags))
             T_L = 'L'
+
 #-------------------------------------------------------------------------------
     nightsCombined  = np.array([]); mjdsCombined = np.array([]);
     rvfinalCombined = np.array([]); stdfinalCombined = np.array([]); vsinifinalCombined = np.array([]);
@@ -583,10 +585,12 @@ Input Parameters:
         else:
             nights_use = nightsL.copy(); kind = 'Loose';
 
+
         # Combine RVs between orders using weights calculated from uncertainties
         for n in range(Nnights):
             weights = (1./sigma_ON2[n,:]) / (np.nansum(1./sigma_ON2[n,:])) # normalized
             stdspre = (1./sigma_ON2[n,:]) #unnormalized weights
+
             rvfinal[n]  = np.nansum( weights*rvmasterbox[n,:] )
             stdfinal[n] = 1/np.sqrt(np.nansum(stdspre))
 
@@ -594,6 +598,11 @@ Input Parameters:
             mjds_out[n]   = mjds[nights_use[n]]
 
             if np.nansum(weights) == 0:
+                rvfinal[n]    = np.nan
+                stdfinal[n]   = np.nan
+                vsinifinal[n] = np.nan
+
+            if np.sum( np.isnan(rvmasterbox[n,:]) ) < np.floor( len(labels) * 0.8 ):
                 rvfinal[n]    = np.nan
                 stdfinal[n]   = np.nan
                 vsinifinal[n] = np.nan
