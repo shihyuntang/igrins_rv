@@ -20,7 +20,7 @@ def outplotter(parfit,fitobj,title,trk,debug):
     axes.tick_params(axis='both', labelsize=4.5, right=True, top=True, direction='in')
     axes.set_title(title,   size=5, style='normal' , family='sans-serif' )
     axes.set_ylabel(r'Normalized Flux',   size=5, style='normal' , family='sans-serif' )
-    axes.set_xlabel('Wavelength',       size=5, style='normal' , family='sans-serif' )
+    axes.set_xlabel(r'Wavelength [$\AA$]',       size=5, style='normal' , family='sans-serif' )
     axes.legend(fontsize=4, edgecolor='white')
     if debug == 0:
         fig.savefig('{}/figs/main_step3_{}/{}.png'.format(inparam.outpath, trk, title), bbox_inches='tight', format='png', overwrite=True)
@@ -285,12 +285,6 @@ if __name__ == '__main__':
     parser.add_argument('-g',       dest="guesses",           action="store",
                         help=". Should use the single value given by step2 (float, km/s)",
                         type=str,   default='' )
-    # parser.add_argument('-gS',       dest="guesses_source",           action="store",
-    #                     help="Source for initial guesses list for RV. Enter init OR rvre (init: Initguesser_results_X, rvre: RV_results_X)",
-    #                     type=str, default='')
-    # parser.add_argument('-gX',       dest="guesses",           action="store",
-    #                     help="Please give the number, X, under ./*targname/Initguesser_results_X OR ./*targname/RV_results_X, that you wish to use",
-    #                     type=int, default='')
 
     parser.add_argument('-c',       dest="Nthreads",         action="store",
                         help="Number of cpu (threads) to use, default is 1/2 of avalible ones (you have %i cpus (threads) avaliable)"%(mp.cpu_count()),
@@ -306,7 +300,7 @@ if __name__ == '__main__':
     parser.add_argument('--version',                          action='version',  version='%(prog)s 0.5')
     args = parser.parse_args()
     cdbs_loc = '~/cdbs/'
-    inpath     = './Input_Data/{}/'.format(args.targname)
+    inpath    = './Input_Data/{}/'.format(args.targname)
     vsinivary = float(args.vsinivary)
 
     if args.initvsini != '':
@@ -314,31 +308,15 @@ if __name__ == '__main__':
     else:
         sys.exit('ERROR: EXPECTED FLOAT')
 
-    # Collect init RV guesses
     if args.guesses != '':
-        if args.guesses_source == 'init':
-            guesses = './Results/{}_{}/Initguesser_results_{}.csv'.format(args.targname,
-                                                                          args.band,
-                                                                          int(args.guesses))
-            guessdata  = Table.read(guesses, format='ascii')
-            initnights = np.array(guessdata['night'])
-            initrvs    = np.array(guessdata['bestguess'])
-            initguesses = {}
-            for hrt in range(len(initnights)):
-                initguesses[str(initnights[hrt])] = float(initrvs[hrt])
-
-        elif args.guesses_source == 'rvre':
-            guesses = './Results/{}_{}/RVresultsSummary_{}.csv'.format(args.targname,
-                                                                       args.band,
-                                                                       int(args.guesses))
-            guessdata  = Table.read(guesses, format='csv')
-            initnights = np.array(guessdata['NIGHT'])
-            initrvs    = np.array(guessdata['RVfinal'])
-            initguesses = {}
-            for hrt in range(len(initnights)):
-                initguesses[str(initnights[hrt])] = float(initrvs[hrt])
+        guesses = float(args.guesses)
     else:
-        sys.exit('ERROR: INCORRECT "STYLE" INPUT PARAMETER SPECIFIED; EXPECTED A INT NUMBER')
+        sys.exit('ERROR: EXPECTED FLOAT')
+
+    if type(guesses) == float:
+        initguesses = guesses
+    else:
+        sys.exit('ERROR: INCORRECT INITIAL RV GUESSES INPUT PARAMETER SPECIFIED; EXPECTED FLOAT')
 #-------------------------------------------------------------------------------
     start_time = datetime.now()
     print('\n')
