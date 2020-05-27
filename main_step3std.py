@@ -20,7 +20,7 @@ def outplotter(parfit,fitobj,title,trk,debug):
     axes.tick_params(axis='both', labelsize=4.5, right=True, top=True, direction='in')
     axes.set_title(title,   size=5, style='normal' , family='sans-serif' )
     axes.set_ylabel(r'Normalized Flux',   size=5, style='normal' , family='sans-serif' )
-    axes.set_xlabel('Wavelength',       size=5, style='normal' , family='sans-serif' )
+    axes.set_xlabel(r'Wavelength [$\AA$]',       size=5, style='normal' , family='sans-serif' )
     axes.legend(fontsize=4, edgecolor='white')
     if debug == 0:
         fig.savefig('{}/figs/main_step3_{}/{}.png'.format(inparam.outpath, trk, title), bbox_inches='tight', format='png', overwrite=True)
@@ -177,7 +177,6 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
 #-------------------------------------------------------------------------------
         s2n = s/u
         if np.nanmedian(s2n) < float(args.SN_cut):
-            # print(s2n)
             print('  --> Bad S/N {:1.3f} < {} for {}{} {}, SKIP'.format( np.nanmedian(s2n), args.SN_cut, night, beam, tag))
             continue
 
@@ -287,12 +286,6 @@ if __name__ == '__main__':
     parser.add_argument('-g',       dest="guesses",           action="store",
                         help=". Should use the single value given by step2 (float, km/s)",
                         type=str,   default='' )
-    # parser.add_argument('-gS',       dest="guesses_source",           action="store",
-    #                     help="Source for initial guesses list for RV. Enter init OR rvre (init: Initguesser_results_X, rvre: RV_results_X)",
-    #                     type=str, default='')
-    # parser.add_argument('-gX',       dest="guesses",           action="store",
-    #                     help="Please give the number, X, under ./*targname/Initguesser_results_X OR ./*targname/RV_results_X, that you wish to use",
-    #                     type=int, default='')
 
     parser.add_argument('-c',       dest="Nthreads",         action="store",
                         help="Number of cpu (threads) to use, default is 1/2 of avalible ones (you have %i cpus (threads) avaliable)"%(mp.cpu_count()),
@@ -308,7 +301,7 @@ if __name__ == '__main__':
     parser.add_argument('--version',                          action='version',  version='%(prog)s 0.5')
     args = parser.parse_args()
     cdbs_loc = '~/cdbs/'
-    inpath     = './Input_Data/{}/'.format(args.targname)
+    inpath    = './Input_Data/{}/'.format(args.targname)
     vsinivary = float(args.vsinivary)
 
     if args.initvsini != '':
@@ -453,8 +446,6 @@ Input Parameters:
     else:
         nightscomblist = [nightsT]
 
-    # print(labels)
-    # print([ labels[i].split('-')[0] for i in range(len(labels)) ])
     orders = [ int(labels[i].split('-')[0]) for i in range(len(labels)) ]
     oindex = [ int(labels[i].split('-')[1]) for i in range(len(labels)) ]
     label_t = Table(names=('0', '1'), data=(orders, oindex))

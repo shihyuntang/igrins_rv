@@ -21,7 +21,7 @@ def outplotter(parfit,fitobj,title,trk,debug):
     axes.tick_params(axis='both', labelsize=4.5, right=True, top=True, direction='in')
     axes.set_title(title,   size=5, style='normal' , family='sans-serif' )
     axes.set_ylabel(r'Normalized Flux',   size=5, style='normal' , family='sans-serif' )
-    axes.set_xlabel('Wavelength',       size=5, style='normal' , family='sans-serif' )
+    axes.set_xlabel(r'Wavelength [$\AA$]',       size=5, style='normal' , family='sans-serif' )
     axes.legend(fontsize=4, edgecolor='white')
     if debug == 0:
         fig.savefig('{}/figs/main_step3_{}/{}.png'.format(inparam.outpath, trk, title), bbox_inches='tight', format='png', overwrite=True)
