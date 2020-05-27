@@ -532,7 +532,7 @@ if __name__ == '__main__':
                 if T_L == 'T':
                     vsinisT[i,jerp] = np.nanmean(vsinitags)
 
-                    if (np.sum(np.isnan(rvtags)) < 3):
+                    if (np.sum(~np.isnan(rvtags)) < 3):
                         rvmasterboxT[i,jerp] = np.nan
                         stdmasterboxT[i,jerp] = np.nan
                     else:
@@ -541,7 +541,7 @@ if __name__ == '__main__':
                 else:
                     vsinisL[i,jerp] = np.nanmean(vsinitags)
 
-                    if (np.sum(np.isnan(rvtags)) < 3):
+                    if (np.sum(~np.isnan(rvtags)) < 3):
                         rvmasterboxL[i,jerp] = np.nan
                         stdmasterboxL[i,jerp] = np.nan
                     else:
