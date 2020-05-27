@@ -89,13 +89,16 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
     num_orders = len( np.unique(label_t['0']) )
 
     try:
-        fits_layer = [ i for i in np.arange(num_orders)+1 if int(hdulist[i].columns[3].name[1:]) == order ][0]
-        # same as flag == 1
+        fits_layer = [ i for i in np.arange(num_orders)+1 if int(hdulist[i].columns[0].name[9:]) == order ][0]
         # order in A0_treated.fits is no longer sequential...
     except:
         return nightsout, rvsminibox, parfitminibox, vsiniminibox
 
     tbdata = hdulist[ fits_layer ].data
+    flag = np.array(tbdata['ERRORFLAG'+str(order)])[0]
+
+    if flag == 1:  # Telfit hit unknown critical error
+        return nightsout, rvsminibox, parfitminibox, vsiniminibox
 
     try:
         if np.isnan(inparam.initguesses[night]):  # Telfit hit unknown critical error
