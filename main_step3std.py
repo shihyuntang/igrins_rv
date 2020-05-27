@@ -602,7 +602,7 @@ Input Parameters:
                 stdfinal[n]   = np.nan
                 vsinifinal[n] = np.nan
 
-            if np.sum( np.isnan(rvmasterbox[n,:]) ) < np.floor( len(labels) * 0.8 ):
+            if np.sum( np.isnan(rvmasterbox[n,:]) ) > np.floor( len(labels) * 0.8 ):
                 rvfinal[n]    = np.nan
                 stdfinal[n]   = np.nan
                 vsinifinal[n] = np.nan
