@@ -612,6 +612,11 @@ if __name__ == '__main__':
                 rvfinal[n]    = np.nan
                 stdfinal[n]   = np.nan
                 vsinifinal[n] = np.nan
+
+            if np.sum( np.isnan(rvmasterbox[n,:]) ) > np.floor( len(labels) * 0.5 ):
+                rvfinal[n]    = np.nan
+                stdfinal[n]   = np.nan
+                vsinifinal[n] = np.nan
 #-------------------------------------------------------------------------------
 
         f = plt.figure(figsize=(5,3))
