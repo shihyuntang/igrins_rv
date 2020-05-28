@@ -208,10 +208,10 @@ def optimizer(par0, dpar0, fitobj, optimize):
     highs = par0+dpar0
     # Don't let template powers or vsini be negative
     for frg in [1,3,4]:
-        if dpar0[frg] != 0:
+        if dpar0[frg] != 0 and lows[frg] < 0:
             lows[frg] = 0
     for frg in [5]:
-        if dpar0[frg] != 0: # Don't even let IP hwhm hit zero (bc throws error)
+        if dpar0[frg] != 0 and lows[frg] < 0: # Don't even let IP hwhm hit zero (bc throws error)
             lows[frg] = 0.1
     opt.set_lower_bounds(lows)
     opt.set_upper_bounds(highs)
