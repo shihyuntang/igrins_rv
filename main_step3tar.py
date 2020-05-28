@@ -575,11 +575,11 @@ if __name__ == '__main__':
         if boxind == 0:
             nights_use = nightsT.copy()
             kind = 'Tight'
-            sigma_method2 = inparam.methodvariance_tight
+            sigma_method2 = inparam.methodvariance_tight[args.band]
         else:
             nights_use = nightsL.copy()
             kind = 'Loose'
-            sigma_method2 = inparam.methodvariance_loose
+            sigma_method2 = inparam.methodvariance_loose[args.band]
 #-------------------------------------------------------------------------------
         # Note rvmasterbox indexed as [nights,orders]
         Nnights = len(rvmasterbox[:,0])
