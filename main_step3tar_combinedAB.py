@@ -354,7 +354,7 @@ if __name__ == '__main__':
     Initial vsini       = {} km/s
     vsini vary range    = {} km/s
     RV initial guess taken from {}
-    '''.format(targname, initvsini, vsinivary, guesses))
+    '''.format(args.targname, initvsini, vsinivary, guesses))
     print('---------------------------------------------------------------')
     print('RV calculation for target star {}...'.format(args.targname))
     print('This will take a while..........')
