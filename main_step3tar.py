@@ -642,14 +642,14 @@ if __name__ == '__main__':
         c2 = fits.Column( name='MJD',           array=mjds_out-2400000.5,format='D')
         c3 = fits.Column( name='RVBOX',         array=rvmasterbox,   format='{}D'.format(len(label_t)))
         c4 = fits.Column( name='STDBOX',        array=stdmasterbox,  format='{}D'.format(len(label_t)))
-        c5 = fits.Column( name='Sigma_O2',      array=sigma_O2,      format='D')
-        c6 = fits.Column( name='Sigma_ABbar2',  array=sigma_ABbar2,  format='D')
+        # c5 = fits.Column( name='Sigma_O2',      array=sigma_O2,      format='D')
+        # c6 = fits.Column( name='Sigma_ABbar2',  array=sigma_ABbar2,  format='D')
         c7 = fits.Column( name='Sigma_method2', array=sigma_method2, format='D')
         c8 = fits.Column( name='Sigma_ON2',     array=sigma_ON2,     format='{}D'.format(len(label_t)))
         c9 = fits.Column( name='RVfinal',       array=rvfinal,       format='D')
         c10 = fits.Column(name='STDfinal',      array=stdfinal,      format='D')
 
-        cols  = fits.ColDefs([c1,c2,c3,c4,c5,c6,c7,c8,c9,c10])
+        cols  = fits.ColDefs([c1,c2,c3,c4,c7,c8,c9,c10])
         hdu_1 = fits.BinTableHDU.from_columns(cols)
 
         bleh = np.ones((3,3))
@@ -706,11 +706,11 @@ if __name__ == '__main__':
     f.savefig('{}/{}/FinalRVs.png'.format(inparam.outpath, name), format='png', bbox_inches='tight')
 
 
-    c1 = fits.Column(name='NIGHT',array=nightsCombined,format='8A')
-    c2 = fits.Column(name='MJD',array=mjdsCombined-2400000.5,format='D')
-    c3 = fits.Column(name='RVfinal',array=rvfinalCombined,format='D')
-    c4 = fits.Column(name='STDfinal',array=stdfinalCombined,format='D')
-    c5 = fits.Column(name='VSINI',array=vsinifinalCombined,format='D')
+    c1 = fits.Column(name='NIGHT',    array=nightsCombined,         format='8A')
+    c2 = fits.Column(name='MJD',      array=mjdsCombined-2400000.5, format='D')
+    c3 = fits.Column(name='RVfinal',  array=rvfinalCombined,        format='D')
+    c4 = fits.Column(name='STDfinal', array=stdfinalCombined,       format='D')
+    c5 = fits.Column(name='VSINI',    array=vsinifinalCombined,     format='D')
 
     cols = fits.ColDefs([c1,c2,c3,c4,c5])
     hdu_1 = fits.BinTableHDU.from_columns(cols)
@@ -730,6 +730,6 @@ if __name__ == '__main__':
     print('\n')
     end_time = datetime.now()
     print('Whole process DONE!!!!!!, Duration: {}'.format(end_time - start_time))
-    print('Output saved under {}/{}'.format(targname, name) )
+    print('Output saved under {}/{}'.format(args.targname, name) )
     print('###############################################################')
     print('\n')
