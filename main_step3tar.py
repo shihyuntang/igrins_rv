@@ -448,7 +448,7 @@ if __name__ == '__main__':
     elif args.band=='H':
         watm,satm, mwave0, mflux0 = setup_templates()
 
-    inparam = inparams(inpath,name,initvsini,vsinivary,args.plotfigs,initguesses,bvcs,tagsA,tagsB,nightsFinal,mwave0,mflux0,None,xbounddict)
+    inparam = inparams(inpath,outpath,initvsini,vsinivary,args.plotfigs,initguesses,bvcs,tagsA,tagsB,nightsFinal,mwave0,mflux0,None,xbounddict)
 
     # Divide between nights where IGRINS mounting was loose (L) and when it was tight (T)
     nights    = inparam.nights
