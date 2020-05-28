@@ -356,7 +356,7 @@ if __name__ == '__main__':
     RV initial guess taken from {}
     '''.format(targname, initvsini, vsinivary, guesses))
     print('---------------------------------------------------------------')
-    print('RV calculation for target star {}...'.format(targname))
+    print('RV calculation for target star {}...'.format(args.targname))
     print('This will take a while..........')
 
     ## Collect relevant file information from Predata files
