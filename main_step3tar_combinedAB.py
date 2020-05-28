@@ -7,7 +7,6 @@ from Engine.classes import fitobjs,inparams
 from Engine.macbro import macbro
 from Engine.rebin_jv import rebin_jv
 from Engine.rotint import rotint
-from Engine.Telfitter import telfitter
 from Engine.opt import optimizer, fmod
 #-------------------------------------------------------------------------------
 def outplotter(parfit,fitobj,title,trk,debug):
