@@ -195,7 +195,7 @@ def fmod(par,fitobj):
     mask[(fitobj.s < .05)] = False
     chisq = np.sum((fitobj.s[mask] - smod[mask])**2. / fitobj.u[mask]**2.)
 
-    return smod,cont,chisq
+    return smod,chisq
 
 def optimizer(par0,dpar0, hardbounds_v_ip, fitobj, optimize):
     # NLopt convenience function.

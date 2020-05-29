@@ -12,13 +12,12 @@ from Engine.opt       import optimizer, fmod
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 def outplotter(parfit,fitobj,title,debug):
-    fit,cont,chi = fmod(parfit, fitobj)
+    fit,chi = fmod(parfit, fitobj)
     w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
 
     fig, axes = plt.subplots(1, 1, figsize=(5,3), facecolor='white', dpi=300)
     axes.plot(w,fitobj.s, '-',  c = 'k',        lw=0.5, label='data',  alpha=.6)
     axes.plot(w,fit,      '--', c = 'tab:red',  lw=0.5, label='model', alpha=.6)
-    axes.plot(w,cont,     '--', c = 'tab:blue', lw=0.5, label='blaze', alpha=.6)
 
     axes.set_title( title,                 size=5, style='normal', family='sans-serif')
     axes.set_ylabel(r'Normalized Flux',    size=5, style='normal', family='sans-serif')
