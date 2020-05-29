@@ -12,12 +12,13 @@ from Engine.opt       import optimizer, fmod
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 def outplotter(parfit,fitobj,title,debug):
-    fit,chi = fmod(parfit, fitobj)
+    fit,cont,chi = fmod(parfit, fitobj)
     w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
 
     fig, axes = plt.subplots(1, 1, figsize=(5,3), facecolor='white', dpi=300)
-    axes.plot(w,fitobj.s, '-k',  lw=0.5, label='data',  alpha=.6)
-    axes.plot(w,fit,      '--r', lw=0.5, label='model', alpha=.6)
+    axes.plot(w,fitobj.s, '-',  c = 'k',        lw=0.5, label='data',  alpha=.6)
+    axes.plot(w,fit,      '--', c = 'tab:red',  lw=0.5, label='model', alpha=.6)
+    axes.plot(w,cont,     '--', c = 'tab:blue', lw=0.5, label='blaze', alpha=.6)
 
     axes.set_title( title,                 size=5, style='normal', family='sans-serif')
     axes.set_ylabel(r'Normalized Flux',    size=5, style='normal', family='sans-serif')
@@ -400,16 +401,16 @@ def MPinst(args, chunk_ind, orders, i):
             axes.set_ylabel(r'Normalized Flux',   size=5, style='normal' , family='sans-serif' )
             axes.set_xlabel('Wavelength',       size=5, style='normal' , family='sans-serif' )
             axes.legend(fontsize=4, edgecolor='white')
-            fig.savefig(inparam.outpath+'/figs/{}_{}_ip.png'.format(order,night), bbox_inches='tight', format='png', overwrite=True)
+            fig.savefig('{}/figs_{}/IP_{}_{}.png'.format(inparam.outpath, args.band, order, night), bbox_inches='tight', format='png', overwrite=True)
 
-            outplotter(parfit,fitobj,'{}_{}_post_parfit'.format(order,night), 0)
+            outplotter(parfit,fitobj,'Post_parfit_{}_{}'.format(order,night), 0)
 
         if args.debug == True:
-            outplotter(parfit_1,fitobj,'{}_{}_post_parfit_1'.format(order,night), 1)
-            outplotter(parfit_2,fitobj,'{}_{}_post_parfit_2'.format(order,night), 1)
-            outplotter(parfit_3,fitobj,'{}_{}_post_parfit_3'.format(order,night), 1)
-            outplotter(parfit_4,fitobj,'{}_{}_post_parfit_4'.format(order,night), 1)
-            outplotter(parfit  ,fitobj,'{}_{}_post_parfit'.format(order,night), 1)
+            outplotter(parfit_1,fitobj,'Post_parfit_1_{}_{}'.format(order,night), 1)
+            outplotter(parfit_2,fitobj,'Post_parfit_2_{}_{}'.format(order,night), 1)
+            outplotter(parfit_3,fitobj,'Post_parfit_3_{}_{}'.format(order,night), 1)
+            outplotter(parfit_4,fitobj,'Post_parfit_4_{}_{}'.format(order,night), 1)
+            outplotter(parfit  ,fitobj,'Post_parfit_{}_{}'.format(order,night), 1)
 
         a0w_out  = parfit[6] + parfit[7]*x + parfit[8]*(x**2.) + parfit[9]*(x**3.)
         cont_adj = parfit[10] + parfit[11]*x + parfit[12]*(x**2.)
