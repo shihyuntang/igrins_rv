@@ -269,7 +269,6 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
             outplotter(parfit_2,fitobj,'{}_{}_{}_parfit_2'.format(label,night,tag), trk, 1)
             outplotter(parfit_3,fitobj,'{}_{}_{}_parfit_3'.format(label,night,tag), trk, 1)
             outplotter(parfit_4,fitobj,'{}_{}_{}_parfit_4'.format(label,night,tag), trk, 1)
-            outplotter(parfit_5,fitobj,'{}_{}_{}_parfit_5'.format(label,night,tag), trk, 1)
             outplotter(parfit  ,fitobj,'{}_{}_{}_parfit'.format(label,night,tag), trk, 1)
 
         rv0 = parfit[0] - parfit[2]                         # atomosphere velocity correct
