@@ -409,7 +409,6 @@ def MPinst(args, chunk_ind, orders, i):
             outplotter(parfit_2,fitobj,'{}_{}_post_parfit_2'.format(order,night), 1)
             outplotter(parfit_3,fitobj,'{}_{}_post_parfit_3'.format(order,night), 1)
             outplotter(parfit_4,fitobj,'{}_{}_post_parfit_4'.format(order,night), 1)
-            outplotter(parfit_5,fitobj,'{}_{}_post_parfit_5'.format(order,night), 1)
             outplotter(parfit  ,fitobj,'{}_{}_post_parfit'.format(order,night), 1)
 
         a0w_out  = parfit[6] + parfit[7]*x + parfit[8]*(x**2.) + parfit[9]*(x**3.)
