@@ -220,43 +220,35 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
     par[0] = inparam.initguesses[night]-inparam.bvcs[night+tag]
     # Arrays defining parameter variations during optimization steps
     # Arrays defining parameter variations during optimization steps
-    dpar_dict = {
-                 'cont' : np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0]),
-                 'wave' : np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 10.0,  10.0, 5.00000e-5, 1e-7, 0,   0, 0, 0,    0]),
-                 'main' : np.array([5.0, 1.0, 5.0, 3.0, inparam.vsinivary, 0.5, 0.0,   0.0,  0.0,        0,    1e4, 1, 1, 0,    0]),
-                 'st'   : np.array([5.0, 1.0, 5.0, 3.0, inparam.vsinivary, 0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0]),
-                 'ip'   : np.array([0.0, 0.0, 0.0, 0.0, 0,                 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0])
-                }
-    lows = {}; highs = {};
+        dpar_cont = np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0])
+        dpar_wave = np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 10.0,  10.0, 5.00000e-5, 1e-7, 0,   0, 0, 0,    0])
+        dpar      = np.array([5.0, 1.0, 5.0, 3.0, inparam.vsinivary, 0.5, 0.0,   0.0,  0.0,        0,    1e4, 1, 1, 0,    0])
+                     #'st'   : np.array([5.0, 1.0, 5.0, 3.0, inparam.vsinivary, 0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0])
+        dpar_st   = np.array([5.0, 1.0, 5.0, 3.0, inparam.vsinivary, 0.5, 0.0,   0.0,  0.0,        0,    1e4, 1, 1, 0,    0])
+        dpar_ip   = np.array([0.0, 0.0, 0.0, 0.0, 0,                 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0])
 
-    continuum_in = rebin_jv(a0contx,continuum,x_piece,False)
-    s_piece /= np.median(s_piece)
-    fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in)
+        continuum_in = rebin_jv(a0contx,continuum,x_piece,False)
+        s_piece /= np.median(s_piece)
+        fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in)
 #-------------------------------------------------------------------------------
-    ######## Begin optimization  ########
+        ######## Begin optimization  ########
 
-    optimize = True
-    par_in = par.copy()
-
-    for optk in ['cont','wave','main','st','ip']:
-        lows0 = par_in-dpar_dict[optk]
-        for frg in [1,3,4,5]:
-            if dpar_dict[optk][frg] != 0 and lows0[frg] < 0:
-                if frg == 5:
-                    lows0[frg] = 0.1  # Don't even let IP hwhm hit zero (bc throws error)
-                else:
-                    lows0[frg] = 0
-        lows[optk] = lows0.copy(); highs[optk] = par_in+dpar_dict[optk];
+        optimize = True
+        par_in = par.copy()
+        hardbounds = [par_in[4]-dpar[4],par_in[4]+dpar[4],par_in[5]-dpar[5],par_in[5]+dpar[5]]
+        if hardbounds[0] < 0:
+            hardbounds[0] = 0
+        if hardbounds[3] < 0:
+            hardbounds[3] = 1
 
 #        if args.plotfigs == True:#
 #            outplotter(targname,par_in,fitobj,'{}_{}_{}_1'.format(label,night,tag))
 
-        parfit_1 = optimizer(par_in,   lows['cont'], highs['cont'], fitobj, optimize)
-        parfit_2 = optimizer(parfit_1, lows['st'],   highs['st'],   fitobj, optimize)
-        parfit_3 = optimizer(parfit_2, lows['wave'], highs['wave'], fitobj, optimize)
-        parfit_4 = optimizer(parfit_3, lows['cont'], highs['cont'], fitobj, optimize)
-        #parfit_5 = optimizer(parfit_4,lows['ip'],highs['ip'],fitobj,optimize)
-        parfit = optimizer(parfit_4,   lows['main'], highs['main'], fitobj, optimize)   # RV fitting
+        parfit_1 = optimizer(par_in,dpar_cont,hardbounds,fitobj,optimize)
+        parfit_2 = optimizer(parfit_1,dpar_wave,hardbounds,fitobj,optimize)
+        parfit_3 = optimizer(parfit_2,dpar_st,hardbounds,fitobj,optimize)
+        parfit_4 = optimizer(parfit_3,dpar_wave,hardbounds,fitobj,optimize)
+        parfit = optimizer(parfit_4,dpar,hardbounds,fitobj,optimize)   # RV fitting
 
     # if stellar template power is very low, throw out result
     if parfit[1] < 0.1:
