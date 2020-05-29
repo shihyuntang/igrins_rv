@@ -196,13 +196,13 @@ def ini_MPinst(label_t, chunk_ind, trk, i):
             wave_piece = wave_piece[(wave_piece*1e4 > min(watm_in)+5) & (wave_piece*1e4 < max(watm_in)-5)]
 
 #-------------------------------------------------------------------------------
-            pars = pars0.copy()
+            par = pars0.copy()
             ##Set initial wavelength guess
             f = np.polyfit(x_piece,wave_piece,3)
             par9in = f[0]*1e4; par8in = f[1]*1e4; par7in = f[2]*1e4; par6in = f[3]*1e4;
-            pars[9] = par9in ; pars[8] = par8in ; pars[7] = par7in ; pars[6] = par6in
+            par[9] = par9in ; par[8] = par8in ; par[7] = par7in ; par[6] = par6in
 
-            pars[0] = initrvguess-inparam.bvcs[night+tag]
+            par[0] = initrvguess-inparam.bvcs[night+tag]
             # Arrays defining parameter variations during optimization steps
             dpar_dict = {
                          'cont' : np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0]),
