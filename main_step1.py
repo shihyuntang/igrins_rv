@@ -318,11 +318,14 @@ def MPinst(args, chunk_ind, orders, i):
     fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in)
 
     # Arrays defining parameter variations during optimization steps
-    dpar_cont = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,   0.0,  0.0,  0,    1e7, 1, 1, 0,    0])
-    dpar_wave = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 10.0,  10.0, 5e-5, 1e-7, 0,   0, 0, 0,    0])
-    dpar      = np.array([0.0, 0.0, 5.0, 3.0, 0.0, 0.5, 0.0,   0.0,  0.0,  0,    1e4, 1, 1, 0,    0])
-    dpar_st   = np.array([0.0, 0.0, 5.0, 3.0, 0.0, 0.0, 0.0,   0.0,  0.0,  0,    1e4, 1, 1, 0,    0])
-    dpar_ip   = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0,   0.0,  0.0,  0,    1e4, 1, 1, 0,    0])
+    dpar_dict = {
+                 'cont' : np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0]),
+                 'wave' : np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 10.0,  10.0, 5e-5, 1e-7, 0,   0, 0, 0,    0]),
+                 'main' : np.array([0.0, 0.0, 5.0, 3.0, 0.0, 0.5, 0.0,   0.0,  0.0,        0,    1e4, 1, 1, 0,    0]),
+                 'st'   : np.array([0.0, 0.0, 5.0, 3.0, 0.0, 0.0, 0.0,   0.0,  0.0,        0,    1e4,   1, 1, 0,    0]),
+                 'ip'   : np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0,   0.0,  0.0,        0,    1e4,   1, 1, 0,    0])
+                }
+    lows = {}; highs = {};
 
 #-------------------------------------------------------------------------------
     # For every pre-Telfit spectral fit, first fit just template strength/rv/continuum, then just wavelength soln, then template/continuum again, then ip,
@@ -331,11 +334,22 @@ def MPinst(args, chunk_ind, orders, i):
 
     optimize = True
     par_in = parA0.copy()
-    parfit_1 = optimizer(par_in,   dpar_st,   fitobj, optimize)
-    parfit_2 = optimizer(parfit_1, dpar_wave, fitobj, optimize)
-    parfit_3 = optimizer(parfit_2, dpar_st,   fitobj, optimize)
-    parfit_4 = optimizer(parfit_3, dpar_ip,   fitobj, optimize)
-    parfit = optimizer(parfit_4, dpar_wave, fitobj, optimize)
+    for optk in ['cont','wave','main','st','ip']:
+            lows0 = par_in-dpar_dict[optk]
+            for frg in [1,3,4,5]:
+                if dpar_dict[optk][frg] != 0 and lows0[frg] < 0:
+                    if frg == 5:
+                        lows0[frg] = 0.1  # Don't even let IP hwhm hit zero (bc throws error)
+                    else:
+                        lows[frg] = 0
+            lows[optk] = lows0.copy(); highs[optk] = par_in+dpar_dict[optk];
+
+
+    parfit_1 = optimizer(par_in,   lows['st'],highs['st'],  fitobj, optimize)
+    parfit_2 = optimizer(parfit_1, lows['wave'],highs['wave'],ffitobj, optimize)
+    parfit_3 = optimizer(parfit_2, lows['st'],highs['st'],    fitobj, optimize)
+    parfit_4 = optimizer(parfit_3, lows['st'],highs['st'],  optimize)
+    parfit = optimizer(parfit_4,   lows['wave'],highs['wave'], fitobj, optimize)
 
     # if inparam.plotfigs == True:
     #     outplotter(parfit, fitobj, '{}_{}_1'.format(label,night), 0)
