@@ -235,14 +235,14 @@ def ini_MPinst(label_t, chunk_ind, trk, i):
             parfit = optimizer(parfit_4,   dpar,      hardbounds,fitobj,optimize)   # RV fitting
 
             if args.plotfigs == True:
-                outplotter(parfit, fitobj,'{}_{}_{}_parfit'.format(label,night,tag), trk, 0)
+                outplotter(parfit, fitobj,'Post_parfit_{}_{}_{}'.format(label,night,tag), trk, 0)
 
             if args.debug == True:
-                outplotter(parfit_1,fitobj,'{}_{}_{}_parfit_1'.format(label,night,tag), trk, 1)
-                outplotter(parfit_2,fitobj,'{}_{}_{}_parfit_2'.format(label,night,tag), trk, 1)
-                outplotter(parfit_3,fitobj,'{}_{}_{}_parfit_3'.format(label,night,tag), trk, 1)
-                outplotter(parfit_4,fitobj,'{}_{}_{}_parfit_4'.format(label,night,tag), trk, 1)
-                outplotter(parfit  ,fitobj,'{}_{}_{}_parfit'.format(label,night,tag), trk, 1)
+                outplotter(parfit_1,fitobj,'Post_parfit_1_{}_{}_{}'.format(label,night,tag), trk, 1)
+                outplotter(parfit_2,fitobj,'Post_parfit_2_{}_{}_{}'.format(label,night,tag), trk, 1)
+                outplotter(parfit_3,fitobj,'Post_parfit_3_{}_{}_{}'.format(label,night,tag), trk, 1)
+                outplotter(parfit_4,fitobj,'Post_parfit_4_{}_{}_{}'.format(label,night,tag), trk, 1)
+                outplotter(parfit  ,fitobj,'Post_parfit_{}_{}_{}'.format(label,night,tag), trk, 1)
 
             rv0 = parfit[0] - parfit[2]                         # atomosphere velocity correct
 
