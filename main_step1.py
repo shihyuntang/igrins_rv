@@ -607,7 +607,7 @@ if __name__ == '__main__':
     name = 'A0_Fits_'+ args.targname
     if name not in filesndirs:
         os.mkdir('./A0_Fits/{}'.format(name) )
-        os.mkdir('./A0_Fits/{}/figs_{}'.format(name. args.band) )
+        os.mkdir('./A0_Fits/{}/figs_{}'.format(name, args.band) )
     outpath = './A0_Fits/' + name
 
     # Retrieve stellar and telluric templates
