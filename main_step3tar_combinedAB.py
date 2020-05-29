@@ -245,18 +245,18 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
                 if frg == 5:
                     lows0[frg] = 0.1  # Don't even let IP hwhm hit zero (bc throws error)
                 else:
-                    lows[frg] = 0
+                    lows0[frg] = 0
         lows[optk] = lows0.copy(); highs[optk] = par_in+dpar_dict[optk];
 
 #        if args.plotfigs == True:#
 #            outplotter(targname,par_in,fitobj,'{}_{}_{}_1'.format(label,night,tag))
 
-    parfit_1 = optimizer(par_in,lows['cont'],highs['cont'],fitobj,optimize)
-    parfit_2 = optimizer(parfit_1,lows['st'],highs['st'],fitobj,optimize)
-    parfit_3 = optimizer(parfit_2,lows['wave'],highs['wave'],fitobj,optimize)
-    parfit_4 = optimizer(parfit_3,lows['cont'],highs['cont'],fitobj,optimize)
-    #parfit_5 = optimizer(parfit_4,lows['ip'],highs['ip'],fitobj,optimize)
-    parfit = optimizer(parfit_4,lows['main'],highs['main'],fitobj,optimize)   # RV fitting
+        parfit_1 = optimizer(par_in,   lows['cont'], highs['cont'], fitobj, optimize)
+        parfit_2 = optimizer(parfit_1, lows['st'],   highs['st'],   fitobj, optimize)
+        parfit_3 = optimizer(parfit_2, lows['wave'], highs['wave'], fitobj, optimize)
+        parfit_4 = optimizer(parfit_3, lows['cont'], highs['cont'], fitobj, optimize)
+        #parfit_5 = optimizer(parfit_4,lows['ip'],highs['ip'],fitobj,optimize)
+        parfit = optimizer(parfit_4,   lows['main'], highs['main'], fitobj, optimize)   # RV fitting
 
     # if stellar template power is very low, throw out result
     if parfit[1] < 0.1:

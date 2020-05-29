@@ -197,7 +197,7 @@ def fmod(par,fitobj):
 
     return smod,chisq
 
-def optimizer(par0, lows,highs, fitobj, optimize):
+def optimizer(par0, lows, highs, fitobj, optimize):
     # NLopt convenience function.
     global fitobj_cp, optimize_cp
     fitobj_cp   = fitobj

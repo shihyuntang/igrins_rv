@@ -225,7 +225,7 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
 
         optimize = True
         par_in = par.copy()
-        
+
         for optk in ['cont','wave','main','st','ip']:
             lows0 = par_in-dpar_dict[optk]
             for frg in [1,3,4,5]:
@@ -233,32 +233,32 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
                     if frg == 5:
                         lows0[frg] = 0.1  # Don't even let IP hwhm hit zero (bc throws error)
                     else:
-                        lows[frg] = 0
+                        lows0[frg] = 0
             lows[optk] = lows0.copy(); highs[optk] = par_in+dpar_dict[optk];
 
 #        if args.plotfigs == True:#
 #            outplotter(targname,par_in,fitobj,'{}_{}_{}_1'.format(label,night,tag))
 
-        parfit_1 = optimizer(par_in,lows['cont'],highs['cont'],fitobj,optimize)
-        parfit_2 = optimizer(parfit_1,lows['st'],highs['st'],fitobj,optimize)
-        parfit_3 = optimizer(parfit_2,lows['wave'],highs['wave'],fitobj,optimize)
-        parfit_4 = optimizer(parfit_3,lows['cont'],highs['cont'],fitobj,optimize)
+        parfit_1 = optimizer(par_in,   lows['cont'], highs['cont'], fitobj, optimize)
+        parfit_2 = optimizer(parfit_1, lows['st'],   highs['st'],   fitobj, optimize)
+        parfit_3 = optimizer(parfit_2, lows['wave'], highs['wave'], fitobj, optimize)
+        parfit_4 = optimizer(parfit_3, lows['cont'], highs['cont'], fitobj, optimize)
         #parfit_5 = optimizer(parfit_4,lows['ip'],highs['ip'],fitobj,optimize)
-        parfit = optimizer(parfit_4,lows['main'],highs['main'],fitobj,optimize)   # RV fitting
- 
+        parfit = optimizer(parfit_4,   lows['main'], highs['main'], fitobj, optimize)   # RV fitting
+
         # if stellar template power is very low, throw out result
         if parfit[1] < 0.1:
             continue
-            
+
         # if stellar or telluric template powers are exactly equal to their starting values, fit failed, throw out result
         if parfit[1] == par_in[1] or parfit[3] == par_in[3]:
             continue
-            
+
         # if model dips below zero at any point, we're to close to edge of blaze, fit may be comrpomised, throw out result
         smod,chisq = fmod(parfit,fitobj)
         if len(smod[(smod < 0)]) > 0:
             continue
-            
+
         if args.plotfigs == True:
             #outplotter(par_in, fitobj,'{}_{}_{}_par_in'.format(label,night,tag), trk, 0)
             outplotter(parfit, fitobj,'{}_{}_{}_parfit'.format(label,night,tag), trk, 0)
