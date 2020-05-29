@@ -198,7 +198,7 @@ def fmod(par,grad):
 
     return smod,chisq
 
-def optimizer(par0, dpar0, fitobj, optimize):
+def optimizer(par0,dpar0, hardbounds_v_ip, fitobj, optimize):
     # NLopt convenience function.
     global fitobj_cp, optimize_cp
     fitobj_cp   = fitobj
@@ -207,13 +207,13 @@ def optimizer(par0, dpar0, fitobj, optimize):
     opt.set_min_objective(fmodel_chi)
     lows  = par0-dpar0
     highs = par0+dpar0
-    # Don't let template powers or vsini be negative
-    for frg in [1,3,4]:
-        if dpar0[frg] != 0:
+    for frg in [1,3]:
+        if dpar0[frg] != 0 and lows[frg] < 0:
             lows[frg] = 0
-    for frg in [5]:
-        if dpar0[frg] != 0: # Don't even let IP hwhm hit zero (bc throws error)
-            lows[frg] = 0.1
+    if dpar0[4] != 0:
+        lows[4] = hardbounds_v_ip[0]; highs[4] = hardbounds_v_ip[1];
+    if dpar0[5] != 0:
+        lows[5] = hardbounds_v_ip[2]; highs[5] = hardbounds_v_ip[3];
     opt.set_lower_bounds(lows)
     opt.set_upper_bounds(highs)
     opt.set_maxtime(600) #seconds
