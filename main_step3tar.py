@@ -241,11 +241,11 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
 #        if args.plotfigs == True:#
 #            outplotter(targname,par_in,fitobj,'{}_{}_{}_1'.format(label,night,tag))
 
-        parfit_1 = optimizer(par_in,dpar_cont,hardbounds,fitobj,optimize)
-        parfit_2 = optimizer(parfit_1,dpar_wave,hardbounds,fitobj,optimize)
-        parfit_3 = optimizer(parfit_2,dpar_st,hardbounds,fitobj,optimize)
-        parfit_4 = optimizer(parfit_3,dpar_wave,hardbounds,fitobj,optimize)
-        parfit = optimizer(parfit_4,dpar,hardbounds,fitobj,optimize)   # RV fitting
+        parfit_1 = optimizer(par_in,   dpar_cont, hardbounds,fitobj,optimize)
+        parfit_2 = optimizer(parfit_1, dpar_wave, hardbounds,fitobj,optimize)
+        parfit_3 = optimizer(parfit_2, dpar_st,   hardbounds,fitobj,optimize)
+        parfit_4 = optimizer(parfit_3, dpar_wave, hardbounds,fitobj,optimize)
+        parfit = optimizer(parfit_4,   dpar,      hardbounds,fitobj,optimize)   # RV fitting
 
         # if stellar template power is very low, throw out result
         if parfit[1] < 0.1:

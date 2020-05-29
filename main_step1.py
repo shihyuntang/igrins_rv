@@ -340,11 +340,11 @@ def MPinst(args, chunk_ind, orders, i):
 #        if args.plotfigs == True:#
 #            outplotter(targname,par_in,fitobj,'{}_{}_{}_1'.format(label,night,tag))
 
-    parfit_1 = optimizer(par_in,dpar_st,hardbounds,fitobj,optimize)
-    parfit_2 = optimizer(parfit_1,dpar_wave,hardbounds,fitobj,optimize)
-    parfit_3 = optimizer(parfit_2,dpar_st,hardbounds,fitobj,optimize)
-    parfit_4 = optimizer(parfit_3,dpar,hardbounds,fitobj,optimize)
-    parfit = optimizer(parfit_4,dpar_wave,hardbounds,fitobj,optimize)   
+    parfit_1 = optimizer(par_in,   dpar_st,   hardbounds,fitobj,optimize)
+    parfit_2 = optimizer(parfit_1, dpar_wave, hardbounds,fitobj,optimize)
+    parfit_3 = optimizer(parfit_2, dpar_st,   hardbounds,fitobj,optimize)
+    parfit_4 = optimizer(parfit_3, dpar,      hardbounds,fitobj,optimize)
+    parfit = optimizer(parfit_4,   dpar_wave, hardbounds,fitobj,optimize)   
 
     # if inparam.plotfigs == True:
     #     outplotter(parfit, fitobj, '{}_{}_1'.format(label,night), 0)
