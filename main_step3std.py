@@ -224,7 +224,10 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
 
         optimize = True
         par_in = par.copy()
-        hardbounds = [par_in[4]-dpar[4],par_in[4]+dpar[4],par_in[5]-dpar[5],par_in[5]+dpar[5]]
+        hardbounds = [par_in[4]-dpar[4],
+                      par_in[4]+dpar[4],
+                      par_in[5]-dpar[5],
+                      par_in[5]+dpar[5]]
         if hardbounds[0] < 0:
             hardbounds[0] = 0
         if hardbounds[3] < 0:

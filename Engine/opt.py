@@ -220,14 +220,14 @@ def optimizer(par0,dpar0, hardbounds_v_ip, fitobj, optimize):
     # Choosing smaller change tolerance than 1e-6 has demonstrated no improvement in precision.
     opt.set_xtol_rel(1e-6)
     # parfit = opt.optimize(par0)
-   try:
-       parfit = opt.optimize(par0)
-   except RuntimeError:
-       print(lows)
-       print(par0)
-       print(highs)
-       t1,t2 = fmod(par0,fitobj)
-       print(t1)
-       print(t2)
-       sys.exit()
+    try:
+        parfit = opt.optimize(par0)
+    except RuntimeError:
+        print(lows)
+        print(par0)
+        print(highs)
+        t1,t2 = fmod(par0,fitobj)
+        print(t1)
+        print(t2)
+        sys.exit()
     return parfit
