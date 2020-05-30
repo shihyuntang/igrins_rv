@@ -209,10 +209,22 @@ def optimizer(par0,dpar0, hardbounds_v_ip, fitobj, optimize):
     for frg in [1,3]:
         if dpar0[frg] != 0 and lows[frg] < 0:
             lows[frg] = 0
+    # if dpar0[4] != 0:
+    #     lows[4] = hardbounds_v_ip[0]; highs[4] = hardbounds_v_ip[1];
+    # if dpar0[5] != 0:
+    #     lows[5] = hardbounds_v_ip[2]; highs[5] = hardbounds_v_ip[3];
     if dpar0[4] != 0:
         lows[4] = hardbounds_v_ip[0]; highs[4] = hardbounds_v_ip[1];
+        if highs[4]-par0[4] < 1e-4:
+            par0[4] = par0[4] - 1e-4
+        if par0[4] -lows[4] < 1e-4:
+            par0[4] = par0[4] + 1e-4
     if dpar0[5] != 0:
         lows[5] = hardbounds_v_ip[2]; highs[5] = hardbounds_v_ip[3];
+        if highs[5]-par0[5] < 1e-4:
+            par0[5] = par0[5] - 1e-4
+        if par0[5] -lows[5] < 1e-4:
+            par0[5] = par0[5] + 1e-4
     opt.set_lower_bounds(lows)
     opt.set_upper_bounds(highs)
     opt.set_maxtime(600) #seconds
