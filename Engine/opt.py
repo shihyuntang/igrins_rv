@@ -209,10 +209,7 @@ def optimizer(par0,dpar0, hardbounds_v_ip, fitobj, optimize):
     for frg in [1,3]:
         if dpar0[frg] != 0 and lows[frg] < 0:
             lows[frg] = 0
-    # if dpar0[4] != 0:
-    #     lows[4] = hardbounds_v_ip[0]; highs[4] = hardbounds_v_ip[1];
-    # if dpar0[5] != 0:
-    #     lows[5] = hardbounds_v_ip[2]; highs[5] = hardbounds_v_ip[3];
+
     if dpar0[4] != 0:
         lows[4] = hardbounds_v_ip[0]; highs[4] = hardbounds_v_ip[1];
         if highs[4]-par0[4] < 1e-4:
@@ -235,9 +232,9 @@ def optimizer(par0,dpar0, hardbounds_v_ip, fitobj, optimize):
     try:
         parfit = opt.optimize(par0)
     except RuntimeError:
-        print(lows)
-        print(par0)
-        print(highs)
+        print('lows ', lows)
+        print('par0 ', par0)
+        print('highs ', highs)
         t1,t2 = fmod(par0,fitobj)
         print(t1)
         print(t2)
