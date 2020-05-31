@@ -197,6 +197,63 @@ def fmod(par,fitobj):
 
     return smod,chisq
 
+def fmodel_separate(par):
+    global fitobj
+
+    watm = fitobj_cp.watm_in;
+    satm = fitobj_cp.satm_in;
+    mwave = fitobj_cp.mwave_in;
+    mflux = fitobj_cp.mflux_in;
+
+    #Make the wavelength scale
+    w = par[6] + par[7]*fitobj_cp.x + par[8]*(fitobj_cp.x**2.) + par[9]*(fitobj_cp.x**3.)
+
+    # Define the speed of light in km/s and other useful quantities
+    c = 2.99792e5
+    npts = len(w)
+
+    # Apply velocity shifts and scale
+    wspot = mwave*(1.+par[0]/c)
+    sspot = mflux**par[1]
+    watm = watm*(1.+par[2]/c)
+    satm = satm**par[3]
+
+    #Now interpolate the spot spectrum onto the telluric wavelength scale
+    interpfunc = interp1d(wspot,sspot, kind='linear',bounds_error=False,fill_value='extrapolate')
+    sspot2=interpfunc(watm)
+
+    #Handle rotational broadening
+    vsini = abs(par[4])
+    if vsini != 0:
+        rspot = rotint(watm,sspot2,vsini,eps=.4,nr=5,ntheta=25)
+    else:
+        rspot = sspot2
+
+    #Mutliply rotationally broadened spot by telluric to create total spectrum
+    smod = rspot*satm
+
+    #Find mean observed wavelength and create a telluric velocity scale
+    mnw = np.mean(w)
+    dw = (w[-1] - w[0])/(npts-1.)
+    vel = (watm-mnw)/mnw*c
+
+    #Handle instrumental broadening
+    vhwhm = dw*abs(par[5])/mnw*c/2.
+    nsmod = macbro(vel,smod,vhwhm)
+
+    #Rebin continuum to observed wavelength scale
+    c2 = rebin_jv(fitobj_cp.a0contwave*1e4,fitobj_cp.continuum,w,False)
+    # Apply continuum adjustment
+    #c2 /= np.median(c2)
+    cont1 = par[10] + par[11]*fitobj_cp.x+ par[12]*(fitobj_cp.x**2)
+    cont = cont1 * c2
+
+    #Rebin model to observed wavelength scale
+    smod = rebin_jv(watm,nsmod,w,False)
+
+
+    return w,smod,cont,cont1
+
 def optimizer(par0,dpar0, hardbounds_v_ip, fitobj, optimize):
     # NLopt convenience function.
     global fitobj_cp, optimize_cp

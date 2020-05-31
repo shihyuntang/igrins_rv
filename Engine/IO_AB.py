@@ -132,6 +132,23 @@ def init_fitsread(path,kind,beam,night,order,tag,band,Ncuts):
 
     return x,wave,s,u
 
+def airtovac(wave):
+    """Converts air wavelengths to vaccuum wavelengths returns a float or array of wavelengths
+    INPUTS:
+      wave - Wavelengths in air, in Angstroms, float or array
+    OUTPUTS:
+      newwave - Wavelengths in a vacuum, in Angstroms, float or array
+    NOTES:
+      1. The procedure uses the IAU standard conversion formula
+         from Morton (1991 Ap. J. Suppl. 77, 119) """
+    wave = np.array(wave,float)
+    # Converting to Wavenumber squared
+    sigma2 = (1.0e4/wave)**2
+    # Computing conversion factor
+    fact = 1.0 + 6.4328e-5 + 2.94981e-2/(146.0 - sigma2) + 2.5540e-4/( 41.0 - sigma2)
+    fact = fact*(wave >= 2000.0) + 1.0*(wave < 2000.0)
+    newwave = wave*fact
+    return newwave
 
 def setup_templates():
 
@@ -151,28 +168,30 @@ def setup_templates():
     satm[(satm < 0)] = 0
     return watm, satm, mwave0, mflux0
 
-def airtovac(wave):
-    """Converts air wavelengths to vaccuum wavelengths returns a float or array of wavelengths
-    INPUTS:
-      wave - Wavelengths in air, in Angstroms, float or array
-    OUTPUTS:
-      newwave - Wavelengths in a vacuum, in Angstroms, float or array
-    NOTES:
-      1. The procedure uses the IAU standard conversion formula
-         from Morton (1991 Ap. J. Suppl. 77, 119) """
-    wave = np.array(wave,float)
-    # Converting to Wavenumber squared
-    sigma2 = (1.0e4/wave)**2
-    # Computing conversion factor
-    fact = 1.0 + 6.4328e-5 + 2.94981e-2/(146.0 - sigma2) + 2.5540e-4/( 41.0 - sigma2)
-    fact = fact*(wave >= 2000.0) + 1.0*(wave < 2000.0)
-    newwave = wave*fact
-    return newwave
-
 def setup_templates_syn():
 
     curdir = os.getcwd()
     spotdata = Table.read('./Engine/syntheticstellar_kband.txt',format='ascii')
+    mwave0 = np.array(spotdata['wave'])
+    mflux0 = np.array(spotdata['flux'])
+    mwave0 = mwave0[(np.isfinite(mflux0))]
+    mflux0 = mflux0[(np.isfinite(mflux0))]
+    mflux0[(mflux0 < 0)] = 0
+
+    mwave0 = airtovac(mwave0)
+
+    telluricdata = Table.read('./Engine/PhotoAtl Organized.txt',format='ascii')
+    watm = np.array(telluricdata['wave'])*10000.0
+    satm = np.array(telluricdata['flux'])
+    watm = watm[(np.isfinite(satm))]
+    satm = satm[(np.isfinite(satm))]
+    satm[(satm < 0)] = 0
+    return watm,satm, mwave0, mflux0
+
+def setup_templates_sun():
+
+    curdir = os.getcwd()
+    spotdata = Table.read('./Engine/SpotAtl_Solar.txt',format='ascii')
     mwave0 = np.array(spotdata['wave'])
     mflux0 = np.array(spotdata['flux'])
     mwave0 = mwave0[(np.isfinite(mflux0))]
