@@ -149,7 +149,7 @@ def DataPrep(args):
 
                 if abs(am0-am_star) > float(args.AM_cut):
                     print(night,stdname,am_star,am0,tagA0)
-                    sys.exit('WARNING, STD (A0) AIRMASS FOR NIGHT {} HAS A DIFFERENCE LARGER THAN {} FROM TARGET!'.format(night, argd.AM_cut))
+                    sys.exit('WARNING, STD (A0) AIRMASS FOR NIGHT {} HAS A DIFFERENCE LARGER THAN {} FROM TARGET!'.format(night, args.AM_cut))
 
                 tagA = '{:04d}'.format(tagA0)
                 subpath = '{}std/{}/AB/SDC{}_{}_{}.spec.fits'.format(inpath, night, args.band, night, tagA)
