@@ -54,7 +54,7 @@ def DataPrep(args):
 
 #-------------------------------------------------------------------------------
     ## Collect target star information
-    fileT = open('./Temp/Prepdata/Prepdata_targ_{}_tool.txt'.format(args.targname), 'w')
+    fileT = open('../Temp/Prepdata/Prepdata_targ_{}_tool.txt'.format(args.targname), 'w')
     fileT.write('night beam tag mjd facility airmass bvc\n')
 
     nightsT = [];
@@ -99,7 +99,7 @@ def DataPrep(args):
     fileT.close()
 #-------------------------------------------------------------------------------
     ## Now collect A0 information
-    fileA0 = open('./Temp/Prepdata/Prepdata_A0_{}_tool.txt'.format(args.targname), 'w')
+    fileA0 = open('../Temp/Prepdata/Prepdata_A0_{}_tool.txt'.format(args.targname), 'w')
     fileA0.write('night tag humid temp zd press obs airmass\n')
     noA0nights = []
 
