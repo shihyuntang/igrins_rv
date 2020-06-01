@@ -435,7 +435,7 @@ def MPinst(i, order0, order):
             axes.legend(fontsize=4, edgecolor='white')
             fig.savefig('{}/figs_{}/IP_{}_{}.png'.format(inparam.outpath, args.band, order, night), bbox_inches='tight', format='png', overwrite=True)
 
-            outplotter(parfit,fitobj,'Post_parfit_{}_{}'.format(order,night), 0)
+            outplotter(parfit,fitobj,'Post_parfit_{}_{}'.format(order,night))
 
         a0w_out  = parfit[6] + parfit[7]*x + parfit[8]*(x**2.) + parfit[9]*(x**3.)
         cont_adj = parfit[10] + parfit[11]*x + parfit[12]*(x**2.)
@@ -464,7 +464,7 @@ def MPinst(i, order0, order):
         primary_hdu = fits.PrimaryHDU(bleh)
         hdul = fits.HDUList([primary_hdu,hdu_1])
         # hdul.writeto(inparam.outpath+'/'+night+'A0_treated_{}_order{}.fits'.format(args.band, order),overwrite=True)
-        hdul.writeto('{}/A0_Fits/{}A0_treated_{}.fits'.format(inparam.outpath, night, args.band) ,overwrite=True)
+        hdul.writeto('{}/A0_Fits/{}A0_treated_{}_order{}.fits'.format(inparam.outpath, night, args.band, order) ,overwrite=True)
 
 def mp_run(Nthreads, night, order0):
     pool = mp.Pool(processes = Nthreads)
