@@ -437,7 +437,7 @@ Input Parameters:
     if args.band=='K':
         watm,satm, mwave0, mflux0 = setup_templates_syn()
     elif args.band=='H':
-        watm,satm, mwave0, mflux0 = setup_templates()
+        watm,satm, mwave0, mflux0 = setup_templates_sun()
 
     inparam = inparams(inpath,outpath,initvsini,vsinivary,args.plotfigs,initguesses,bvcs,tagsA,tagsB,nightsFinal,mwave0,mflux0,None,xbounddict)
 
