@@ -206,7 +206,7 @@ def setup_templates_sun():
         spotdata = Table.read('./Engine/SpotAtl_Solar.txt',format='ascii')
     elif curdir[-1]=='l':
         spotdata = Table.read('../Engine/SpotAtl_Solar.txt',format='ascii')
-    mwave0 = np.array(spotdata['wave'])
+    mwave0 = np.array(spotdata['wave'])*10000.0
     mflux0 = np.array(spotdata['flux'])
     mwave0 = mwave0[(np.isfinite(mflux0))]
     mflux0 = mflux0[(np.isfinite(mflux0))]

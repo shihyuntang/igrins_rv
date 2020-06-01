@@ -211,13 +211,7 @@ def rv_main(i, order0, order):
             u_piece    = next(ugen);
             x_piece    = next(xgen);
 
-            print('mflux_in: ', inparam.mwave0)
-            print('mwave_in: ', inparam.mflux0)
-
             mwave_in, mflux_in = stellarmodel_setup(wave_piece, inparam.mwave0, inparam.mflux0)
-            print('wave_piece: ', wave_piece)
-            print('mwave_in: ', mwave_in)
-            print('mflux_in: ', mflux_in)
 
             satm_in = satm[(watm > min(wave_piece)*1e4 - 11) & (watm < max(wave_piece)*1e4 + 11)]
             watm_in = watm[(watm > min(wave_piece)*1e4 - 11) & (watm < max(wave_piece)*1e4 + 11)]
