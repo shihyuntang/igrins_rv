@@ -47,9 +47,6 @@ def fmodel_chi(par,grad):
     mwave = fitobj_cp.mwave_in;
     mflux = fitobj_cp.mflux_in;
 
-    print('mwave: ', mwave)
-    print('mflux: ', mflux)
-
     #Make the wavelength scale
     w = par[6] + par[7]*fitobj_cp.x + par[8]*(fitobj_cp.x**2.) + par[9]*(fitobj_cp.x**3.)
 

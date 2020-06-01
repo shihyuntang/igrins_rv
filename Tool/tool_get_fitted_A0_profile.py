@@ -430,6 +430,9 @@ Input Parameters:
     elif args.band=='H':
         watm,satm, mwave0, mflux0 = setup_templates_sun()
 
+    print('mwave0: ', mwave0)
+    print('mflux0: ', mflux0)
+
     # Takes about  seconds to do all 5 orders for a single night, but exact time will vary with number of separate exposures per night
     #print('Will analyze 5 orders of '+str(len(nightsFinal))+' nights, expected runtime: '+str(round(len(nightsFinal)*1000./(3600.*Nthreads),2))+' hours')
     print('\n')
