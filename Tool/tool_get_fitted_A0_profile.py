@@ -260,11 +260,11 @@ def rv_main(i, order0, order):
 
             parfit_tel = parfit.copy() # modified 0503
             parfit_tel[1] = 0
-            w,smod_tel,cont,cont1 = fmodel_separate(parfit_tel)
+            w,smod_tel,cont,cont1 = fmodel_separate(parfit_tel, fitobj)
 
             parfit_ste = parfit.copy() # modified 0503
             parfit_ste[3] = 0
-            w,smod_ste,cont,cont1  = fmodel_separate(parfit_ste)
+            w,smod_ste,cont,cont1  = fmodel_separate(parfit_ste, fitobj)
 
             s2n   = s_piece/u_piece
             sflat = s_piece/cont
