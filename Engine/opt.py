@@ -241,7 +241,7 @@ def fmodel_separate(par):
 
     #Handle instrumental broadening
     vhwhm = dw*abs(par[5])/mnw*c/2.
-    nsmod = macbro(vel,smod,vhwhm)
+    nsmod = macbro_dyn(vel,smod,vhwhm)
 
     #Rebin continuum to observed wavelength scale
     c2 = rebin_jv(fitobj_cp.a0contwave*1e4,fitobj_cp.continuum,w,False)
