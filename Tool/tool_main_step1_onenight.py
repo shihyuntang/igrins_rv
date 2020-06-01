@@ -463,7 +463,7 @@ def MPinst(i, order0, order):
         bleh = np.ones((3,3))
         primary_hdu = fits.PrimaryHDU(bleh)
         hdul = fits.HDUList([primary_hdu,hdu_1])
-        hdul.writeto(inparam.outpath+'/'+night+'A0_treated_{}_order{}.fits'.format(args.band, order),overwrite=True)
+        # hdul.writeto(inparam.outpath+'/'+night+'A0_treated_{}_order{}.fits'.format(args.band, order),overwrite=True)
         hdul.writeto('{}/A0_Fits/{}A0_treated_{}.fits'.format(inparam.outpath, night, args.band) ,overwrite=True)
 
 def mp_run(Nthreads, night, order0):
@@ -544,8 +544,8 @@ if __name__ == '__main__':
         order0 = np.arange(2,17)
     elif args.band == 'H':
 #        order0 = np.arange(5,11)
-        order0 = np.arange(2,23)
-#        order0 = np.array([7, 9, 10, 11, 16, 19, 22])
+        # order0 = np.arange(2,23)
+        order0 = np.array([2, 3, 4, 5, 6, 10, 11, 13, 14, 16, 17, 20, 21, 22])
 #    order0 = np.array([16])
 # ---------------------------------------
     print('Analyze {} orders with {} nights'.format(len(order0), len(nightsFinal)))
