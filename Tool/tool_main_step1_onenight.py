@@ -35,11 +35,9 @@ def outplotter(parfit,fitobj,title):
 
 def DataPrep(args):
     star   = args.targname
-    inpath = args.inpath
 
     # Find all nights of observations of target in master log
-    curdir        = os.getcwd()
-    master_log_fh = curdir + '/IGRINS_MASTERLOG.csv'
+    master_log_fh = curdir + '../Engine/IGRINS_MASTERLOG.csv'
     master_log    = pd.read_csv(master_log_fh)
 
     star_files    = master_log[(master_log['OBJNAME'].str.contains(star, regex=True, na=False)) & (master_log['OBJTYPE'].str.contains('TAR', regex=True, na=False))]
@@ -72,7 +70,7 @@ def DataPrep(args):
 
         try:
 #            hdulist = fits.open(inpath+night+'/'+frame+'/SDCK_'+night+'_'+tag+'.spec.fits')
-            hdulist = fits.open('{}{}/{}/SDC{}_{}_{}.spec.fits'.format(inpath, night, frame, args.band, night, tag))
+            hdulist = fits.open('{}{}/{}/SDC{}_{}_{}.spec.fits'.format(inparam.inpath, night, frame, args.band, night, tag))
         except FileNotFoundError:
             continue
 
@@ -121,7 +119,7 @@ def DataPrep(args):
             # Then check whether any A0s files for that night outputted by reduction pipeline.
             # If not, Joe either didn't have the data for them or didn't copy them over.
             anyK = False
-            subpath        = '{}std/{}/AB/'.format(inpath, night)
+            subpath        = '{}std/{}/AB/'.format(inparam.inpath, night)
             fullpathprefix = '{}SDC{}_{}_'.format(subpath, args.band, night)
 
             onlyfiles = [f for f in listdir(subpath) if isfile(join(subpath, f))]
@@ -160,7 +158,7 @@ def DataPrep(args):
                 tagA = '{:04d}'.format(tagA0)
 
 #                subpath = inpath+'std/'+night+'/AB/SDCK_'+night+'_'+tagA+'.spec.fits'
-                subpath = '{}std/{}/AB/SDC{}_{}_{}.spec.fits'.format(inpath, night, args.band, night, tagA)
+                subpath = '{}std/{}/AB/SDC{}_{}_{}.spec.fits'.format(inparam.inpath, night, args.band, night, tagA)
 
                 try:
                     hdulist = fits.open(subpath)
@@ -168,7 +166,7 @@ def DataPrep(args):
 
                 except FileNotFoundError:
                     # If best airmass match A0 for night not found, check if Joe chose a different A0 instead
-                    subpath        = '{}std/{}/AB/'.format(inpath, night)
+                    subpath        = '{}std/{}/AB/'.format(inparam.inpath, night)
                     fullpathprefix = '{}SDC{}_{}_'.format(subpath, args.band, night)
 
                     onlyfiles = [f for f in listdir(subpath) if isfile(join(subpath, f))]
