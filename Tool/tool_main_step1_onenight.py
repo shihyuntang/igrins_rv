@@ -331,7 +331,7 @@ def MPinst(i, order0, order):
 
     # Collect all fit variables into one class
     #global fitobj, optimize;
-    fitobj = fitobjs(s, x, u, a0contwave, continuum, watm_in, satm_in, mflux_in, mwave_in)
+    fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in)
 
     # Arrays defining parameter variations during optimization steps
     dpar_cont = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0])
