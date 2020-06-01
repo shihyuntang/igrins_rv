@@ -37,7 +37,7 @@ def DataPrep(args):
     star   = args.targname
 
     # Find all nights of observations of target in master log
-    master_log_fh = curdir + '../Engine/IGRINS_MASTERLOG.csv'
+    master_log_fh = '../Engine/IGRINS_MASTERLOG.csv'
     master_log    = pd.read_csv(master_log_fh)
 
     star_files    = master_log[(master_log['OBJNAME'].str.contains(star, regex=True, na=False)) & (master_log['OBJTYPE'].str.contains('TAR', regex=True, na=False))]
