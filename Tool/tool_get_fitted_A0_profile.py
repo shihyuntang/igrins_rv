@@ -235,7 +235,7 @@ def rv_main(i, order0, order):
 
             continuum_in = rebin_jv(a0contx,continuum,x_piece,False)
             s_piece /= np.median(s_piece)
-            fitobj = fitobjs(s_piece, x_piece, u_piece, a0contwave,continuum,watm_in,satm_in,mflux_in,mwave_in)
+            fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in,watm_in,satm_in,mflux_in,mwave_in)
 #-------------------------------------------------------------------------------
             ######## Begin optimization  ########
 
