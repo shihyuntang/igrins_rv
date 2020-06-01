@@ -47,6 +47,9 @@ def fmodel_chi(par,grad):
     mwave = fitobj_cp.mwave_in;
     mflux = fitobj_cp.mflux_in;
 
+    print('mwave: ', mwave)
+    print('mflux: ', mflux)
+
     #Make the wavelength scale
     w = par[6] + par[7]*fitobj_cp.x + par[8]*(fitobj_cp.x**2.) + par[9]*(fitobj_cp.x**3.)
 
@@ -70,11 +73,9 @@ def fmodel_chi(par,grad):
         return 1e7
 
     #Now interpolate the spot spectrum onto the telluric wavelength scale
-    try:
-        interpfunc = interp1d(wspot,sspot, kind='linear',bounds_error=False,fill_value='extrapolate')
-    except:
-        print(wspot)
-        print(sspot)
+
+    interpfunc = interp1d(wspot,sspot, kind='linear',bounds_error=False,fill_value='extrapolate')
+
     sspot2 = interpfunc(watm)
 
     #Handle rotational broadening
