@@ -582,7 +582,6 @@ if __name__ == '__main__':
             hh.writeto(inparam.outpath+'/A0_Fits/'+str(nightsFinal[0])+'A0_treated_{}.fits'.format(args.band),overwrite=True)
 
 
-
     print('\n')
     print('A0 Fitting Done!')
 
