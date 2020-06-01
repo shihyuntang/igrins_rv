@@ -1,3 +1,6 @@
+import sys
+sys.path.append("..") # Adds higher directory to python modules path.
+
 from Engine.importmodule import *
 
 from Engine.IO_AB import setup_templates, setup_templates_syn, setup_templates_sun, init_fitsread,stellarmodel_setup, setup_outdir
@@ -29,8 +32,8 @@ def outplotter(parfit,fitobj,title,trk,debug):
 
 #-------------------------------------------------------------------------------
 def rv_MPinst(label_t, chunk_ind, trk, i):
-    # Main function to compute RVs for a given night and order
-    nights   = inparam.nights
+    nights = inparam.nights
+    targname = args.targname.replace(' ', '')
     night = nights[i]
 
     label = '{}-{}'.format( label_t['0'][chunk_ind], label_t['1'][chunk_ind] )
@@ -50,7 +53,7 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
     # --------------------------------------------------------------
     # --------------------------------------------------------------
     # Use instrumental profile dictionary corresponding to whether IGRINS mounting was loose or not
-    if int(night) < 20180401 or int(night) > 20190531:
+    if int(night[:8]) < 20180401 or int(night[:8]) > 20190531:
         IPpars = inparam.ips_tightmount_pars[args.band][order]
     else:
         IPpars = inparam.ips_loosemount_pars[args.band][order]
@@ -77,11 +80,11 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
         nightsout.append(night)
 
     # Load telluric template from Telfit'd A0
-    A0loc = './A0_Fits/A0_Fits_{}/{}A0_treated_{}.fits'.format(args.targname, night, args.band)
+    A0loc = './A0_Fits/A0_Fits_{}/{}A0_treated_{}.fits'.format(args.targname, night[:8], args.band)
     try:
         hdulist = fits.open(A0loc)
     except IOError:
-        print('  --> No A0-fitted template for night '+night+', skipping...')
+        print('  --> No A0-fitted template for night '+night[:8]+', skipping...')
         return nightsout, rvsminibox, parfitminibox, vsiniminibox
 
     num_orders = len( np.unique(label_t['0']) )
@@ -277,6 +280,16 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
 
     return nightsout,rvsminibox,parfitminibox,vsiniminibox
 
+
+# def mp_run(Nthreads, order, nights):
+#     pool = mp.Pool(processes=Nthreads)
+#     func = partial(rv_main, order)
+#     outs = pool.map(func, np.arange(len(nights)))
+#     pool.close()
+#     pool.join()
+#     return outs
+
+
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 if __name__ == '__main__':
@@ -367,11 +380,11 @@ if __name__ == '__main__':
     print('\n')
     print('###############################################################')
     print('''
-    Input Parameters:
+Input Parameters:
     Tartget             = {}
     Initial vsini       = {} km/s
     vsini vary range    = {} km/s
-    RV initial guess taken from {}
+    RV initial guess    using values in {}
     '''.format(args.targname, initvsini, vsinivary, guesses))
     print('---------------------------------------------------------------')
     print('RV calculation for target star {}...'.format(args.targname))
@@ -415,7 +428,8 @@ if __name__ == '__main__':
         else:
             tagsA[Tnights[hrt-1]] = tagsA0
             tagsB[Tnights[hrt-1]] = tagsB0
-            tagsA0 = []; tagsB0 = [];
+            tagsA0 = []
+            tagsB0 = []
             if beams0[hrt] == 'A':
                 tagsA0.append(tag1)
             else:
@@ -426,37 +440,30 @@ if __name__ == '__main__':
     tagsB[Tnights[-1]] = tagsB0
 
     nightsFinal = np.array(list(sorted(set(Tnights))))
-    if args.nights_use != '':
-        nightstemp = np.array(args.nights_use, dtype=np.int)
-        for nnn in nightstemp:
-            if nnn not in nightsFinal:
-                sys.exit('NIGHT {} NOT FOUND UNDER ./Input_Data/{}'.format(nnn, args.targname))
-        nightsFinal = nightstemp
-        print('Only processing nights: {}'.format(nightsFinal))
 #-------------------------------------------------------------------------------
 
     # Create output directory
     try:
-        filesndirs = os.listdir('./Results/{}_{}/'.format(args.targname, args.band) )
+        filesndirs = os.listdir('../Results/{}_{}/'.format(args.targname, args.band) )
     except OSError:
-        os.mkdir('./Results/{}_{}'.format(args.targname, args.band))
-        filesndirs = os.listdir( './Results/{}_{}'.format(args.targname, args.band) )
+        os.mkdir('../Results/{}_{}'.format(args.targname, args.band))
+        filesndirs = os.listdir( '../Results/{}_{}'.format(args.targname, args.band) )
     trk = 1; go = True;
     while go == True:
         name = 'RV_results_'+str(trk)
         if name not in filesndirs:
             break
         trk += 1
-    os.mkdir('./Results/{}_{}/{}'.format(args.targname, args.band, name) )
+    os.mkdir('../Results/{}_{}/{}'.format(args.targname, args.band, name) )
 #-------------------------------------------------------------------------------
-    print('Writing output to folder ./Results/{}_{}'.format(args.targname, args.band, name))
+    print('Writing output to folder ../Results/{}_{}'.format(args.targname, args.band, name))
 
-    if not os.path.isdir('./Results/{}_{}/figs'.format(args.targname, args.band)):
+    if not os.path.isdir('../Results/{}_{}/figs'.format(args.targname, args.band)):
         os.mkdir('./Results/{}_{}/figs'.format(args.targname, args.band) )
 
-    if not os.path.isdir('./Results/{}_{}/figs/main_step3_{}'.format(args.targname, args.band, trk)):
-        os.mkdir('./Results/{}_{}/figs/main_step3_{}'.format(args.targname, args.band, trk) )
-    outpath = './Results/{}_{}'.format(args.targname, args.band)
+    if not os.path.isdir('../Results/{}_{}/figs/main_step3_{}'.format(args.targname, args.band, trk)):
+        os.mkdir('../Results/{}_{}/figs/main_step3_{}'.format(args.targname, args.band, trk) )
+    outpath = '../Results/{}_{}'.format(args.targname, args.band)
 #-------------------------------------------------------------------------------
     # Retrieve stellar and telluric templates
     if args.band=='K':
@@ -467,8 +474,9 @@ if __name__ == '__main__':
     inparam = inparams(inpath,outpath,initvsini,vsinivary,args.plotfigs,initguesses,bvcs,tagsA,tagsB,nightsFinal,mwave0,mflux0,None,xbounddict)
 
     # Divide between nights where IGRINS mounting was loose (L) and when it was tight (T)
-    nights    = inparam.nights
-    intnights = nights.astype(int)
+    nights = inparam.nights
+    intnights = np.array([int(i[:8]) for i in nights])
+    #intnights = nights.astype(int)
 
     indT = np.where((intnights < 20180401) | (intnights > 20190531))
     indL = np.where((intnights >= 20180401) & (intnights < 20190531))
@@ -476,12 +484,12 @@ if __name__ == '__main__':
     nightsT = nights[indT]
     nightsL = nights[indL]
 
-    rvmasterboxT  = np.ones((len(nightsT),len(labels)))
-    stdmasterboxT = np.ones((len(nightsT),len(labels)))
-    rvmasterboxL  = np.ones((len(nightsL),len(labels)))
-    stdmasterboxL = np.ones((len(nightsL),len(labels)))
-    vsinisT = np.ones((len(nightsT),len(labels)))
-    vsinisL  = np.ones((len(nightsL),len(labels)))
+    rvmasterboxT = np.ones((len(nightsT), len(orders)))
+    stdmasterboxT = np.ones((len(nightsT), len(orders)))
+    rvmasterboxL = np.ones((len(nightsL), len(orders)))
+    stdmasterboxL = np.ones((len(nightsL), len(orders)))
+    vsinisT = np.ones((len(nightsT), len(orders)))
+    vsinisL = np.ones((len(nightsL), len(orders)))
 
     if len(nightsL) > 0:
         nightscomblist = [nightsT,nightsL]
@@ -597,7 +605,7 @@ if __name__ == '__main__':
             sigma_method2 = inparam.methodvariance_loose[args.band]
 #-------------------------------------------------------------------------------
         # Note rvmasterbox indexed as [nights,orders]
-        Nnights = len(rvmasterbox[:,0])
+        Nnights = len(rvmasterbox[:, 0])  # sy
 
         # Calculate the uncertainty in each night/order RV as the sum of the uncertainty in method and the uncertainty in that night's As and Bs RVs
         sigma_ON2    = np.ones_like(rvmasterbox)
