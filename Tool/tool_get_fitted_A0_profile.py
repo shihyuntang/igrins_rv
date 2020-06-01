@@ -211,7 +211,13 @@ def rv_main(i, order0, order):
             u_piece    = next(ugen);
             x_piece    = next(xgen);
 
+            print('mflux_in: ', inparam.mwave0)
+            print('mwave_in: ', inparam.mflux0)
+
             mwave_in, mflux_in = stellarmodel_setup(wave_piece, inparam.mwave0, inparam.mflux0)
+            print('wave_piece: ', wave_piece)
+            print('mwave_in: ', mwave_in)
+            print('mflux_in: ', mflux_in)
 
             satm_in = satm[(watm > min(wave_piece)*1e4 - 11) & (watm < max(wave_piece)*1e4 + 11)]
             watm_in = watm[(watm > min(wave_piece)*1e4 - 11) & (watm < max(wave_piece)*1e4 + 11)]
@@ -429,9 +435,6 @@ Input Parameters:
         watm,satm, mwave0, mflux0 = setup_templates_syn()
     elif args.band=='H':
         watm,satm, mwave0, mflux0 = setup_templates_sun()
-
-    print('mwave0: ', mwave0)
-    print('mflux0: ', mflux0)
 
     # Takes about  seconds to do all 5 orders for a single night, but exact time will vary with number of separate exposures per night
     #print('Will analyze 5 orders of '+str(len(nightsFinal))+' nights, expected runtime: '+str(round(len(nightsFinal)*1000./(3600.*Nthreads),2))+' hours')
