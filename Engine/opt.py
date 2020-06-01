@@ -240,20 +240,35 @@ def fmodel_separate(par):
     dw = (w[-1] - w[0])/(npts-1.)
     vel = (watm-mnw)/mnw*c
 
+    fwhmraw = par[5] + par[13]*(fitobj.x) + par[14]*(fitobj.x**2)
+    if min(fwhmraw) < 1 or max(fwhmraw) > 7:
+        sys.exit('IP ERROR 1 {} {} {} {} {}'.format(par[5],par[13],par[14],min(fwhmraw),max(fwhmraw) ))
+        return 1e7
+    try:
+        spl = splrep(w,fwhmraw)
+    except ValueError:
+        sys.exit('IP ERROR 2 {} {} {}'.format(par[5],par[13],par[14]))
+        return 1e7
+
+    fwhm = splev(watm,spl)
     #Handle instrumental broadening
     vhwhm = dw*abs(par[5])/mnw*c/2.
-    nsmod = macbro(vel,smod,vhwhm)
-    # nsmod = macbro_dyn(vel,smod,vhwhm)
+    # nsmod = macbro(vel,smod,vhwhm)
+    nsmod = macbro_dyn(vel,smod,vhwhm)
 
     #Rebin continuum to observed wavelength scale
-    c2 = rebin_jv(fitobj_cp.a0contwave*1e4,fitobj_cp.continuum,w,False)
+    # c2 = rebin_jv(fitobj_cp.a0contwave*1e4,fitobj_cp.continuum,w,False)
+    c2 = fitobj.continuum
     # Apply continuum adjustment
     #c2 /= np.median(c2)
     cont1 = par[10] + par[11]*fitobj_cp.x+ par[12]*(fitobj_cp.x**2)
     cont = cont1 * c2
 
     #Rebin model to observed wavelength scale
-    smod = rebin_jv(watm,nsmod,w,False)
+    spl = splrep(watm,nsmod)
+    smod = splev(w,spl)
+    #
+    # smod = rebin_jv(watm,nsmod,w,False)
 
 
     return w,smod,cont,cont1
