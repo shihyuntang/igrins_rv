@@ -200,8 +200,7 @@ def fmod(par,fitobj):
 
     return smod,chisq
 
-def fmodel_separate(par):
-    global fitobj
+def fmodel_separate(par,fitobj):
 
     watm = fitobj_cp.watm_in;
     satm = fitobj_cp.satm_in;
