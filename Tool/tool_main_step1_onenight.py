@@ -496,7 +496,7 @@ if __name__ == '__main__':
     parser.add_argument('--version',                         action='version',  version='%(prog)s 0.5')
     args = parser.parse_args()
     cdbs_loc = '~/cdbs/'
-         = '../Input_Data/{}/'.format(args.targname)
+    inpath     = '../Input_Data/{}/'.format(args.targname)
 
 
 
