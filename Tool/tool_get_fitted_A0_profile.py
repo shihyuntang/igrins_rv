@@ -353,11 +353,11 @@ Input Parameters:
     #------------
 
     ## Collect relevant file information from Predata files
-    A0data = Table.read('./Temp/Prepdata/Prepdata_A0_{}_tool.txt'.format(args.targname), format='ascii')
+    A0data = Table.read('../Temp/Prepdata/Prepdata_A0_{}_tool.txt'.format(args.targname), format='ascii')
     A0nights = np.array(A0data['night'],dtype='str')
     ams0     = np.array(A0data['airmass'])
 
-    targdata =  Table.read('./Temp/Prepdata/Prepdata_targ_{}_tool.txt'.format(args.targname), format='ascii')
+    targdata =  Table.read('../Temp/Prepdata/Prepdata_targ_{}_tool.txt'.format(args.targname), format='ascii')
     Tnights  = np.array(targdata['night'],dtype='str')
     tags0    = np.array(targdata['tag'],  dtype='int')
     beams0   = np.array(targdata['beam'], dtype='str')
@@ -461,7 +461,7 @@ Input Parameters:
     vsinis = np.ones(len(orders)); vsinistds = np.ones(len(orders));
 
 #--------------------------
-    outs = mp_run(Nthreads, nights, orders)
+    outs = mp_run(args.Nthreads, nights, orders)
     # Collect outputs
     for i in range(len(orders)):
         outsbox = outs[i]
