@@ -293,14 +293,16 @@ def MPinst(i, order0, order):
                       0.0,              # 2: The shift of the telluric spectrum (km/s)
                       1.0,              # 3: The scale factor for the telluric spectrum
                       0.0,              # 4: vsini (km/s)
-                      3.3,              # 5: The instrumental resolution (FWHM) in pixels
+                      IPpars[2],        # 5: The instrumental resolution (FWHM) in pixels
                       2.29315012e+04,   # 6: Wavelength 0-pt
                       1.75281163e-01,   # 7: Wavelength linear component
                       -9.92637874e-06,  # 8: Wavelength quadratic component
                       0,                # 9: Wavelength cubic component
                       1.0,              #10: Continuum zero point
                       0.,               #11: Continuum linear component
-                      0.])              #12: Continuum quadratic component
+                      0.,               #12: Continuum quadratic component
+                      IPpars[1],        #13: IP linear component
+                      IPpars[0]])       #14: IP quadratic component
 
     # Save a copy of initial parameter array. Make sure stellar template isn't being used.
     parA0 = pars0.copy()
