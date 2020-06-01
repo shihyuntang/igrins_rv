@@ -219,6 +219,10 @@ def MPinst(i, order0, order):
                                                                 i[0]) )
     night = str(nights)
 
+    if int(night) < 20180401 or int(night) > 20190531:
+        IPpars = inparam.ips_tightmount_pars[args.band][order]
+    else:
+        IPpars = inparam.ips_loosemount_pars[args.band][order]
     ### Load relevant A0 spectrum
     # x (list of wavelength used position)
     if args.band=='K':
@@ -492,7 +496,7 @@ if __name__ == '__main__':
     parser.add_argument('--version',                         action='version',  version='%(prog)s 0.5')
     args = parser.parse_args()
     cdbs_loc = '~/cdbs/'
-    inpath     = '../Input_Data/{}/'.format(args.targname)
+         = '../Input_Data/{}/'.format(args.targname)
 
 
 
