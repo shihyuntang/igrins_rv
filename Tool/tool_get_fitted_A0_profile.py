@@ -96,7 +96,7 @@ def rv_main(i, order0, order):
     if flag == 1: # Telfit hit unknown critical error
         return  wminibox,stalflatbox,flminibox_tel,flminibox_ste,ubox,orgfluxbox,contiminibox
 
-    if np.isnan(inparam.initguesses[night]): # Telfit hit unknown critical error
+    if np.isnan(inparam.initguesses): # Telfit hit unknown critical error
         print('Initial guess for {} is NaN , skipping...'.format(night))
         return wminibox,stalflatbox,flminibox_tel,flminibox_ste,ubox,orgfluxbox,contiminibox
 
