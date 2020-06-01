@@ -304,6 +304,9 @@ if __name__ == '__main__':
     parser.add_argument('-v',       dest="vsinivary",         action="store",
                         help="Range of allowed vsini variation during optimization, default = 0.0 km/s",
                         type=str, default='0.0' )
+    parser.add_argument('-g',       dest="guesses",           action="store",
+                        help=". Should use the single value given by step2 (float, km/s)",
+                        type=str,   default='' )
 
     parser.add_argument('-c',       dest="Nthreads",         action="store",
                         help="Number of cpu (threads) to use, default is 1/2 of avalible ones (you have %i cpus (threads) avaliable)"%(mp.cpu_count()),
@@ -322,6 +325,15 @@ if __name__ == '__main__':
     else:
         sys.exit('ERROR: EXPECTED FLOAT')
 
+    if args.guesses != '':
+        guesses = float(args.guesses)
+    else:
+        sys.exit('ERROR: EXPECTED FLOAT')
+
+    if type(guesses) == float:
+        initguesses = guesses
+    else:
+        sys.exit('ERROR: INCORRECT INITIAL RV GUESSES INPUT PARAMETER SPECIFIED; EXPECTED FLOAT')
 
     #------------
     start_time = datetime.now()
@@ -334,7 +346,7 @@ Input Parameters:
     Initial vsini       = {} km/s
     vsini vary range    = {} km/s
     RV initial guess    using values in {}
-    '''.format(args.targname, initvsini, vsinivary, guesses))
+    '''.format(args.targname, initvsini, vsinivary, initguesses))
     print('---------------------------------------------------------------')
     print('RV calculation for target star {}...'.format(args.targname))
     print('This will take a while..........')
