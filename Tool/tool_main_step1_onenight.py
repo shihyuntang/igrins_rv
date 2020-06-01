@@ -11,7 +11,7 @@ from Engine.macbro    import macbro
 from Engine.rebin_jv  import rebin_jv
 from Engine.rotint    import rotint
 from Engine.Telfitter import telfitter
-from Engine.opt       import fmodel_chi_plot
+from Engine.opt       import fmod
 
 
 from Engine.opt import optimizer
