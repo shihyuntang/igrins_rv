@@ -1,3 +1,6 @@
+import sys
+sys.path.append("..") # Adds higher directory to python modules path.
+
 from Engine.importmodule import *
 
 from Engine.IO_AB import setup_templates_syn, init_fitsread,stellarmodel_setup, setup_outdir, setup_templates
@@ -33,6 +36,7 @@ def outplotter(parfit,fitobj,title,trk,debug):
 
 def ini_MPinst(label_t, chunk_ind, trk, i):
     nights   = inparam.nights
+    targname = args.targname.replace(' ', '')
     night    = nights[i]
 
     label = '{}-{}'.format( label_t['0'][chunk_ind], label_t['1'][chunk_ind] )
@@ -48,7 +52,7 @@ def ini_MPinst(label_t, chunk_ind, trk, i):
 
 #-------------------------------------------------------------------------------
     # Use instrumental profile dictionary corresponding to whether IGRINS mounting was loose or not
-    if int(night) < 20180401 or int(night) > 20190531:
+    if int(night[:8]) < 20180401 or int(night[:8]) > 20190531:
         IPpars = inparam.ips_tightmount_pars[args.band][order]
     else:
         IPpars = inparam.ips_loosemount_pars[args.band][order]
@@ -71,11 +75,11 @@ def ini_MPinst(label_t, chunk_ind, trk, i):
         beamsnight.append('B')
 
     # Load telluric template from Telfit'd A0
-    A0loc = './A0_Fits/A0_Fits_{}/{}A0_treated_{}.fits'.format(args.targname, night, args.band)
+    A0loc = './A0_Fits/A0_Fits_{}/{}A0_treated_{}.fits'.format(args.targname, night[:8], args.band)
     try:
         hdulist = fits.open(A0loc)
     except IOError:
-        print('  --> No No A0-fitted template for night '+night+', skipping...')
+        print('  --> No No A0-fitted template for night '+night[:8]+', skipping...')
         return night,np.nan,np.nan
 
     num_orders = len( np.unique(label_t['0']) )
@@ -313,7 +317,6 @@ if __name__ == '__main__':
     vsinivary = float(args.vsinivary)
     guesses   = args.guesses
 
-
     if guesses[0]=='[':
         initguesses = ast.literal_eval(guesses) #convert str(list) to list
     elif '/' in guesses:
@@ -342,11 +345,11 @@ Input Parameters:
     print('This Will Take a While..........')
 
     ## Collect relevant file information from Predata files
-    A0data   = Table.read('./Temp/Prepdata/Prepdata_A0_{}.txt'.format(args.targname), format='ascii')
+    A0data   = Table.read('../Temp/Prepdata/Prepdata_A0_{}.txt'.format(args.targname), format='ascii')
     A0nights = np.array(A0data['night'],dtype='str')
     ams0     = np.array(A0data['airmass'])
 
-    targdata = Table.read('./Temp/Prepdata/Prepdata_targ_{}.txt'.format(args.targname), format='ascii')
+    targdata = Table.read('../Temp/Prepdata/Prepdata_targ_{}.txt'.format(args.targname), format='ascii')
     Tnights = np.array(targdata['night'],dtype='str')
     tags0   = np.array(targdata['tag'], dtype='int')
     beams0  = np.array(targdata['beam'],dtype='str')
@@ -354,7 +357,7 @@ Input Parameters:
     bvcs0   = np.array(targdata['bvc'])
     ams     = np.array(targdata['airmass'])
 
-    bounddata = Table.read('./Input_Data/Use_w/XRegions_{}_{}.csv'.format(args.WRegion, args.band), format='csv')
+    bounddata = Table.read('../Input_Data/Use_w/XRegions_{}_{}.csv'.format(args.WRegion, args.band), format='csv')
     starts  = np.array(bounddata['start'])
     ends    = np.array(bounddata['end'])
     labels  = np.array(bounddata['label'], dtype=str)
@@ -389,25 +392,16 @@ Input Parameters:
     tagsB[Tnights[-1]] = tagsB0
 
     nightsFinal = np.array(list(sorted(set(Tnights))))
-    # nightsFinal = nightsFinal[24:45]
-
-    if args.nights_use != '':
-        nightstemp = np.array(args.nights_use, dtype=np.int)
-        for nnn in nightstemp:
-            if nnn not in nightsFinal:
-                sys.exit('NIGHT {} NOT FOUND UNDER ./Input_Data/{}'.format(nnn, args.targname))
-        nightsFinal = nightstemp
-        print('Only processing nights: {}'.format(nightsFinal))
 #-------------------------------------------------------------------------------
-    if not os.path.isdir('./Results/'):
-        os.mkdir('./Results/')
+    if not os.path.isdir('../Results/'):
+        os.mkdir('../Results/')
 
     # Create output directory
     try:
-        filesndirs = os.listdir('./Results/{}_{}'.format(args.targname, args.band) )
+        filesndirs = os.listdir('../Results/{}_{}'.format(args.targname, args.band) )
     except:
-        os.mkdir('./Results/{}_{}'.format(args.targname, args.band))
-        filesndirs = os.listdir( './Results/{}_{}'.format(args.targname, args.band) )
+        os.mkdir('../Results/{}_{}'.format(args.targname, args.band))
+        filesndirs = os.listdir( '../Results/{}_{}'.format(args.targname, args.band) )
     trk = 1; go = True;
     while go == True:
         iniguess_dir = 'Initguesser_results_{}.csv'.format(trk)
@@ -417,21 +411,21 @@ Input Parameters:
 
     if args.debug:
         try:
-            os.listdir('./Temp/Debug/{}_{}/main_step2_{}/'.format(args.targname, args.band), trk)
+            os.listdir('../Temp/Debug/{}_{}/main_step2_{}/'.format(args.targname, args.band), trk)
         except OSError:
-            os.mkdir('./Temp/Debug/{}_{}/main_step2_{}/'.format(args.targname, args.band), trk)
+            os.mkdir('../Temp/Debug/{}_{}/main_step2_{}/'.format(args.targname, args.band), trk)
 #-------------------------------------------------------------------------------
-    print('Writing output to ./Results/{}_{}/{}'.format(args.targname, args.band, iniguess_dir))
-    filew = open('./Results/{}_{}/{}'.format(args.targname, args.band, iniguess_dir),'w')
+    print('Writing output to ../Results/{}_{}/{}'.format(args.targname, args.band, iniguess_dir))
+    filew = open('../Results/{}_{}/{}'.format(args.targname, args.band, iniguess_dir),'w')
     filew.write('night, bestguess, vsini')
     filew.write('\n')
 
-    if not os.path.isdir('./Results/{}_{}/figs'.format(args.targname, args.band)):
-        os.mkdir('./Results/{}_{}/figs'.format(args.targname, args.band) )
+    if not os.path.isdir('../Results/{}_{}/figs'.format(args.targname, args.band)):
+        os.mkdir('../Results/{}_{}/figs'.format(args.targname, args.band) )
 
-    if not os.path.isdir('./Results/{}_{}/figs/main_step2_{}'.format(args.targname, args.band, trk)):
-        os.mkdir('./Results/{}_{}/figs/main_step2_{}'.format(args.targname, args.band, trk) )
-    outpath = './Results/{}_{}'.format(args.targname, args.band)
+    if not os.path.isdir('../Results/{}_{}/figs/main_step2_{}'.format(args.targname, args.band, trk)):
+        os.mkdir('../Results/{}_{}/figs/main_step2_{}'.format(args.targname, args.band, trk) )
+    outpath = '../Results/{}_{}'.format(args.targname, args.band)
 #-------------------------------------------------------------------------------
     # Retrieve stellar and telluric templates
     if args.band=='K':
@@ -440,9 +434,6 @@ Input Parameters:
         watm,satm, mwave0, mflux0 = setup_templates_sun()
 
     inparam = inparams(inpath,outpath,initvsini,vsinivary,args.plotfigs,initguesses,bvcs,tagsA,tagsB,nightsFinal,mwave0,mflux0,None,xbounddict)
-
-    # Only use first wavelength region listed
-    ### label = labels[0] IF ONLY RV STANDARD, SPECIFY OTHERWISE. OR USE METHOD2
 
     orders = [ int(labels[i].split('-')[0]) for i in range(len(labels)) ]
     oindex = [ int(labels[i].split('-')[1]) for i in range(len(labels)) ]
@@ -455,10 +446,11 @@ Input Parameters:
     pool.close()
     pool.join()
 
+
     vsinis = []; finalrvs = [];
     for n in range(len(nightsFinal)):
         nightout = outs[n]
-        filew.write('{}, {}, {}'.format(nightout[0], nightout[1], nightout[2]))
+        filew.write('{} {} {}'.format(nightout[0], nightout[1], nightout[2]))
         filew.write('\n')
         vsinis.append(nightout[2])
         finalrvs.append(nightout[1])
@@ -476,19 +468,3 @@ Input Parameters:
     print('RV Initial Guess DONE... Duration: {}'.format(end_time - start_time))
     print('Output saved under {}_{}/{}'.format(args.targname, args.band, iniguess_dir) )
     print('---------------------------------------------------------------')
-    # print('You can now try to get a better RV initial guess with: ')
-    # print('(For RV standards) --> python main_step2.py {} -i {:1.1f} -v [input] -g [{:1.1f}] -c {} -plot'.format(args.targname,
-    #                                                                                      np.nanmean(vsinis),
-    #                                                                                      np.nanmean(finalrvs),
-    #                                                                                      args.Nthreads))
-    # print('(For other stars)  --> python main_step2.py {} -i {:1.1f} -v [input] -g {} -c {} -plot'.format(args.targname,
-    #                                                                                      np.nanmean(vsinis),
-    #                                                                                      trk-1,
-    #                                                                                      args.Nthreads))
-    # print('OR, you can go on to next analysis step with')
-    # print('--> python main_step3tar.py {} -i {:1.1f} -v [input] -g IX{} -c {} -plot'.format(args.targname,
-    #                                                                                   np.nanmean(vsinis),
-    #                                                                                   trk-1,
-    #                                                                                   args.Nthreads))
-    # print('###############################################################')
-    # print('\n')

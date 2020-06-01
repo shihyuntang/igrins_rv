@@ -1,3 +1,6 @@
+import sys
+sys.path.append("..") # Adds higher directory to python modules path.
+
 from Engine.importmodule import *
 
 from Engine.IO_AB     import setup_templates, init_fitsread, stellarmodel_setup, setup_outdir
@@ -8,7 +11,7 @@ from Engine.macbro    import macbro
 from Engine.rebin_jv  import rebin_jv
 from Engine.rotint    import rotint
 from Engine.Telfitter import telfitter
-from Engine.opt       import optimizer, fmod
+from Engine.opt import optimizer, fmod
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 def outplotter(parfit,fitobj,title,debug):
@@ -28,192 +31,21 @@ def outplotter(parfit,fitobj,title,debug):
     if debug == 0:
         fig.savefig('{}/figs_{}/{}.png'.format(inparam.outpath, args.band, title), bbox_inches='tight', format='png', overwrite=True)
     elif debug == 1:
-        fig.savefig('./Temp/Debug/{}/{}.png'.format(args.targname, title), bbox_inches='tight', format='png', overwrite=True)
+        fig.savefig('../Temp/Debug/{}/{}.png'.format(args.targname, title), bbox_inches='tight', format='png', overwrite=True)
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 
-def DataPrep(args):
-    # Find all nights of observations of target in master log
-    master_log_fh = './Engine/IGRINS_MASTERLOG.csv'
-    master_log    = pd.read_csv(master_log_fh)
-
-    star_files    = master_log[(master_log['OBJNAME'].str.contains(args.targname, regex=True, na=False)) &
-                               (master_log['OBJTYPE'].str.contains('TAR',         regex=True, na=False)) ]
-    allnights     = np.array(master_log['CIVIL'],dtype='str')
-
-    # If star input not found in Masterlog, try putting a space in its name somewhere
-    n = 1
-    while len(star_files['CIVIL']) == 0:
-        starnew = args.targname[:n]+' '+args.targname[n:]
-        star_files = master_log[(master_log['OBJNAME'].str.contains(starnew, regex=True, na=False)) &
-                                (master_log['OBJTYPE'].str.contains('TAR',   regex=True, na=False)) ]
-        n += 1
-        if n == len(args.targname):
-            sys.exit('TARGET NAME NOT FOUND IN CATALOG - CHECK INPUT!')
-
-#-------------------------------------------------------------------------------
-    ## Collect target star information
-    fileT = open('./Temp/Prepdata/Prepdata_targ_{}.txt'.format(args.targname), 'w')
-    fileT.write('night beam tag mjd facility airmass bvc\n')
-
-    nightsT = [];
-    for x in range(len(star_files['CIVIL'])):
-        night    = str(  np.array(star_files['CIVIL'])[x]     )
-        frame    = str(  np.array(star_files['FRAMETYPE'])[x] )
-        tag0     = int(  np.array(star_files['FILENUMBER'])[x])
-        airmass  = float(np.array(star_files['AM'])[x]        )
-        BVCfile  = float(np.array(star_files['BVC'])[x]       )
-        facility = str(  np.array(star_files['FACILITY'])[x]  )
-        tag = '{:04d}'.format(tag0)
-
-        try:
-            hdulist = fits.open('{}{}/{}/SDC{}_{}_{}.spec.fits'.format(inpath, night, frame, args.band, night, tag))
-        except FileNotFoundError:
-            continue
-
-        head = hdulist[0].header
-        if head['OBSERVAT'] == 'Lowell Observatory':
-            obs = 'DCT'
-        elif head['OBSERVAT'] == 'McDonald':
-            obs = 'McD'
-        else:
-            print('EXPECTED LOWELL OR MCDONALD OBSERVATORY, GOT {}, MUST EDIT CODE TO INCLUDE THIS OPTION'.format( head['OBSERVAT'] ))
-
-        try:
-            time_midpoint = np.mean([float(head['JD-OBS']),float(head['JD-END'])])
-        except KeyError:
-            l0 = []
-            for nm in ['DATE-OBS','DATE-END']:
-                tt1 = head[nm].split('-')
-                t1 = Time(tt1[0]+'-'+tt1[1]+'-'+tt1[2]+' '+tt1[3],format='iso')
-                l0.append(t1.jd)
-            time_midpoint = np.mean(l0)
-
-        mjd = time_midpoint;
-        fileT.write(night+' '+frame+' '+str(tag)+' '+str(mjd)+' '+str(facility)+' '+str(airmass)+' '+str(BVCfile))
-        fileT.write('\n')
-        nightsT.append(night)
-    fileT.close()
-#-------------------------------------------------------------------------------
-    ## Now collect A0 information
-    fileA0 = open('./Temp/Prepdata/Prepdata_A0_{}.txt'.format(args.targname), 'w')
-    fileA0.write('night tag humid temp zd press obs airmass\n')
-    noA0nights = []
-
-    for night0 in np.unique(nightsT):
-        night    = str(night0)
-        am_stars = star_files['AM'][(np.array(star_files['CIVIL'], dtype=str) == night)]
-        am_star  = float(am_stars.values[0])
-
-        std_files = master_log[(allnights == night) & (master_log['OBJTYPE'].str.contains('STD', regex=True, na=False))]
-        ams = np.array(std_files['AM'].values,dtype='float')
-
-        # First check whether any A0s observed that night
-        if len(ams) == 0:
-            noA0nights.append(night)
-            tagA = 'NA'; humid = 'NA'; temp = 'NA'; zd = 'NA'; press = 'NA'; obs = 'NA'; AM = 'NA';
-        else:
-            # Then check whether any A0s files for that night outputted by reduction pipeline.
-            # If not, Joe either didn't have the data for them or didn't copy them over.
-            anyK = False
-            subpath        = '{}std/{}/AB/'.format(inpath, night)
-            fullpathprefix = '{}SDC{}_{}_'.format(subpath, args.band, night)
-
-            onlyfiles = [f for f in listdir(subpath) if isfile(join(subpath, f))]
-            for f in onlyfiles:
-                q = re.split('_', f)
-                if q[0] != 'SDC{}'.format(args.band):
-                    continue
-                anyK = True
-
-            if anyK == False:
-                tagA = 'NA'; humid = 'NA'; temp = 'NA'; zd = 'NA'; press = 'NA'; obs = 'NA'; AM = 'NA';
-                noA0nights.append(night)
-            else:
-                stdname = std_files['OBJNAME'][abs(ams-am_star) == min(abs(ams-am_star))].values[0]
-                fileno0 = int(std_files['FILENUMBER'][abs(ams-am_star) == min(abs(ams-am_star))].values[0])
-                names   = np.array(std_files['OBJNAME'])
-                tagA0s  = np.array(std_files['FILENUMBER'][(names == stdname)].values)
-                facs    = np.array(std_files['FACILITY'][(names == stdname)].values)
-                am0s    = ams[(names == stdname)]
-
-                firsts = []
-                for k, g in groupby(enumerate(tagA0s), lambda ix : ix[0] - ix[1]):
-                    q = list(map(itemgetter(1), g))
-                    firsts.append(q[0])
-                firsts = np.array(firsts)
-
-                tagA0 = firsts[abs(firsts-fileno0) == min(abs(firsts-fileno0))][0]
-                am0   = am0s[(tagA0s == tagA0)][0]
-                fac   = np.array(facs)[(tagA0s == tagA0)][0]
-
-                if abs(am0-am_star) > float(args.AM_cut):
-                    print(night,stdname,am_star,am0,tagA0)
-                    sys.exit('WARNING, STD (A0) AIRMASS FOR NIGHT {} HAS A DIFFERENCE LARGER THAN {} FROM TARGET!'.format(night, args.AM_cut))
-
-                tagA = '{:04d}'.format(tagA0)
-                subpath = '{}std/{}/AB/SDC{}_{}_{}.spec.fits'.format(inpath, night, args.band, night, tagA)
-
-                try:
-                    hdulist = fits.open(subpath)
-                    head    = hdulist[0].header
-
-                except FileNotFoundError:
-                    # If best airmass match A0 for night not found, check if Joe chose a different A0 instead
-                    subpath        = '{}std/{}/AB/'.format(inpath, night)
-                    fullpathprefix = '{}SDC{}_{}_'.format(subpath, args.band, night)
-
-                    onlyfiles = [f for f in listdir(subpath) if isfile(join(subpath, f))]
-                    for f in onlyfiles:
-                        q = re.split('_', f)
-                        if q[0] != 'SDC{}'.format(args.band):
-                            continue
-                        qr = re.split('\.', q[2])
-                        tagA = qr[0]
-
-                        hdulist = fits.open(fullpathprefix+tagA+'.spec.fits')
-                        head = hdulist[0].header
-                        am0 = np.mean([float(head['AMSTART']),float(head['AMEND'])])
-
-                if head['OBSERVAT'] == 'Lowell Observatory':
-                    obs = 'DCT'
-                elif (head['OBSERVAT'] == 'McDonald Observatory') or (head['OBSERVAT'] == 'McDonald'):
-                    obs = 'McD'
-                else:
-                    print('EXPECTED LOWELL OR MCDONALD OBSERVATORY, GOT {}, MUST EDIT CODE TO INCLUDE THIS OPTION'.format( head['OBSERVAT'] ))
-
-                AM = str(am0)
-                try:
-                    humid = float(head['HUMIDITY'])
-                    temp  = float(head['AIRTEMP'])
-                    press = float(head['BARPRESS'])
-                    zd = np.mean([float(head['ZDSTART']),float(head['ZDEND'])])
-                except ValueError: # McDonald headers don't have these quantities :(
-                    humid = 'NOINFO'; temp = 'NOINFO'; press = 'NOINFO'; zd = 'NOINFO';
-
-        fileA0.write(night+' '+str(tagA)+' '+str(humid)+' '+str(temp)+' '+str(zd)+' '+str(press)+' '+str(obs)+' '+str(AM))
-        fileA0.write('\n')
-
-    fileA0.close()
-
-    print('No reduced A0s found for following nights:')
-    for n in noA0nights:
-        print(n)
-    print('To achieve highest precision, this pipeline defaults to not analyzing target spectra for these nights.\n')
-#-------------------------------------------------------------------------------
-#-------------------------------------------------------------------------------
-
-def MPinst(args, chunk_ind, orders, i):
+def MPinst(order, i):
     order = orders[chunk_ind]
     night = str(inparam.nights[i])
     firstorder = orders[0]
-
     print('Working on order {}/{}, night {} {}/{} PID:{}...'.format(chunk_ind+1,
                                                              len(orders),
                                                              night,
                                                              i+1,
                                                              len(inparam.nights),
                                                              mp.current_process().pid) )
+
     if int(night) < 20180401 or int(night) > 20190531:
         IPpars = inparam.ips_tightmount_pars[args.band][order]
     else:
@@ -455,12 +287,12 @@ def mp_run(args, Nthreads, jerp, orders, nights):
 
 def use_w(args):
     try:
-        bounddata = Table.read('./Input_Data/Use_w/WaveRegions_{}_{}.csv'.format(args.WRegion, args.band), format='csv')
+        bounddata = Table.read('../Input_Data/Use_w/WaveRegions_{}_{}.csv'.format(args.WRegion, args.band), format='csv')
     except IOError:
-        sys.exit('WaveRegions FILE ./Input_Data/Use_w/WaveRegions_{}_{}.csv NOT FOUND!'.format(args.WRegion, args.band))
-    wavesols = pd.read_csv('./Input_Data/Use_w/WaveSolns_{}_{}.csv'.format(args.WRegion, args.band))
+        sys.exit('WaveRegions FILE ../Input_Data/Use_w/WaveRegions_{}_{}.csv NOT FOUND!'.format(args.WRegion, args.band))
+    wavesols = pd.read_csv('../Input_Data/Use_w/WaveSolns_{}_{}.csv'.format(args.WRegion, args.band))
 #-------------------------------------------------------------------------------
-    filew = open('./Input_Data/Use_w/XRegions_{}_{}.csv'.format(args.WRegion, args.band),'w')
+    filew = open('../Input_Data/Use_w/XRegions_{}_{}.csv'.format(args.WRegion, args.band),'w')
     filew.write('label, start,  end\n')
 
     m_order  = np.array(bounddata['order'])
@@ -494,7 +326,6 @@ def use_w(args):
                         p += 1
     filew.close()
 
-#-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 if __name__ == '__main__':
@@ -543,34 +374,28 @@ if __name__ == '__main__':
     start_time = datetime.now()
     print('\n')
     print('###############################################################')
-    print('Data Preparation for {} (1/2)...'.format(args.targname))
-
-    DataPrep(args)
-
-    print('Data Preparation Done!')
-    print('Preparation File Saved Under ./Temp/Prepdata/')
-    time.sleep(3)
-    print('###############################################################')
-    print('Fetching Wavelength Regions to be Analyzed for {} (2/3)...'.format(args.targname))
+    print('Fetching Wavelength Regions to be Analyzed for {} (2/3)...'.format(args.targname.replace(' ', '')))
 
     use_w(args)
 
     print('Fetching Done!')
-    time.sleep(3)
-#-------------------------------------------------------------------------------
     print('###############################################################')
-    print('A0 Fitting Using TelFit for {} (3/3)...'.format(args.targname))
+    print('---------------------------------------------------------------')
+#-------------------------------------------------------------------------------
+    print('A0 Fitting using TelFit for {} (2/2)...'.format(args.targname.replace(' ', '')))
     print('This will take a while..........')
     print('\n')
 
-    bounddata = Table.read('./Input_Data/Use_w/XRegions_{}_{}.csv'.format(args.WRegion, args.band), format='csv')
+    bounddata = Table.read('../Input_Data/Use_w/XRegions_{}_{}.csv'.format(args.WRegion, args.band), format='csv')
     starts  = np.array(bounddata['start'])
     ends    = np.array(bounddata['end'])
     labels  = np.array(bounddata['label'], dtype=str)
     xbounddict = {labels[i]:np.array([starts[i],ends[i]]) for i in range(len(starts))}
 
+    targname   = args.targname.replace(' ', '')
+
     ## Collect relevant file information from Predata files
-    A0data = Table.read('./Temp/Prepdata/Prepdata_A0_{}.txt'.format(args.targname), format='ascii')
+    A0data = Table.read('./Temp/Prepdata/Prepdata_A0_{}.txt'.format(targname), format='ascii')
 
     ind    = [i != 'NA' for i in A0data['humid']]
     humids = {str(k):str(v) for k,v in zip(A0data[ind]['night'],A0data[ind]['humid'])}
@@ -581,43 +406,28 @@ if __name__ == '__main__':
     press  = {str(k):str(v) for k,v in zip(A0data[ind]['night'],A0data[ind]['press'])}
     nightsFinal = np.array(list(sorted(set(A0data[ind]['night']))))
 
-    if args.nights_use != '':
-        nightstemp = np.array(args.nights_use, dtype=np.int)
-        for nnn in nightstemp:
-            if nnn not in nightsFinal:
-                sys.exit('NIGHT {} NOT FOUND UNDER ./Input_Data/{}'.format(nnn, args.targname))
-        nightsFinal = nightstemp
-        print('Only processing nights: {}'.format(nightsFinal))
-
-    # Takes 10 threads 42mins to deal with one order with 57 nights.
-    # Thus, with 01 thread, one night for five orders is about 2135 sec.
-    # th1n1o5 = 2140
-    # extimated_runt = 2140 * len(nightsFinal) / args.Nthreads
-#    nightsFinal = nightsFinal[:10]
     print('Analyze with {} nights'.format(len(nightsFinal)))
-#    print('Estimated runtime is {:1.2f} mins ({:1.1f} hours)'.format(extimated_runt/60, extimated_runt/3600))
-#    print('This is just a rough estimation...')
-#    print('Program starts in 5 sec...')
     time.sleep(6)
     print('\n')
 #-------------------------------------------------------------------------------
 
-    filesndirs = os.listdir('./A0_Fits/')
+    filesndirs = os.listdir('../A0_Fits/')
     name = 'A0_Fits_'+ args.targname
     if name not in filesndirs:
-        os.mkdir('./A0_Fits/{}'.format(name) )
+        os.mkdir('../A0_Fits/{}'.format(name) )
 
-    if not os.path.isdir('./A0_Fits/{}/figs_{}'.format(name, args.band)):
-        os.mkdir('./A0_Fits/{}/figs_{}'.format(name, args.band) )
+    if not os.path.isdir('../A0_Fits/{}/figs_{}'.format(name, args.band)):
+        os.mkdir('../A0_Fits/{}/figs_{}'.format(name, args.band) )
 
-    outpath = './A0_Fits/' + name
+    outpath = '../A0_Fits/' + name
 
     # Retrieve stellar and telluric templates
     watm, satm, mwave0, mflux0 = setup_templates()
 
     inparam = inparamsA0(inpath,outpath,args.plotfigs,tags,nightsFinal,humids,
                          temps,zds,press,obs,watm,satm,mwave0,mflux0,cdbs_loc,xbounddict)
-#-------------------------------------------------------------------------------
+
+#    global order
 
     orders = [ int(labels[i].split('-')[0]) for i in range(len(labels)) ]
     orders = np.unique(orders)
@@ -626,9 +436,9 @@ if __name__ == '__main__':
 #    for jerp in range(1):
         outs = mp_run(args, args.Nthreads, jerp, orders, nightsFinal)
 
-
     print('\n')
     print('A0 Fitting Done!')
+
     end_time = datetime.now()
     print('A0 Fitting using TelFit finished, Duration: {}'.format(end_time - start_time))
     print('You can start to run main_step2.py for RV initial guess')
