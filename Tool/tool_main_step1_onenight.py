@@ -565,7 +565,7 @@ if __name__ == '__main__':
                          temps,zds,press,obs,watm,satm,mwave0,mflux0,cdbs_loc,None)
 
 
-    outs = mp_run(Nthreads, nightsFinal, order0)
+    outs = mp_run(args.Nthreads, nightsFinal, order0)
 
     print('merging orders...')
 #    order0 = np.arange(1,17)
