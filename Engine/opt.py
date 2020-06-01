@@ -5,6 +5,7 @@ from scipy.interpolate import interp1d, splrep,splev
 from Engine.classes import fitobjs,inparams
 from Engine.rotint import rotint
 from Engine.macbro_dynamic    import macbro_dyn
+from Engine.macbro    import macbro
 from Engine.rebin_jv import rebin_jv
 import time
 import sys
@@ -241,7 +242,8 @@ def fmodel_separate(par):
 
     #Handle instrumental broadening
     vhwhm = dw*abs(par[5])/mnw*c/2.
-    nsmod = macbro_dyn(vel,smod,vhwhm)
+    nsmod = macbro(vel,smod,vhwhm)
+    # nsmod = macbro_dyn(vel,smod,vhwhm)
 
     #Rebin continuum to observed wavelength scale
     c2 = rebin_jv(fitobj_cp.a0contwave*1e4,fitobj_cp.continuum,w,False)
