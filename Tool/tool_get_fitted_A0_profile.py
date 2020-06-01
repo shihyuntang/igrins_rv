@@ -434,7 +434,8 @@ Input Parameters:
         orders = np.arange(2,17)
 #        orders = np.array([6])
     elif args.band == 'H':
-        orders = np.arange(2,23)
+        # orders = np.arange(2,23)
+        orders = np.array([2, 3, 4, 5, 6, 10, 11, 13, 14, 16, 17, 20, 21, 22])
 #    order0 = np.array([16])
 # ---------------------------------------
 
