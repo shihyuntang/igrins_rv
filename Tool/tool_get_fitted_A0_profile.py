@@ -90,8 +90,16 @@ def rv_main(i, order0, order):
         print('No A0-fitted template for night , skipping...'.format(night))
         return wminibox,stalflatbox,flminibox_tel,flminibox_ste,ubox,orgfluxbox,contiminibox
 
-    tbdata = hdulist[order-1].data
+    # tbdata = hdulist[order-1].data
+    # flag = np.array(tbdata['ERRORFLAG'+str(order)])[0]
+    num_orders = len( np.unique(order0) )
+
+    # order in A0_treated.fits is no longer sequential...
+    fits_layer = [ i for i in np.arange(num_orders)+1 if int(hdulist[i].columns[0].name[9:]) == order ][0]
+
+    tbdata = hdulist[ fits_layer ].data
     flag = np.array(tbdata['ERRORFLAG'+str(order)])[0]
+
 
     if flag == 1: # Telfit hit unknown critical error
         return  wminibox,stalflatbox,flminibox_tel,flminibox_ste,ubox,orgfluxbox,contiminibox
