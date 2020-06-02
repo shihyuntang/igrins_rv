@@ -124,7 +124,7 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
                       0.,                                                    #11: Continuum linear component
                       0.,                                                    #12: Continuum quadratic component
                       IPpars[1],                                             #13: IP linear component
-                      IPpars[0]                                              #14: IP quadratic component
+                      IPpars[0],                                              #14: IP quadratic component
                       0.675])                                                #15: Differential Rotation Coefficient
 
     # Iterate over all A/B exposures
