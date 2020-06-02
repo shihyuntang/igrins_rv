@@ -1,6 +1,6 @@
 from Engine.importmodule import *
 
-from Engine.IO_AB import setup_templates, setup_templates_syn, setup_templates_sun, init_fitsread,stellarmodel_setup, setup_outdir
+from Engine.IO_AB import setup_templates, setup_templates_syn, init_fitsread,stellarmodel_setup, setup_outdir
 from Engine.clips import basicclip_above
 from Engine.contfit import A0cont
 from Engine.classes import fitobjs,inparams
@@ -26,6 +26,7 @@ def outplotter(parfit,fitobj,title,trk,debug):
         fig.savefig('{}/figs/main_step3_{}/{}.png'.format(inparam.outpath, trk, title), bbox_inches='tight', format='png', overwrite=True)
     elif debug == 1:
         fig.savefig('./Temp/Debug/{}_{}/main_step3_{}/{}.png'.format(args.targname, args.band, trk, title), bbox_inches='tight', format='png', overwrite=True)
+
 
 #-------------------------------------------------------------------------------
 def rv_MPinst(label_t, chunk_ind, trk, i):
@@ -134,7 +135,8 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
                       0.,                                                    #11: Continuum linear component
                       0.,                                                    #12: Continuum quadratic component
                       IPpars[1],                                             #13: IP linear component
-                      IPpars[0]])                                            #14: IP quadratic component
+                      IPpars[0]                                              #14: IP quadratic component
+                      0.675])                                                #15: Differential Rotation Coefficient
 
     # Iterate over all A/B exposures
     for t in np.arange(len(tagsnight)):
@@ -216,12 +218,11 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
         par[0] = inparam.initguesses[night]-inparam.bvcs[night+tag]
         # Arrays defining parameter variations during optimization steps
         # Arrays defining parameter variations during optimization steps
-        dpar_cont = np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0])
-        dpar_wave = np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 10.0,  10.0, 5.00000e-5, 1e-7, 0,   0, 0, 0,    0])
-        dpar      = np.array([5.0, 1.0, 5.0, 3.0, inparam.vsinivary, 0.5, 0.0,   0.0,  0.0,        0,    1e4, 1, 1, 0,    0])
-                     #'st'   : np.array([5.0, 1.0, 5.0, 3.0, inparam.vsinivary, 0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0])
-        dpar_st   = np.array([5.0, 1.0, 5.0, 3.0, inparam.vsinivary, 0.5, 0.0,   0.0,  0.0,        0,    1e4, 1, 1, 0,    0])
-        dpar_ip   = np.array([0.0, 0.0, 0.0, 0.0, 0,                 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0])
+        dpar_cont = np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0, 0])
+        dpar_wave = np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 10.0,  10.0, 5.00000e-5, 1e-7, 0,   0, 0, 0,    0, 0])
+        dpar      = np.array([5.0, 1.0, 5.0, 3.0, inparam.vsinivary, 0.5, 0.0,   0.0,  0.0,        0,    1e4, 1, 1, 0,    0, 0])
+        dpar_st   = np.array([5.0, 1.0, 5.0, 3.0, inparam.vsinivary, 0.5, 0.0,   0.0,  0.0,        0,    1e4, 1, 1, 0,    0, 0])
+        dpar_ip   = np.array([0.0, 0.0, 0.0, 0.0, 0,                 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0])
 
         continuum_in = rebin_jv(a0contx,continuum,x_piece,False)
         s_piece /= np.median(s_piece)
@@ -240,11 +241,11 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
 #        if args.plotfigs == True:#
 #            outplotter(targname,par_in,fitobj,'{}_{}_{}_1'.format(label,night,tag))
 
-        parfit_1 = optimizer(par_in,   dpar_cont, hardbounds,fitobj,optimize)
-        parfit_2 = optimizer(parfit_1, dpar_wave, hardbounds,fitobj,optimize)
-        parfit_3 = optimizer(parfit_2, dpar_st,   hardbounds,fitobj,optimize)
-        parfit_4 = optimizer(parfit_3, dpar_wave, hardbounds,fitobj,optimize)
-        parfit = optimizer(parfit_4,   dpar,      hardbounds,fitobj,optimize)   # RV fitting
+        parfit_1 = optimizer(par_in,dpar_cont,hardbounds,fitobj,optimize)
+        parfit_2 = optimizer(parfit_1,dpar_wave,hardbounds,fitobj,optimize)
+        parfit_3 = optimizer(parfit_2,dpar_st,hardbounds,fitobj,optimize)
+        parfit_4 = optimizer(parfit_3,dpar_wave,hardbounds,fitobj,optimize)
+        parfit = optimizer(parfit_4,dpar,hardbounds,fitobj,optimize)   # RV fitting
 
         # if stellar template power is very low, throw out result
         if parfit[1] < 0.1:
@@ -260,14 +261,16 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
             continue
 
         if args.plotfigs == True:
-            outplotter(parfit, fitobj,'Post_parfit_{}_{}_{}'.format(label,night,tag), trk, 0)
+            #outplotter(par_in, fitobj,'{}_{}_{}_par_in'.format(label,night,tag), trk, 0)
+            outplotter(parfit, fitobj,'{}_{}_{}_parfit'.format(label,night,tag), trk, 0)
 
         if args.debug == True:
-            outplotter(parfit_1,fitobj,'Post_parfit_1_{}_{}_{}'.format(label,night,tag), trk, 1)
-            outplotter(parfit_2,fitobj,'Post_parfit_2_{}_{}_{}'.format(label,night,tag), trk, 1)
-            outplotter(parfit_3,fitobj,'Post_parfit_3_{}_{}_{}'.format(label,night,tag), trk, 1)
-            outplotter(parfit_4,fitobj,'Post_parfit_4_{}_{}_{}'.format(label,night,tag), trk, 1)
-            outplotter(parfit  ,fitobj,'Post_parfit_{}_{}_{}'.format(label,night,tag), trk, 1)
+            outplotter(parfit_1,fitobj,'{}_{}_{}_parfit_1'.format(label,night,tag), trk, 1)
+            outplotter(parfit_2,fitobj,'{}_{}_{}_parfit_2'.format(label,night,tag), trk, 1)
+            outplotter(parfit_3,fitobj,'{}_{}_{}_parfit_3'.format(label,night,tag), trk, 1)
+            outplotter(parfit_4,fitobj,'{}_{}_{}_parfit_4'.format(label,night,tag), trk, 1)
+            outplotter(parfit_5,fitobj,'{}_{}_{}_parfit_5'.format(label,night,tag), trk, 1)
+            outplotter(parfit  ,fitobj,'{}_{}_{}_parfit'.format(label,night,tag), trk, 1)
 
         rv0 = parfit[0] - parfit[2]                         # atomosphere velocity correct
 
@@ -462,7 +465,7 @@ if __name__ == '__main__':
     if args.band=='K':
         watm,satm, mwave0, mflux0 = setup_templates_syn()
     elif args.band=='H':
-        watm,satm, mwave0, mflux0 = setup_templates_sun()
+        watm,satm, mwave0, mflux0 = setup_templates()
 
     inparam = inparams(inpath,outpath,initvsini,vsinivary,args.plotfigs,initguesses,bvcs,tagsA,tagsB,nightsFinal,mwave0,mflux0,None,xbounddict)
 
