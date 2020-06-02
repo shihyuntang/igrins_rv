@@ -261,7 +261,10 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
             continue
 
         if args.plotfigs == True:
-            #outplotter(par_in, fitobj,'{}_{}_{}_par_in'.format(label,night,tag), trk, 0)
+            parfitS = parfit.copy(); parfitS[3] = 0
+            parfitT = parfit.copy(); parfitT[1] = 0
+            outplotter(parfitS, fitobj,'{}_{}_{}_parfitS'.format(label,night,tag), trk, 0)
+            outplotter(parfitT, fitobj,'{}_{}_{}_parfitT'.format(label,night,tag), trk, 0)
             outplotter(parfit, fitobj,'{}_{}_{}_parfit'.format(label,night,tag), trk, 0)
 
         if args.debug == True:
