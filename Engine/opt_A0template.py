@@ -76,7 +76,7 @@ def fmodel_chi(par,grad):
     #Handle rotational broadening
     vsini = abs(par[4])
     if vsini != 0:
-        rspot = rotint(watm,sspot2,vsini,eps=.4,nr=5,ntheta=25)
+        rspot = rotint(watm,sspot2,vsini,eps=.6,nr=5,ntheta=25,dif=par[15])
     else:
         rspot = sspot2
 
@@ -158,7 +158,7 @@ def fmod(par,grad):
 
     vsini = abs(par[4])
     if vsini != 0:
-        rspot = rotint(watm,sspot2,vsini,eps=.4,nr=5,ntheta=25)
+        rspot = rotint(watm,sspot2,vsini,eps=.6,nr=5,ntheta=25,dif=par[15])
     else:
         rspot = sspot2
 
@@ -198,12 +198,13 @@ def fmod(par,grad):
 
     return smod,chisq
 
+
 def optimizer(par0,dpar0, hardbounds_v_ip, fitobj, optimize):
     # NLopt convenience function.
     global fitobj_cp, optimize_cp
     fitobj_cp   = fitobj
     optimize_cp = optimize
-    opt = nlopt.opt(nlopt.LN_NELDERMEAD, 15)
+    opt = nlopt.opt(nlopt.LN_NELDERMEAD, 16)
     opt.set_min_objective(fmodel_chi)
     lows  = par0-dpar0
     highs = par0+dpar0
@@ -212,8 +213,16 @@ def optimizer(par0,dpar0, hardbounds_v_ip, fitobj, optimize):
             lows[frg] = 0
     if dpar0[4] != 0:
         lows[4] = hardbounds_v_ip[0]; highs[4] = hardbounds_v_ip[1];
+        if highs[4]-par0[4] < 1e-4:
+            par0[4] = par0[4] - 1e-4
+        if par0[4] -lows[4] < 1e-4:
+            par0[4] = par0[4] + 1e-4
     if dpar0[5] != 0:
         lows[5] = hardbounds_v_ip[2]; highs[5] = hardbounds_v_ip[3];
+        if highs[5]-par0[5] < 1e-4:
+            par0[5] = par0[5] - 1e-4
+        if par0[5] -lows[5] < 1e-4:
+            par0[5] = par0[5] + 1e-4
     opt.set_lower_bounds(lows)
     opt.set_upper_bounds(highs)
     opt.set_maxtime(600) #seconds
