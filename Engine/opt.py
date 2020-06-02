@@ -222,7 +222,7 @@ def optimizer(par0,dpar0, hardbounds_v_ip, fitobj, optimize):
         if par0[5] -lows[5] < 1e-4:
             par0[5] = par0[5] + 1e-4
     if dpar0[15] != 0:
-        lows[15] = hardbounds_v_ip[15]; highs[15] = hardbounds_v_ip[15];
+        lows[15] = hardbounds_v_ip[4]; highs[15] = hardbounds_v_ip[5];
         if highs[15]-par0[15] < 1e-4:
             par0[15] = par0[15] - 1e-4
         if par0[15] -lows[15] < 1e-4:
