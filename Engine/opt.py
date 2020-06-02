@@ -3,7 +3,7 @@ import nlopt
 import numpy as np
 from scipy.interpolate import interp1d, splrep,splev
 from Engine.classes import fitobjs,inparams
-from Engine.rotint_mod import rotint
+from Engine.rotint import rotint
 from Engine.macbro_dynamic    import macbro_dyn
 from Engine.rebin_jv import rebin_jv
 import time
