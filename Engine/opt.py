@@ -37,7 +37,6 @@ def fmodel_chi(par,grad):
        The model spectrum on the observed wavelength scale.
     '''
 
-    start = time.time()
     # Bring in global class of variables needed to generate model.
     # Can't call these directly in function, as NLopt doesn't allow anything to be in the model function call besides par and grad.
 
@@ -121,8 +120,6 @@ def fmodel_chi(par,grad):
     # Compute chisq
     chisq = np.sum((fitobj_cp.s[mask] - smod[mask])**2. / fitobj_cp.u[mask]**2.)
     #chisq = np.sum((fitobj_cp.s - smod)**2. / fitobj_cp.u**2.)
-    print(time.time()-start)
-    sys.exit()
 
     if optimize_cp == True:
         return chisq
