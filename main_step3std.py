@@ -405,7 +405,7 @@ Input Parameters:
     tagsB[Tnights[-1]] = tagsB0
 
     nightsFinal = np.array(list(sorted(set(Tnights))))
-    nightsFinal = nightsFinal[24:26]
+    #nightsFinal = nightsFinal[24:26]
     # labels      = labels[-2:]
 
     if args.nights_use != '':
@@ -477,8 +477,6 @@ Input Parameters:
 
 #-------------------------------------------------------------------------------
     for jerp in range(len(label_t)): # Iterate over orders
-        if jerp != 1:
-            continue
         pool = mp.Pool(processes = args.Nthreads)
         func = partial(rv_MPinst, label_t, jerp, trk )
         outs = pool.map(func, np.arange(len(nightsFinal)))
