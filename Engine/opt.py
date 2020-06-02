@@ -3,9 +3,8 @@ import nlopt
 import numpy as np
 from scipy.interpolate import interp1d, splrep,splev
 from Engine.classes import fitobjs,inparams
-from Engine.rotint import rotint
+from Engine.rotint_mod import rotint
 from Engine.macbro_dynamic    import macbro_dyn
-from Engine.macbro    import macbro
 from Engine.rebin_jv import rebin_jv
 import time
 import sys
@@ -32,11 +31,13 @@ def fmodel_chi(par,grad):
           12: Continuum quadratic component
           13: IP linear component
           14: IP quadratic component
+          15: Differential rotation coefficient
 
      OUTPUTS:
        The model spectrum on the observed wavelength scale.
     '''
 
+    start = time.time()
     # Bring in global class of variables needed to generate model.
     # Can't call these directly in function, as NLopt doesn't allow anything to be in the model function call besides par and grad.
 
@@ -71,15 +72,13 @@ def fmodel_chi(par,grad):
         return 1e7
 
     #Now interpolate the spot spectrum onto the telluric wavelength scale
-
     interpfunc = interp1d(wspot,sspot, kind='linear',bounds_error=False,fill_value='extrapolate')
-
     sspot2 = interpfunc(watm)
 
     #Handle rotational broadening
     vsini = abs(par[4])
     if vsini != 0:
-        rspot = rotint(watm,sspot2,vsini,eps=.4,nr=5,ntheta=25)
+        rspot = rotint(watm,sspot2,vsini,eps=.6,nr=5,ntheta=25,dif=par[15])
     else:
         rspot = sspot2
 
@@ -105,14 +104,9 @@ def fmodel_chi(par,grad):
     #print(min(fwhm),dw*abs(min(fwhm))/mnw*c/2.,max(fwhm),dw*abs(max(fwhm))/mnw*c/2.)
     nsmod = macbro_dyn(vel,smod,vhwhm)
 
-    #Rebin continuum to observed wavelength scale
-    #c2 = rebin_jv(fitobj_cp.a0contwave*1e4,fitobj_cp.continuum,w,False)
-    #spl = splrep(fitobj_cp.a0contwave*1e4,fitobj_cp.continuum)
-    #c2 = splev(w,spl)
     c2 = fitobj_cp.continuum
 
     #Rebin model to observed wavelength scale
-    #smod = rebin_jv(watm,nsmod,w,False)
     spl = splrep(watm,nsmod)
     smod = splev(w,spl)
     smod *= c2/np.median(c2)
@@ -127,11 +121,16 @@ def fmodel_chi(par,grad):
     # Compute chisq
     chisq = np.sum((fitobj_cp.s[mask] - smod[mask])**2. / fitobj_cp.u[mask]**2.)
     #chisq = np.sum((fitobj_cp.s - smod)**2. / fitobj_cp.u**2.)
+    print(time.time()-start)
+    sys.exit()
 
     if optimize_cp == True:
         return chisq
     else:
         return smod,chisq
+
+#.035 
+# .019
 
 def fmod(par,fitobj):
 
@@ -163,7 +162,7 @@ def fmod(par,fitobj):
 
     vsini = abs(par[4])
     if vsini != 0:
-        rspot = rotint(watm,sspot2,vsini,eps=.4,nr=5,ntheta=25)
+        rspot = rotint(watm,sspot2,vsini,eps=.4,nr=5,ntheta=25,dif=par[15])
     else:
         rspot = sspot2
 
@@ -200,91 +199,19 @@ def fmod(par,fitobj):
 
     return smod,chisq
 
-def fmodel_separate(par,fitobj):
-
-    watm = fitobj_cp.watm_in;
-    satm = fitobj_cp.satm_in;
-    mwave = fitobj_cp.mwave_in;
-    mflux = fitobj_cp.mflux_in;
-
-    #Make the wavelength scale
-    w = par[6] + par[7]*fitobj_cp.x + par[8]*(fitobj_cp.x**2.) + par[9]*(fitobj_cp.x**3.)
-
-    # Define the speed of light in km/s and other useful quantities
-    c = 2.99792e5
-    npts = len(w)
-
-    # Apply velocity shifts and scale
-    wspot = mwave*(1.+par[0]/c)
-    sspot = mflux**par[1]
-    watm = watm*(1.+par[2]/c)
-    satm = satm**par[3]
-
-    #Now interpolate the spot spectrum onto the telluric wavelength scale
-    interpfunc = interp1d(wspot,sspot, kind='linear',bounds_error=False,fill_value='extrapolate')
-    sspot2=interpfunc(watm)
-
-    #Handle rotational broadening
-    vsini = abs(par[4])
-    if vsini != 0:
-        rspot = rotint(watm,sspot2,vsini,eps=.4,nr=5,ntheta=25)
-    else:
-        rspot = sspot2
-
-    #Mutliply rotationally broadened spot by telluric to create total spectrum
-    smod = rspot*satm
-
-    #Find mean observed wavelength and create a telluric velocity scale
-    mnw = np.mean(w)
-    dw = (w[-1] - w[0])/(npts-1.)
-    vel = (watm-mnw)/mnw*c
-
-    fwhmraw = par[5] + par[13]*(fitobj.x) + par[14]*(fitobj.x**2)
-    if min(fwhmraw) < 1 or max(fwhmraw) > 7:
-        sys.exit('IP ERROR 1 {} {} {} {} {}'.format(par[5],par[13],par[14],min(fwhmraw),max(fwhmraw) ))
-        return 1e7
-    try:
-        spl = splrep(w,fwhmraw)
-    except ValueError:
-        sys.exit('IP ERROR 2 {} {} {}'.format(par[5],par[13],par[14]))
-        return 1e7
-
-    fwhm = splev(watm,spl)
-    #Handle instrumental broadening
-    vhwhm = dw*abs(par[5])/mnw*c/2.
-    # nsmod = macbro(vel,smod,vhwhm)
-    nsmod = macbro_dyn(vel,smod,vhwhm)
-
-    #Rebin continuum to observed wavelength scale
-    # c2 = rebin_jv(fitobj_cp.a0contwave*1e4,fitobj_cp.continuum,w,False)
-    c2 = fitobj.continuum
-    # Apply continuum adjustment
-    #c2 /= np.median(c2)
-    cont1 = par[10] + par[11]*fitobj_cp.x+ par[12]*(fitobj_cp.x**2)
-    cont = cont1 * c2
-
-    #Rebin model to observed wavelength scale
-    spl = splrep(watm,nsmod)
-    smod = splev(w,spl)
-    #
-    # smod = rebin_jv(watm,nsmod,w,False)
-
-
-    return w,smod,cont,cont1
 
 def optimizer(par0,dpar0, hardbounds_v_ip, fitobj, optimize):
     # NLopt convenience function.
     global fitobj_cp, optimize_cp
     fitobj_cp   = fitobj
     optimize_cp = optimize
-    opt = nlopt.opt(nlopt.LN_NELDERMEAD, 15)
+    opt = nlopt.opt(nlopt.LN_NELDERMEAD, 16)
     opt.set_min_objective(fmodel_chi)
     lows  = par0-dpar0
     highs = par0+dpar0
     for frg in [1,3]:
         if dpar0[frg] != 0 and lows[frg] < 0:
             lows[frg] = 0
-
     if dpar0[4] != 0:
         lows[4] = hardbounds_v_ip[0]; highs[4] = hardbounds_v_ip[1];
         if highs[4]-par0[4] < 1e-4:
@@ -299,19 +226,9 @@ def optimizer(par0,dpar0, hardbounds_v_ip, fitobj, optimize):
             par0[5] = par0[5] + 1e-4
     opt.set_lower_bounds(lows)
     opt.set_upper_bounds(highs)
-    opt.set_maxtime(1200) #seconds
+    opt.set_maxtime(600) #seconds
     # Quit optimization based on relative change in output fit parameters between iterations.
     # Choosing smaller change tolerance than 1e-6 has demonstrated no improvement in precision.
-    opt.set_xtol_rel(1e-8)
-    # parfit = opt.optimize(par0)
-    try:
-        parfit = opt.optimize(par0)
-    except RuntimeError:
-        print('lows ', lows)
-        print('par0 ', par0)
-        print('highs ', highs)
-        t1,t2 = fmod(par0,fitobj)
-        print(t1)
-        print(t2)
-        sys.exit()
+    opt.set_xtol_rel(1e-6)
+    parfit = opt.optimize(par0)
     return parfit
