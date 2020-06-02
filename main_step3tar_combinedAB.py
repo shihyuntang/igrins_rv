@@ -65,6 +65,16 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
         tagsnight.append(tag)
         beamsnight.append('B')
 
+        
+    nightsout = [];
+    rvsminibox     = np.ones(len(tagsnight));
+    vsiniminibox   = np.ones(len(tagsnight));
+    parfitminibox  = np.ones((len(tagsnight),16));
+
+    rvsminibox[:]    = np.nan
+    vsiniminibox[:]  = np.nan
+    parfitminibox[:] = np.nan
+    
     # Load telluric template from Telfit'd A0
     curdir = os.getcwd()
     A0loc = './A0_Fits/A0_Fits_{}/{}A0_treated_{}.fits'.format(args.targname, night, args.band)
