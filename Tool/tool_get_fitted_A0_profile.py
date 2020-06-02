@@ -10,7 +10,7 @@ from Engine.classes import fitobjs,inparams
 from Engine.macbro import macbro
 from Engine.rebin_jv import rebin_jv
 from Engine.rotint import rotint
-from Engine.opt import optimizer, fmodel_separate
+from Engine.opt import optimizer, fmod_conti
 
 def splitter(master,N):
 
@@ -260,15 +260,17 @@ def rv_main(i, order0, order):
 
             parfit_tel = parfit.copy() # modified 0503
             parfit_tel[1] = 0
-            w,smod_tel,cont,cont1 = fmodel_separate(parfit_tel, fitobj)
+            w,smod_tel,cont,c2 = fmod_conti(parfit_tel, fitobj)
 
             parfit_ste = parfit.copy() # modified 0503
             parfit_ste[3] = 0
-            w,smod_ste,cont,cont1  = fmodel_separate(parfit_ste, fitobj)
+            w,smod_ste,cont,c2  = fmod_conti(parfit_ste, fitobj)
 
             s2n   = s_piece/u_piece
-            sflat = s_piece/cont
-            sflat *= np.median(cont)
+            sflat = s_piece *(c2/np.median(c2))
+            sflat *= cont
+            # sflat = s_piece/cont
+            # sflat *= np.median(cont)
             u_piece = sflat/s2n
 
             wminibox[:len(w), nn]                = w
@@ -277,7 +279,7 @@ def rv_main(i, order0, order):
             flminibox_ste[:len(smod_ste), nn]    = smod_ste
             ubox[:len(u_piece), nn]              = u_piece
             orgfluxbox[:len(s_piece), nn]        = s_piece
-            contiminibox[:len(cont), nn]         = cont1
+            contiminibox[:len(cont), nn]         = cont*c1
 
 
     return wminibox,stalflatbox,flminibox_tel,flminibox_ste,ubox,orgfluxbox,contiminibox
