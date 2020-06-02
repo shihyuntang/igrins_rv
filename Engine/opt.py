@@ -200,41 +200,42 @@ def fmod(par,fitobj):
 
     return smod,chisq
 
-def fmodel_separate(par,fitobj):
+ef fmod_conti(par,fitobj):
 
-    watm = fitobj_cp.watm_in;
-    satm = fitobj_cp.satm_in;
-    mwave = fitobj_cp.mwave_in;
-    mflux = fitobj_cp.mflux_in;
+    watm = fitobj.watm_in;
+    satm = fitobj.satm_in;
+    mwave = fitobj.mwave_in;
+    mflux = fitobj.mflux_in;
 
-    #Make the wavelength scale
-    w = par[6] + par[7]*fitobj_cp.x + par[8]*(fitobj_cp.x**2.) + par[9]*(fitobj_cp.x**3.)
+    w = par[6] + par[7]*fitobj.x + par[8]*(fitobj.x**2.) + par[9]*(fitobj.x**3.)
 
-    # Define the speed of light in km/s and other useful quantities
+    if w[-1] < w[0]:
+        sys.exit('WAVE ERROR 1 {}'.format(par[6:10]))
+        return 1e7
+
     c = 2.99792e5
     npts = len(w)
 
-    # Apply velocity shifts and scale
     wspot = mwave*(1.+par[0]/c)
     sspot = mflux**par[1]
     watm = watm*(1.+par[2]/c)
     satm = satm**par[3]
 
-    #Now interpolate the spot spectrum onto the telluric wavelength scale
-    interpfunc = interp1d(wspot,sspot, kind='linear',bounds_error=False,fill_value='extrapolate')
-    sspot2=interpfunc(watm)
+    if (w[0] < watm[0]) or (w[-1] > watm[-1]):
+        sys.exit('WAVE ERROR 2 {} {} {} {} {}'.format(par[6:10],watm[0],watm[-1],w[0],w[-1]))
+        return 1e7
 
-    #Handle rotational broadening
+    interpfunc = interp1d(wspot,sspot, kind='linear',bounds_error=False,fill_value='extrapolate')
+    sspot2 = interpfunc(watm)
+
     vsini = abs(par[4])
     if vsini != 0:
         rspot = rotint(watm,sspot2,vsini,eps=.4,nr=5,ntheta=25)
     else:
         rspot = sspot2
 
-    #Mutliply rotationally broadened spot by telluric to create total spectrum
     smod = rspot*satm
 
-    #Find mean observed wavelength and create a telluric velocity scale
     mnw = np.mean(w)
     dw = (w[-1] - w[0])/(npts-1.)
     vel = (watm-mnw)/mnw*c
@@ -248,29 +249,23 @@ def fmodel_separate(par,fitobj):
     except ValueError:
         sys.exit('IP ERROR 2 {} {} {}'.format(par[5],par[13],par[14]))
         return 1e7
-
     fwhm = splev(watm,spl)
-    #Handle instrumental broadening
-    vhwhm = dw*abs(par[5])/mnw*c/2.
-    # nsmod = macbro(vel,smod,vhwhm)
+
+    vhwhm = dw*abs(fwhm)/mnw*c/2.
     nsmod = macbro_dyn(vel,smod,vhwhm)
 
-    #Rebin continuum to observed wavelength scale
-    # c2 = rebin_jv(fitobj_cp.a0contwave*1e4,fitobj_cp.continuum,w,False)
     c2 = fitobj.continuum
-    # Apply continuum adjustment
-    #c2 /= np.median(c2)
-    cont1 = par[10] + par[11]*fitobj_cp.x+ par[12]*(fitobj_cp.x**2)
-    cont = cont1 * c2
-
-    #Rebin model to observed wavelength scale
     spl = splrep(watm,nsmod)
     smod = splev(w,spl)
-    #
-    # smod = rebin_jv(watm,nsmod,w,False)
+    smod *= c2/np.median(c2)
+    cont1 = par[10] + par[11]*fitobj.x+ par[12]*(fitobj.x**2)
+    cont = cont1 * c2
+    smod *= cont1
 
+    mask = np.ones_like(smod,dtype=bool)
+    mask[(fitobj.s < .05)] = False
 
-    return w,smod,cont,cont1
+    return w[mask], fitobj.s[mask], smod[mask], cont[mask], cont1[mask]
 
 def optimizer(par0,dpar0, hardbounds_v_ip, fitobj, optimize):
     # NLopt convenience function.
