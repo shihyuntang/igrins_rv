@@ -126,7 +126,7 @@ def fmodel_chi(par,grad):
     else:
         return smod,chisq
 
-#.035 
+#.035
 # .019
 
 def fmod(par,fitobj):
@@ -221,11 +221,17 @@ def optimizer(par0,dpar0, hardbounds_v_ip, fitobj, optimize):
             par0[5] = par0[5] - 1e-4
         if par0[5] -lows[5] < 1e-4:
             par0[5] = par0[5] + 1e-4
+    if dpar0[15] != 0:
+        lows[15] = hardbounds_v_ip[15]; highs[15] = hardbounds_v_ip[15];
+        if highs[15]-par0[15] < 1e-4:
+            par0[15] = par0[15] - 1e-4
+        if par0[15] -lows[15] < 1e-4:
+            par0[15] = par0[15] + 1e-4
     opt.set_lower_bounds(lows)
     opt.set_upper_bounds(highs)
-    opt.set_maxtime(600) #seconds
+    opt.set_maxtime(1200) #seconds
     # Quit optimization based on relative change in output fit parameters between iterations.
     # Choosing smaller change tolerance than 1e-6 has demonstrated no improvement in precision.
-    opt.set_xtol_rel(1e-6)
+    opt.set_xtol_rel(1e-8)
     parfit = opt.optimize(par0)
     return parfit
