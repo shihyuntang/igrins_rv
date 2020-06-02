@@ -94,6 +94,7 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
     flag = np.array(tbdata['ERRORFLAG'+str(order)])[0]
 
     if flag == 1:  # Telfit hit unknown critical error
+        print('  --> Telfit hit unknown critical error, flag=1 for night '+night+', skipping...')
         return nightsout, rvsminibox, parfitminibox, vsiniminibox
 
     watm = tbdata['WATM'+str(order)]
