@@ -258,14 +258,13 @@ ef fmod_conti(par,fitobj):
     spl = splrep(watm,nsmod)
     smod = splev(w,spl)
     smod *= c2/np.median(c2)
-    cont1 = par[10] + par[11]*fitobj.x+ par[12]*(fitobj.x**2)
-    cont = cont1 * c2
-    smod *= cont1
+    cont = par[10] + par[11]*fitobj.x+ par[12]*(fitobj.x**2)
+    smod *= cont
 
     mask = np.ones_like(smod,dtype=bool)
     mask[(fitobj.s < .05)] = False
 
-    return w[mask], fitobj.s[mask], smod[mask], cont[mask], cont1[mask]
+    return w, smod, cont, c2
 
 def optimizer(par0,dpar0, hardbounds_v_ip, fitobj, optimize):
     # NLopt convenience function.
