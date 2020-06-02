@@ -209,11 +209,11 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
 
         par[0] = inparam.initguesses-inparam.bvcs[night+tag]
         # Arrays defining parameter variations during optimization steps
-        dpar_cont = np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0, 0])
-        dpar_wave = np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 10.0,  10.0, 5.00000e-5, 1e-7, 0,   0, 0, 0,    0, 0])
-        dpar      = np.array([5.0, 1.0, 5.0, 3.0, inparam.vsinivary, 0.5, 0.0,   0.0,  0.0,        0,    1e4, 1, 1, 0,    0, 0])
-        dpar_st   = np.array([5.0, 1.0, 5.0, 3.0, inparam.vsinivary, 0.5, 0.0,   0.0,  0.0,        0,    1e4, 1, 1, 0,    0, 0])
-        dpar_ip   = np.array([0.0, 0.0, 0.0, 0.0, 0,                 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0])
+        dpar_cont = np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0, 0  ])
+        dpar_wave = np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 10.0,  10.0, 5.00000e-5, 1e-7, 0,   0, 0, 0,    0, 0  ])
+        dpar      = np.array([5.0, 1.0, 5.0, 3.0, inparam.vsinivary, 0.5, 0.0,   0.0,  0.0,        0,    1e4, 1, 1, 0,    0, 0.2])
+        dpar_st   = np.array([5.0, 1.0, 5.0, 3.0, inparam.vsinivary, 0.5, 0.0,   0.0,  0.0,        0,    1e4, 1, 1, 0,    0, 0.2])
+        dpar_ip   = np.array([0.0, 0.0, 0.0, 0.0, 0,                 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0  ])
                      #'st'   : np.array([5.0, 1.0, 5.0, 3.0, inparam.vsinivary, 0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0])
 
         continuum_in = rebin_jv(a0contx,continuum,x_piece,False)
@@ -224,11 +224,17 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
 
         optimize = True
         par_in = par.copy()
-        hardbounds = [par_in[4]-dpar[4],par_in[4]+dpar[4],par_in[5]-dpar[5],par_in[5]+dpar[5]]
+        hardbounds = [par_in[4]-dpar[4],par_in[4]+dpar[4],
+                      par_in[5]-dpar[5],par_in[5]+dpar[5],
+                      par_in[15]-dpar[15],par_in[15]+dpar[15]
         if hardbounds[0] < 0:
             hardbounds[0] = 0
         if hardbounds[3] < 0:
             hardbounds[3] = 1
+        if hardbounds[5] < 0.1:
+            hardbounds[5] = 0.1
+        if hardbounds[5] > 0.9:
+            hardbounds[5] = 0.9
 
 #        if args.plotfigs == True:#
 #            outplotter(targname,par_in,fitobj,'{}_{}_{}_1'.format(label,night,tag))
