@@ -257,11 +257,11 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
             print(' parfit[1] == par_in[1] or parfit[3] == par_in[3]')
             continue
 
-        # if model dips below zero at any point, we're to close to edge of blaze, fit may be comrpomised, throw out result
-        smod,chisq = fmod(parfit,fitobj)
-        if len(smod[(smod < 0)]) > 0:
-            print('len(smod[(smod < 0)]) > 0')
-            continue
+        # # if model dips below zero at any point, we're to close to edge of blaze, fit may be comrpomised, throw out result
+        # smod,chisq = fmod(parfit,fitobj)
+        # if len(smod[(smod < 0)]) > 0:
+        #     print('len(smod[(smod < 0)]) > 0')
+        #     continue
 
         if args.plotfigs == True:
             parfitS = parfit.copy(); parfitS[3] = 0
