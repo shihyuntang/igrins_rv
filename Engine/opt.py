@@ -41,7 +41,7 @@ def fmodel_chi(par,grad):
     # Can't call these directly in function, as NLopt doesn't allow anything to be in the model function call besides par and grad.
 
     #global fitobj, optimize
-    global fitobj_cp, optimize_cp
+    global fitobj_cp, optimize_cp, dpar0_cp
 
     watm = fitobj_cp.watm_in;
     satm = fitobj_cp.satm_in;
@@ -118,8 +118,11 @@ def fmodel_chi(par,grad):
     mask[(fitobj_cp.s < .05)] = False
 
     # Compute chisq
-    chisq = np.sum((fitobj_cp.s[mask] - smod[mask])**2. / fitobj_cp.u[mask]**2.)
-    #chisq = np.sum((fitobj_cp.s - smod)**2. / fitobj_cp.u**2.)
+    # chisq = np.sum((fitobj_cp.s[mask] - smod[mask])**2. / fitobj_cp.u[mask]**2.)
+    if (dpar0_cp[0] == 0) & (dpar0_cp[11] != 0):
+        chisq = np.sum((fitobj_cp.s[mask] - smod[mask])**2. / fitobj_cp.u[mask]**2.)
+    else:
+        chisq = np.sum((fitobj_cp.s[mask]/cont[mask]/c2[mask] - smod[mask]/cont[mask]/c2[mask])**2. / fitobj_cp.u[mask]**2.)
 
     if optimize_cp == True:
         return chisq
@@ -196,12 +199,79 @@ def fmod(par,fitobj):
 
     return smod,chisq
 
+def fmod_conti(par,fitobj):
+
+    watm = fitobj.watm_in;
+    satm = fitobj.satm_in;
+    mwave = fitobj.mwave_in;
+    mflux = fitobj.mflux_in;
+
+    w = par[6] + par[7]*fitobj.x + par[8]*(fitobj.x**2.) + par[9]*(fitobj.x**3.)
+
+    if w[-1] < w[0]:
+        sys.exit('WAVE ERROR 1 {}'.format(par[6:10]))
+        return 1e7
+
+    c = 2.99792e5
+    npts = len(w)
+
+    wspot = mwave*(1.+par[0]/c)
+    sspot = mflux**par[1]
+    watm = watm*(1.+par[2]/c)
+    satm = satm**par[3]
+
+    if (w[0] < watm[0]) or (w[-1] > watm[-1]):
+        sys.exit('WAVE ERROR 2 {} {} {} {} {}'.format(par[6:10],watm[0],watm[-1],w[0],w[-1]))
+        return 1e7
+
+    interpfunc = interp1d(wspot,sspot, kind='linear',bounds_error=False,fill_value='extrapolate')
+    sspot2 = interpfunc(watm)
+
+    vsini = abs(par[4])
+    if vsini != 0:
+        rspot = rotint(watm,sspot2,vsini,eps=.4,nr=5,ntheta=25)
+    else:
+        rspot = sspot2
+
+    smod = rspot*satm
+
+    mnw = np.mean(w)
+    dw = (w[-1] - w[0])/(npts-1.)
+    vel = (watm-mnw)/mnw*c
+
+    fwhmraw = par[5] + par[13]*(fitobj.x) + par[14]*(fitobj.x**2)
+    if min(fwhmraw) < 1 or max(fwhmraw) > 7:
+        sys.exit('IP ERROR 1 {} {} {} {} {}'.format(par[5],par[13],par[14],min(fwhmraw),max(fwhmraw) ))
+        return 1e7
+    try:
+        spl = splrep(w,fwhmraw)
+    except ValueError:
+        sys.exit('IP ERROR 2 {} {} {}'.format(par[5],par[13],par[14]))
+        return 1e7
+    fwhm = splev(watm,spl)
+
+    vhwhm = dw*abs(fwhm)/mnw*c/2.
+    nsmod = macbro_dyn(vel,smod,vhwhm)
+
+    c2 = fitobj.continuum
+    spl = splrep(watm,nsmod)
+    smod = splev(w,spl)
+    smod *= c2/np.median(c2)
+    cont = par[10] + par[11]*fitobj.x+ par[12]*(fitobj.x**2)
+    smod *= cont
+
+    mask = np.ones_like(smod,dtype=bool)
+    mask[(fitobj.s < .05)] = False
+
+    return w[mask], smod[mask], cont[mask], c2[mask]
+
 
 def optimizer(par0,dpar0, hardbounds_v_ip, fitobj, optimize):
     # NLopt convenience function.
-    global fitobj_cp, optimize_cp
+    global fitobj_cp, optimize_cp, dpar0
     fitobj_cp   = fitobj
     optimize_cp = optimize
+    dpar0_cp = dpar0
     opt = nlopt.opt(nlopt.LN_NELDERMEAD, 16)
     opt.set_min_objective(fmodel_chi)
     lows  = par0-dpar0

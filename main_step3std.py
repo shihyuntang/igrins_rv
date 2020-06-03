@@ -7,15 +7,16 @@ from Engine.classes import fitobjs,inparams
 from Engine.macbro import macbro
 from Engine.rebin_jv import rebin_jv
 from Engine.rotint import rotint
-from Engine.opt import optimizer, fmod
+from Engine.opt import optimizer, fmod, fmod_conti
 #-------------------------------------------------------------------------------
 def outplotter(parfit,fitobj,title,trk,debug):
-    fit,chi = fmod(parfit, fitobj)
-    w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
+    # fit,chi = fmod(parfit, fitobj)
+    # w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
 
+    w, fit, cont, c2 = fmod_conti(parfit, fitobj)
     fig, axes = plt.subplots(1, 1, figsize=(5,3), facecolor='white', dpi=300)
-    axes.plot(w,fitobj.s, '-k',  lw=0.5, label='data',alpha=.6)
-    axes.plot(w,fit,      '--r', lw=0.5, label='model',alpha=.6)
+    axes.plot(w,fitobj.s/cont/c2, '-k',  lw=0.5, label='data',alpha=.6)
+    axes.plot(w,fit/cont/c2,      '--r', lw=0.5, label='model',alpha=.6)
 
     axes.tick_params(axis='both', labelsize=4.5, right=True, top=True, direction='in')
     axes.set_title(title,   size=5, style='normal' , family='sans-serif' )
