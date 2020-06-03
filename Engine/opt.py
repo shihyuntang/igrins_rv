@@ -118,11 +118,11 @@ def fmodel_chi(par,grad):
     mask[(fitobj_cp.s < .05)] = False
 
     # Compute chisq
-    chisq = np.sum((fitobj_cp.s[mask] - smod[mask])**2. / fitobj_cp.u[mask]**2.)
-    # if (dpar0_cp[0] == 0) & (dpar0_cp[11] != 0):
-    #     chisq = np.sum((fitobj_cp.s[mask] - smod[mask])**2. / fitobj_cp.u[mask]**2.)
-    # else:
-    #     chisq = np.sum((fitobj_cp.s[mask]/cont[mask]/c2[mask] - smod[mask]/cont[mask]/c2[mask])**2. / fitobj_cp.u[mask]**2.)
+    # chisq = np.sum((fitobj_cp.s[mask] - smod[mask])**2. / fitobj_cp.u[mask]**2.)
+    if (dpar0_cp[0] == 0) & (dpar0_cp[11] != 0):
+        chisq = np.sum((fitobj_cp.s[mask] - smod[mask])**2. / fitobj_cp.u[mask]**2.)
+    else:
+        chisq = np.sum((fitobj_cp.s[mask]/cont[mask]/c2[mask] - smod[mask]/cont[mask]/c2[mask])**2. / fitobj_cp.u[mask]**2.)
 
     if optimize_cp == True:
         return chisq
