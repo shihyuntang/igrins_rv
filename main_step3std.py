@@ -13,9 +13,9 @@ def outplotter(parfit,fitobj,title,trk,debug):
     # fit,chi = fmod(parfit, fitobj)
     # w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
 
-    w, fit, cont, c2 = fmod_conti(parfit, fitobj)
+    w, fit, cont, c2, mask = fmod_conti(parfit, fitobj)
     fig, axes = plt.subplots(1, 1, figsize=(5,3), facecolor='white', dpi=300)
-    axes.plot(w,fitobj.s/c2/cont, '-k',  lw=0.5, label='data',alpha=.6)
+    axes.plot(w,fitobj.s[mask]/c2/cont, '-k',  lw=0.5, label='data',alpha=.6)
     axes.plot(w,fit/c2/cont,      '--r', lw=0.5, label='model',alpha=.6)
 
     axes.tick_params(axis='both', labelsize=4.5, right=True, top=True, direction='in')
