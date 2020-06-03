@@ -247,29 +247,32 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
         parfit_4 = optimizer(parfit_3, dpar_wave, hardbounds,fitobj,optimize)
         parfit = optimizer(parfit_4,   dpar,      hardbounds,fitobj,optimize)   # RV fitting
 
-        print('{} fini'.format(night), parfit[1])
+        print('{} fini'.format(night))
+
         # if stellar template power is very low, throw out result
-        # if parfit[1] < 0.1:
-        #     print('parfit[1] < 0.1')
-        #     continue
-        #
-        # # if stellar or telluric template powers are exactly equal to their starting values, fit failed, throw out result
-        # if parfit[1] == par_in[1] or parfit[3] == par_in[3]:
-        #     print(' parfit[1] == par_in[1] or parfit[3] == par_in[3]')
-        #     continue
+        if parfit[1] < 0.1:
+            print('parfit[1] < 0.1')
+            continue
+
+        # if stellar or telluric template powers are exactly equal to their starting values, fit failed, throw out result
+        if parfit[1] == par_in[1] or parfit[3] == par_in[3]:
+            print(' parfit[1] == par_in[1] or parfit[3] == par_in[3]')
+            continue
 
         # # if model dips below zero at any point, we're to close to edge of blaze, fit may be comrpomised, throw out result
-        # smod,chisq = fmod(parfit,fitobj)
-        # if len(smod[(smod < 0)]) > 0:
-        #     print('len(smod[(smod < 0)]) > 0')
-        #     continue
+        smod,chisq = fmod(parfit,fitobj)
+        if len(smod[(smod < 0)]) > 0:
+            print('len(smod[(smod < 0)]) > 0')
+            continue
 
         if args.plotfigs == True:
+            print('plotting for {}'.format(night))
             parfitS = parfit.copy(); parfitS[3] = 0
             parfitT = parfit.copy(); parfitT[1] = 0
             outplotter(parfitS, fitobj,'{}_{}_{}_parfitS'.format(label,night,tag), trk, 0)
             outplotter(parfitT, fitobj,'{}_{}_{}_parfitT'.format(label,night,tag), trk, 0)
             outplotter(parfit, fitobj,'{}_{}_{}_parfit'.format(label,night,tag), trk, 0)
+            print('End plotting for {}'.format(night))
 
         if args.debug == True:
             outplotter(parfit_1,fitobj,'{}_{}_{}_parfit_1'.format(label,night,tag), trk, 1)
