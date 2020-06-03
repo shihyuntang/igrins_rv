@@ -261,7 +261,7 @@ def fmod_conti(par,fitobj):
     smod *= cont
 
     mask = np.ones_like(smod,dtype=bool)
-    mask[(fitobj.s < .05)] = False
+    mask[(fitobj.s < .0)] = False
 
     return w[mask], smod[mask], cont[mask], c2[mask], mask
 
