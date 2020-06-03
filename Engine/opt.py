@@ -122,7 +122,7 @@ def fmodel_chi(par,grad):
     if (dpar0_cp[0] == 0) & (dpar0_cp[11] != 0):
         chisq = np.sum((fitobj_cp.s[mask] - smod[mask])**2. / fitobj_cp.u[mask]**2.)
     else:
-        chisq = np.sum((fitobj_cp.s[mask]/cont[mask]/c2[mask] - smod[mask]/cont[mask]/c2[mask])**2. / fitobj_cp.u[mask]**2.)
+        chisq = np.sum( ( fitobj_cp.s[mask]/cont[mask]/c2[mask] - smod[mask]/cont[mask]/c2[mask] )**2. / fitobj_cp.u[mask]**2.)
 
     if optimize_cp == True:
         return chisq
@@ -263,7 +263,7 @@ def fmod_conti(par,fitobj):
     mask = np.ones_like(smod,dtype=bool)
     mask[(fitobj.s < .05)] = False
 
-    return w[mask], smod[mask], cont[mask], c2[mask]
+    return w[mask], smod[mask], cont[mask], c2[mask], mask
 
 
 def optimizer(par0,dpar0, hardbounds_v_ip, fitobj, optimize):
