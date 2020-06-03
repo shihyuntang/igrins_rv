@@ -226,8 +226,8 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
 
         optimize = True
         par_in = par.copy()
-        hardbounds = [par_in[4]-dpar[4],   par_in[4]+dpar[4],
-                      par_in[5]-dpar[5],   par_in[5]+dpar[5],
+        hardbounds = [par_in[4] -dpar[4],   par_in[4]+dpar[4],
+                      par_in[5] -dpar[5],   par_in[5]+dpar[5],
                       par_in[15]-dpar[15], par_in[15]+dpar[15]]
         if hardbounds[0] < 0:
             hardbounds[0] = 0
@@ -247,6 +247,7 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
         parfit_4 = optimizer(parfit_3, dpar_wave, hardbounds,fitobj,optimize)
         parfit = optimizer(parfit_4,   dpar,      hardbounds,fitobj,optimize)   # RV fitting
 
+        print('{} fini'.format(night))
         # if stellar template power is very low, throw out result
         if parfit[1] < 0.1:
             print('parfit[1] < 0.1')
