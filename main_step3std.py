@@ -95,6 +95,7 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
     flag = np.array(tbdata['ERRORFLAG'+str(order)])[0]
 
     if flag == 1:  # Telfit hit unknown critical error
+        print('Telfit hit unknown critical error')
         return nightsout, rvsminibox, parfitminibox, vsiniminibox
 
     watm = tbdata['WATM'+str(order)]
@@ -259,7 +260,7 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
         # if model dips below zero at any point, we're to close to edge of blaze, fit may be comrpomised, throw out result
         smod,chisq = fmod(parfit,fitobj)
         if len(smod[(smod < 0)]) > 0:
-            print(len(smod[(smod < 0)]) > 0)
+            print('len(smod[(smod < 0)]) > 0')
             continue
 
         if args.plotfigs == True:
