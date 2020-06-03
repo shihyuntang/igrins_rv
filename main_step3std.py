@@ -15,8 +15,8 @@ def outplotter(parfit,fitobj,title,trk,debug):
 
     w, fit, cont, c2 = fmod_conti(parfit, fitobj)
     fig, axes = plt.subplots(1, 1, figsize=(5,3), facecolor='white', dpi=300)
-    axes.plot(w,fitobj.s/cont, '-k',  lw=0.5, label='data',alpha=.6)
-    axes.plot(w,fit/cont,      '--r', lw=0.5, label='model',alpha=.6)
+    axes.plot(w,fitobj.s/c2, '-k',  lw=0.5, label='data',alpha=.6)
+    axes.plot(w,fit/c2,      '--r', lw=0.5, label='model',alpha=.6)
 
     axes.tick_params(axis='both', labelsize=4.5, right=True, top=True, direction='in')
     axes.set_title(title,   size=5, style='normal' , family='sans-serif' )
@@ -248,15 +248,18 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
 
         # if stellar template power is very low, throw out result
         if parfit[1] < 0.1:
+            print('parfit[1] < 0.1')
             continue
 
         # if stellar or telluric template powers are exactly equal to their starting values, fit failed, throw out result
         if parfit[1] == par_in[1] or parfit[3] == par_in[3]:
+            print(' parfit[1] == par_in[1] or parfit[3] == par_in[3]')
             continue
 
         # if model dips below zero at any point, we're to close to edge of blaze, fit may be comrpomised, throw out result
         smod,chisq = fmod(parfit,fitobj)
         if len(smod[(smod < 0)]) > 0:
+            print(len(smod[(smod < 0)]) > 0)
             continue
 
         if args.plotfigs == True:
