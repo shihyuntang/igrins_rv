@@ -15,8 +15,8 @@ def outplotter(parfit,fitobj,title,trk,debug):
 
     w, fit, cont, c2 = fmod_conti(parfit, fitobj)
     fig, axes = plt.subplots(1, 1, figsize=(5,3), facecolor='white', dpi=300)
-    axes.plot(w,fitobj.s/c2, '-k',  lw=0.5, label='data',alpha=.6)
-    axes.plot(w,fit/c2,      '--r', lw=0.5, label='model',alpha=.6)
+    axes.plot(w,fitobj.s/c2/cont, '-k',  lw=0.5, label='data',alpha=.6)
+    axes.plot(w,fit/c2/cont,      '--r', lw=0.5, label='model',alpha=.6)
 
     axes.tick_params(axis='both', labelsize=4.5, right=True, top=True, direction='in')
     axes.set_title(title,   size=5, style='normal' , family='sans-serif' )
