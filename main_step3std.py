@@ -247,8 +247,6 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
         parfit_4 = optimizer(parfit_3, dpar_wave, hardbounds,fitobj,optimize)
         parfit = optimizer(parfit_4,   dpar,      hardbounds,fitobj,optimize)   # RV fitting
 
-        print('{} fini'.format(night))
-
         # if stellar template power is very low, throw out result
         if parfit[1] < 0.1:
             print('parfit[1] < 0.1')
@@ -266,13 +264,11 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
             continue
 
         if args.plotfigs == True:
-            print('plotting for {}'.format(night))
             parfitS = parfit.copy(); parfitS[3] = 0
             parfitT = parfit.copy(); parfitT[1] = 0
             outplotter(parfitS, fitobj,'{}_{}_{}_parfitS'.format(label,night,tag), trk, 0)
             outplotter(parfitT, fitobj,'{}_{}_{}_parfitT'.format(label,night,tag), trk, 0)
             outplotter(parfit, fitobj,'{}_{}_{}_parfit'.format(label,night,tag), trk, 0)
-            print('End plotting for {}'.format(night))
 
         if args.debug == True:
             outplotter(parfit_1,fitobj,'{}_{}_{}_parfit_1'.format(label,night,tag), trk, 1)
