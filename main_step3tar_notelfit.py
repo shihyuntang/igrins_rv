@@ -68,7 +68,7 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
     nightsout = [];
     rvsminibox     = np.ones(len(tagsnight));
     vsiniminibox   = np.ones(len(tagsnight));
-    parfitminibox  = np.ones((len(tagsnight),15));
+    parfitminibox  = np.ones((len(tagsnight),16));
 
     rvsminibox[:]    = np.nan
     vsiniminibox[:]  = np.nan
