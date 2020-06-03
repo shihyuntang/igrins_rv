@@ -268,7 +268,7 @@ def fmod_conti(par,fitobj):
 
 def optimizer(par0,dpar0, hardbounds_v_ip, fitobj, optimize):
     # NLopt convenience function.
-    global fitobj_cp, optimize_cp, dpar0
+    global fitobj_cp, optimize_cp, dpar0_cp
     fitobj_cp   = fitobj
     optimize_cp = optimize
     dpar0_cp = dpar0
