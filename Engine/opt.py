@@ -200,7 +200,7 @@ def fmod(par,fitobj):
 
     return smod,chisq
 
-ef fmod_conti(par,fitobj):
+def fmod_conti(par,fitobj):
 
     watm = fitobj.watm_in;
     satm = fitobj.satm_in;
