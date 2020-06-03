@@ -239,8 +239,8 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
             hardbounds[0] = 0
         if hardbounds[3] < 0:
             hardbounds[3] = 1
-        if hardbounds[5] < 0.1:
-            hardbounds[5] = 0.1
+        if hardbounds[4] < 0.1:
+            hardbounds[4] = 0.1
         if hardbounds[5] > 0.9:
             hardbounds[5] = 0.9
 
