@@ -115,7 +115,7 @@ def fmodel_chi(par,grad):
     smod *= cont
 
     mask = np.ones_like(smod,dtype=bool)
-    mask[(fitobj_cp.s < .05)] = False
+    mask[(fitobj_cp.s < .0)] = False
 
     # Compute chisq
     # chisq = np.sum((fitobj_cp.s[mask] - smod[mask])**2. / fitobj_cp.u[mask]**2.)
@@ -194,7 +194,7 @@ def fmod(par,fitobj):
     smod *= cont
 
     mask = np.ones_like(smod,dtype=bool)
-    mask[(fitobj.s < .05)] = False
+    mask[(fitobj.s < .0)] = False
     chisq = np.sum((fitobj.s[mask] - smod[mask])**2. / fitobj.u[mask]**2.)
 
     return smod,chisq
@@ -261,7 +261,7 @@ def fmod_conti(par,fitobj):
     smod *= cont
 
     mask = np.ones_like(smod,dtype=bool)
-    mask[(fitobj.s < .0)] = False
+    mask[(fitobj.s < .05)] = False
 
     return w[mask], smod[mask], cont[mask], c2[mask], mask
 
