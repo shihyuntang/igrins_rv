@@ -89,7 +89,7 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
 
     # order in A0_treated.fits is no longer sequential...
     fits_layer = [ i for i in np.arange(num_orders)+1 if int(hdulist[i].columns[0].name[9:]) == order ][0]
-    
+
     tbdata = hdulist[ fits_layer ].data
     flag = np.array(tbdata['ERRORFLAG'+str(order)])[0]
 
@@ -223,7 +223,7 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
 
         optimize = True
         par_in = par.copy()
-        hardbounds = [par_in[4]-dpar[4],par_in[4]+dpar[4],par_in[5]-dpar[5],par_in[5]+dpar[5],par_in[15]-dpar[15],par_in[15]+dpar[15]]
+        hardbounds = [par_in[4]-dpar_s[4],par_in[4]+dpar_s[4],par_in[5]-dpar_ip[5],par_in[5]+dpar_ip[5],par_in[15]-dpar_s[15],par_in[15]+dpar_s[15]]
         if hardbounds[0] < 0:
             hardbounds[0] = 0
         if hardbounds[3] < 0:
