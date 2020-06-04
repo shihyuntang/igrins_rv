@@ -7,13 +7,12 @@ from Engine.classes import fitobjs,inparams
 from Engine.macbro import macbro
 from Engine.rebin_jv import rebin_jv
 from Engine.rotint import rotint
-from Engine.opt import optimizer, fmod, fmod_conti
+from Engine.opt import optimizer, fmod
 #-------------------------------------------------------------------------------
 def outplotter(parfit,fitobj,title,trk,debug):
     fit,chi = fmod(parfit, fitobj)
     w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
-    #
-    # w, fit, cont, c2, mask = fmod_conti(parfit, fitobj)
+
     fig, axes = plt.subplots(1, 1, figsize=(5,3), facecolor='white', dpi=300)
     axes.plot(w,fitobj.s, '-k',  lw=0.5, label='data',alpha=.6)
     axes.plot(w,fit,      '--r', lw=0.5, label='model',alpha=.6)
@@ -27,7 +26,6 @@ def outplotter(parfit,fitobj,title,trk,debug):
         fig.savefig('{}/figs/main_step3_{}/{}.png'.format(inparam.outpath, trk, title), bbox_inches='tight', format='png', overwrite=True)
     elif debug == 1:
         fig.savefig('./Temp/Debug/{}_{}/main_step3_{}/{}.png'.format(args.targname, args.band, trk, title), bbox_inches='tight', format='png', overwrite=True)
-
 
 #-------------------------------------------------------------------------------
 def rv_MPinst(label_t, chunk_ind, trk, i):
@@ -89,13 +87,21 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
     num_orders = len( np.unique(label_t['0']) )
 
     # order in A0_treated.fits is no longer sequential...
+
     fits_layer = [ i for i in np.arange(num_orders)+1 if int(hdulist[i].columns[0].name[9:]) == order ][0]
 
     tbdata = hdulist[ fits_layer ].data
     flag = np.array(tbdata['ERRORFLAG'+str(order)])[0]
 
     if flag == 1:  # Telfit hit unknown critical error
-        print('Telfit hit unknown critical error')
+        return nightsout, rvsminibox, parfitminibox, vsiniminibox
+
+    try:
+        if np.isnan(inparam.initguesses[night]):  # Telfit hit unknown critical error
+            print('  --> Initial guess for {} is NaN , SKIP...'.format(night))
+            return nightsout, rvsminibox, parfitminibox, vsiniminibox
+    except:
+        print('  --> Initial guess for {} is NaN , SKIP...'.format(night))
         return nightsout, rvsminibox, parfitminibox, vsiniminibox
 
     watm = tbdata['WATM'+str(order)]
@@ -130,7 +136,7 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
                       0.,                                                    #12: Continuum quadratic component
                       IPpars[1],                                             #13: IP linear component
                       IPpars[0],                                              #14: IP quadratic component
-                      0.23])                                                 #15: Differential Rotation Coefficient
+                      0.675])                                                #15: Differential Rotation Coefficient
 
     # Iterate over all A/B exposures
     for t in np.arange(len(tagsnight)):
@@ -209,14 +215,14 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
         par9in = f[0]*1e4; par8in = f[1]*1e4; par7in = f[2]*1e4; par6in = f[3]*1e4;
         par[9] = par9in ; par[8] = par8in ; par[7] = par7in ; par[6] = par6in
 
-        par[0] = inparam.initguesses-inparam.bvcs[night+tag]
+        par[0] = inparam.initguesses[night]-inparam.bvcs[night+tag]
         # Arrays defining parameter variations during optimization steps
-        dpar_cont = np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0, 0  ])
-        dpar_wave = np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 10.0,  10.0, 5.00000e-5, 1e-7, 0,   0, 0, 0,    0, 0  ])
-        dpar      = np.array([5.0, 1.0, 5.0, 3.0, inparam.vsinivary, 0.5, 0.0,   0.0,  0.0,        0,    1e4, 1, 1, 0,    0, 0.2])
-        dpar_st   = np.array([5.0, 1.0, 5.0, 3.0, inparam.vsinivary, 0.5, 0.0,   0.0,  0.0,        0,    1e4, 1, 1, 0,    0, 0.2])
-        dpar_ip   = np.array([0.0, 0.0, 0.0, 0.0, 0,                 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0  ])
-                     #'st'   : np.array([5.0, 1.0, 5.0, 3.0, inparam.vsinivary, 0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0])
+        # Arrays defining parameter variations during optimization steps
+        dpar_cont = np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0, 0])
+        dpar_wave = np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 10.0,  10.0, 5.00000e-5, 1e-7, 0,   0, 0, 0,    0, 0])
+        dpar_s    = np.array([5.0, 1.0, 0.0, 0.0, inparam.vsinivary, 0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0])
+        dpar_t    = np.array([0.0, 0.0, 5.0, 1.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0])
+        dpar_ip   = np.array([0.0, 0.0, 0.0, 0.0, 0,                 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0])
 
         continuum_in = rebin_jv(a0contx,continuum,x_piece,False)
         s_piece /= np.median(s_piece)
@@ -226,48 +232,48 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
 
         optimize = True
         par_in = par.copy()
-        hardbounds = [par_in[4] -dpar[4],   par_in[4]+dpar[4],
-                      par_in[5] -dpar[5],   par_in[5]+dpar[5],
-                      par_in[15]-dpar[15], par_in[15]+dpar[15]]
+        hardbounds = [par_in[4]-dpar_s[4],par_in[4]+dpar_s[4],par_in[5]-dpar_ip[5],par_in[5]+dpar_ip[5]]
         if hardbounds[0] < 0:
             hardbounds[0] = 0
         if hardbounds[3] < 0:
             hardbounds[3] = 1
-        if hardbounds[4] < 0.1:
-            hardbounds[4] = 0.1
-        if hardbounds[5] > 0.9:
-            hardbounds[5] = 0.9
 
 #        if args.plotfigs == True:#
 #            outplotter(targname,par_in,fitobj,'{}_{}_{}_1'.format(label,night,tag))
 
-        parfit_1 = optimizer(par_in,   dpar_cont, hardbounds,fitobj,optimize)
-        parfit_2 = optimizer(parfit_1, dpar_wave, hardbounds,fitobj,optimize)
-        parfit_3 = optimizer(parfit_2, dpar_st,   hardbounds,fitobj,optimize)
-        parfit_4 = optimizer(parfit_3, dpar_wave, hardbounds,fitobj,optimize)
-        parfit = optimizer(parfit_4,   dpar,      hardbounds,fitobj,optimize)   # RV fitting
+        parfit_1 = optimizer(par_in,dpar_cont,hardbounds,fitobj,optimize)
+        parfit_2 = optimizer(parfit_1,dpar_wave,hardbounds,fitobj,optimize)
+        parfit_3 = optimizer(parfit_2,dpar_t,hardbounds,fitobj,optimize)
+        parfit_4 = optimizer(parfit_3,dpar_ip,hardbounds,fitobj,optimize)
+        parfit_5 = optimizer(parfit_4,dpar_s,hardbounds,fitobj,optimize)
+
+        parfit_6 = optimizer(parfit_5,dpar_cont,hardbounds,fitobj,optimize)
+        parfit_7 = optimizer(parfit_6,dpar_wave,hardbounds,fitobj,optimize)
+        parfit_8 = optimizer(parfit_7,dpar_t,hardbounds,fitobj,optimize)
+        parfit_9 = optimizer(parfit_8,dpar_ip,hardbounds,fitobj,optimize)
+        parfit_10 = optimizer(parfit_9,dpar_s,hardbounds,fitobj,optimize)
+
+        parfit_11 = optimizer(parfit_10,dpar_cont,hardbounds,fitobj,optimize)
+        parfit_12 = optimizer(parfit_11,dpar_wave,hardbounds,fitobj,optimize)
+        parfit_13 = optimizer(parfit_12,dpar_t,hardbounds,fitobj,optimize)
+        parfit_14 = optimizer(parfit_13,dpar_ip,hardbounds,fitobj,optimize)
+        parfit = optimizer(parfit_14,dpar_s,hardbounds,fitobj,optimize)
 
         # if stellar template power is very low, throw out result
         if parfit[1] < 0.1:
-            print('parfit[1] < 0.1')
             continue
 
         # if stellar or telluric template powers are exactly equal to their starting values, fit failed, throw out result
         if parfit[1] == par_in[1] or parfit[3] == par_in[3]:
-            print(' parfit[1] == par_in[1] or parfit[3] == par_in[3]')
             continue
 
-        # # if model dips below zero at any point, we're to close to edge of blaze, fit may be comrpomised, throw out result
+        # if model dips below zero at any point, we're to close to edge of blaze, fit may be comrpomised, throw out result
         smod,chisq = fmod(parfit,fitobj)
         if len(smod[(smod < 0)]) > 0:
-            print('len(smod[(smod < 0)]) > 0')
             continue
 
         if args.plotfigs == True:
-            parfitS = parfit.copy(); parfitS[3] = 0
-            parfitT = parfit.copy(); parfitT[1] = 0
-            outplotter(parfitS, fitobj,'{}_{}_{}_parfitS'.format(label,night,tag), trk, 0)
-            outplotter(parfitT, fitobj,'{}_{}_{}_parfitT'.format(label,night,tag), trk, 0)
+            #outplotter(par_in, fitobj,'{}_{}_{}_par_in'.format(label,night,tag), trk, 0)
             outplotter(parfit, fitobj,'{}_{}_{}_parfit'.format(label,night,tag), trk, 0)
 
         if args.debug == True:
@@ -276,17 +282,25 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
             outplotter(parfit_3,fitobj,'{}_{}_{}_parfit_3'.format(label,night,tag), trk, 1)
             outplotter(parfit_4,fitobj,'{}_{}_{}_parfit_4'.format(label,night,tag), trk, 1)
             outplotter(parfit_5,fitobj,'{}_{}_{}_parfit_5'.format(label,night,tag), trk, 1)
-            outplotter(parfit  ,fitobj,'{}_{}_{}_parfit'.format(label,night,tag), trk, 1)
+            outplotter(parfit_6,fitobj,'{}_{}_{}_parfit_6'.format(label,night,tag), trk, 1)
+            outplotter(parfit_7,fitobj,'{}_{}_{}_parfit_7'.format(label,night,tag), trk, 1)
+            outplotter(parfit_8,fitobj,'{}_{}_{}_parfit_8'.format(label,night,tag), trk, 1)
+            outplotter(parfit_9,fitobj,'{}_{}_{}_parfit_9'.format(label,night,tag), trk, 1)
+            outplotter(parfit_10,fitobj,'{}_{}_{}_parfit_10'.format(label,night,tag), trk, 1)
+            outplotter(parfit_11,fitobj,'{}_{}_{}_parfit_11'.format(label,night,tag), trk, 1)
+            outplotter(parfit_12,fitobj,'{}_{}_{}_parfit_12'.format(label,night,tag), trk, 1)
+            outplotter(parfit_13,fitobj,'{}_{}_{}_parfit_13'.format(label,night,tag), trk, 1)
+            outplotter(parfit_14,fitobj,'{}_{}_{}_parfit_14'.format(label,night,tag), trk, 1)
+            outplotter(parfit  ,fitobj,'{}_{}_{}_parfit_15'.format(label,night,tag), trk, 1)
 
         rv0 = parfit[0] - parfit[2]                         # atomosphere velocity correct
 
         rvsminibox[t]   = rv0  + inparam.bvcs[night+tag] + rv0*inparam.bvcs[night+tag]/(3e5**2) # bvcs correct
         parfitminibox[t]= parfit
         vsiniminibox[t] = parfit[4]
-    # print(nightsout,rvsminibox,parfitminibox,vsiniminibox)
+
     return nightsout,rvsminibox,parfitminibox,vsiniminibox
 
-#-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 if __name__ == '__main__':
@@ -310,7 +324,7 @@ if __name__ == '__main__':
                         type=str,   default='50')
     parser.add_argument("-nAB",      dest="nAB",           action="store",
                         help="Minium request of # of AB sets. Default = for STD is 1 and TAR is 3 ",
-                        type=str,   default='1')
+                        type=str,   default='3')
 
     parser.add_argument('-i',       dest="initvsini",        action="store",
                         help="Initial vsini (float, km/s). Should use the value given by step2",
@@ -318,9 +332,12 @@ if __name__ == '__main__':
     parser.add_argument('-v',       dest="vsinivary",         action="store",
                         help="Range of allowed vsini variation during optimization, default = 0.0 km/s",
                         type=str, default='0.0' )
-    parser.add_argument('-g',       dest="guesses",           action="store",
-                        help=". Should use the single value given by step2 (float, km/s)",
-                        type=str,   default='' )
+    parser.add_argument('-gS',       dest="guesses_source",           action="store",
+                        help="Source for initial guesses list for RV. Enter init OR rvre (init: Initguesser_results_X, rvre: RV_results_X)",
+                        type=str, default='')
+    parser.add_argument('-gX',       dest="guesses",           action="store",
+                        help="Please give the number, X, under ./*targname/Initguesser_results_X OR ./*targname/RV_results_X, that you wish to use",
+                        type=int, default='')
 
     parser.add_argument('-c',       dest="Nthreads",         action="store",
                         help="Number of cpu (threads) to use, default is 1/2 of avalible ones (you have %i cpus (threads) avaliable)"%(mp.cpu_count()),
@@ -336,7 +353,7 @@ if __name__ == '__main__':
     parser.add_argument('--version',                          action='version',  version='%(prog)s 0.5')
     args = parser.parse_args()
     cdbs_loc = '~/cdbs/'
-    inpath    = './Input_Data/{}/'.format(args.targname)
+    inpath     = './Input_Data/{}/'.format(args.targname)
     vsinivary = float(args.vsinivary)
 
     if args.initvsini != '':
@@ -344,28 +361,44 @@ if __name__ == '__main__':
     else:
         sys.exit('ERROR: EXPECTED FLOAT')
 
+    # Collect init RV guesses
     if args.guesses != '':
-        guesses = float(args.guesses)
-    else:
-        sys.exit('ERROR: EXPECTED FLOAT')
+        if args.guesses_source == 'init':
+            guesses = './Results/{}_{}/Initguesser_results_{}.csv'.format(args.targname,
+                                                                          args.band,
+                                                                          int(args.guesses))
+            guessdata  = Table.read(guesses, format='ascii')
+            initnights = np.array(guessdata['night'])
+            initrvs    = np.array(guessdata['bestguess'])
+            initguesses = {}
+            for hrt in range(len(initnights)):
+                initguesses[str(initnights[hrt])] = float(initrvs[hrt])
 
-    if type(guesses) == float:
-        initguesses = guesses
+        elif args.guesses_source == 'rvre':
+            guesses = './Results/{}_{}/RVresultsSummary_{}.csv'.format(args.targname,
+                                                                       args.band,
+                                                                       int(args.guesses))
+            guessdata  = Table.read(guesses, format='csv')
+            initnights = np.array(guessdata['NIGHT'])
+            initrvs    = np.array(guessdata['RVfinal'])
+            initguesses = {}
+            for hrt in range(len(initnights)):
+                initguesses[str(initnights[hrt])] = float(initrvs[hrt])
     else:
-        sys.exit('ERROR: INCORRECT INITIAL RV GUESSES INPUT PARAMETER SPECIFIED; EXPECTED FLOAT')
+        sys.exit('ERROR: INCORRECT "STYLE" INPUT PARAMETER SPECIFIED; EXPECTED A INT NUMBER')
 #-------------------------------------------------------------------------------
     start_time = datetime.now()
     print('\n')
     print('###############################################################')
     print('''
-Input Parameters:
+    Input Parameters:
     Tartget             = {}
     Initial vsini       = {} km/s
     vsini vary range    = {} km/s
-    RV initial guess    = {} km/s
-    '''.format(args.targname, initvsini, vsinivary, initguesses))
+    RV initial guess taken from {}
+    '''.format(args.targname, initvsini, vsinivary, guesses))
     print('---------------------------------------------------------------')
-    print('RV calculation for RV standard star {}...'.format(args.targname))
+    print('RV calculation for target star {}...'.format(args.targname))
     print('This will take a while..........')
 
     ## Collect relevant file information from Predata files
@@ -392,9 +425,10 @@ Input Parameters:
     night_orig = Tnights[0]; tagsA0 = []; tagsB0 = [];
 
     for hrt in range(len(Tnights)):
+
         tag1 = '{:04d}'.format(tags0[hrt])
 
-        mjds[Tnights[hrt]]                = float(mjds0[hrt])
+        mjds[Tnights[hrt]] = float(mjds0[hrt])
         bvcs[str(Tnights[hrt])+str(tag1)] = float(bvcs0[hrt])
 
         if Tnights[hrt] == night_orig:
@@ -416,9 +450,6 @@ Input Parameters:
     tagsB[Tnights[-1]] = tagsB0
 
     nightsFinal = np.array(list(sorted(set(Tnights))))
-    #nightsFinal = nightsFinal[24:26]
-    # labels      = labels[-2:]
-
     if args.nights_use != '':
         nightstemp = np.array(ast.literal_eval(args.nights_use), dtype=str)
         for nnn in nightstemp:
@@ -441,6 +472,13 @@ Input Parameters:
             break
         trk += 1
     os.mkdir('./Results/{}_{}/{}'.format(args.targname, args.band, name) )
+    if args.debug == True:
+        try:
+            os.mkdir('./Temp/Debug/{}_{}/main_step3_{}/'.format(args.targname, args.band, trk))
+        except FileNotFoundError:
+            os.mkdir('./Temp/Debug/{}_{}/'.format(args.targname, args.band))
+            os.mkdir('./Temp/Debug/{}_{}/main_step3_{}/'.format(args.targname, args.band, trk))
+
 #-------------------------------------------------------------------------------
     print('Writing output to folder ./Results/{}_{}'.format(args.targname, args.band, name))
 
@@ -485,7 +523,6 @@ Input Parameters:
     oindex = [ int(labels[i].split('-')[1]) for i in range(len(labels)) ]
     label_t = Table(names=('0', '1'), data=(orders, oindex))
     label_t.sort(['0', '1'])
-
 #-------------------------------------------------------------------------------
     for jerp in range(len(label_t)): # Iterate over orders
         pool = mp.Pool(processes = args.Nthreads)
@@ -545,23 +582,21 @@ Input Parameters:
                     vsinisT[i,jerp] = np.nanmean(vsinitags)
 
                     if (np.sum(~np.isnan(rvtags)) < int(args.nAB) ):
-                        rvmasterboxT[i,jerp]  = np.nan
+                        rvmasterboxT[i,jerp] = np.nan
                         stdmasterboxT[i,jerp] = np.nan
                     else:
-                        rvmasterboxT[i,jerp]  = np.nanmean(rvtags)
+                        rvmasterboxT[i,jerp] = np.nanmean(rvtags)
                         stdmasterboxT[i,jerp] = np.nanstd(rvtags)/np.sqrt(len(rvtags))
-
                 else:
                     vsinisL[i,jerp] = np.nanmean(vsinitags)
 
                     if (np.sum(~np.isnan(rvtags)) < int(args.nAB) ):
-                        rvmasterboxL[i,jerp]  = np.nan
+                        rvmasterboxL[i,jerp] = np.nan
                         stdmasterboxL[i,jerp] = np.nan
                     else:
-                        rvmasterboxL[i,jerp]  = np.nanmean(rvtags)
+                        rvmasterboxL[i,jerp] = np.nanmean(rvtags)
                         stdmasterboxL[i,jerp] = np.nanstd(rvtags)/np.sqrt(len(rvtags))
             T_L = 'L'
-
 #-------------------------------------------------------------------------------
     nightsCombined  = np.array([]); mjdsCombined = np.array([]);
     rvfinalCombined = np.array([]); stdfinalCombined = np.array([]); vsinifinalCombined = np.array([]);
@@ -582,21 +617,22 @@ Input Parameters:
         stdmasterbox = stdboxcomblist[boxind]
         vsinibox     = vsinicomblist[boxind]
 #-------------------------------------------------------------------------------
-        # Calculate the precision within an order across nights
-        sigma_O2     = np.array([np.nanstd(rvmasterbox[:,ll])**2 for ll in range(len(labels))])
-        sigma_ABbar2 = np.ones_like(sigma_O2)
-        sigma_ON2    = np.ones_like(rvmasterbox)
-
+        # Load the uncertainty from method from GJ 281 analysis
+        if boxind == 0:
+            nights_use = nightsT.copy()
+            kind = 'Tight'
+            sigma_method2 = inparam.methodvariance_tight[args.band]
+        else:
+            nights_use = nightsL.copy()
+            kind = 'Loose'
+            sigma_method2 = inparam.methodvariance_loose[args.band]
 #-------------------------------------------------------------------------------
         # Note rvmasterbox indexed as [nights,orders]
         Nnights = len(rvmasterbox[:,0])
 
-        # Calculate uncertainty in method as difference between variance within an order and mean variance within a night's As and Bs RVs
-        for ll in range(len(labels)):
-            sigma_ABbar2[ll] = np.nanmean(stdmasterbox[:,ll]**2)
-        sigma_method2 = sigma_O2 - sigma_ABbar2
-
         # Calculate the uncertainty in each night/order RV as the sum of the uncertainty in method and the uncertainty in that night's As and Bs RVs
+        sigma_ON2    = np.ones_like(rvmasterbox)
+
         for ll in range(len(labels)):
             for night in range(Nnights):
                 sigma_ON2[night,ll] = sigma_method2[ll] + stdmasterbox[night,ll]**2
@@ -611,13 +647,11 @@ Input Parameters:
         else:
             nights_use = nightsL.copy(); kind = 'Loose';
 
-
         # Combine RVs between orders using weights calculated from uncertainties
         for n in range(Nnights):
-            weights = (1./sigma_ON2[n,:]) / (np.nansum(1./sigma_ON2[n,:])) # normalized
+            weights = (1./sigma_ON2[n,:])/(np.nansum(1./sigma_ON2[n,:])) # normalized
             stdspre = (1./sigma_ON2[n,:]) #unnormalized weights
-
-            rvfinal[n]  = np.nansum( weights*rvmasterbox[n,:] )
+            rvfinal[n] = np.nansum(weights*rvmasterbox[n,:])
             stdfinal[n] = 1/np.sqrt(np.nansum(stdspre))
 
             vsinifinal[n] = np.nansum(weights*vsinibox[n,:])
@@ -638,6 +672,8 @@ Input Parameters:
         ax1 = plt.subplot(111)
         ax1.plot(    np.arange(len(rvfinal))+1, rvfinal, '.k', ms=5)
         ax1.errorbar(np.arange(len(rvfinal))+1, rvfinal, yerr=stdfinal, ls='none', lw=.5, ecolor='black')
+#        ax1.text(1, np.nanmax(rvfinal)+stdfinal[np.nanargmax(rvfinal)]+.03,
+#                 'Mean RV: '+str(round(np.nanmean(rvfinal),5))+r'$\ \pm$ '+str(round(np.nanstd(rvfinal),5))+' km/s')
         ax1.text(0.05, 0.93, r'RV mean= {:1.5f} $\pm$ {:1.5f} km/s'.format(np.nanmean(rvfinal), np.nanstd(rvfinal)),
                              transform=ax1.transAxes)
         ax1.set_ylim(np.nanmin(rvfinal)-.08,
@@ -653,14 +689,14 @@ Input Parameters:
         c2 = fits.Column( name='MJD',           array=mjds_out-2400000.5,format='D')
         c3 = fits.Column( name='RVBOX',         array=rvmasterbox,   format='{}D'.format(len(label_t)))
         c4 = fits.Column( name='STDBOX',        array=stdmasterbox,  format='{}D'.format(len(label_t)))
-        c5 = fits.Column( name='Sigma_O2',      array=sigma_O2,      format='D')
-        c6 = fits.Column( name='Sigma_ABbar2',  array=sigma_ABbar2,  format='D')
+        # c5 = fits.Column( name='Sigma_O2',      array=sigma_O2,      format='D')
+        # c6 = fits.Column( name='Sigma_ABbar2',  array=sigma_ABbar2,  format='D')
         c7 = fits.Column( name='Sigma_method2', array=sigma_method2, format='D')
         c8 = fits.Column( name='Sigma_ON2',     array=sigma_ON2,     format='{}D'.format(len(label_t)))
         c9 = fits.Column( name='RVfinal',       array=rvfinal,       format='D')
         c10 = fits.Column(name='STDfinal',      array=stdfinal,      format='D')
 
-        cols  = fits.ColDefs([c1,c2,c3,c4,c5,c6,c7,c8,c9,c10])
+        cols  = fits.ColDefs([c1,c2,c3,c4,c7,c8,c9,c10])
         hdu_1 = fits.BinTableHDU.from_columns(cols)
 
         bleh = np.ones((3,3))
@@ -668,18 +704,18 @@ Input Parameters:
         hdul        = fits.HDUList([primary_hdu,hdu_1])
         hdul.writeto('{}/{}/RVresultsSummary_{}.fits'.format(inparam.outpath, name, kind), overwrite=True)
 
-        nightsCombined     = np.concatenate((nightsCombined,     nights_use))
-        mjdsCombined       = np.concatenate((mjdsCombined,       mjds_out))
-        rvfinalCombined    = np.concatenate((rvfinalCombined,    rvfinal))
-        stdfinalCombined   = np.concatenate((stdfinalCombined,   stdfinal))
-        vsinifinalCombined = np.concatenate((vsinifinalCombined, vsinifinal))
+        nightsCombined   = np.concatenate((nightsCombined,nights_use))
+        mjdsCombined     = np.concatenate((mjdsCombined,mjds_out))
+        rvfinalCombined  = np.concatenate((rvfinalCombined,rvfinal))
+        stdfinalCombined = np.concatenate((stdfinalCombined,stdfinal))
+        vsinifinalCombined = np.concatenate((vsinifinalCombined,vsinifinal))
 
-        sigma_method2 = [np.around(float(i), 8) for i in sigma_method2]
-        print('sigma_method2 with type = {} is {}'.format(kind, sigma_method2))
+        # print('sigma_method2 with type ={} is {}'.format(kind, sigma_method2))
         #print('RV/std for observations when IGRINS mounting was '+kind+': ', np.nanmean(rvfinal),np.nanstd(rvfinal))
         print('Observations when IGRINS is mounting {}: RV mean = {:1.4f} km/s, std = {:1.4f} km/s'.format( kind,
                                                                                                             np.nanmean(rvfinal),
                                                                                                             np.nanstd(rvfinal) ))
+
 #-------------------------------------------------------------------------------
     xscale = np.arange(len(rvfinalCombined))+1
 
@@ -691,7 +727,6 @@ Input Parameters:
 #             'Mean RV: '+str(round(np.nanmean(rvfinalCombined),5))+r'$\ \pm$ '+str(round(np.nanstd(rvfinalCombined),5))+' km/s')
     ax1.text(0.05, 0.93, r'RV mean= {:1.5f} $\pm$ {:1.5f} km/s'.format(np.nanmean(rvfinalCombined), np.nanstd(rvfinalCombined)),
                          transform=ax1.transAxes)
-
     if (len(nightsT) != 0) & (len(nightsL) == 0):
         ax1.text(0.05, 0.1, 'Tight', transform=ax1.transAxes)
     elif (len(nightsT) == 0) & (len(nightsL) != 0):
