@@ -1,3 +1,6 @@
+import sys
+sys.path.append("..") # Adds higher directory to python modules path.
+
 from Engine.importmodule import *
 
 from Engine.IO_AB import setup_templates, setup_templates_syn, init_fitsread,stellarmodel_setup, setup_outdir
