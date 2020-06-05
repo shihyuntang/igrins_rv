@@ -263,7 +263,7 @@ def fmod_conti(par,fitobj):
     mask = np.ones_like(smod,dtype=bool)
     mask[(fitobj.s < .05)] = False
 
-    return w, fitobj.s, smod, cont, c2, , mask
+    return w, fitobj.s, smod, cont, c2, mask
 
 
 def optimizer(par0,dpar0, hardbounds_v_ip, fitobj, optimize):
