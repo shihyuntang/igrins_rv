@@ -454,6 +454,8 @@ Input Parameters:
 #-------------------------------------------------------------------------------
 
     # Create output directory
+    if not os.path.isdir('./{}'.format(args.targname)):
+        os.mkdir('./{}'.format(args.targname) )
 
     filesndirs = os.listdir('./{}'.format(args.targname))
     trk = 1
