@@ -60,10 +60,6 @@ def rv_main(i, order0, order):
     contiminibox[:] = np.nan
     residualbox[:]  = np.nan
 
-
-    for t in tagsnight:
-        nightsout.append(night)
-
     # Load telluric template from Telfit'd A0
     A0loc = './{}/A0_Fits/{}A0_treated_{}.fits'.format(args.targname, night[:8], args.band)
     try:
