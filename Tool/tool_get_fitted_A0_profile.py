@@ -292,7 +292,9 @@ def rv_main(i, order0, order):
     dw    = (np.nanmax(w) - np.nanmin(w)) / 8
     for nn in range(8):
         wrange = [ (w > (w_min + nn*dw) ) & ( (w < (w_min + (nn+1)*dw)) ) ]
+        print(wrange)
         leng_w = sum(wrange)
+        print(leng_w)
         wminibox[:leng_w, nn]         = w[wrange]
         sminibox[:leng_w, nn]         = dataflat[wrange]
         flminibox_tel[:leng_w, nn]    = modelflat[wrange]
