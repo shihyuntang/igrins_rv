@@ -232,22 +232,22 @@ def rv_main(i, order0, order):
         parfit_3 = optimizer(parfit_2, dpar_st,   hardbounds,fitobj,optimize)
         parfit_4 = optimizer(parfit_3, dpar_wave, hardbounds,fitobj,optimize)
         parfit = optimizer(parfit_4,   dpar,      hardbounds,fitobj,optimize)   # RV fitting
-
-        # if stellar template power is very low, throw out result
-        if parfit[1] < 0.1:
-            print('parfit[1] < 0.1')
-            continue
-
-        # if stellar or telluric template powers are exactly equal to their starting values, fit failed, throw out result
-        if parfit[1] == par_in[1] or parfit[3] == par_in[3]:
-            print(' parfit[1] == par_in[1] or parfit[3] == par_in[3]')
-            continue
-
-        # # if model dips below zero at any point, we're to close to edge of blaze, fit may be comrpomised, throw out result
-        smod,chisq = fmod(parfit,fitobj)
-        if len(smod[(smod < 0)]) > 0:
-            print('len(smod[(smod < 0)]) > 0')
-            continue
+        #
+        # # if stellar template power is very low, throw out result
+        # if parfit[1] < 0.1:
+        #     print('parfit[1] < 0.1')
+        #     continue
+        #
+        # # if stellar or telluric template powers are exactly equal to their starting values, fit failed, throw out result
+        # if parfit[1] == par_in[1] or parfit[3] == par_in[3]:
+        #     print(' parfit[1] == par_in[1] or parfit[3] == par_in[3]')
+        #     continue
+        #
+        # # # if model dips below zero at any point, we're to close to edge of blaze, fit may be comrpomised, throw out result
+        # smod,chisq = fmod(parfit,fitobj)
+        # if len(smod[(smod < 0)]) > 0:
+        #     print('len(smod[(smod < 0)]) > 0')
+        #     continue
 
         if args.plotfigs == True:
             parfitS = parfit.copy(); parfitS[3] = 0
