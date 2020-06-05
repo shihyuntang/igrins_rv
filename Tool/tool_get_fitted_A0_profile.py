@@ -265,7 +265,7 @@ def rv_main(i, order0, order):
             outplotter(parfit  ,fitobj,'{}_{}_{}_parfit'.format(label,night,tag), trk, 1)
 
             # Compute model and divide for residual
-            fullmodel,chisq = fmod(par,fitobj)
+            fullmodel,chisq = fmod(parfit,fitobj)
             residual = fitobj.s/fullmodel
 
 
@@ -286,12 +286,14 @@ def rv_main(i, order0, order):
             stellflat = stellmodel/contmodel
             tellflat  = tellmodel/contmodel
 
-    w_min = np.nanmin(fitobj.w)
-    dw    = (np.nanmax(fitobj.w) - np.nanmin(fitobj.w)) / 8
+    w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
+
+    w_min = np.nanmin(w)
+    dw    = (np.nanmax(w) - np.nanmin(w)) / 8
     for nn in range(8):
-        wrange = [ (fitobj.w > (w_min + nn*dw) ) & ( (fitobj.w < (w_min + (nn+1)*dw)) ) ]
+        wrange = [ (w > (w_min + nn*dw) ) & ( (w < (w_min + (nn+1)*dw)) ) ]
         leng_w = sum(wrange)
-        wminibox[:leng_w, nn]         = fitobj.w[wrange]
+        wminibox[:leng_w, nn]         = w[wrange]
         sminibox[:leng_w, nn]         = dataflat[wrange]
         flminibox_tel[:leng_w, nn]    = modelflat[wrange]
         flminibox_ste[:leng_w, nn]    = stellflat[wrange]
