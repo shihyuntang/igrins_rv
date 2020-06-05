@@ -26,7 +26,7 @@ def rv_main(i, order0, order):
     # --------------------------------------------------------------
     # --------------------------------------------------------------
     # Use instrumental profile dictionary corresponding to whether IGRINS mounting was loose or not
-    if int(night) < 20180401 or int(night) > 20190531:
+    if int(night[:8]) < 20180401 or int(night[:8]) > 20190531:
         IPpars = inparam.ips_tightmount_pars[args.band][order]
     else:
         IPpars = inparam.ips_loosemount_pars[args.band][order]
@@ -62,7 +62,7 @@ def rv_main(i, order0, order):
         nightsout.append(night)
 
     # Load telluric template from Telfit'd A0
-    A0loc = './{}/A0_Fits/{}A0_treated_{}.fits'.format(args.targname, night, args.band)
+    A0loc = './{}/A0_Fits/{}A0_treated_{}.fits'.format(args.targname, night[:8], args.band)
     try:
         hdulist = fits.open(A0loc)
     except IOError:
@@ -127,36 +127,36 @@ def rv_main(i, order0, order):
         tag = tagsnight[t]
         beam = beamsnight[t]
 
-        if args.band=='K':
-            if order==11:
-                bound_cut = [200, 100]
-            elif order==12:
-                bound_cut = [900, 300]
-            elif order==13:
-                bound_cut = [200, 400]
-            elif order==14:
-                bound_cut = [150, 300]
-            else:
-                bound_cut = [150, 100]
-        elif args.band=='H':
-            if order==10:
-                bound_cut = [250, 150]#ok
-            elif order==11:
-                bound_cut = [600, 150]
-            elif order==13:
-                bound_cut = [200, 600]#ok
-            elif order==14:
-                bound_cut = [700, 100]
-            elif order==16:
-                bound_cut = [400, 100]
-            elif order==17:
-                bound_cut = [1000, 100]
-            elif order==20:
-                bound_cut = [500, 150]
-            elif (order==7) or (order==8) or (order==9) or (order==12) or (order==15) or (order==18) or (order==19):
-                bound_cut = [500, 500]
-            else:
-                bound_cut = [150, 100]
+        # if args.band=='K':
+        #     if order==11:
+        #         bound_cut = [200, 100]
+        #     elif order==12:
+        #         bound_cut = [900, 300]
+        #     elif order==13:
+        #         bound_cut = [200, 400]
+        #     elif order==14:
+        #         bound_cut = [150, 300]
+        #     else:
+        #         bound_cut = [150, 100]
+        # elif args.band=='H':
+        #     if order==10:
+        #         bound_cut = [250, 150]#ok
+        #     elif order==11:
+        #         bound_cut = [600, 150]
+        #     elif order==13:
+        #         bound_cut = [200, 600]#ok
+        #     elif order==14:
+        #         bound_cut = [700, 100]
+        #     elif order==16:
+        #         bound_cut = [400, 100]
+        #     elif order==17:
+        #         bound_cut = [1000, 100]
+        #     elif order==20:
+        #         bound_cut = [500, 150]
+        #     elif (order==7) or (order==8) or (order==9) or (order==12) or (order==15) or (order==18) or (order==19):
+        #         bound_cut = [500, 500]
+        #     else:
+        #         bound_cut = [150, 100]
 
         x,wave,s,u = init_fitsread('{}{}/{}/'.format(inparam.inpath, night, beam),
                                     'target',
@@ -165,7 +165,7 @@ def rv_main(i, order0, order):
                                     order,
                                     tag,
                                     args.band,
-                                    bound_cut)
+                                    [150, 150])
 #-------------------------------------------------------------------------------
         s2n = s/u
         if np.nanmedian(s2n) < float(args.SN_cut):
@@ -394,11 +394,11 @@ Input Parameters:
     print('This will take a while..........')
 
     ## Collect relevant file information from Predata files
-    A0data   = Table.read('../Temp/Prepdata/Prepdata_A0_{}.txt'.format(args.targname), format='ascii')
+    A0data   = Table.read('../Temp/Prepdata/Prepdata_A0_{}_tool.txt'.format(args.targname), format='ascii')
     A0nights = np.array(A0data['night'],dtype='str')
     ams0     = np.array(A0data['airmass'])
 
-    targdata = Table.read('../Temp/Prepdata/Prepdata_targ_{}.txt'.format(args.targname), format='ascii')
+    targdata = Table.read('../Temp/Prepdata/Prepdata_targ_{}_tool.txt'.format(args.targname), format='ascii')
     Tnights = np.array(targdata['night'],dtype='str')
     tags0   = np.array(targdata['tag'], dtype='int')
     beams0  = np.array(targdata['beam'],dtype='str')
