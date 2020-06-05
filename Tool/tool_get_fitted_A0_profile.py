@@ -290,7 +290,7 @@ def rv_main(i, order0, order):
     w_min = np.nanmin(fitobj.w)
     dw    = (np.nanmax(fitobj.w) - np.nanmin(fitobj.w)) / 8
     for nn in range(8):
-        wrange = [ (fitobj.w > (w_min + nn*dw) ) & ( (fitobj.w < (w_min + (nn+1)*dw) ) ]
+        wrange = [ (fitobj.w > (w_min + nn*dw) ) & ( (fitobj.w < (w_min + (nn+1)*dw)) ) ]
         leng_w = sum(wrange)
         wminibox[:leng_w, nn]         = fitobj.w[wrange]
         sminibox[:leng_w, nn]         = dataflat[wrange]
