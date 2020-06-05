@@ -264,27 +264,27 @@ def rv_main(i, order0, order):
             outplotter(parfit_5,fitobj,'{}_{}_{}_parfit_5'.format(label,night,tag), trk, 1)
             outplotter(parfit  ,fitobj,'{}_{}_{}_parfit'.format(label,night,tag), trk, 1)
 
-            # Compute model and divide for residual
-            fullmodel,chisq = fmod(parfit,fitobj)
-            residual = fitobj.s/fullmodel
+        # Compute model and divide for residual
+        fullmodel,chisq = fmod(parfit,fitobj)
+        residual = fitobj.s/fullmodel
 
 
-            # Set both stellar and telluric template powers to 0 to compute only continuum
-            parcont = parfit.copy();
-            parcont[1] = 0.; parcont[3] = 0.;
-            contmodel, chisq = fmod(parcont,fitobj)
+        # Set both stellar and telluric template powers to 0 to compute only continuum
+        parcont = parfit.copy();
+        parcont[1] = 0.; parcont[3] = 0.;
+        contmodel, chisq = fmod(parcont,fitobj)
 
-            # Set stellar tempalte power to 0 to compute only telluric, and vice versa
-            parS = parfit.copy(); parT = parfit.copy();
-            parT[1] = 0.; parS[3] = 0.;
-            stellmodel,chisq = fmod(parS,   fitobj)
-            tellmodel, chisq = fmod(parT,   fitobj)
+        # Set stellar tempalte power to 0 to compute only telluric, and vice versa
+        parS = parfit.copy(); parT = parfit.copy();
+        parT[1] = 0.; parS[3] = 0.;
+        stellmodel,chisq = fmod(parS,   fitobj)
+        tellmodel, chisq = fmod(parT,   fitobj)
 
-            # Divide everything by continuum model except residual
-            dataflat  = fitobj.s/contmodel
-            modelflat = fullmodel/contmodel
-            stellflat = stellmodel/contmodel
-            tellflat  = tellmodel/contmodel
+        # Divide everything by continuum model except residual
+        dataflat  = fitobj.s/contmodel
+        modelflat = fullmodel/contmodel
+        stellflat = stellmodel/contmodel
+        tellflat  = tellmodel/contmodel
 
     w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
 
