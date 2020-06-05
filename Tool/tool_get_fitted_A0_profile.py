@@ -142,7 +142,7 @@ def rv_main(i, order0, order):
                       0.,                                                    #12: Continuum quadratic component
                       IPpars[1],                                             #13: IP linear component
                       IPpars[0],                                            #14: IP quadratic component
-                      0.675]])                                                #15: Differential Rotation Coefficient
+                      0.675])                                                #15: Differential Rotation Coefficient
 
 #    for t in np.arange(len(tagsnight)):
     for t in [0]:
