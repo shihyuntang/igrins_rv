@@ -10,7 +10,7 @@ from Engine.classes import fitobjs,inparams
 from Engine.macbro import macbro
 from Engine.rebin_jv import rebin_jv
 from Engine.rotint import rotint
-from Engine.opt import optimizer, fmodel_separate
+from Engine.opt import optimizer, fmod_conti
 
 def splitter(master,N):
 
@@ -60,9 +60,12 @@ def rv_main(i, order0, order):
     vsiniminibox = np.ones((len(tagsnight),Nsplit));
 
     wminibox      = np.ones((270, Nsplit))
+    sminibox      = np.ones((270, Nsplit))
     flminibox_tel = np.ones((270, Nsplit))
     flminibox_ste = np.ones((270, Nsplit))
     contiminibox  = np.ones((270, Nsplit))
+    contiminibox2 = np.ones((270, Nsplit))
+
     stalflatbox   = np.ones((270, Nsplit))
     ubox          = np.ones((270, Nsplit))
     orgfluxbox    = np.ones((270, Nsplit))
@@ -72,9 +75,11 @@ def rv_main(i, order0, order):
     vsiniminibox[:] = np.nan;
 
     wminibox[:]     = np.nan
+    sminibox[:]     = np.nan
     flminibox_tel[:]= np.nan
     flminibox_ste[:]= np.nan
     contiminibox[:] = np.nan
+    contiminibox2[:]= np.nan
     stalflatbox[:]  = np.nan
     ubox[:]         = np.nan
     orgfluxbox[:]   = np.nan
@@ -136,7 +141,8 @@ def rv_main(i, order0, order):
                       0.,                                                    #11: Continuum linear component
                       0.,                                                    #12: Continuum quadratic component
                       IPpars[1],                                             #13: IP linear component
-                      IPpars[0]])                                            #14: IP quadratic component
+                      IPpars[0]],                                            #14: IP quadratic component
+                      0.675])                                                #15: Differential Rotation Coefficient
 
 #    for t in np.arange(len(tagsnight)):
     for t in [0]:
@@ -200,10 +206,11 @@ def rv_main(i, order0, order):
         xgen    = splitter(x.copy(),   Nsplit);
             # Arrays defining parameter variations during optimization steps
 
-        dpar_cont = np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0])
-        dpar_wave = np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 10.0,  10.0, 5.00000e-5, 1e-7, 0,   0, 0, 0,    0])
-        dpar_st   = np.array([5.0, 1.0, 5.0, 3.0, inparam.vsinivary, 0.5, 0.0,   0.0,  0.0,        0,    1e4, 1, 1, 0,    0])
-        dpar      = np.array([5.0, 1.0, 5.0, 3.0, inparam.vsinivary, 0.5, 0.0,   0.0,  0.0,        0,    1e4, 1, 1, 0,    0])
+        dpar_cont = np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0, 0  ])
+        dpar_wave = np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 10.0,  10.0, 5.00000e-5, 1e-7, 0,   0, 0, 0,    0, 0  ])
+        dpar      = np.array([5.0, 1.0, 5.0, 3.0, inparam.vsinivary, 0.5, 0.0,   0.0,  0.0,        0,    1e4, 1, 1, 0,    0, 0.2])
+        dpar_st   = np.array([5.0, 1.0, 5.0, 3.0, inparam.vsinivary, 0.5, 0.0,   0.0,  0.0,        0,    1e4, 1, 1, 0,    0, 0.2])
+        dpar_ip   = np.array([0.0, 0.0, 0.0, 0.0, 0,                 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0  ])
 
         for nn in range(Nsplit):
             wave_piece = next(wavegen);
@@ -241,14 +248,17 @@ def rv_main(i, order0, order):
 
             optimize = True
             par_in = par.copy()
-            hardbounds = [par_in[4]-dpar[4],
-                          par_in[4]+dpar[4],
-                          par_in[5]-dpar[5],
-                          par_in[5]+dpar[5]]
+            hardbounds = [par_in[4]-dpar[4],   par_in[4]+dpar[4],
+                          par_in[5]-dpar[5],   par_in[5]+dpar[5],
+                          par_in[15]-dpar[15], par_in[15]+dpar[15]]
             if hardbounds[0] < 0:
                 hardbounds[0] = 0
             if hardbounds[3] < 0:
                 hardbounds[3] = 1
+            if hardbounds[4] < 0.1:
+                hardbounds[4] = 0.1
+            if hardbounds[5] > 0.9:
+                hardbounds[5] = 0.9
 
             parfit_1 = optimizer(par_in,   dpar_cont, hardbounds,fitobj,optimize)
             parfit_2 = optimizer(parfit_1, dpar_wave, hardbounds,fitobj,optimize)
@@ -260,27 +270,27 @@ def rv_main(i, order0, order):
 
             parfit_tel = parfit.copy() # modified 0503
             parfit_tel[1] = 0
-            w,smod_tel,cont,cont1 = fmodel_separate(parfit_tel, fitobj)
+            w,s,smod_tel,cont,c2,mask = fmod_conti(parfit_tel, fitobj)
 
             parfit_ste = parfit.copy() # modified 0503
             parfit_ste[3] = 0
-            w,smod_ste,cont,cont1  = fmodel_separate(parfit_ste, fitobj)
+            w,s,smod_ste,cont,c2,mask = fmod_conti(parfit_ste, fitobj)
 
-            s2n   = s_piece/u_piece
-            sflat = s_piece/cont
-            sflat *= np.median(cont)
-            u_piece = sflat/s2n
+            # s2n   = s_piece/u_piece
+            # sflat = s_piece/cont
+            # sflat *= np.median(cont)
+            # u_piece = sflat/s2n
 
             wminibox[:len(w), nn]                = w
-            stalflatbox[:len(sflat), nn]         = sflat
+            sminibox[:len(s), nn]                = s
             flminibox_tel[:len(smod_tel), nn]    = smod_tel
             flminibox_ste[:len(smod_ste), nn]    = smod_ste
-            ubox[:len(u_piece), nn]              = u_piece
-            orgfluxbox[:len(s_piece), nn]        = s_piece
-            contiminibox[:len(cont), nn]         = cont1
+            # ubox[:len(u_piece), nn]              = u_piece
+            # orgfluxbox[:len(s_piece), nn]        = s_piece
+            contiminibox[:len(cont), nn]         = cont
+            contiminibox2[:len(c2), nn]          = c2
 
-
-    return wminibox,stalflatbox,flminibox_tel,flminibox_ste,ubox,orgfluxbox,contiminibox
+    return wminibox,sminibox,flminibox_tel,flminibox_ste,contiminibox,contiminibox2
 
 def mp_run(Nthreads, nights, order0):
     pool = mp.Pool(processes = Nthreads)
@@ -479,27 +489,30 @@ Input Parameters:
         stbox     = outsbox[1]
         telbox    = outsbox[2]
         stebox    = outsbox[3]
-        uubox     = outsbox[4]
-        orgbox    = outsbox[5]
-        conti_fl  = outsbox[6]
+        # uubox     = outsbox[4]
+        # orgbox    = outsbox[5]
+        conti_fl  = outsbox[4]
+        conti_fl2 = outsbox[5]
 
         # Save results in fits file
         c1 = fits.Column(name='wavelength',    array=wbox,         format=str(
             len(wbox[0, :]))+'D', dim=(1, len(wbox[0, :])))
-        c2 = fits.Column(name='sflat',         array=stbox,         format=str(
+        c2 = fits.Column(name='s',             array=stbox,        format=str(
             len(wbox[0, :]))+'D', dim=(1, len(wbox[0, :])))
-        c3 = fits.Column(name='tel_fl',        array=telbox,    format=str(
+        c3 = fits.Column(name='tel_fl',        array=telbox,       format=str(
             len(wbox[0, :]))+'D', dim=(1, len(wbox[0, :])))
-        c4 = fits.Column(name='ste_fl',        array=stebox,    format=str(
+        c4 = fits.Column(name='ste_fl',        array=stebox,       format=str(
             len(wbox[0, :]))+'D', dim=(1, len(wbox[0, :])))
-        c5 = fits.Column(name='u_piece',        array=uubox,    format=str(
+        # c5 = fits.Column(name='u_piece',        array=uubox,    format=str(
+        #     len(wbox[0, :]))+'D', dim=(1, len(wbox[0, :])))
+        # c6 = fits.Column(name='s_piece',        array=orgbox,    format=str(
+        #     len(wbox[0, :]))+'D', dim=(1, len(wbox[0, :])))
+        c5 = fits.Column(name='conti_fl',      array=conti_fl,     format=str(
             len(wbox[0, :]))+'D', dim=(1, len(wbox[0, :])))
-        c6 = fits.Column(name='s_piece',        array=orgbox,    format=str(
-            len(wbox[0, :]))+'D', dim=(1, len(wbox[0, :])))
-        c7 = fits.Column(name='conti_fl',      array=conti_fl,     format=str(
+        c6 = fits.Column(name='c2',            array=conti_fl2,    format=str(
             len(wbox[0, :]))+'D', dim=(1, len(wbox[0, :])))
 
-        cols = fits.ColDefs([c1, c2, c3, c4, c5, c6, c7])
+        cols = fits.ColDefs([c1, c2, c3, c4, c5, c6])
         hdu_1 = fits.BinTableHDU.from_columns(cols)
 
         if orders[i] == orders[0]:  # If first time writing fits file, make up filler primary hdu
