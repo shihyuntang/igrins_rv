@@ -35,7 +35,7 @@ def outplotter(parfit,fitobj,title):
 
 def DataPrep(args, tar_night, tar_num, tar_frame, file_night_num, std_name, std_num, std_night):
     star = args.targname.replace(' ', '')
-    inpath     = '../Input_Data/{}/'.format(args.targname)
+    inpath     = '../Input_Data/{}/'.format(star)
 
     # Find all nights of observations of target in master log
     master_log_fh = '../Engine/IGRINS_MASTERLOG.csv'
@@ -577,16 +577,16 @@ if __name__ == '__main__':
     time.sleep(5)
     print('\n')
 
-    if not os.path.isdir('./{}'.format(args.targname)):
-        os.mkdir('./{}'.format(args.targname) )
+    if not os.path.isdir('./{}'.format(args.targname.replace(' ', ''))):
+        os.mkdir('./{}'.format(args.targname.replace(' ', '')) )
 
-    if not os.path.isdir('./{}/figs_{}'.format(args.targname, args.band)):
-        os.mkdir('./{}/figs_{}'.format(args.targname, args.band) )
+    if not os.path.isdir('./{}/figs_{}'.format(args.targname.replace(' ', ''), args.band)):
+        os.mkdir('./{}/figs_{}'.format(args.targname.replace(' ', ''), args.band) )
 
-    if not os.path.isdir('./{}/A0_Fits'.format(args.targname)):
-        os.mkdir('./{}/A0_Fits'.format(args.targname) )
+    if not os.path.isdir('./{}/A0_Fits'.format(args.targname.replace(' ', ''))):
+        os.mkdir('./{}/A0_Fits'.format(args.targname.replace(' ', '')) )
 
-    outpath = './{}'.format(args.targname)
+    outpath = './{}'.format(args.targname.replace(' ', ''))
 
     # Retrieve stellar and telluric templates
     watm, satm, mwave0, mflux0 = setup_templates()
