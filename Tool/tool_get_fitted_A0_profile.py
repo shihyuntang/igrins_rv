@@ -519,11 +519,11 @@ Input Parameters:
             bleh = np.ones((3, 3))
             primary_hdu1 = fits.PrimaryHDU(bleh)
             hdul = fits.HDUList([primary_hdu1, hdu_1])
-            hdul.writeto(inparam.outpath+'/'+name+'/RVresultsRawBox_fit_wl_{}_{}_{}.fits'.format(targname, inparam.nights[0], args.band))
+            hdul.writeto(inparam.outpath+'/'+name+'/RVresultsRawBox_fit_wl_{}_{}_{}.fits'.format(args.targname, inparam.nights[0], args.band))
         else:
-            hh = fits.open(inparam.outpath+'/'+name+'/RVresultsRawBox_fit_wl_{}_{}_{}.fits'.format(targname, inparam.nights[0], args.band))
+            hh = fits.open(inparam.outpath+'/'+name+'/RVresultsRawBox_fit_wl_{}_{}_{}.fits'.format(args.targname, inparam.nights[0], args.band))
             hh.append(hdu_1)
-            hh.writeto(tinparam.outpath+'/'+name+'/RVresultsRawBox_fit_wl_{}_{}_{}.fits'.format(targname, inparam.nights[0], args.band), overwrite=True)
+            hh.writeto(tinparam.outpath+'/'+name+'/RVresultsRawBox_fit_wl_{}_{}_{}.fits'.format(args.targname, inparam.nights[0], args.band), overwrite=True)
 
     end_time = datetime.now()
     print('Whole process DONE!!!!!!, Duration: {}'.format(end_time - start_time))
