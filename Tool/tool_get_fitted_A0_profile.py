@@ -65,7 +65,7 @@ def rv_main(i, order0, order):
     try:
         hdulist = fits.open(A0loc)
     except IOError:
-        print('No A0-fitted template for night , skipping...'.format(night))
+        print('No A0-fitted template for night {}, skipping...'.format(night))
         return wminibox,sminibox,flminibox_tel,flminibox_ste,contiminibox,residualbox
 
     # tbdata = hdulist[order-1].data
