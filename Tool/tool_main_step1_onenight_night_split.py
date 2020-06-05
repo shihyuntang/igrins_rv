@@ -132,7 +132,7 @@ def DataPrep(args, tar_night, tar_num, tar_frame, file_night_num, std_name, std_
             tagA0 = int(num)
 
             tagA = '{:04d}'.format(tagA0)
-                subpath = '{}std/{}/AB/SDC{}_{}_{}.spec.fits'.format(inpath, night, args.band, night, tagA)
+            subpath = '{}std/{}/AB/SDC{}_{}_{}.spec.fits'.format(inpath, night, args.band, night, tagA)
 
             try:
                 hdulist = fits.open(subpath)
