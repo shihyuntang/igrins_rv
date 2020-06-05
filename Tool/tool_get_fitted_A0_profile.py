@@ -297,7 +297,7 @@ def rv_main(i, order0, order):
         sminibox[:leng_w, nn]         = dataflat[wrange]
         flminibox_tel[:leng_w, nn]    = modelflat[wrange]
         flminibox_ste[:leng_w, nn]    = stellflat[wrange]
-        contiminibox[:lleng_w, nn]    = contmodel[wrange]
+        contiminibox[:leng_w, nn]    = contmodel[wrange]
         residualbox[:leng_w, nn]      = residual[wrange]
 
     return wminibox,sminibox,flminibox_tel,flminibox_ste,contiminibox,residualbox
