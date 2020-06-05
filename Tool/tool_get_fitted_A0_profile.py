@@ -523,7 +523,7 @@ Input Parameters:
         else:
             hh = fits.open(inparam.outpath+'/'+name+'/RVresultsRawBox_fit_wl_{}_{}_{}.fits'.format(args.targname, inparam.nights[0], args.band))
             hh.append(hdu_1)
-            hh.writeto(tinparam.outpath+'/'+name+'/RVresultsRawBox_fit_wl_{}_{}_{}.fits'.format(args.targname, inparam.nights[0], args.band), overwrite=True)
+            hh.writeto(inparam.outpath+'/'+name+'/RVresultsRawBox_fit_wl_{}_{}_{}.fits'.format(args.targname, inparam.nights[0], args.band), overwrite=True)
 
     end_time = datetime.now()
     print('Whole process DONE!!!!!!, Duration: {}'.format(end_time - start_time))
