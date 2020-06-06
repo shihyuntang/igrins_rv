@@ -494,14 +494,13 @@ Input Parameters:
 
     inparam = inparams(inpath,outpath,initvsini,vsinivary,args.plotfigs,initguesses,bvcs,tagsA,tagsB,nightsFinal,mwave0,mflux0,None,None)
 
-#    orders = [2,3,4,5,6]
 # ---------------------------------------
     if args.band == 'K':
-        orders = np.arange(2,17)
-#        orders = np.array([6])
+        order0 = np.append(np.arange(2, 9), np.array([10, 11, 12, 13, 14, 16]))
     elif args.band == 'H':
-        # orders = np.arange(2,23)
-        orders = np.array([2, 3, 4, 5, 6, 10, 11, 13, 14, 16, 17, 20, 21, 22])
+#        order0 = np.arange(5,11)
+        # order0 = np.arange(2,23)
+        order0 = np.array([2, 3, 4, 5, 6, 10, 11, 13, 14, 16, 17, 20, 21, 22])
 #    order0 = np.array([16])
 # ---------------------------------------
 
