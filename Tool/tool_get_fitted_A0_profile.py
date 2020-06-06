@@ -52,6 +52,7 @@ def rv_main(i, order0, order):
     flminibox_ste = np.ones((270, Nsplit))
     contiminibox  = np.ones((270, Nsplit))
     residualbox   = np.ones((270, Nsplit))
+    flminibox_mod = np.ones((270, Nsplit))
 
     wminibox[:]     = np.nan
     sminibox[:]     = np.nan
@@ -59,6 +60,7 @@ def rv_main(i, order0, order):
     flminibox_ste[:]= np.nan
     contiminibox[:] = np.nan
     residualbox[:]  = np.nan
+    flminibox_mod[:]  = np.nan
 
     # Load telluric template from Telfit'd A0
     A0loc = '{}/A0_Fits/{}A0_treated_{}.fits'.format(args.targname, night[:8], args.band)
@@ -295,12 +297,13 @@ def rv_main(i, order0, order):
         leng_w = sum(wrange)
         wminibox[:leng_w, nn]         = w[wrange]
         sminibox[:leng_w, nn]         = dataflat[wrange]
-        flminibox_tel[:leng_w, nn]    = modelflat[wrange]
+        flminibox_mod[:leng_w, nn]    = modelflat[wrange]
+        flminibox_tel[:leng_w, nn]    = tellflat[wrange]
         flminibox_ste[:leng_w, nn]    = stellflat[wrange]
-        contiminibox[:leng_w, nn]    = contmodel[wrange]
+        contiminibox[:leng_w, nn]     = contmodel[wrange]
         residualbox[:leng_w, nn]      = residual[wrange]
 
-    return wminibox,sminibox,flminibox_tel,flminibox_ste,contiminibox,residualbox
+    return wminibox,sminibox,flminibox_mod,flminibox_tel,flminibox_ste,contiminibox,residualbox
 
 
 def mp_run(Nthreads, nights, order0):
@@ -503,26 +506,30 @@ for i in range(len(orders)):
 
     wbox      = outsbox[0]
     stbox     = outsbox[1]
-    telbox    = outsbox[2]
-    stebox    = outsbox[3]
-    conti_fl  = outsbox[4]
-    residual  = outsbox[5]
+    modbox    = outsbox[2]
+    telbox    = outsbox[3]
+    stebox    = outsbox[4]
+    conti_fl  = outsbox[5]
+    residual  = outsbox[6]
 
     # Save results in fits file
     c1 = fits.Column(name='wavelength',    array=wbox,         format=str(
         len(wbox[0, :]))+'D', dim=(1, len(wbox[0, :])))
     c2 = fits.Column(name='s',             array=stbox,        format=str(
         len(wbox[0, :]))+'D', dim=(1, len(wbox[0, :])))
-    c3 = fits.Column(name='tel_fl',        array=telbox,       format=str(
+    c3 = fits.Column(name='model_fl',      array=modbox,    format=str(
         len(wbox[0, :]))+'D', dim=(1, len(wbox[0, :])))
-    c4 = fits.Column(name='ste_fl',        array=stebox,       format=str(
+    c4 = fits.Column(name='tel_fl',        array=telbox,       format=str(
         len(wbox[0, :]))+'D', dim=(1, len(wbox[0, :])))
-    c5 = fits.Column(name='conti_fl',      array=conti_fl,     format=str(
+    c5 = fits.Column(name='ste_fl',        array=stebox,       format=str(
         len(wbox[0, :]))+'D', dim=(1, len(wbox[0, :])))
-    c6 = fits.Column(name='residual',      array=residual,    format=str(
+    c6 = fits.Column(name='conti_fl',      array=conti_fl,     format=str(
+        len(wbox[0, :]))+'D', dim=(1, len(wbox[0, :])))
+    c7 = fits.Column(name='residual',      array=residual,    format=str(
         len(wbox[0, :]))+'D', dim=(1, len(wbox[0, :])))
 
-    cols = fits.ColDefs([c1, c2, c3, c4, c5, c6])
+
+    cols = fits.ColDefs([c1, c2, c3, c4, c5, c6, c7])
     hdu_1 = fits.BinTableHDU.from_columns(cols)
 
     if orders[i] == orders[0]:  # If first time writing fits file, make up filler primary hdu
