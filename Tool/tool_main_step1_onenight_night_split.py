@@ -545,7 +545,7 @@ if __name__ == '__main__':
     print('\n')
 
     ## Collect relevant file information from Predata files
-    A0data = Table.read('../Temp/Prepdata/Prepdata_A0_{}_tool.txt'.format(args.targname), format='ascii')
+    A0data = Table.read('../Temp/Prepdata/Prepdata_A0_{}_tool.txt'.format(args.targname.replace(' ', '')), format='ascii')
 
     ind    = [i != 'NA' for i in A0data['humid']]
     humids = {str(k):str(v) for k,v in zip(A0data[ind]['night'],A0data[ind]['humid'])}
