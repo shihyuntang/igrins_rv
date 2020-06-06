@@ -544,7 +544,7 @@ if __name__ == '__main__':
     # Thus, with 01 thread, one night for five orders is about 2135 sec.
 # ---------------------------------------
     if args.band == 'K':
-        order0 = np.arange(2,17)
+        order0 = np.append(np.arange(2, 9), np.array([10, 11, 12, 13, 14, 16]))
     elif args.band == 'H':
 #        order0 = np.arange(5,11)
         # order0 = np.arange(2,23)
