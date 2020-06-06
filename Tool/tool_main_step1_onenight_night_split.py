@@ -489,7 +489,7 @@ if __name__ == '__main__':
     parser.add_argument('--version',                         action='version',  version='%(prog)s 0.5')
     args = parser.parse_args()
     cdbs_loc = '~/cdbs/'
-    inpath     = '../Input_Data/{}/'.format(args.targname)
+    inpath     = '../Input_Data/{}/'.format(args.targname.replace(' ', ''))
 
     new_tar_list = os.listdir('./{}_recipes'.format(args.targname.replace(' ', '')))
     target_have  = np.sort([int(dump[:8]) for dump in new_tar_list if dump[-1] == 'p'])
