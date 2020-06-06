@@ -473,10 +473,21 @@ Input Parameters:
     print('Writing output to folder "'+args.targname+'/'+name+'"')
 
     # Retrieve stellar and telluric templates
-    if args.band=='K':
-        watm,satm, mwave0, mflux0 = setup_templates_syn()
-    elif args.band=='H':
+    # if args.band=='K':
+    #     watm,satm, mwave0, mflux0 = setup_templates_syn()
+    # elif args.band=='H':
+    #     watm,satm, mwave0, mflux0 = setup_templates_sun()
+
+    if (args.targname == 'TauBoo') | (args.targname == 'HD26257'):
+        print('Using: SpotAtl_Solar')
         watm,satm, mwave0, mflux0 = setup_templates_sun()
+    else:
+        if args.band=='K':
+            watm,satm, mwave0, mflux0 = setup_templates_syn()
+            print('Using: syntheticstellar_kband')
+        elif args.band=='H':
+            watm,satm, mwave0, mflux0 = setup_templates()
+            print('Using: SpotAtl Organized')
 
     print('\n')
     outpath = './{}'.format(args.targname)
