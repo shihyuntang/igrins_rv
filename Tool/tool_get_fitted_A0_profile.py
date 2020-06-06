@@ -496,11 +496,11 @@ Input Parameters:
 
 # ---------------------------------------
     if args.band == 'K':
-        order0 = np.append(np.arange(2, 9), np.array([10, 11, 12, 13, 14, 16]))
+        orders = np.append(np.arange(2, 9), np.array([10, 11, 12, 13, 14, 16]))
     elif args.band == 'H':
 #        order0 = np.arange(5,11)
         # order0 = np.arange(2,23)
-        order0 = np.array([2, 3, 4, 5, 6, 10, 11, 13, 14, 16, 17, 20, 21, 22])
+        orders = np.array([2, 3, 4, 5, 6, 10, 11, 13, 14, 16, 17, 20, 21, 22])
 #    order0 = np.array([16])
 # ---------------------------------------
 
