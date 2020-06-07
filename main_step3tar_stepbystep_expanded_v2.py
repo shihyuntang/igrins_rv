@@ -600,40 +600,40 @@ if __name__ == '__main__':
             T_L = 'L'
 
 #-------------------------------------------------------------------------------
-    cm_subsection = np.linspace(0, 1, 10)
-    colors = [ cm.tab10(x) for x in cm_subsection ]
-    markers = ['.','s','P','X','d','*','>']
-
-    f = plt.figure(figsize=(5,3))
-    ax1 = plt.subplot(111)
-    for jerp in range(len(label_t)):
-        label0 = '{}-{}'.format( label_t['0'][jerp], label_t['1'][jerp] )
-        ax1.scatter(    np.arange(len(nightsFinal))+1, rvmasterbox[:,jerp], color=colors[jerp], s=5, marker = markers[jerp],label=label0)
-        ax1.errorbar(np.arange(len(nightsFinal))+1, rvmasterbox[:,jerp], yerr=stdmasterbox[:,jerp], ls='none', lw=.5, ecolor=colors[jerp])
-    ax1.set_ylim(np.nanmin(rvmasterbox)-.08,
-                     np.nanmax(rvmasterbox)+.08)
-    ax1.set_ylabel('RV [km/s]')
-    ax1.set_xlabel('Night (#)')
-    ax1.xaxis.set_minor_locator(AutoMinorLocator(5))
-    ax1.yaxis.set_minor_locator(AutoMinorLocator(5))
-    ax1.tick_params(axis='both', labelsize=6, right=True, top=True, direction='in', width=.6)
-    plt.legend()
-    f.savefig('{}/{}/RegionRVs.png'.format(inparam.outpath, name), format='png', bbox_inches='tight')
-
-    f = plt.figure(figsize=(5,3))
-    ax1 = plt.subplot(111)
-    for jerp in range(len(label_t)):
-        label0 = '{}-{}'.format( label_t['0'][jerp], label_t['1'][jerp] )
-        ax1.scatter(    np.arange(len(nightsFinal))+1, vsinis[:,jerp], color=colors[jerp],marker=markers[jerp], s=5,label=label0)
-    ax1.set_ylim(np.nanmin(vsinis)-.08,
-                     np.nanmax(vsinis)+.08)
-    ax1.set_ylabel('vsini [km/s]')
-    ax1.set_xlabel('Night (#)')
-    ax1.xaxis.set_minor_locator(AutoMinorLocator(5))
-    ax1.yaxis.set_minor_locator(AutoMinorLocator(5))
-    plt.legend()
-    ax1.tick_params(axis='both', labelsize=6, right=True, top=True, direction='in', width=.6)
-    f.savefig('{}/{}/RegionVsinis.png'.format(inparam.outpath, name), format='png', bbox_inches='tight')
+    # cm_subsection = np.linspace(0, 1, 10)
+    # colors = [ cm.tab10(x) for x in cm_subsection ]
+    # markers = ['.','s','P','X','d','*','>']
+    #
+    # f = plt.figure(figsize=(5,3))
+    # ax1 = plt.subplot(111)
+    # for jerp in range(len(label_t)):
+    #     label0 = '{}-{}'.format( label_t['0'][jerp], label_t['1'][jerp] )
+    #     ax1.scatter(    np.arange(len(nightsFinal))+1, rvmasterbox[:,jerp], color=colors[jerp], s=5, marker = markers[jerp],label=label0)
+    #     ax1.errorbar(np.arange(len(nightsFinal))+1, rvmasterbox[:,jerp], yerr=stdmasterbox[:,jerp], ls='none', lw=.5, ecolor=colors[jerp])
+    # ax1.set_ylim(np.nanmin(rvmasterbox)-.08,
+    #                  np.nanmax(rvmasterbox)+.08)
+    # ax1.set_ylabel('RV [km/s]')
+    # ax1.set_xlabel('Night (#)')
+    # ax1.xaxis.set_minor_locator(AutoMinorLocator(5))
+    # ax1.yaxis.set_minor_locator(AutoMinorLocator(5))
+    # ax1.tick_params(axis='both', labelsize=6, right=True, top=True, direction='in', width=.6)
+    # plt.legend()
+    # f.savefig('{}/{}/RegionRVs.png'.format(inparam.outpath, name), format='png', bbox_inches='tight')
+    #
+    # f = plt.figure(figsize=(5,3))
+    # ax1 = plt.subplot(111)
+    # for jerp in range(len(label_t)):
+    #     label0 = '{}-{}'.format( label_t['0'][jerp], label_t['1'][jerp] )
+    #     ax1.scatter(    np.arange(len(nightsFinal))+1, vsinis[:,jerp], color=colors[jerp],marker=markers[jerp], s=5,label=label0)
+    # ax1.set_ylim(np.nanmin(vsinis)-.08,
+    #                  np.nanmax(vsinis)+.08)
+    # ax1.set_ylabel('vsini [km/s]')
+    # ax1.set_xlabel('Night (#)')
+    # ax1.xaxis.set_minor_locator(AutoMinorLocator(5))
+    # ax1.yaxis.set_minor_locator(AutoMinorLocator(5))
+    # plt.legend()
+    # ax1.tick_params(axis='both', labelsize=6, right=True, top=True, direction='in', width=.6)
+    # f.savefig('{}/{}/RegionVsinis.png'.format(inparam.outpath, name), format='png', bbox_inches='tight')
 #-------------------------------------------------------------------------------
     nightsCombined  = np.array([]); mjdsCombined = np.array([]);
     rvfinalCombined = np.array([]); stdfinalCombined = np.array([]); vsinifinalCombined = np.array([]);
