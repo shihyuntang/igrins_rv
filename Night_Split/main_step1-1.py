@@ -17,10 +17,9 @@ from Engine.opt import optimizer
 
 def DataPrep(args, tar_night, tar_num, tar_frame, file_night_num, std_name, std_num, std_night):
     star = args.targname.replace(' ', '')
-    inpath     = '../Input_Data/{}/'.format(args.targname)
+    inpath     = '../Input_Data/{}/'.format(star)
 
     # Find all nights of observations of target in master log
-    curdir = os.getcwd()
     master_log_fh = '../Engine/IGRINS_MASTERLOG.csv'
     master_log = Table.from_pandas(pd.read_csv(master_log_fh))
 
@@ -195,6 +194,9 @@ if __name__ == '__main__':
                                      epilog = "Contact authors: asa.stahl@rice.edu; sytang@lowell.edu")
     parser.add_argument("targname",                          action="store",
                         help="Enter your *target name",            type=str)
+    parser.add_argument("-HorK",    dest="band",            action="store",
+                        help="Which band to process? H or K?",
+                        type=str,   default='K')
     parser.add_argument('-c',       dest="Nthreads",         action="store",
                         help="Number of cpu (threads) to use, default is 1/2 of avalible ones (you have %i cpus (threads) avaliable)" % (
                             mp.cpu_count()),
