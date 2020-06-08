@@ -271,9 +271,18 @@ def ini_MPinst(label_t, chunk_ind, trk, i):
 
             parfit = parfit_1.copy()
 
+            if args.plotfigs == True:
+                # outplotter(parfit, fitobj,'Post_parfit_{}_{}_{}'.format(label,night,tag), trk, 0)
+                parfitS = parfit.copy(); parfitS[3] = 0
+                parfitT = parfit.copy(); parfitT[1] = 0
+                outplotter(parfitS, fitobj,'parfitS_{}_{}_{}'.format(label,night,tag), trk, 0)
+                outplotter(parfitT, fitobj,'parfitT_{}_{}_{}'.format(label,night,tag), trk, 0)
+                outplotter(parfit, fitobj,'parfit_{}_{}_{}'.format(label,night,tag), trk, 0)
+
+
             # if stellar template power is very low, throw out result
             if parfit[1] < 0.1:
-                print('parfit[1] < 0.1, {} parfit[1]={}'.format(night, parfit[1]))
+                print('parfit[1] < 0.1, {} parfit={}'.format(night, parfit))
                 continue
 
             # if stellar or telluric template powers are exactly equal to their starting values, fit failed, throw out result
@@ -287,13 +296,6 @@ def ini_MPinst(label_t, chunk_ind, trk, i):
                 print('len(smod[(smod < 0)]) > 0, {}'.format(night))
                 continue
 
-            if args.plotfigs == True:
-                # outplotter(parfit, fitobj,'Post_parfit_{}_{}_{}'.format(label,night,tag), trk, 0)
-                parfitS = parfit.copy(); parfitS[3] = 0
-                parfitT = parfit.copy(); parfitT[1] = 0
-                outplotter(parfitS, fitobj,'parfitS_{}_{}_{}'.format(label,night,tag), trk, 0)
-                outplotter(parfitT, fitobj,'parfitT_{}_{}_{}'.format(label,night,tag), trk, 0)
-                outplotter(parfit, fitobj,'parfit_{}_{}_{}'.format(label,night,tag), trk, 0)
             #
             # if args.debug == True:
             #     outplotter(parfit_1,fitobj,'Post_parfit_1_{}_{}_{}'.format(label,night,tag), trk, 1)
