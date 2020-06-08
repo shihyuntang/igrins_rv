@@ -461,7 +461,7 @@ def use_w(args):
         bounddata = Table.read('./Input_Data/Use_w/WaveRegions_{}_{}.csv'.format(args.WRegion, args.band), format='csv')
     except IOError:
         sys.exit('WaveRegions FILE ./Input_Data/Use_w/WaveRegions_{}_{}.csv NOT FOUND!'.format(args.WRegion, args.band))
-    wavesols = pd.read_csv('./Input_Data/Use_w/WaveSolns_{}_{}.csv'.format(args.WRegion, args.band))
+    wavesols = pd.read_csv('./Input_Data/Use_w/WaveSolns_{}.csv'.format(args.band))
 #-------------------------------------------------------------------------------
     filew = open('./Input_Data/Use_w/XRegions_{}_{}.csv'.format(args.WRegion, args.band),'w')
     filew.write('label, start,  end\n')
