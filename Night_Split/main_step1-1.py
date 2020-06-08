@@ -17,7 +17,7 @@ from Engine.opt import optimizer
 
 def DataPrep(args, tar_night, tar_num, tar_frame, file_night_num, std_name, std_num, std_night):
     star = args.targname.replace(' ', '')
-    inpath = args.inpath
+    inpath     = '../Input_Data/{}/'.format(args.targname)
 
     # Find all nights of observations of target in master log
     curdir = os.getcwd()
