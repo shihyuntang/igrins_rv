@@ -273,15 +273,18 @@ def ini_MPinst(label_t, chunk_ind, trk, i):
 
             # if stellar template power is very low, throw out result
             if parfit[1] < 0.1:
+                print('parfit[1] < 0.1, {} parfit[1]={}'.format(night, parfit[1]))
                 continue
 
             # if stellar or telluric template powers are exactly equal to their starting values, fit failed, throw out result
             if parfit[1] == par_in[1] or parfit[3] == par_in[3]:
+                print('parfit[1] == par_in[1] or parfit[3] == par_in[3], {}'.format(night))
                 continue
 
             # if model dips below zero at any point, we're to close to edge of blaze, fit may be comrpomised, throw out result
             smod,chisq = fmod(parfit,fitobj)
             if len(smod[(smod < 0)]) > 0:
+                print('len(smod[(smod < 0)]) > 0, {}'.format(night))
                 continue
 
             if args.plotfigs == True:
@@ -489,10 +492,17 @@ Input Parameters:
     outpath = './Results/{}_{}'.format(args.targname, args.band)
 #-------------------------------------------------------------------------------
     # Retrieve stellar and telluric templates
-    if args.band=='K':
-        watm,satm, mwave0, mflux0 = setup_templates_syn()
-    elif args.band=='H':
+
+    if (args.targname == 'TauBoo') | (args.targname == 'HD26257'):
+        print('Using: SpotAtl_Solar')
         watm,satm, mwave0, mflux0 = setup_templates_sun()
+    else:
+        if args.band=='K':
+            watm,satm, mwave0, mflux0 = setup_templates_syn()
+            print('Using: syntheticstellar_kband')
+        elif args.band=='H':
+            watm,satm, mwave0, mflux0 = setup_templates()
+            print('Using: SpotAtl Organized')
 
     inparam = inparams(inpath,outpath,initvsini,vsinivary,args.plotfigs,initguesses,bvcs,tagsA,tagsB,nightsFinal,mwave0,mflux0,None,xbounddict)
 
