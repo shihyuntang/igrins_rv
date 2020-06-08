@@ -215,7 +215,7 @@ def setup_templates_sun():
     mflux0 = mflux0[(np.isfinite(mflux0))]
     mflux0[(mflux0 < 0)] = 0
 
-    # mwave0 = airtovac(mwave0)
+    mwave0 = airtovac(mwave0)
     if curdir[-1]=='v':
         telluricdata = Table.read('./Engine/PhotoAtl Organized.txt',format='ascii')
     else:
