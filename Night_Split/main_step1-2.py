@@ -366,13 +366,13 @@ if __name__ == '__main__':
     parser.add_argument('--version',                         action='version',  version='%(prog)s 0.5')
     args = parser.parse_args()
     cdbs_loc = '~/cdbs/'
-    inpath     = './Input_Data/{}/'.format(args.targname)
+    inpath     = '../Input_Data/{}/'.format(args.targname.replace(' ', ''))
 
     if args.debug:
         try:
-            os.listdir('./Temp/Debug/{}/'.format(args.targname))
+            os.listdir('../Temp/Debug/{}/'.format(args.targname))
         except OSError:
-            os.mkdir('./Temp/Debug/{}/'.format(args.targname))
+            os.mkdir('../Temp/Debug/{}/'.format(args.targname))
 
 #-------------------------------------------------------------------------------
     start_time = datetime.now()
