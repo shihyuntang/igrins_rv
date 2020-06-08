@@ -35,7 +35,8 @@ def outplotter(parfit,fitobj,title,debug):
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 
-def MPinst(order, i):
+# def MPinst(order, i):
+def MPinst(args, chunk_ind, orders, i):
     order = orders[chunk_ind]
     night = str(inparam.nights[i])
     firstorder = orders[0]
