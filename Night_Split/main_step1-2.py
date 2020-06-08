@@ -418,7 +418,7 @@ if __name__ == '__main__':
         os.mkdir('../A0_Fits/')
 
     filesndirs = os.listdir('../A0_Fits/')
-    name = 'A0_Fits_'+ args.targname
+    name = 'A0_Fits_'+ args.targname.replace(' ', '')
     if name not in filesndirs:
         os.mkdir('../A0_Fits/{}'.format(name) )
 
