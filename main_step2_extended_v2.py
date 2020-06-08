@@ -265,7 +265,7 @@ def ini_MPinst(label_t, chunk_ind, trk, i):
                 for optkind in optgroup:
                     parfit_1 = optimizer(parstart,dpars[optkind],hardbounds,fitobj,optimize)
                     parstart = parfit_1.copy()
-                    print(parstart)
+                    print('{}: '.format(optkind), parstart)
                     if args.debug == True:
                         outplotter(parfit_1,fitobj,'{}_{}_{}_parfit_{}{}'.format(label,night,tag,nc,optkind), trk, 1)
                     nc += 1
