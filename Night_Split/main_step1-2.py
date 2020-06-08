@@ -164,7 +164,7 @@ def MPinst(args, chunk_ind, orders, i):
     # is the wavelength solution.
 
     optimize = True
-    par_in = par.copy()
+    par_in = parA0.copy()
     hardbounds = [par_in[4] -dpar[4],   par_in[4]+dpar[4],
                   par_in[5] -dpar[5],   par_in[5]+dpar[5],
                   par_in[15]-dpar[15], par_in[15]+dpar[15]]
