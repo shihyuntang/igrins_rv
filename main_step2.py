@@ -85,7 +85,6 @@ def ini_MPinst(label_t, chunk_ind, trk, i):
         except:
             continue
 
-    print(num_orders, order)
     # order in A0_treated.fits is no longer sequential...
     fits_layer = [ i for i in np.arange(num_orders)+1 if int(hdulist[i].columns[0].name[9:]) == order ][0]
 
