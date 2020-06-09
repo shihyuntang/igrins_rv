@@ -18,11 +18,9 @@ def outplotter(parfit,fitobj,title,debug):
     fig, axes = plt.subplots(1, 1, figsize=(5,3), facecolor='white', dpi=300)
     axes.plot(w,fitobj.s, '-',  c = 'k',        lw=0.5, label='data',  alpha=.6)
     axes.plot(w,fit,      '--', c = 'tab:red',  lw=0.5, label='model', alpha=.6)
-
     axes.set_title( title,                 size=5, style='normal', family='sans-serif')
     axes.set_ylabel(r'Normalized Flux',    size=5, style='normal', family='sans-serif')
     axes.set_xlabel(r'Wavelength [$\AA$]', size=5, style='normal', family='sans-serif')
-
     axes.tick_params(axis='both', labelsize=4.5, right=True, top=True, direction='in')
     axes.legend(fontsize=4, edgecolor='white')
     if debug == 0:
@@ -33,10 +31,8 @@ def outplotter(parfit,fitobj,title,debug):
 #-------------------------------------------------------------------------------
 
 def DataPrep(args):
-    # Find all nights of observations of target in master log
-    master_log_fh = './Engine/IGRINS_MASTERLOG.csv'
-    master_log    = pd.read_csv(master_log_fh)
-
+# Find all nights of observations of target in master log
+    master_log    = pd.read_csv('./Engine/IGRINS_MASTERLOG.csv')
     star_files    = master_log[(master_log['OBJNAME'].str.contains(args.targname, regex=True, na=False)) &
                                (master_log['OBJTYPE'].str.contains('TAR',         regex=True, na=False)) ]
     allnights     = np.array(master_log['CIVIL'],dtype='str')
@@ -52,7 +48,7 @@ def DataPrep(args):
             sys.exit('TARGET NAME NOT FOUND IN CATALOG - CHECK INPUT!')
 
 #-------------------------------------------------------------------------------
-    ## Collect target star information
+# Collect target star information
     fileT = open('./Temp/Prepdata/Prepdata_targ_{}.txt'.format(args.targname), 'w')
     fileT.write('night beam tag mjd facility airmass bvc\n')
 
@@ -340,17 +336,12 @@ def MPinst(args, chunk_ind, orders, i):
     if hardbounds[3] < 0:
         hardbounds[3] = 1
 
-#        if args.plotfigs == True:#
-#            outplotter(targname,par_in,fitobj,'{}_{}_{}_1'.format(label,night,tag))
-
     parfit_1 = optimizer(par_in,   dpar_st,   hardbounds,fitobj,optimize)
     parfit_2 = optimizer(parfit_1, dpar_wave, hardbounds,fitobj,optimize)
     parfit_3 = optimizer(parfit_2, dpar_st,   hardbounds,fitobj,optimize)
     parfit_4 = optimizer(parfit_3, dpar,      hardbounds,fitobj,optimize)
     parfit = optimizer(parfit_4,   dpar_wave, hardbounds,fitobj,optimize)
 
-    # if inparam.plotfigs == True:
-    #     outplotter(parfit, fitobj, '{}_{}_1'.format(label,night), 0)
 #-------------------------------------------------------------------------------
     # Get fitted wavelength solution
     a0w_out_fit = parfit[6] + parfit[7]*x + parfit[8]*(x**2.) + parfit[9]*(x**3.)
@@ -379,7 +370,6 @@ def MPinst(args, chunk_ind, orders, i):
             hh.append(hdu_1)
             hh.writeto('{}/{}A0_treated_{}.fits'.format(inparam.outpath, night, args.band), overwrite=True)
     else:
-
         a0contwave /= 1e4
         continuum = rebin_jv(a0contwave,continuum,a0wavelist,False)
 
@@ -592,15 +582,8 @@ if __name__ == '__main__':
         nightsFinal = nightstemp
         print('Only processing nights: {}'.format(nightsFinal))
 
-    # Takes 10 threads 42mins to deal with one order with 57 nights.
-    # Thus, with 01 thread, one night for five orders is about 2135 sec.
-    # th1n1o5 = 2140
-    # extimated_runt = 2140 * len(nightsFinal) / args.Nthreads
-#    nightsFinal = nightsFinal[:10]
     print('Analyze with {} nights'.format(len(nightsFinal)))
-#    print('Estimated runtime is {:1.2f} mins ({:1.1f} hours)'.format(extimated_runt/60, extimated_runt/3600))
-#    print('This is just a rough estimation...')
-#    print('Program starts in 5 sec...')
+
     time.sleep(6)
     print('\n')
 #-------------------------------------------------------------------------------
@@ -626,7 +609,6 @@ if __name__ == '__main__':
     orders = np.unique(orders)
     orders = np.sort(orders)
     for jerp in range(len(orders)):
-#    for jerp in range(1):
         outs = mp_run(args, args.Nthreads, jerp, orders, nightsFinal)
 
 
