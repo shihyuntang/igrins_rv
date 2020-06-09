@@ -1,6 +1,6 @@
 from Engine.importmodule import *
 
-from Engine.IO_AB import setup_templates, setup_templates_syn, init_fitsread,stellarmodel_setup, setup_outdir
+from Engine.IO_AB import setup_templates, setup_templates_syn, setup_templates_sun, init_fitsread,stellarmodel_setup, setup_outdir
 from Engine.clips import basicclip_above
 from Engine.contfit import A0cont
 from Engine.classes import fitobjs,inparams
@@ -8,6 +8,7 @@ from Engine.macbro import macbro
 from Engine.rebin_jv import rebin_jv
 from Engine.rotint import rotint
 from Engine.opt import optimizer, fmod
+from matplotlib import cm
 #-------------------------------------------------------------------------------
 def outplotter(parfit,fitobj,title,trk,debug):
     fit,chi = fmod(parfit, fitobj)
@@ -26,7 +27,6 @@ def outplotter(parfit,fitobj,title,trk,debug):
         fig.savefig('{}/figs/main_step3_{}/{}.png'.format(inparam.outpath, trk, title), bbox_inches='tight', format='png', overwrite=True)
     elif debug == 1:
         fig.savefig('./Temp/Debug/{}_{}/main_step3_{}/{}.png'.format(args.targname, args.band, trk, title), bbox_inches='tight', format='png', overwrite=True)
-
 
 #-------------------------------------------------------------------------------
 def rv_MPinst(label_t, chunk_ind, trk, i):
@@ -51,7 +51,7 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
     # --------------------------------------------------------------
     # --------------------------------------------------------------
     # Use instrumental profile dictionary corresponding to whether IGRINS mounting was loose or not
-    if int(night) < 20180401 or int(night) > 20190531:
+    if int(night[:8]) < 20180401 or int(night[:8]) > 20190531:
         IPpars = inparam.ips_tightmount_pars[args.band][order]
     else:
         IPpars = inparam.ips_loosemount_pars[args.band][order]
@@ -68,7 +68,7 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
     nightsout = [];
     rvsminibox     = np.ones(len(tagsnight));
     vsiniminibox   = np.ones(len(tagsnight));
-    parfitminibox  = np.ones((len(tagsnight),16))
+    parfitminibox  = np.ones((len(tagsnight),16));
 
     rvsminibox[:]    = np.nan
     vsiniminibox[:]  = np.nan
@@ -78,7 +78,7 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
         nightsout.append(night)
 
     # Load telluric template from Telfit'd A0
-    A0loc = './A0_Fits/A0_Fits_{}/{}A0_treated_{}.fits'.format(args.targname, night, args.band)
+    A0loc = './A0_Fits/A0_Fits_{}/{}A0_treated_{}.fits'.format(args.targname, night[:8], args.band)
     try:
         hdulist = fits.open(A0loc)
     except IOError:
@@ -88,6 +88,7 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
     num_orders = len( np.unique(label_t['0']) )
 
     # order in A0_treated.fits is no longer sequential...
+
     fits_layer = [ i for i in np.arange(num_orders)+1 if int(hdulist[i].columns[0].name[9:]) == order ][0]
 
     tbdata = hdulist[ fits_layer ].data
@@ -217,12 +218,12 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
 
         par[0] = inparam.initguesses[night]-inparam.bvcs[night+tag]
         # Arrays defining parameter variations during optimization steps
-        # Arrays defining parameter variations during optimization steps
-        dpar_cont = np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0, 0  ])
-        dpar_wave = np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 10.0,  10.0, 5.00000e-5, 1e-7, 0,   0, 0, 0,    0, 0  ])
-        dpar      = np.array([5.0, 1.0, 5.0, 3.0, inparam.vsinivary, 0.5, 0.0,   0.0,  0.0,        0,    1e4, 1, 1, 0,    0, 0.2])
-        dpar_st   = np.array([5.0, 1.0, 5.0, 3.0, inparam.vsinivary, 0.5, 0.0,   0.0,  0.0,        0,    1e4, 1, 1, 0,    0, 0.2])
-        dpar_ip   = np.array([0.0, 0.0, 0.0, 0.0, 0,                 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0  ])
+        dpars = {'cont' : np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0, 0]),
+                 'wave' : np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 10.0,  10.0, 5.00000e-5, 1e-7, 0,   0, 0, 0,    0, 0]),
+                 't'    : np.array([0.0, 0.0, 5.0, 1.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0]),
+                 'ip'   : np.array([0.0, 0.0, 0.0, 0.0, 0,                 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0]),
+                 's'    : np.array([5.0, 1.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0.2]),
+                 'v'    : np.array([0.0, 0.0, 0.0, 0.0, inparam.vsinivary, 0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0])}
 
         continuum_in = rebin_jv(a0contx,continuum,x_piece,False)
         s_piece /= np.median(s_piece)
@@ -232,9 +233,10 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
 
         optimize = True
         par_in = par.copy()
-        hardbounds = [par_in[4]-dpar[4],   par_in[4]+dpar[4],
-                      par_in[5]-dpar[5],   par_in[5]+dpar[5],
-                      par_in[15]-dpar[15], par_in[15]+dpar[15]]
+        hardbounds = [par_in[4]-dpars['v'][4],  par_in[4]+dpars['v'][4],
+                      par_in[5]-dpars['ip'][5], par_in[5]+dpars['ip'][5],
+                      par_in[15]-dpars['s'][15], par_in[15]+dpars['s'][15]]
+
         if hardbounds[0] < 0:
             hardbounds[0] = 0
         if hardbounds[3] < 0:
@@ -247,11 +249,41 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
 #        if args.plotfigs == True:#
 #            outplotter(targname,par_in,fitobj,'{}_{}_{}_1'.format(label,night,tag))
 
-        parfit_1 = optimizer(par_in,   dpar_cont, hardbounds,fitobj,optimize)
-        parfit_2 = optimizer(parfit_1, dpar_wave, hardbounds,fitobj,optimize)
-        parfit_3 = optimizer(parfit_2, dpar_st,   hardbounds,fitobj,optimize)
-        parfit_4 = optimizer(parfit_3, dpar_wave, hardbounds,fitobj,optimize)
-        parfit = optimizer(parfit_4,   dpar,      hardbounds,fitobj,optimize)   # RV fitting
+        cycles = 4
+
+        optgroup = ['cont',
+                    'wave',
+                    't',
+                    's',
+                    'cont',
+                    'wave',
+                    't',
+                    's',
+                    'cont',
+                    'wave',
+                    'ip',
+                    'v',
+                    'ip',
+                    'v',
+                    't',
+                    's',
+                    't',
+                    's']
+
+        nc = 1
+        for cycle in range(cycles):
+
+            if cycle == 0:
+                parstart = par_in.copy()
+
+            for optkind in optgroup:
+                parfit_1 = optimizer(parstart,dpars[optkind],hardbounds,fitobj,optimize)
+                parstart = parfit_1.copy()
+                if args.debug == True:
+                    outplotter(parfit_1,fitobj,'{}_{}_{}_parfit_{}{}'.format(label,night,tag,nc,optkind), trk, 1)
+                nc += 1
+
+        parfit = parfit_1.copy()
 
         # if stellar template power is very low, throw out result
         if parfit[1] < 0.1:
@@ -269,17 +301,9 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
         if args.plotfigs == True:
             parfitS = parfit.copy(); parfitS[3] = 0
             parfitT = parfit.copy(); parfitT[1] = 0
-            outplotter(parfitS, fitobj,'{}_{}_{}_parfitS'.format(label,night,tag), trk, 0)
-            outplotter(parfitT, fitobj,'{}_{}_{}_parfitT'.format(label,night,tag), trk, 0)
-            outplotter(parfit, fitobj,'{}_{}_{}_parfit'.format(label,night,tag), trk, 0)
-
-        if args.debug == True:
-            outplotter(parfit_1,fitobj,'{}_{}_{}_parfit_1'.format(label,night,tag), trk, 1)
-            outplotter(parfit_2,fitobj,'{}_{}_{}_parfit_2'.format(label,night,tag), trk, 1)
-            outplotter(parfit_3,fitobj,'{}_{}_{}_parfit_3'.format(label,night,tag), trk, 1)
-            outplotter(parfit_4,fitobj,'{}_{}_{}_parfit_4'.format(label,night,tag), trk, 1)
-            outplotter(parfit_5,fitobj,'{}_{}_{}_parfit_5'.format(label,night,tag), trk, 1)
-            outplotter(parfit  ,fitobj,'{}_{}_{}_parfit'.format(label,night,tag), trk, 1)
+            outplotter(parfitS, fitobj,'parfitS_{}_{}_{}'.format(label,night,tag), trk, 0)
+            outplotter(parfitT, fitobj,'parfitT_{}_{}_{}'.format(label,night,tag), trk, 0)
+            outplotter(parfit, fitobj,'parfit_{}_{}_{}'.format(label,night,tag), trk, 0)
 
         rv0 = parfit[0] - parfit[2]                         # atomosphere velocity correct
 
@@ -439,7 +463,7 @@ if __name__ == '__main__':
 
     nightsFinal = np.array(list(sorted(set(Tnights))))
     if args.nights_use != '':
-        nightstemp = np.array(args.nights_use, dtype=np.int)
+        nightstemp = np.array(ast.literal_eval(args.nights_use), dtype=str)
         for nnn in nightstemp:
             if nnn not in nightsFinal:
                 sys.exit('NIGHT {} NOT FOUND UNDER ./Input_Data/{}'.format(nnn, args.targname))
@@ -460,6 +484,13 @@ if __name__ == '__main__':
             break
         trk += 1
     os.mkdir('./Results/{}_{}/{}'.format(args.targname, args.band, name) )
+    if args.debug == True:
+        try:
+            os.mkdir('./Temp/Debug/{}_{}/main_step3_{}/'.format(args.targname, args.band, trk))
+        except FileNotFoundError:
+            os.mkdir('./Temp/Debug/{}_{}/'.format(args.targname, args.band))
+            os.mkdir('./Temp/Debug/{}_{}/main_step3_{}/'.format(args.targname, args.band, trk))
+
 #-------------------------------------------------------------------------------
     print('Writing output to folder ./Results/{}_{}'.format(args.targname, args.band, name))
 
@@ -471,16 +502,23 @@ if __name__ == '__main__':
     outpath = './Results/{}_{}'.format(args.targname, args.band)
 #-------------------------------------------------------------------------------
     # Retrieve stellar and telluric templates
-    if args.band=='K':
-        watm,satm, mwave0, mflux0 = setup_templates_syn()
-    elif args.band=='H':
-        watm,satm, mwave0, mflux0 = setup_templates()
+
+    if (args.targname == 'TauBoo') | (args.targname == 'HD26257'):
+        print('Using: SpotAtl_Solar')
+        watm,satm, mwave0, mflux0 = setup_templates_sun()
+    else:
+        if args.band=='K':
+            watm,satm, mwave0, mflux0 = setup_templates_syn()
+            print('Using: syntheticstellar_kband')
+        elif args.band=='H':
+            watm,satm, mwave0, mflux0 = setup_templates()
+            print('Using: SpotAtl Organized')
 
     inparam = inparams(inpath,outpath,initvsini,vsinivary,args.plotfigs,initguesses,bvcs,tagsA,tagsB,nightsFinal,mwave0,mflux0,None,xbounddict)
 
     # Divide between nights where IGRINS mounting was loose (L) and when it was tight (T)
     nights    = inparam.nights
-    intnights = nights.astype(int)
+    intnights = nights.astype(int)[:8]
 
     indT = np.where((intnights < 20180401) | (intnights > 20190531))
     indL = np.where((intnights >= 20180401) & (intnights < 20190531))
@@ -578,7 +616,8 @@ if __name__ == '__main__':
                         rvmasterboxL[i,jerp] = np.nanmean(rvtags)
                         stdmasterboxL[i,jerp] = np.nanstd(rvtags)/np.sqrt(len(rvtags))
             T_L = 'L'
-#-------------------------------------------------------------------------------
+
+
     nightsCombined  = np.array([]); mjdsCombined = np.array([]);
     rvfinalCombined = np.array([]); stdfinalCombined = np.array([]); vsinifinalCombined = np.array([]);
 

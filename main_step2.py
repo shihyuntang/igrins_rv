@@ -205,50 +205,101 @@ def ini_MPinst(label_t, chunk_ind, trk, i):
 
             par[0] = initrvguess-inparam.bvcs[night+tag]
             # Arrays defining parameter variations during optimization steps
-            dpar_cont = np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0, 0])
-            dpar_wave = np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 10.0,  10.0, 5.00000e-5, 1e-7, 0,   0, 0, 0,    0, 0])
-            dpar      = np.array([5.0, 1.0, 5.0, 3.0, inparam.vsinivary, 0.5, 0.0,   0.0,  0.0,        0,    1e4, 1, 1, 0,    0, 0.5])
-            dpar_st   = np.array([5.0, 1.0, 5.0, 3.0, inparam.vsinivary, 0.5, 0.0,   0.0,  0.0,        0,    1e4, 1, 1, 0,    0, 0.5])
-            dpar_ip   = np.array([0.0, 0.0, 0.0, 0.0, 0,                 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0])
+            dpars = {'cont' : np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0, 0]),
+                     'wave' : np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 10.0,  10.0, 5.00000e-5, 0.,   0,   0, 0, 0,    0, 0]),
+                     't'    : np.array([0.0, 0.0, 5.0, 1.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0]),
+                     'ip'   : np.array([0.0, 0.0, 0.0, 0.0, 0,                 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0]),
+                     's'    : np.array([5.0, 1.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0]),
+                     'v'    : np.array([0.0, 0.0, 0.0, 0.0, inparam.vsinivary, 0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0])}
 
             continuum_in = rebin_jv(a0contx,continuum,x_piece,False)
             s_piece /= np.median(s_piece)
             fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in)
-    #-------------------------------------------------------------------------------
-            ######## Begin optimization  ########
+        #-------------------------------------------------------------------------------
+                ######## Begin optimization  ########
 
-        optimize = True
-        par_in = par.copy()
-        hardbounds = [par_in[4] -dpar[4],   par_in[4]+dpar[4],
-                      par_in[5] -dpar[5],   par_in[5]+dpar[5],
-                      par_in[15]-dpar[15], par_in[15]+dpar[15]]
-        if hardbounds[0] < 0:
-            hardbounds[0] = 0
-        if hardbounds[3] < 0:
-            hardbounds[3] = 1
-        if hardbounds[4] < 0.1:
-            hardbounds[4] = 0.1
-        if hardbounds[5] > 0.9:
-            hardbounds[5] = 0.9
+            optimize = True
+            par_in = par.copy()
+            hardbounds = [par_in[4]-dpars['v'][4],  par_in[4]+dpars['v'][4],
+                          par_in[5]-dpars['ip'][5], par_in[5]+dpars['ip'][5],
+                          par_in[15]-dpars['s'][15], par_in[15]+dpars['s'][15]]
+            if hardbounds[0] < 0:
+                hardbounds[0] = 0
+            if hardbounds[3] < 0:
+                hardbounds[3] = 1
+            if hardbounds[4] < 0.1:
+                hardbounds[4] = 0.1
+            if hardbounds[5] > 0.9:
+                hardbounds[5] = 0.9
 
-    #        if args.plotfigs == True:#
-    #            outplotter(targname,par_in,fitobj,'{}_{}_{}_1'.format(label,night,tag))
+            cycles = 4
 
-            parfit_1 = optimizer(par_in,   dpar_cont, hardbounds,fitobj,optimize)
-            parfit_2 = optimizer(parfit_1, dpar_wave, hardbounds,fitobj,optimize)
-            parfit_3 = optimizer(parfit_2, dpar_st,   hardbounds,fitobj,optimize)
-            parfit_4 = optimizer(parfit_3, dpar_wave, hardbounds,fitobj,optimize)
-            parfit = optimizer(parfit_4,   dpar,      hardbounds,fitobj,optimize)   # RV fitting
+            optgroup = ['cont',
+                        'wave',
+                        't',
+                        's',
+                        'cont',
+                        'wave',
+                        't',
+                        's',
+                        'cont',
+                        'wave',
+                        'ip',
+                        'v',
+                        'ip',
+                        'v',
+                        't',
+                        's',
+                        't',
+                        's']
+
+            nc = 1
+            for cycle in range(cycles):
+
+                if cycle == 0:
+                    parstart = par_in.copy()
+
+                for optkind in optgroup:
+                    parfit_1 = optimizer(parstart,dpars[optkind],hardbounds,fitobj,optimize)
+                    parstart = parfit_1.copy()
+                    # print('{}: '.format(optkind), parstart)
+                    if args.debug == True:
+                        outplotter(parfit_1,fitobj,'{}_{}_{}_parfit_{}{}'.format(label,night,tag,nc,optkind), trk, 1)
+                    nc += 1
+
+            parfit = parfit_1.copy()
+
+            # if stellar template power is very low, throw out result
+            if parfit[1] < 0.1:
+                print('parfit[1] < 0.1, {} parfit={}'.format(night, parfit))
+                continue
+
+            # if stellar or telluric template powers are exactly equal to their starting values, fit failed, throw out result
+            if parfit[1] == par_in[1] or parfit[3] == par_in[3]:
+                print('parfit[1] == par_in[1] or parfit[3] == par_in[3], {}'.format(night))
+                continue
+
+            # if model dips below zero at any point, we're to close to edge of blaze, fit may be comrpomised, throw out result
+            smod,chisq = fmod(parfit,fitobj)
+            if len(smod[(smod < 0)]) > 0:
+                print('len(smod[(smod < 0)]) > 0, {}'.format(night))
+                continue
 
             if args.plotfigs == True:
-                outplotter(parfit, fitobj,'Post_parfit_{}_{}_{}'.format(label,night,tag), trk, 0)
+                # outplotter(parfit, fitobj,'Post_parfit_{}_{}_{}'.format(label,night,tag), trk, 0)
+                parfitS = parfit.copy(); parfitS[3] = 0
+                parfitT = parfit.copy(); parfitT[1] = 0
+                outplotter(parfitS, fitobj,'parfitS_{}_{}_{}'.format(label,night,tag), trk, 0)
+                outplotter(parfitT, fitobj,'parfitT_{}_{}_{}'.format(label,night,tag), trk, 0)
+                outplotter(parfit, fitobj,'parfit_{}_{}_{}'.format(label,night,tag), trk, 0)
 
-            if args.debug == True:
-                outplotter(parfit_1,fitobj,'Post_parfit_1_{}_{}_{}'.format(label,night,tag), trk, 1)
-                outplotter(parfit_2,fitobj,'Post_parfit_2_{}_{}_{}'.format(label,night,tag), trk, 1)
-                outplotter(parfit_3,fitobj,'Post_parfit_3_{}_{}_{}'.format(label,night,tag), trk, 1)
-                outplotter(parfit_4,fitobj,'Post_parfit_4_{}_{}_{}'.format(label,night,tag), trk, 1)
-                outplotter(parfit  ,fitobj,'Post_parfit_{}_{}_{}'.format(label,night,tag), trk, 1)
+            #
+            # if args.debug == True:
+            #     outplotter(parfit_1,fitobj,'Post_parfit_1_{}_{}_{}'.format(label,night,tag), trk, 1)
+            #     outplotter(parfit_2,fitobj,'Post_parfit_2_{}_{}_{}'.format(label,night,tag), trk, 1)
+            #     outplotter(parfit_3,fitobj,'Post_parfit_3_{}_{}_{}'.format(label,night,tag), trk, 1)
+            #     outplotter(parfit_4,fitobj,'Post_parfit_4_{}_{}_{}'.format(label,night,tag), trk, 1)
+            #     outplotter(parfit  ,fitobj,'Post_parfit_{}_{}_{}'.format(label,night,tag), trk, 1)
 
             rv0 = parfit[0] - parfit[2]                         # atomosphere velocity correct
 
@@ -440,10 +491,17 @@ Input Parameters:
     outpath = './Results/{}_{}'.format(args.targname, args.band)
 #-------------------------------------------------------------------------------
     # Retrieve stellar and telluric templates
-    if args.band=='K':
-        watm,satm, mwave0, mflux0 = setup_templates_syn()
-    elif args.band=='H':
+
+    if (args.targname == 'TauBoo') | (args.targname == 'HD26257'):
+        print('Using: SpotAtl_Solar')
         watm,satm, mwave0, mflux0 = setup_templates_sun()
+    else:
+        if args.band=='K':
+            watm,satm, mwave0, mflux0 = setup_templates_syn()
+            print('Using: syntheticstellar_kband')
+        elif args.band=='H':
+            watm,satm, mwave0, mflux0 = setup_templates()
+            print('Using: SpotAtl Organized')
 
     inparam = inparams(inpath,outpath,initvsini,vsinivary,args.plotfigs,initguesses,bvcs,tagsA,tagsB,nightsFinal,mwave0,mflux0,None,xbounddict)
 

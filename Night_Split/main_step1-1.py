@@ -2,19 +2,15 @@ import sys
 sys.path.append("..") # Adds higher directory to python modules path.
 
 from Engine.importmodule import *
-
-from Engine.IO_AB import setup_templates, init_fitsread, stellarmodel_setup, setup_outdir
-from Engine.clips import basicclip_above
-from Engine.contfit import A0cont
-from Engine.classes import fitobjs, inparamsA0
+from Engine.IO_AB    import setup_templates, init_fitsread, stellarmodel_setup, setup_outdir
+from Engine.clips    import basicclip_above
+from Engine.contfit  import A0cont
+from Engine.classes  import fitobjs, inparamsA0
 from Engine.rebin_jv import rebin_jv
-from Engine.rotint import rotint
-
-from Engine.opt import optimizer
+from Engine.rotint   import rotint
+from Engine.opt      import optimizer
 # -------------------------------------------------------------------------------
 # -------------------------------------------------------------------------------
-
-
 def DataPrep(args, tar_night, tar_num, tar_frame, file_night_num, std_name, std_num, std_night):
     star = args.targname.replace(' ', '')
     inpath     = '../Input_Data/{}/'.format(star)

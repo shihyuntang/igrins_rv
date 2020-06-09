@@ -1,19 +1,18 @@
 from Engine.importmodule import *
 
-from Engine.IO_AB import setup_templates, setup_templates_syn, init_fitsread,stellarmodel_setup, setup_outdir
+from Engine.IO_AB import setup_templates, setup_templates_syn, setup_templates_sun, init_fitsread,stellarmodel_setup, setup_outdir
 from Engine.clips import basicclip_above
 from Engine.contfit import A0cont
 from Engine.classes import fitobjs,inparams
 from Engine.macbro import macbro
 from Engine.rebin_jv import rebin_jv
 from Engine.rotint import rotint
-from Engine.opt import optimizer, fmod, fmod_conti
+from Engine.opt import optimizer, fmod
 #-------------------------------------------------------------------------------
 def outplotter(parfit,fitobj,title,trk,debug):
     fit,chi = fmod(parfit, fitobj)
     w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
-    #
-    # w, fit, cont, c2, mask = fmod_conti(parfit, fitobj)
+
     fig, axes = plt.subplots(1, 1, figsize=(5,3), facecolor='white', dpi=300)
     axes.plot(w,fitobj.s, '-k',  lw=0.5, label='data',alpha=.6)
     axes.plot(w,fit,      '--r', lw=0.5, label='model',alpha=.6)
@@ -52,7 +51,7 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
     # --------------------------------------------------------------
     # --------------------------------------------------------------
     # Use instrumental profile dictionary corresponding to whether IGRINS mounting was loose or not
-    if int(night) < 20180401 or int(night) > 20190531:
+    if int(night[:8]) < 20180401 or int(night[:8]) > 20190531:
         IPpars = inparam.ips_tightmount_pars[args.band][order]
     else:
         IPpars = inparam.ips_loosemount_pars[args.band][order]
@@ -79,7 +78,7 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
         nightsout.append(night)
 
     # Load telluric template from Telfit'd A0
-    A0loc = './A0_Fits/A0_Fits_{}/{}A0_treated_{}.fits'.format(args.targname, night, args.band)
+    A0loc = './A0_Fits/A0_Fits_{}/{}A0_treated_{}.fits'.format(args.targname, night[:8], args.band)
     try:
         hdulist = fits.open(A0loc)
     except IOError:
@@ -95,7 +94,6 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
     flag = np.array(tbdata['ERRORFLAG'+str(order)])[0]
 
     if flag == 1:  # Telfit hit unknown critical error
-        print('Telfit hit unknown critical error')
         return nightsout, rvsminibox, parfitminibox, vsiniminibox
 
     watm = tbdata['WATM'+str(order)]
@@ -211,12 +209,12 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
 
         par[0] = inparam.initguesses-inparam.bvcs[night+tag]
         # Arrays defining parameter variations during optimization steps
-        dpar_cont = np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0, 0  ])
-        dpar_wave = np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 10.0,  10.0, 5.00000e-5, 1e-7, 0,   0, 0, 0,    0, 0  ])
-        dpar      = np.array([5.0, 1.0, 5.0, 3.0, inparam.vsinivary, 0.5, 0.0,   0.0,  0.0,        0,    1e4, 1, 1, 0,    0, 0.2])
-        dpar_st   = np.array([5.0, 1.0, 5.0, 3.0, inparam.vsinivary, 0.5, 0.0,   0.0,  0.0,        0,    1e4, 1, 1, 0,    0, 0.2])
-        dpar_ip   = np.array([0.0, 0.0, 0.0, 0.0, 0,                 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0  ])
-                     #'st'   : np.array([5.0, 1.0, 5.0, 3.0, inparam.vsinivary, 0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0])
+        dpars = {'cont' : np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0, 0]),
+                 'wave' : np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 10.0,  10.0, 5.00000e-5, 1e-7, 0,   0, 0, 0,    0, 0]),
+                 't'    : np.array([0.0, 0.0, 5.0, 1.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0]),
+                 'ip'   : np.array([0.0, 0.0, 0.0, 0.0, 0,                 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0]),
+                 's'    : np.array([5.0, 1.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0.2]),
+                 'v'    : np.array([0.0, 0.0, 0.0, 0.0, inparam.vsinivary, 0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0])}
 
         continuum_in = rebin_jv(a0contx,continuum,x_piece,False)
         s_piece /= np.median(s_piece)
@@ -226,9 +224,10 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
 
         optimize = True
         par_in = par.copy()
-        hardbounds = [par_in[4] -dpar[4],   par_in[4]+dpar[4],
-                      par_in[5] -dpar[5],   par_in[5]+dpar[5],
-                      par_in[15]-dpar[15], par_in[15]+dpar[15]]
+        hardbounds = [par_in[4]-dpars['v'][4],  par_in[4]+dpars['v'][4],
+                      par_in[5]-dpars['ip'][5], par_in[5]+dpars['ip'][5],
+                      par_in[15]-dpars['s'][15], par_in[15]+dpars['s'][15]]
+
         if hardbounds[0] < 0:
             hardbounds[0] = 0
         if hardbounds[3] < 0:
@@ -237,46 +236,64 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
             hardbounds[4] = 0.1
         if hardbounds[5] > 0.9:
             hardbounds[5] = 0.9
-
 #        if args.plotfigs == True:#
 #            outplotter(targname,par_in,fitobj,'{}_{}_{}_1'.format(label,night,tag))
 
-        parfit_1 = optimizer(par_in,   dpar_cont, hardbounds,fitobj,optimize)
-        parfit_2 = optimizer(parfit_1, dpar_wave, hardbounds,fitobj,optimize)
-        parfit_3 = optimizer(parfit_2, dpar_st,   hardbounds,fitobj,optimize)
-        parfit_4 = optimizer(parfit_3, dpar_wave, hardbounds,fitobj,optimize)
-        parfit = optimizer(parfit_4,   dpar,      hardbounds,fitobj,optimize)   # RV fitting
+        cycles = 4
+
+        optgroup = ['cont',
+                    'wave',
+                    't',
+                    's',
+                    'cont',
+                    'wave',
+                    't',
+                    's',
+                    'cont',
+                    'wave',
+                    'ip',
+                    'v',
+                    'ip',
+                    'v',
+                    't',
+                    's',
+                    't',
+                    's']
+
+        nc = 1
+        for cycle in range(cycles):
+
+            if cycle == 0:
+                parstart = par_in.copy()
+
+            for optkind in optgroup:
+                parfit_1 = optimizer(parstart,dpars[optkind],hardbounds,fitobj,optimize)
+                parstart = parfit_1.copy()
+                if args.debug == True:
+                    outplotter(parfit_1,fitobj,'{}_{}_{}_parfit_{}{}'.format(label,night,tag,nc,optkind), trk, 1)
+                nc += 1
+
+        parfit = parfit_1.copy()
 
         # if stellar template power is very low, throw out result
         if parfit[1] < 0.1:
-            print('parfit[1] < 0.1')
             continue
 
         # if stellar or telluric template powers are exactly equal to their starting values, fit failed, throw out result
         if parfit[1] == par_in[1] or parfit[3] == par_in[3]:
-            print(' parfit[1] == par_in[1] or parfit[3] == par_in[3]')
             continue
 
-        # # if model dips below zero at any point, we're to close to edge of blaze, fit may be comrpomised, throw out result
+        # if model dips below zero at any point, we're to close to edge of blaze, fit may be comrpomised, throw out result
         smod,chisq = fmod(parfit,fitobj)
         if len(smod[(smod < 0)]) > 0:
-            print('len(smod[(smod < 0)]) > 0')
             continue
 
         if args.plotfigs == True:
             parfitS = parfit.copy(); parfitS[3] = 0
             parfitT = parfit.copy(); parfitT[1] = 0
-            outplotter(parfitS, fitobj,'{}_{}_{}_parfitS'.format(label,night,tag), trk, 0)
-            outplotter(parfitT, fitobj,'{}_{}_{}_parfitT'.format(label,night,tag), trk, 0)
-            outplotter(parfit, fitobj,'{}_{}_{}_parfit'.format(label,night,tag), trk, 0)
-
-        if args.debug == True:
-            outplotter(parfit_1,fitobj,'{}_{}_{}_parfit_1'.format(label,night,tag), trk, 1)
-            outplotter(parfit_2,fitobj,'{}_{}_{}_parfit_2'.format(label,night,tag), trk, 1)
-            outplotter(parfit_3,fitobj,'{}_{}_{}_parfit_3'.format(label,night,tag), trk, 1)
-            outplotter(parfit_4,fitobj,'{}_{}_{}_parfit_4'.format(label,night,tag), trk, 1)
-            outplotter(parfit_5,fitobj,'{}_{}_{}_parfit_5'.format(label,night,tag), trk, 1)
-            outplotter(parfit  ,fitobj,'{}_{}_{}_parfit'.format(label,night,tag), trk, 1)
+            outplotter(parfitS, fitobj,'parfitS_{}_{}_{}'.format(label,night,tag), trk, 0)
+            outplotter(parfitT, fitobj,'parfitT_{}_{}_{}'.format(label,night,tag), trk, 0)
+            outplotter(parfit, fitobj,'parfit_{}_{}_{}'.format(label,night,tag), trk, 0)
 
         rv0 = parfit[0] - parfit[2]                         # atomosphere velocity correct
 
@@ -452,16 +469,23 @@ Input Parameters:
     outpath = './Results/{}_{}'.format(args.targname, args.band)
 #-------------------------------------------------------------------------------
     # Retrieve stellar and telluric templates
-    if args.band=='K':
-        watm,satm, mwave0, mflux0 = setup_templates_syn()
-    elif args.band=='H':
-        watm,satm, mwave0, mflux0 = setup_templates()
+
+    if (args.targname == 'TauBoo') | (args.targname == 'HD26257'):
+        print('Using: SpotAtl_Solar')
+        watm,satm, mwave0, mflux0 = setup_templates_sun()
+    else:
+        if args.band=='K':
+            watm,satm, mwave0, mflux0 = setup_templates_syn()
+            print('Using: syntheticstellar_kband')
+        elif args.band=='H':
+            watm,satm, mwave0, mflux0 = setup_templates()
+            print('Using: SpotAtl Organized')
 
     inparam = inparams(inpath,outpath,initvsini,vsinivary,args.plotfigs,initguesses,bvcs,tagsA,tagsB,nightsFinal,mwave0,mflux0,None,xbounddict)
 
     # Divide between nights where IGRINS mounting was loose (L) and when it was tight (T)
     nights    = inparam.nights
-    intnights = nights.astype(int)
+    intnights = nights.astype(int)[:8]
 
     indT = np.where((intnights < 20180401) | (intnights > 20190531))
     indL = np.where((intnights >= 20180401) & (intnights < 20190531))
