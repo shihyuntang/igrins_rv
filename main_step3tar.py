@@ -85,7 +85,13 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
         print('  --> No A0-fitted template for night '+night+', skipping...')
         return nightsout, rvsminibox, parfitminibox, vsiniminibox
 
-    num_orders = len( np.unique(label_t['0']) )
+    num_orders = 0
+    for i in range(25):
+        try:
+            hdulist[i].columns[0].name[9:]
+            num_orders += 1
+        except:
+            continue
 
     # order in A0_treated.fits is no longer sequential...
 
