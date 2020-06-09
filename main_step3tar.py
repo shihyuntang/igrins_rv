@@ -293,15 +293,18 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
 
         # if stellar template power is very low, throw out result
         if parfit[1] < 0.1:
+            print('parfit[1] < 0.1, {} parfit={}'.format(night, parfit))
             continue
 
         # if stellar or telluric template powers are exactly equal to their starting values, fit failed, throw out result
         if parfit[1] == par_in[1] or parfit[3] == par_in[3]:
+            print('parfit[1] == par_in[1] or parfit[3] == par_in[3], {}'.format(night))
             continue
 
         # if model dips below zero at any point, we're to close to edge of blaze, fit may be comrpomised, throw out result
         smod,chisq = fmod(parfit,fitobj)
         if len(smod[(smod < 0)]) > 0:
+            print('len(smod[(smod < 0)]) > 0, {}'.format(night))
             continue
 
         if args.plotfigs == True:
