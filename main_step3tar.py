@@ -95,7 +95,7 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
 
     # order in A0_treated.fits is no longer sequential...
 
-    fits_layer = [ i for i in np.arange(num_orders-1)+1 if int(hdulist[i].columns[0].name[9:]) == order ][0]
+    fits_layer = [ i for i in np.arange(num_orders)+1 if int(hdulist[i].columns[0].name[9:]) == order ][0]
 
     tbdata = hdulist[ fits_layer ].data
     flag = np.array(tbdata['ERRORFLAG'+str(order)])[0]
