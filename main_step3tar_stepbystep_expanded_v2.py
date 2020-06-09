@@ -1,6 +1,6 @@
 from Engine.importmodule import *
 
-from Engine.IO_AB import setup_templates, setup_templates_syn, init_fitsread,stellarmodel_setup, setup_outdir
+from Engine.IO_AB import setup_templates, setup_templates_syn, setup_templates_sun, init_fitsread,stellarmodel_setup, setup_outdir
 from Engine.clips import basicclip_above
 from Engine.contfit import A0cont
 from Engine.classes import fitobjs,inparams
