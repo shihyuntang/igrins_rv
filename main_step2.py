@@ -17,11 +17,9 @@ def outplotter(parfit,fitobj,title,trk,debug):
     fig, axes = plt.subplots(1, 1, figsize=(5,3), facecolor='white', dpi=300)
     axes.plot(w,fitobj.s, '-k',  lw=0.5, label='data',  alpha=.6)
     axes.plot(w,fit,      '--r', lw=0.5, label='model',  alpha=.6)
-
     axes.set_title( title,                 size=5, style='normal', family='sans-serif')
     axes.set_ylabel(r'Normalized Flux',    size=5, style='normal', family='sans-serif')
     axes.set_xlabel(r'Wavelength [$\AA$]', size=5, style='normal', family='sans-serif')
-
     axes.tick_params(axis='both', labelsize=4.5, right=True, top=True, direction='in')
     axes.legend(fontsize=4, edgecolor='white')
     if debug == 0:
@@ -233,7 +231,7 @@ def ini_MPinst(label_t, chunk_ind, trk, i):
             if hardbounds[5] > 0.9:
                 hardbounds[5] = 0.9
 
-            cycles = 4
+            cycles = 2
 
             optgroup = ['cont',
                         'wave',
@@ -294,13 +292,13 @@ def ini_MPinst(label_t, chunk_ind, trk, i):
                 outplotter(parfitT, fitobj,'parfitT_{}_{}_{}'.format(label,night,tag), trk, 0)
                 outplotter(parfit, fitobj,'parfit_{}_{}_{}'.format(label,night,tag), trk, 0)
 
-            #
-            # if args.debug == True:
-            #     outplotter(parfit_1,fitobj,'Post_parfit_1_{}_{}_{}'.format(label,night,tag), trk, 1)
-            #     outplotter(parfit_2,fitobj,'Post_parfit_2_{}_{}_{}'.format(label,night,tag), trk, 1)
-            #     outplotter(parfit_3,fitobj,'Post_parfit_3_{}_{}_{}'.format(label,night,tag), trk, 1)
-            #     outplotter(parfit_4,fitobj,'Post_parfit_4_{}_{}_{}'.format(label,night,tag), trk, 1)
-            #     outplotter(parfit  ,fitobj,'Post_parfit_{}_{}_{}'.format(label,night,tag), trk, 1)
+
+            if args.debug == True:
+                outplotter(parfit_1,fitobj,'Post_parfit_1_{}_{}_{}'.format(label,night,tag), trk, 1)
+                outplotter(parfit_2,fitobj,'Post_parfit_2_{}_{}_{}'.format(label,night,tag), trk, 1)
+                outplotter(parfit_3,fitobj,'Post_parfit_3_{}_{}_{}'.format(label,night,tag), trk, 1)
+                outplotter(parfit_4,fitobj,'Post_parfit_4_{}_{}_{}'.format(label,night,tag), trk, 1)
+                outplotter(parfit  ,fitobj,'Post_parfit_{}_{}_{}'.format(label,night,tag), trk, 1)
 
             rv0 = parfit[0] - parfit[2]                         # atomosphere velocity correct
 
