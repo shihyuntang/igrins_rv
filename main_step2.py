@@ -76,6 +76,7 @@ def ini_MPinst(label_t, chunk_ind, trk, i):
         hdulist = fits.open(A0loc)
     except IOError:
         print('No A0-fitted template for night {}, skipping...'.format(night))
+        print(A0loc)
         return night,np.nan,np.nan
 
     num_orders = len( np.unique(label_t['0']) )
