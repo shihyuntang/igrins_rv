@@ -77,7 +77,6 @@ def ini_MPinst(label_t, chunk_ind, trk, i):
         print(A0loc)
         return night,np.nan,np.nan
 
-    # num_orders = len( np.unique(label_t['0']) )
     num_orders = 0
     for i in range(25):
         try:
