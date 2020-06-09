@@ -81,7 +81,7 @@ def ini_MPinst(label_t, chunk_ind, trk, i):
     num_orders = 0
     for i in range(25):
         try:
-            h[i].columns[0].name[9:]
+            hdulist[i].columns[0].name[9:]
             num_orders += 1
         except:
             continue
