@@ -207,7 +207,7 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
         par9in = f[0]*1e4; par8in = f[1]*1e4; par7in = f[2]*1e4; par6in = f[3]*1e4;
         par[9] = par9in ; par[8] = par8in ; par[7] = par7in ; par[6] = par6in
 
-        par[0] = inparam.initguesses[night]-inparam.bvcs[night+tag]
+        par[0] = inparam.initguesses-inparam.bvcs[night+tag]
         # Arrays defining parameter variations during optimization steps
         dpars = {'cont' : np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0, 0]),
                  'wave' : np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 10.0,  10.0, 5.00000e-5, 1e-7, 0,   0, 0, 0,    0, 0]),
