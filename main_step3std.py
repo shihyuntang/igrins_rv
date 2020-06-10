@@ -495,16 +495,12 @@ Input Parameters:
     # Divide between nights where IGRINS mounting was loose (L) and when it was tight (T)
     nights    = inparam.nights
     intnights = np.array([int(i[:8]) for i in nights])
-    
-    print(intnights)
 
     indT = np.where((intnights < 20180401) | (intnights > 20190531))
     indL = np.where((intnights >= 20180401) & (intnights < 20190531))
 
     nightsT = nights[indT]
     nightsL = nights[indL]
-    print(nightsT)
-    print(nightsL)
     rvmasterboxT  = np.ones((len(nightsT),len(labels)))
     stdmasterboxT = np.ones((len(nightsT),len(labels)))
     rvmasterboxL  = np.ones((len(nightsL),len(labels)))
