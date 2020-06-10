@@ -501,7 +501,8 @@ Input Parameters:
 
     nightsT = nights[indT]
     nightsL = nights[indL]
-
+    print(nightsT)
+    print(nightsL)
     rvmasterboxT  = np.ones((len(nightsT),len(labels)))
     stdmasterboxT = np.ones((len(nightsT),len(labels)))
     rvmasterboxL  = np.ones((len(nightsL),len(labels)))
