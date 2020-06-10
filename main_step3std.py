@@ -494,7 +494,10 @@ Input Parameters:
 
     # Divide between nights where IGRINS mounting was loose (L) and when it was tight (T)
     nights    = inparam.nights
-    intnights = nights.astype(int)[:8]
+    nights    = [i[:8] for i in nights]
+    intnights = nights.astype(int)
+
+    print(intnights)
 
     indT = np.where((intnights < 20180401) | (intnights > 20190531))
     indL = np.where((intnights >= 20180401) & (intnights < 20190531))
