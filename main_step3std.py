@@ -219,8 +219,8 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
                  'wave' : np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 10.0,  10.0, 5.00000e-5, 1e-7, 0,   0, 0, 0,    0, 0]),
                  't'    : np.array([0.0, 0.0, 5.0, 1.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0]),
                  'ip'   : np.array([0.0, 0.0, 0.0, 0.0, 0,                 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0]),
-                 's'    : np.array([5.0, 1.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0.2]),
-                 'v'    : np.array([0.0, 0.0, 0.0, 0.0, inparam.vsinivary, 0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0])}
+                 's'    : np.array([5.0, 1.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0]),
+                 'v'    : np.array([0.0, 0.0, 0.0, 0.0, inparam.vsinivary, 0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0.2])}
 
         continuum_in = rebin_jv(a0contx,continuum,x_piece,False)
         s_piece /= np.median(s_piece)
@@ -232,7 +232,7 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
         par_in = par.copy()
         hardbounds = [par_in[4]-dpars['v'][4],  par_in[4]+dpars['v'][4],
                       par_in[5]-dpars['ip'][5], par_in[5]+dpars['ip'][5],
-                      par_in[15]-dpars['s'][15], par_in[15]+dpars['s'][15]]
+                      par_in[15]-dpars['v'][15], par_in[15]+dpars['v'][15]]
 
         if hardbounds[0] < 0:
             hardbounds[0] = 0
