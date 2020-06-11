@@ -45,10 +45,22 @@ def DataPrep(args, tar_night, tar_num, tar_frame, file_night_num, std_name, std_
         tag = '{:04d}'.format(tag0)
 
         try:
-            hdulist = fits.open('{}{}_{}/{}/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag, frame, args.band, night, tag))
-            print('{}{}_{}/{}/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag, frame, args.band, night, tag))
-            print('first')
-            save_yn = 0
+            temp_dir = 'SDC{}_{}_{}.spec.fits'.format(args.band, night, tag)
+            if temp_dir in os.listdir('{}{}_{}/A'.format(inpath, night, tag)):
+                print('{}{}_{}/A/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag, args.band, night, tag))
+                hdulist = fits.open('{}{}_{}/A/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag_temp, args.band, night, tag))
+                save_yn = 0
+                print('first')
+            else:
+                print('{}{}_{}/B/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag, args.band, night, tag))
+                hdulist = fits.open('{}{}_{}/B/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag, args.band, night, tag))
+                save_yn = 0
+                print('first')
+
+            # hdulist = fits.open('{}{}_{}/{}/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag, frame, args.band, night, tag))
+            # print('{}{}_{}/{}/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag, frame, args.band, night, tag))
+            # print('first')
+            # save_yn = 0
 
         except:
             temp_dir = 'SDC{}_{}_{}.spec.fits'.format(args.band, night, tag)
