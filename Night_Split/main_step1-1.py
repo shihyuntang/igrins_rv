@@ -48,12 +48,12 @@ def DataPrep(args, tar_night, tar_num, tar_frame, file_night_num, std_name, std_
             if temp_dir in os.listdir('{}{}_{}/A'.format(inpath, night, tag)):
                 print('{}{}_{}/A/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag, args.band, night, tag))
                 hdulist = fits.open('{}{}_{}/A/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag, args.band, night, tag))
-                save_yn = 0
+                save_yn = 0 ; fram_ty = 'A' ; tag_sv = tag
                 print('first')
             else:
                 print('{}{}_{}/B/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag, args.band, night, tag))
                 hdulist = fits.open('{}{}_{}/B/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag, args.band, night, tag))
-                save_yn = 0
+                save_yn = 0 ; fram_ty = 'B' ; tag_sv = tag
                 print('first')
 
             # hdulist = fits.open('{}{}_{}/{}/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag, frame, args.band, night, tag))
@@ -66,11 +66,11 @@ def DataPrep(args, tar_night, tar_num, tar_frame, file_night_num, std_name, std_
             if temp_dir in os.listdir('{}{}_{}/A'.format(inpath, night, tag_temp)):
                 print('{}{}_{}/A/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag_temp, args.band, night, tag))
                 hdulist = fits.open('{}{}_{}/A/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag_temp, args.band, night, tag))
-                save_yn = 1
+                save_yn = 1 ; fram_ty = 'A' ; tag_sv = tag_temp
             else:
                 print('{}{}_{}/B/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag_temp, args.band, night, tag))
                 hdulist = fits.open('{}{}_{}/B/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag_temp, args.band, night, tag))
-                save_yn = 1
+                save_yn = 1 ; fram_ty = 'B' ; tag_sv = tag_temp
 
 
         if save_yn == 0:
@@ -95,7 +95,7 @@ def DataPrep(args, tar_night, tar_num, tar_frame, file_night_num, std_name, std_
             time_midpoint = np.mean(l0)
 
         mjd = time_midpoint
-        fileT.write(file_nn+' '+frame+' '+str(tag)+' '+str(mjd)+' ' +
+        fileT.write(file_nn+' '+fram_ty+' '+str(tag_sv)+' '+str(mjd)+' ' +
                     str(facility)+' '+str(airmass)+' '+str(BVCfile))
         fileT.write('\n')
         nightsT.append(night)
