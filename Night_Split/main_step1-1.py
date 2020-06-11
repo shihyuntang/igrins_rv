@@ -43,7 +43,6 @@ def DataPrep(args, tar_night, tar_num, tar_frame, file_night_num, std_name, std_
         facility = str(np.array(star_files['FACILITY'])[0])
 
         tag = '{:04d}'.format(tag0)
-
         try:
             temp_dir = 'SDC{}_{}_{}.spec.fits'.format(args.band, night, tag)
             if temp_dir in os.listdir('{}{}_{}/A'.format(inpath, night, tag)):
