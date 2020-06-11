@@ -47,6 +47,7 @@ def DataPrep(args, tar_night, tar_num, tar_frame, file_night_num, std_name, std_
         try:
             hdulist = fits.open('{}{}_{}/{}/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag, frame, args.band, night, tag))
             print('{}{}_{}/{}/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag, frame, args.band, night, tag))
+            print('first')
             save_yn = 0
 
         except:
