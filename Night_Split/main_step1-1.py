@@ -47,10 +47,15 @@ def DataPrep(args, tar_night, tar_num, tar_frame, file_night_num, std_name, std_
         try:
             print('{}{}_{}/{}/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag, frame, args.band, night, tag))
             hdulist = fits.open('{}{}_{}/{}/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag, frame, args.band, night, tag))
-        except FileNotFoundError:
-            print('fail')
-            continue
+            save_yn = 0
 
+        except FileNotFoundError:
+            print('{}{}_{}/{}/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag_temp, frame, args.band, night, tag))
+            hdulist = fits.open('{}{}_{}/{}/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag_temp, frame, args.band, night, tag))
+            save_yn = 1
+
+        if save_yn == 0:
+            tag_temp = tag
 
         head = hdulist[0].header
         if head['OBSERVAT'] == 'Lowell Observatory':
