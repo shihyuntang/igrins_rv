@@ -50,10 +50,15 @@ def DataPrep(args, tar_night, tar_num, tar_frame, file_night_num, std_name, std_
             save_yn = 0
 
         except FileNotFoundError:
-            print('expect')
-            print('{}{}_{}/{}/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag_temp, frame, args.band, night, tag))
-            hdulist = fits.open('{}{}_{}/{}/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag_temp, frame, args.band, night, tag))
-            save_yn = 1
+            try:
+                print('{}{}_{}/A/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag_temp, args.band, night, tag))
+                hdulist = fits.open('{}{}_{}/{}/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag_temp, frame, args.band, night, tag))
+                save_yn = 1
+            except:
+                print('{}{}_{}/B/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag_temp, args.band, night, tag))
+                hdulist = fits.open('{}{}_{}/{}/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag_temp, frame, args.band, night, tag))
+                save_yn = 1
+
 
         if save_yn == 0:
             tag_temp = tag
