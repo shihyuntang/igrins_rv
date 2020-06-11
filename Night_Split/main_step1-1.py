@@ -48,7 +48,7 @@ def DataPrep(args, tar_night, tar_num, tar_frame, file_night_num, std_name, std_
             temp_dir = 'SDC{}_{}_{}.spec.fits'.format(args.band, night, tag)
             if temp_dir in os.listdir('{}{}_{}/A'.format(inpath, night, tag)):
                 print('{}{}_{}/A/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag, args.band, night, tag))
-                hdulist = fits.open('{}{}_{}/A/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag_temp, args.band, night, tag))
+                hdulist = fits.open('{}{}_{}/A/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag, args.band, night, tag))
                 save_yn = 0
                 print('first')
             else:
