@@ -50,6 +50,7 @@ def DataPrep(args, tar_night, tar_num, tar_frame, file_night_num, std_name, std_
         except FileNotFoundError:
             continue
 
+        print('{}_{}_{}'.format(night, tag, frame))
         head = hdulist[0].header
         if head['OBSERVAT'] == 'Lowell Observatory':
             obs = 'DCT'
@@ -72,8 +73,6 @@ def DataPrep(args, tar_night, tar_num, tar_frame, file_night_num, std_name, std_
         fileT.write(file_nn+' '+frame+' '+str(tag)+' '+str(mjd)+' ' +
                     str(facility)+' '+str(airmass)+' '+str(BVCfile))
         fileT.write('\n')
-        print(file_nn+' '+frame+' '+str(tag)+' '+str(mjd)+' ' +
-                    str(facility)+' '+str(airmass)+' '+str(BVCfile))
         nightsT.append(night)
     fileT.close()
 
