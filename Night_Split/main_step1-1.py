@@ -43,14 +43,14 @@ def DataPrep(args, tar_night, tar_num, tar_frame, file_night_num, std_name, std_
         facility = str(np.array(star_files['FACILITY'])[0])
 
         tag = '{:04d}'.format(tag0)
-
+        print('{}_{}_{}'.format(night, tag, frame))
         try:
             print('{}{}_{}/{}/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag, frame, args.band, night, tag))
             hdulist = fits.open('{}{}_{}/{}/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag, frame, args.band, night, tag))
         except FileNotFoundError:
             continue
 
-        print('{}_{}_{}'.format(night, tag, frame))
+
         head = hdulist[0].header
         if head['OBSERVAT'] == 'Lowell Observatory':
             obs = 'DCT'
