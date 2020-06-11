@@ -527,6 +527,7 @@ if __name__ == '__main__':
 
     # Divide between nights where IGRINS mounting was loose (L) and when it was tight (T)
     nights    = inparam.nights
+    print(len(nights[0]))
     intnights = np.array([int(i[:8]) for i in nights])
 
     indT = np.where((intnights < 20180401) | (intnights > 20190531))
@@ -579,7 +580,7 @@ if __name__ == '__main__':
         vsinitags = []
 
         # Save results in fits file
-        c1    = fits.Column(name='NIGHT'+str(label),  array=nightsbox, format='8A')
+        c1    = fits.Column(name='NIGHT'+str(label),  array=nightsbox, format='{}A'.format(len(nights[0])) )
         c2    = fits.Column(name='RV'+str(label),     array=rvbox,     format='D')
         c3    = fits.Column(name='PARFIT'+str(label), array=parfitbox, format=str(len(parfitbox[0,:]))+'D', dim=(1,len(parfitbox[0,:])))
         c4    = fits.Column(name='VSINI'+str(label),  array=vsinibox,  format='D')
@@ -714,7 +715,7 @@ if __name__ == '__main__':
         ax1.tick_params(axis='both', labelsize=6, right=True, top=True, direction='in', width=.6)
         f.savefig('{}/{}/FinalRVs_{}_.png'.format(inparam.outpath, name, kind), format='png', bbox_inches='tight')
 
-        c1 = fits.Column( name='NIGHT',         array=nights_use,        format='8A')
+        c1 = fits.Column( name='NIGHT',         array=nights_use,        format='{}A'.format(len(nights[0])) )
         c2 = fits.Column( name='MJD',           array=mjds_out-2400000.5,format='D')
         c3 = fits.Column( name='RVBOX',         array=rvmasterbox,   format='{}D'.format(len(label_t)))
         c4 = fits.Column( name='STDBOX',        array=stdmasterbox,  format='{}D'.format(len(label_t)))
@@ -782,7 +783,7 @@ if __name__ == '__main__':
     f.savefig('{}/{}/FinalRVs.png'.format(inparam.outpath, name), format='png', bbox_inches='tight')
 
 
-    c1 = fits.Column(name='NIGHT',    array=nightsCombined,         format='8A')
+    c1 = fits.Column(name='NIGHT',    array=nightsCombined,         format='{}A'.format(len(nights[0])) )
     c2 = fits.Column(name='MJD',      array=mjdsCombined-2400000.5, format='D')
     c3 = fits.Column(name='RVfinal',  array=rvfinalCombined,        format='D')
     c4 = fits.Column(name='STDfinal', array=stdfinalCombined,       format='D')
