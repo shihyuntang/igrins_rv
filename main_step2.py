@@ -447,7 +447,7 @@ Input Parameters:
     tagsB[Tnights[-1]] = tagsB0
 
     nightsFinal = np.array(list(sorted(set(Tnights))))
-    print('processing: {}'.format(nightsFinal))
+    print('processing {} sets in :\n {}'.format( len(nightsFinal), nightsFinal))
     # nightsFinal = nightsFinal[24:45]
 
     if args.nights_use != '':
