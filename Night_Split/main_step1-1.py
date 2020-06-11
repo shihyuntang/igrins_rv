@@ -45,7 +45,6 @@ def DataPrep(args, tar_night, tar_num, tar_frame, file_night_num, std_name, std_
         tag = '{:04d}'.format(tag0)
 
         try:
-            print('normal')
             print('{}{}_{}/{}/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag, frame, args.band, night, tag))
             hdulist = fits.open('{}{}_{}/{}/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag, frame, args.band, night, tag))
             save_yn = 0
