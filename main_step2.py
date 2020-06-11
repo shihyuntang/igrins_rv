@@ -132,7 +132,9 @@ def ini_MPinst(label_t, chunk_ind, trk, i):
     for initrvguess in initguesses:
         rvsmini = []; vsinismini = [];
         # Iterate over all A/B exposures
+        print(tagsnight)
         for t in np.arange(len(tagsnight)):
+            print(t)
             tag = tagsnight[t]
             beam = beamsnight[t]
             print(tag, beam)
