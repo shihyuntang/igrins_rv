@@ -527,7 +527,6 @@ if __name__ == '__main__':
 
     # Divide between nights where IGRINS mounting was loose (L) and when it was tight (T)
     nights    = inparam.nights
-    print(len(nights[0]))
     intnights = np.array([int(i[:8]) for i in nights])
 
     indT = np.where((intnights < 20180401) | (intnights > 20190531))
