@@ -68,8 +68,6 @@ def ini_MPinst(label_t, chunk_ind, trk, i):
         tagsnight.append(tag)
         beamsnight.append('B')
 
-    print(tagsnight)
-    print(beamsnight)
     # Load telluric template from Telfit'd A0
     A0loc = './A0_Fits/A0_Fits_{}/{}A0_treated_{}.fits'.format(args.targname, night[:8], args.band)
     try:
@@ -137,6 +135,7 @@ def ini_MPinst(label_t, chunk_ind, trk, i):
         for t in np.arange(len(tagsnight)):
             tag = tagsnight[t]
             beam = beamsnight[t]
+            print(tag, beam)
 
             if args.band=='K':
                 if order==11:
