@@ -237,9 +237,14 @@ def ini_MPinst(label_t, chunk_ind, trk, i):
             if hardbounds[5] > 0.95:
                 hardbounds[5] = 0.95
 
+
             cycles = 1
 
             optgroup = ['cont',
+                        'wave',
+                        't',
+                        's',
+                        'cont',
                         'wave',
                         't',
                         's',
