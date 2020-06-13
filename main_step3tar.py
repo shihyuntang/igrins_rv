@@ -255,7 +255,7 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
 #        if args.plotfigs == True:#
 #            outplotter(targname,par_in,fitobj,'{}_{}_{}_1'.format(label,night,tag))
 
-        cycles = 2
+        cycles = 4
 
         optgroup = ['cont',
                     'wave',
