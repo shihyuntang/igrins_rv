@@ -417,9 +417,10 @@ Input Parameters:
 
     if args.debug:
         try:
-            os.listdir('./Temp/Debug/{}_{}/main_step2_{}/'.format(args.targname, args.band), trk)
+            os.listdir('./Temp/Debug/{}_{}/'.format(args.targname, args.band))
         except OSError:
-            os.mkdir('./Temp/Debug/{}_{}/main_step2_{}/'.format(args.targname, args.band), trk)
+            os.mkdir('./Temp/Debug/{}_{}/'.format(args.targname, args.band))
+        os.mkdir('./Temp/Debug/{}_{}/main_step2_{}/'.format(args.targname, args.band, trk))
 #-------------------------------------------------------------------------------
     print('Writing output to ./Results/{}_{}/{}'.format(args.targname, args.band, iniguess_dir))
     filew = open('./Results/{}_{}/{}'.format(args.targname, args.band, iniguess_dir),'w')
