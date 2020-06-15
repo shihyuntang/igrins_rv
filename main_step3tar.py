@@ -512,7 +512,7 @@ if __name__ == '__main__':
 #-------------------------------------------------------------------------------
     # Retrieve stellar and telluric templates
 
-    if (args.targname == 'TauBoo') | (args.targname == 'HD26257'):
+    if (args.targname == 'TauBoo') | (args.targname == 'HD26257') | (args.targname == 'HD26736'):
         print('Using: SpotAtl_Solar')
         watm,satm, mwave0, mflux0 = setup_templates_sun()
     else:
