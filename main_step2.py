@@ -210,7 +210,13 @@ def ini_MPinst(label_t, chunk_ind, trk, i):
 
             par[0] = initrvguess-inparam.bvcs[night+tag]
             # Arrays defining parameter variations during optimization steps
-            dpars = {'cont' : np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0, 0]),
+            dpars1 = {'cont' : np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0, 0]),
+                     'wave' : np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 10.0,  10.0, 5.00000e-5, 0.,   0,   0, 0, 0,    0, 0]),
+                     't'    : np.array([0.0, 0.0, 5.0, 1.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0]),
+                     'ip'   : np.array([0.0, 0.0, 0.0, 0.0, 0,                 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0]),
+                     's'    : np.array([400.0, 2.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0]),
+                     'v'    : np.array([0.0, 0.0, 0.0, 0.0, inparam.vsinivary, 0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0])}
+            dpars2 = {'cont' : np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0, 0]),
                      'wave' : np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 10.0,  10.0, 5.00000e-5, 0.,   0,   0, 0, 0,    0, 0]),
                      't'    : np.array([0.0, 0.0, 5.0, 1.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0]),
                      'ip'   : np.array([0.0, 0.0, 0.0, 0.0, 0,                 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0]),
@@ -238,7 +244,7 @@ def ini_MPinst(label_t, chunk_ind, trk, i):
                 hardbounds[5] = 0.95
 
 
-            cycles = 1
+            cycles = 2
 
             optgroup = ['cont',
                         'wave',
@@ -264,6 +270,9 @@ def ini_MPinst(label_t, chunk_ind, trk, i):
 
                 if cycle == 0:
                     parstart = par_in.copy()
+                    dpars = dpar1
+                else:
+                    dpars = dpar2
 
                 for optkind in optgroup:
                     parfit_1 = optimizer(parstart,dpars[optkind],hardbounds,fitobj,optimize)
@@ -499,7 +508,7 @@ Input Parameters:
 #-------------------------------------------------------------------------------
     # Retrieve stellar and telluric templates
 
-    if (args.targname == 'TauBoo') | (args.targname == 'HD26257'):
+    if (args.targname == 'TauBoo') | (args.targname == 'HD26257') | (args.targname == 'HD26736'):
         print('Using: SpotAtl_Solar')
         watm,satm, mwave0, mflux0 = setup_templates_sun()
     else:
