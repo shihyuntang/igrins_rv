@@ -123,8 +123,7 @@ def ini_MPinst(label_t, chunk_ind, trk, i):
                       0.,                                                    #11: Continuum linear component
                       0.,                                                    #12: Continuum quadratic component
                       IPpars[1],                                             #13: IP linear component
-                      IPpars[0],                                            #14: IP quadratic component
-                      0.5])                                                 #15: Differential Rotation Coefficient
+                      IPpars[0]])                                            #14: IP quadratic component
 
     ### Load relevant A0 spectra,
     rvcollect = []; vsinicollect = [];
@@ -135,37 +134,6 @@ def ini_MPinst(label_t, chunk_ind, trk, i):
         for t in np.arange(len(tagsnight)):
             tag = tagsnight[t]
             beam = beamsnight[t]
-
-            if args.band=='K':
-                if order==11:
-                    bound_cut = [200, 100]
-                elif order==12:
-                    bound_cut = [900, 300]
-                elif order==13:
-                    bound_cut = [200, 400]
-                elif order==14:
-                    bound_cut = [150, 300]
-                else:
-                    bound_cut = [150, 100]
-            elif args.band=='H':
-                if order==10:
-                    bound_cut = [250, 150]#ok
-                elif order==11:
-                    bound_cut = [600, 150]
-                elif order==13:
-                    bound_cut = [200, 600]#ok
-                elif order==14:
-                    bound_cut = [700, 100]
-                elif order==16:
-                    bound_cut = [400, 100]
-                elif order==17:
-                    bound_cut = [1000, 100]
-                elif order==20:
-                    bound_cut = [500, 150]
-                elif (order==7) or (order==8) or (order==9) or (order==12) or (order==15) or (order==18) or (order==19):
-                    bound_cut = [500, 500]
-                else:
-                    bound_cut = [150, 100]
 
             x,wave,s,u = init_fitsread('{}{}/{}/'.format(inparam.inpath, night, beam),
                                         'target',
@@ -210,18 +178,18 @@ def ini_MPinst(label_t, chunk_ind, trk, i):
 
             par[0] = initrvguess-inparam.bvcs[night+tag]
             # Arrays defining parameter variations during optimization steps
-            dpars1 = {'cont' : np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0, 0]),
-                     'wave' : np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 10.0,  10.0, 5.00000e-5, 0.,   0,   0, 0, 0,    0, 0]),
-                     't'    : np.array([0.0, 0.0, 5.0, 1.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0]),
-                     'ip'   : np.array([0.0, 0.0, 0.0, 0.0, 0,                 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0]),
-                     's'    : np.array([400.0, 2.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0]),
-                     'v'    : np.array([0.0, 0.0, 0.0, 0.0, inparam.vsinivary, 0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0])}
-            dpars2 = {'cont' : np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0, 0]),
-                     'wave' : np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 10.0,  10.0, 5.00000e-5, 0.,   0,   0, 0, 0,    0, 0]),
-                     't'    : np.array([0.0, 0.0, 5.0, 1.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0]),
-                     'ip'   : np.array([0.0, 0.0, 0.0, 0.0, 0,                 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0]),
-                     's'    : np.array([5.0, 2.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0]),
-                     'v'    : np.array([0.0, 0.0, 0.0, 0.0, inparam.vsinivary, 0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0])}
+            dpars1 = {'cont' : np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0]),
+                     'wave' : np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 10.0,  10.0, 5.00000e-5, 0.,   0,   0, 0, 0,    0),
+                     't'    : np.array([0.0, 0.0, 5.0, 1.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0]),
+                     'ip'   : np.array([0.0, 0.0, 0.0, 0.0, 0,                 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0]),
+                     's'    : np.array([400.0, 2.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0]),
+                     'v'    : np.array([0.0, 0.0, 0.0, 0.0, inparam.vsinivary, 0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0])}
+            dpars2 = {'cont' : np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0]),
+                     'wave' : np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 10.0,  10.0, 5.00000e-5, 0.,   0,   0, 0, 0,    0]),
+                     't'    : np.array([0.0, 0.0, 5.0, 1.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0]),
+                     'ip'   : np.array([0.0, 0.0, 0.0, 0.0, 0,                 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0]),
+                     's'    : np.array([5.0, 2.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0]),
+                     'v'    : np.array([0.0, 0.0, 0.0, 0.0, inparam.vsinivary, 0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0])}
 
             continuum_in = rebin_jv(a0contx,continuum,x_piece,False)
             s_piece /= np.median(s_piece)
@@ -232,22 +200,18 @@ def ini_MPinst(label_t, chunk_ind, trk, i):
             optimize = True
             par_in = par.copy()
             hardbounds = [par_in[4]-dpars1['v'][4],  par_in[4]+dpars1['v'][4],
-                          par_in[5]-dpars1['ip'][5], par_in[5]+dpars1['ip'][5],
-                          par_in[15]-dpars1['v'][15], par_in[15]+dpars1['v'][15]]
+                          par_in[5]-dpars1['ip'][5], par_in[5]+dpars1['ip'][5]]
             if hardbounds[0] < 0:
                 hardbounds[0] = 0
             if hardbounds[3] < 0:
                 hardbounds[3] = 1
-            if hardbounds[4] < 0.05:
-                hardbounds[4] = 0.05
-            if hardbounds[5] > 0.95:
-                hardbounds[5] = 0.95
-
 
             cycles = 2
 
             optgroup = ['cont',
                         'wave',
+                        't',
+                        'cont',
                         't',
                         's',
                         'cont',
@@ -307,14 +271,6 @@ def ini_MPinst(label_t, chunk_ind, trk, i):
                 outplotter(parfitS, fitobj,'parfitS_{}_{}_{}'.format(label,night,tag), trk, 0)
                 outplotter(parfitT, fitobj,'parfitT_{}_{}_{}'.format(label,night,tag), trk, 0)
                 outplotter(parfit, fitobj,'parfit_{}_{}_{}'.format(label,night,tag), trk, 0)
-
-
-            if args.debug == True:
-                outplotter(parfit_1,fitobj,'Post_parfit_1_{}_{}_{}'.format(label,night,tag), trk, 1)
-                outplotter(parfit_2,fitobj,'Post_parfit_2_{}_{}_{}'.format(label,night,tag), trk, 1)
-                outplotter(parfit_3,fitobj,'Post_parfit_3_{}_{}_{}'.format(label,night,tag), trk, 1)
-                outplotter(parfit_4,fitobj,'Post_parfit_4_{}_{}_{}'.format(label,night,tag), trk, 1)
-                outplotter(parfit  ,fitobj,'Post_parfit_{}_{}_{}'.format(label,night,tag), trk, 1)
 
             rv0 = parfit[0] - parfit[2]                         # atomosphere velocity correct
 
