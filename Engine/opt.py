@@ -31,7 +31,6 @@ def fmodel_chi(par,grad):
           12: Continuum quadratic component
           13: IP linear component
           14: IP quadratic component
-          15: Differential rotation coefficient
 
      OUTPUTS:
        The model spectrum on the observed wavelength scale.
@@ -77,7 +76,7 @@ def fmodel_chi(par,grad):
     #Handle rotational broadening
     vsini = abs(par[4])
     if vsini != 0:
-        rspot = rotint(watm,sspot2,vsini,eps=.6,nr=5,ntheta=25,dif=par[15])
+        rspot = rotint(watm,sspot2,vsini,eps=.6,nr=5,ntheta=25,dif=None)
     else:
         rspot = sspot2
 
@@ -129,8 +128,6 @@ def fmodel_chi(par,grad):
     else:
         return smod,chisq
 
-#.035
-# .019
 
 def fmod(par,fitobj):
 
@@ -162,7 +159,7 @@ def fmod(par,fitobj):
 
     vsini = abs(par[4])
     if vsini != 0:
-        rspot = rotint(watm,sspot2,vsini,eps=.4,nr=5,ntheta=25,dif=par[15])
+        rspot = rotint(watm,sspot2,vsini,eps=.4,nr=5,ntheta=25,dif=None)
     else:
         rspot = sspot2
 
@@ -272,7 +269,7 @@ def optimizer(par0,dpar0, hardbounds_v_ip, fitobj, optimize):
     fitobj_cp   = fitobj
     optimize_cp = optimize
     dpar0_cp = dpar0
-    opt = nlopt.opt(nlopt.LN_NELDERMEAD, 16)
+    opt = nlopt.opt(nlopt.LN_NELDERMEAD, 15)
     opt.set_min_objective(fmodel_chi)
     lows  = par0-dpar0
     highs = par0+dpar0
@@ -291,12 +288,6 @@ def optimizer(par0,dpar0, hardbounds_v_ip, fitobj, optimize):
             par0[5] = par0[5] - 1e-4
         if par0[5] -lows[5] < 1e-4:
             par0[5] = par0[5] + 1e-4
-    if dpar0[15] != 0:
-        lows[15] = hardbounds_v_ip[4]; highs[15] = hardbounds_v_ip[5];
-        if highs[15]-par0[15] < 1e-4:
-            par0[15] = par0[15] - 1e-4
-        if par0[15] -lows[15] < 1e-4:
-            par0[15] = par0[15] + 1e-4
     opt.set_lower_bounds(lows)
     opt.set_upper_bounds(highs)
     opt.set_maxtime(1200) #seconds
