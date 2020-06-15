@@ -231,9 +231,9 @@ def ini_MPinst(label_t, chunk_ind, trk, i):
 
             optimize = True
             par_in = par.copy()
-            hardbounds = [par_in[4]-dpars['v'][4],  par_in[4]+dpars['v'][4],
-                          par_in[5]-dpars['ip'][5], par_in[5]+dpars['ip'][5],
-                          par_in[15]-dpars['v'][15], par_in[15]+dpars['v'][15]]
+            hardbounds = [par_in[4]-dpars1['v'][4],  par_in[4]+dpars1['v'][4],
+                          par_in[5]-dpars1['ip'][5], par_in[5]+dpars1['ip'][5],
+                          par_in[15]-dpars1['v'][15], par_in[15]+dpars1['v'][15]]
             if hardbounds[0] < 0:
                 hardbounds[0] = 0
             if hardbounds[3] < 0:
@@ -270,9 +270,9 @@ def ini_MPinst(label_t, chunk_ind, trk, i):
 
                 if cycle == 0:
                     parstart = par_in.copy()
-                    dpars = dpar1
+                    dpars = dpars1
                 else:
-                    dpars = dpar2
+                    dpars = dpars2
 
                 for optkind in optgroup:
                     parfit_1 = optimizer(parstart,dpars[optkind],hardbounds,fitobj,optimize)
