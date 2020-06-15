@@ -441,6 +441,13 @@ Input Parameters:
     if not os.path.isdir('./Results/{}_{}/figs/main_step3_{}'.format(args.targname, args.band, trk)):
         os.mkdir('./Results/{}_{}/figs/main_step3_{}'.format(args.targname, args.band, trk) )
     outpath = './Results/{}_{}'.format(args.targname, args.band)
+    
+    if args.debug:
+        try:
+            os.listdir('./Temp/Debug/{}_{}/'.format(args.targname, args.band))
+        except OSError:
+            os.mkdir('./Temp/Debug/{}_{}/'.format(args.targname, args.band))
+        os.mkdir('./Temp/Debug/{}_{}/main_step3_{}/'.format(args.targname, args.band, trk))
 #-------------------------------------------------------------------------------
     # Retrieve stellar and telluric templates
 
