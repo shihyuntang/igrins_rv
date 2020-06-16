@@ -446,6 +446,7 @@ def mp_run(args, Nthreads, jerp, orders, nights):
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 
+
 def use_w(args):
     try:
         bounddata = Table.read('./Input_Data/Use_w/WaveRegions_{}_{}.csv'.format(args.WRegion, args.band), format='csv')
@@ -454,7 +455,7 @@ def use_w(args):
     wavesols = pd.read_csv('./Input_Data/Use_w/WaveSolns_{}.csv'.format(args.band))
 #-------------------------------------------------------------------------------
     filew = open('./Input_Data/Use_w/XRegions_{}_{}.csv'.format(args.WRegion, args.band),'w')
-    filew.write('label, start,  end\n')
+    filew.write('label, start,  end, masks\n')
 
     m_order  = np.array(bounddata['order'])
     starts   = np.array(bounddata['start'])
@@ -464,27 +465,26 @@ def use_w(args):
     Ostarts  = [orderdict_cla().orderdict[args.band][k][0] for k in ords]
     Oends    = [orderdict_cla().orderdict[args.band][k][1] for k in ords]
     labels   = []
-    for i in range(len(starts)):
-        indS = list(np.where((starts[i] > Ostarts) & (starts[i] < Oends))[0])
-        indE = list(np.where((ends[i]   > Ostarts) & (ends[i]   < Oends))[0])
-        indboth = indS
-        indboth.extend(x for x in indE if x not in indboth)
-        for ind in indboth:
-            wavebounds = [max([starts[i],Ostarts[ind]]),min([ends[i],Oends[ind]])]
-            wO   = wavesols['w'+str(ords[ind])]
-            pixO = wavesols['x'+str(ords[ind])];
-            pix  = [pixO[(np.argmin(abs(wO-wavebounds[k])))] for k in [0,1]]
 
-            p = 1
-            if ords[ind] == m_order[i]:
-                while 1 == 1:
-                    lab = '{}-{}'.format(ords[ind],p)
-                    if lab not in labels:
-                        filew.write('{}, {}, {}\n'.format(lab,pix[0],pix[1]))
-                        labels.append(lab)
-                        break
-                    else:
-                        p += 1
+    m_orders_unique = np.unique(m_order)
+
+    for o in range(len(m_orders_unique)):
+        pixs = []; 
+        mini = np.where(m_order == m_orders_unique[o])[0]
+        for j in range(len(mini)):
+            i = mini[j]
+        
+            wavebounds = [starts[i],ends[i]]
+            wO   = wavesols['w'+str(m_orders_unique[o])]
+            pixO = wavesols['x'+str(m_orders_unique[o])];
+            pix  = [pixO[(np.argmin(abs(wO-wavebounds[k])))] for k in [0,1]]
+            pixs = pixs + pix
+
+        pixsS = list(sorted(pixs))
+        if len(pixsS) == 2:
+            filew.write('{}, {}, {},\n'.format(m_orders_unique[o],pixsS[0],pixsS[-1]))
+        else:
+            filew.write('{}, {}, {},"{}"\n'.format(m_orders_unique[o],pixsS[0],pixsS[-1],[pixsS[n:n+2] for n in range(1,len(pixs)-2)]))
     filew.close()
 
 #-------------------------------------------------------------------------------
