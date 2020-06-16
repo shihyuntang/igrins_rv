@@ -117,7 +117,7 @@ def fmodel_chi(par,grad):
     mask[(fitobj_cp.s < .0)] = False
     
     if len(fitobj_cp.mask) != 0:
-        for maskbounds in fitobj_cp.mask
+        for maskbounds in fitobj_cp.mask:
             mask[maskbounds[0]:maskbounds[1]] = False
 
     # Compute chisq
