@@ -105,7 +105,7 @@ class inparams:
 
 class inparamsA0:
 
-    def __init__(self,inpath,outpath,plotfigs,tags,nights,humids,temps,zds,press,obs,watm,satm,mwave,mflux,cdbsloc,xbounddict):
+    def __init__(self,inpath,outpath,plotfigs,tags,nights,humids,temps,zds,press,obs,watm,satm,mwave,mflux,cdbsloc,xbounddict,maskdict):
         self.inpath = inpath
         self.outpath = outpath
         self.plotfigs = plotfigs
@@ -122,6 +122,7 @@ class inparamsA0:
         self.nights = nights
         self.cdbsloc = cdbsloc
         self.xbounddict  = xbounddict
+        self.maskdict = maskdict
         self.ips_tightmount_pars = { 'H':{
                                              2: np.array([-0.00000083, +0.00141598, 3.6143533]),
                                              3: np.array([-0.00000042, -0.00009824, 3.9964264]),#CITau + GJ281 full
