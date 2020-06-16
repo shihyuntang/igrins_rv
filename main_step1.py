@@ -556,8 +556,11 @@ if __name__ == '__main__':
     time.sleep(6)
     print('\n')
 #-------------------------------------------------------------------------------
-
-    filesndirs = os.listdir('./A0_Fits/')
+    try:
+        filesndirs = os.listdir('./A0_Fits/')
+    except FileNotFoundError:
+        os.mkdir('./A0_Fits/')
+        filesndirs = os.listdir('./A0_Fits/')
     name = 'A0_Fits_'+ args.targname
     if name not in filesndirs:
         os.mkdir('./A0_Fits/{}'.format(name) )
