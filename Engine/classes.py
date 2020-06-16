@@ -5,7 +5,8 @@ import numpy as np
 
 class fitobjs:
 
-    def __init__(self,s, x, u,continuum,watm_in,satm_in,mflux_in,mwave_in):
+   
+    def __init__(self,s, x, u,continuum,watm_in,satm_in,mflux_in,mwave_in,mask):
         self.s = s
         self.x = x
         self.u = u
@@ -14,6 +15,7 @@ class fitobjs:
         self.satm_in = satm_in
         self.mflux_in = mflux_in
         self.mwave_in = mwave_in
+        self.mask = mask
 
 class inparams:
 
@@ -32,6 +34,7 @@ class inparams:
         self.nights      = nights
         self.a0dict      = a0dict
         self.xbounddict  = xbounddict
+        self.maskdict = maskdict
         self.ips_tightmount_pars = { 'H':{
                                              2: np.array([-0.00000083, +0.00141598, 3.6143533]),
                                              3: np.array([-0.00000042, -0.00009824, 3.9964264]),#CITau + GJ281 full
