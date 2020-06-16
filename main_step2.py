@@ -480,8 +480,6 @@ Input Parameters:
 
     inparam = inparams(inpath,outpath,initvsini,vsinivary,args.plotfigs,initguesses,bvcs,tagsA,tagsB,nightsFinal,mwave0,mflux0,None,xbounddict,maskdict)
 
-    # Only use first wavelength region listed
-    label_t = labels[0]
 #-------------------------------------------------------------------------------
     pool = mp.Pool(processes = args.Nthreads)
     func = partial(ini_MPinst, label_t, int(args.label_use), trk )
