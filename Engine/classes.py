@@ -19,7 +19,7 @@ class fitobjs:
 
 class inparams:
 
-    def __init__(self,inpath,outpath,initvsini,vsinivary,plotfigs,initguesses,bvcs,tagsA,tagsB,nights,mwave,mflux,a0dict,xbounddict):
+    def __init__(self,inpath,outpath,initvsini,vsinivary,plotfigs,initguesses,bvcs,tagsA,tagsB,nights,mwave,mflux,a0dict,xbounddict,maskdict):
         self.inpath      = inpath
         self.outpath     = outpath
         self.initvsini   = initvsini
