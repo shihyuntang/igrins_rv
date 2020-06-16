@@ -27,7 +27,7 @@ def partial_loader(inpath0,order):
     return wavelist,fluxlist,s2nlist
 
 
-def init_fitsread(path,kind,beam,night,order,tag,band,Ncuts):
+def init_fitsread(path,kind,beam,night,order,tag,band,Ncuts=None):
 
     if beam not in ['combined','separate']:
         print('beam MUST BE "combined" OR "separate",  FORCE QUITTING!')
