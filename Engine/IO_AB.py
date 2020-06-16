@@ -164,10 +164,7 @@ def setup_templates():
     mflux0 = mflux0[(np.isfinite(mflux0))]
     mflux0[(mflux0 < 0)] = 0
 
-    if curdir[-1]=='v':
-        telluricdata = Table.read('./Engine/PhotoAtl Organized.txt',format='ascii')
-    else:
-        telluricdata = Table.read('../Engine/PhotoAtl Organized.txt',format='ascii')
+    telluricdata = Table.read('./Engine/PhotoAtl Organized.txt',format='ascii')
     watm = np.array(telluricdata['wave'])*10000.0
     satm = np.array(telluricdata['flux'])
     watm = watm[(np.isfinite(satm))]
@@ -178,10 +175,7 @@ def setup_templates():
 def setup_templates_syn():
 
     curdir = os.getcwd()
-    if curdir[-1]=='v':
-        spotdata = Table.read('./Engine/syntheticstellar_kband.txt',format='ascii')
-    else:
-        spotdata = Table.read('../Engine/syntheticstellar_kband.txt',format='ascii')
+    spotdata = Table.read('./Engine/syntheticstellar_kband.txt',format='ascii')
     mwave0 = np.array(spotdata['wave'])
     mflux0 = np.array(spotdata['flux'])
     mwave0 = mwave0[(np.isfinite(mflux0))]
@@ -189,10 +183,7 @@ def setup_templates_syn():
     mflux0[(mflux0 < 0)] = 0
 
     mwave0 = airtovac(mwave0)
-    if curdir[-1]=='v':
-        telluricdata = Table.read('./Engine/PhotoAtl Organized.txt',format='ascii')
-    else:
-        telluricdata = Table.read('../Engine/PhotoAtl Organized.txt',format='ascii')
+    telluricdata = Table.read('./Engine/PhotoAtl Organized.txt',format='ascii')
     watm = np.array(telluricdata['wave'])*10000.0
     satm = np.array(telluricdata['flux'])
     watm = watm[(np.isfinite(satm))]
@@ -203,12 +194,7 @@ def setup_templates_syn():
 def setup_templates_sun():
 
     curdir = os.getcwd()
-    if curdir[-1]=='v':
-        # spotdata = Table.read('./Engine/SpotAtl_Solar.txt',format='ascii')
-        spotdata = Table.read('./Engine/syntheticstellar_hband_tauboo.txt',format='ascii')
-    else:
-        # spotdata = Table.read('../Engine/SpotAtl_Solar.txt',format='ascii')
-        spotdata = Table.read('../Engine/syntheticstellar_hband_tauboo.txt',format='ascii')
+    spotdata = Table.read('./Engine/syntheticstellar_hband_tauboo.txt',format='ascii')
     mwave0 = np.array(spotdata['wave'])#*10000.0
     mflux0 = np.array(spotdata['flux'])
     mwave0 = mwave0[(np.isfinite(mflux0))]
@@ -216,10 +202,7 @@ def setup_templates_sun():
     mflux0[(mflux0 < 0)] = 0
 
     mwave0 = airtovac(mwave0)
-    if curdir[-1]=='v':
-        telluricdata = Table.read('./Engine/PhotoAtl Organized.txt',format='ascii')
-    else:
-        telluricdata = Table.read('../Engine/PhotoAtl Organized.txt',format='ascii')
+    telluricdata = Table.read('./Engine/PhotoAtl Organized.txt',format='ascii')
     watm = np.array(telluricdata['wave'])*10000.0
     satm = np.array(telluricdata['flux'])
     watm = watm[(np.isfinite(satm))]
