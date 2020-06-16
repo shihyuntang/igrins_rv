@@ -200,7 +200,7 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
 
         continuum_in = rebin_jv(a0contx,continuum,x_piece,False)
         s_piece /= np.median(s_piece)
-        fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,inparam.maskdict)
+        fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]))
 #-------------------------------------------------------------------------------
         ######## Begin optimization  ########
 
