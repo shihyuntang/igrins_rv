@@ -281,7 +281,7 @@ def MPinst(args, chunk_ind, orders, i):
     s = a0fluxlist.copy(); x = a0x.copy(); u = a0u.copy();
 
     # Collect all fit variables into one class
-    fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in)
+    fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in,[])
 
     # Arrays defining parameter variations during optimization steps
     dpar_cont = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0, 0])
@@ -574,7 +574,7 @@ if __name__ == '__main__':
     watm, satm, mwave0, mflux0 = setup_templates()
 
     inparam = inparamsA0(inpath,outpath,args.plotfigs,tags,nightsFinal,humids,
-                         temps,zds,press,obs,watm,satm,mwave0,mflux0,cdbs_loc,xbounddict)
+                         temps,zds,press,obs,watm,satm,mwave0,mflux0,cdbs_loc,xbounddict,None)
 #-------------------------------------------------------------------------------
 
     orders = [ int(labels[i].split('-')[0]) for i in range(len(labels)) ]
