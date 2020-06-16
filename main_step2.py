@@ -423,7 +423,7 @@ Input Parameters:
     # nightsFinal = nightsFinal[24:45]
 
     if args.nights_use != '':
-        nightstemp = np.array(ast.literal_eval(args.nights_use), dtype=str)
+        nightstemp = np.array(ast.literal_eval(args.nights_use), dtype=int)
         for nnn in nightstemp:
             if nnn not in nightsFinal:
                 sys.exit('NIGHT {} NOT FOUND UNDER ./Input_Data/{}'.format(nnn, args.targname))
