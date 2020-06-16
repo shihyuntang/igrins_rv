@@ -482,7 +482,7 @@ def use_w(args):
 
         pixsS = list(sorted(pixs))
         if len(pixsS) == 2:
-            filew.write('{}, {}, {},\n'.format(m_orders_unique[o],pixsS[0],pixsS[-1]))
+            filew.write('{}, {}, {},[]\n'.format(m_orders_unique[o],pixsS[0],pixsS[-1]))
         else:
             filew.write('{}, {}, {},"{}"\n'.format(m_orders_unique[o],pixsS[0],pixsS[-1],[pixsS[n:n+2] for n in range(1,len(pixs)-2)]))
     filew.close()
