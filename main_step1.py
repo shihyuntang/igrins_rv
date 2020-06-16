@@ -268,8 +268,7 @@ def MPinst(args, chunk_ind, orders, i):
                       0.,            #11: Continuum linear component
                       0.,            #12: Continuum quadratic component
                       IPpars[1],     #13: IP linear component
-                      IPpars[0],     #14: IP quadratic component
-                      0.0])          #15: Differential Rotation Coefficient
+                      IPpars[0]])     #14: IP quadratic component
 
     a0fluxlist = a0fluxlist[(a0wavelist*1e4 > min(watm_in)+5) & (a0wavelist*1e4 < max(watm_in)-5)]
     a0u        = a0u[       (a0wavelist*1e4 > min(watm_in)+5) & (a0wavelist*1e4 < max(watm_in)-5)]
@@ -284,11 +283,11 @@ def MPinst(args, chunk_ind, orders, i):
     fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in,[])
 
     # Arrays defining parameter variations during optimization steps
-    dpar_cont = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0, 0])
-    dpar_wave = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 10.0,  10.0, 5.00000e-5, 1e-7, 0,   0, 0, 0,    0, 0])
-    dpar      = np.array([0.0, 0.0, 5.0, 3.0, 0.0, 0.5, 0.0,   0.0,  0.0,        0,    1e4, 1, 1, 0,    0, 0])
-    dpar_st   = np.array([0.0, 0.0, 5.0, 3.0, 0.0, 0.0, 0.0,   0.0,  0.0,        0,    1e4, 1, 1, 0,    0, 0])
-    dpar_ip   = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0])
+    dpar_cont = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0])
+    dpar_wave = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 10.0,  10.0, 5.00000e-5, 1e-7, 0,   0, 0, 0,    0])
+    dpar      = np.array([0.0, 0.0, 5.0, 3.0, 0.0, 0.5, 0.0,   0.0,  0.0,        0,    1e4, 1, 1, 0,    0])
+    dpar_st   = np.array([0.0, 0.0, 5.0, 3.0, 0.0, 0.0, 0.0,   0.0,  0.0,        0,    1e4, 1, 1, 0,    0])
+    dpar_ip   = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0])
 
 #-------------------------------------------------------------------------------
     # For every pre-Telfit spectral fit, first fit just template strength/rv/continuum, then just wavelength soln, then template/continuum again, then ip,
@@ -298,8 +297,7 @@ def MPinst(args, chunk_ind, orders, i):
     optimize = True
     par_in = parA0.copy()
     hardbounds = [par_in[4] -dpar[4],   par_in[4]+dpar[4],
-                  par_in[5] -dpar[5],   par_in[5]+dpar[5],
-                  par_in[15]-dpar[15], par_in[15]+dpar[15]]
+                  par_in[5] -dpar[5],   par_in[5]+dpar[5]]
     if hardbounds[0] < 0:
         hardbounds[0] = 0
     if hardbounds[3] < 0:
