@@ -201,7 +201,7 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
 
         continuum_in = rebin_jv(a0contx,continuum,x_piece,False)
         s_piece /= np.median(s_piece)
-        fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in)
+        fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,inparam.maskdict)
 #-------------------------------------------------------------------------------
         ######## Begin optimization  ########
 
@@ -404,7 +404,9 @@ if __name__ == '__main__':
     starts  = np.array(bounddata['start'])
     ends    = np.array(bounddata['end'])
     labels  = np.array(bounddata['label'], dtype=str)
+    masks    = np.array(bounddata['masks'])
     xbounddict = {labels[i]:np.array([starts[i],ends[i]]) for i in range(len(starts))}
+    maskdict = {labels[i]:np.array(masks[i])}
 
     # Attribute A and B exposures to right file numbers
     tagsA = {}; tagsB = {}; mjds = {}; bvcs = {};
@@ -512,10 +514,8 @@ if __name__ == '__main__':
     else:
         nightscomblist = [nightsT]
 
-    orders = [ int(labels[i].split('-')[0]) for i in range(len(labels)) ]
-    oindex = [ int(labels[i].split('-')[1]) for i in range(len(labels)) ]
-    label_t = Table(names=('0', '1'), data=(orders, oindex))
-    label_t.sort(['0', '1'])
+    orders = labels
+    label_t = labels
 #-------------------------------------------------------------------------------
     for jerp in range(len(label_t)): # Iterate over orders
         pool = mp.Pool(processes = args.Nthreads)
@@ -524,7 +524,7 @@ if __name__ == '__main__':
         pool.close()
         pool.join()
 
-        label = '{}-{}'.format( label_t['0'][jerp], label_t['1'][jerp] )
+        label = labels[jerp]
 #-------------------------------------------------------------------------------
         # Collect outputs
         for i in range(len(nights)):
