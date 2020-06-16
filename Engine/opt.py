@@ -91,7 +91,7 @@ def fmodel_chi(par,grad):
     fwhmraw = par[5] + par[13]*(fitobj_cp.x) + par[14]*(fitobj_cp.x**2)
     try:
         spl = splrep(w,fwhmraw)
-    except ValueError:
+    except TypeError:
         return 1e7
     fwhm = splev(watm,spl)
     if min(fwhm) < 1 or max(fwhm) > 7:
