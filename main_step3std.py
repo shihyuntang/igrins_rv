@@ -147,7 +147,7 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
                                     order,
                                     tag,
                                     args.band,
-                                    bound_cut)
+                                    None)
 #-------------------------------------------------------------------------------
         s2n = s/u
         if np.nanmedian(s2n) < float(args.SN_cut):
