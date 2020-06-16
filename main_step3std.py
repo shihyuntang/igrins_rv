@@ -498,7 +498,7 @@ Input Parameters:
         pool.close()
         pool.join()
 
-        label = '{}-{}'.format( label_t['0'][jerp], label_t['1'][jerp] )
+        label = label_t[jerp]
 #-------------------------------------------------------------------------------
         # Collect outputs
         for i in range(len(nights)):
