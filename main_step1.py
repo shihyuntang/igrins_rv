@@ -224,7 +224,7 @@ def MPinst(args, chunk_ind, orders, i):
                                                 order,
                                                 '{:04d}'.format(int(inparam.tags[night])),
                                                 args.band,
-                                                None)
+                                                [150,150])
 #-------------------------------------------------------------------------------
     nzones = 12
     a0wavelist = basicclip_above(a0wavelist,a0fluxlist,nzones);   a0x = basicclip_above(x,a0fluxlist,nzones);
