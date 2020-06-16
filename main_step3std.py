@@ -74,9 +74,9 @@ def outplotter(parfit,fitobj,title,trk,debug):
         axes.legend(fontsize=4, edgecolor='white')
 
     if debug == 0:
-        fig.savefig('{}/figs/main_step2_{}/{}.png'.format(inparam.outpath, trk, title), bbox_inches='tight', format='png', overwrite=True)
+        fig.savefig('{}/figs/main_step3_{}/{}.png'.format(inparam.outpath, trk, title), bbox_inches='tight', format='png', overwrite=True)
     elif debug == 1:
-        fig.savefig('./Temp/Debug/{}_{}/main_step2_{}/{}.png'.format(args.targname, args.band, trk, title), bbox_inches='tight', format='png', overwrite=True)
+        fig.savefig('./Temp/Debug/{}_{}/main_step3_{}/{}.png'.format(args.targname, args.band, trk, title), bbox_inches='tight', format='png', overwrite=True)
 
 #-------------------------------------------------------------------------------
 def rv_MPinst(label_t, chunk_ind, trk, i):
