@@ -154,10 +154,7 @@ def airtovac(wave):
 def setup_templates():
 
     curdir = os.getcwd()
-    if curdir[-1]=='v':
-        spotdata = Table.read('./Engine/SpotAtl Organized.txt',format='ascii')
-    else:
-        spotdata = Table.read('../Engine/SpotAtl Organized.txt',format='ascii')
+    spotdata = Table.read('./Engine/SpotAtl Organized.txt',format='ascii')
     mwave0 = np.array(spotdata['wave'])*10000.0
     mflux0 = np.array(spotdata['flux'])
     mwave0 = mwave0[(np.isfinite(mflux0))]
