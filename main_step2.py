@@ -193,7 +193,7 @@ def ini_MPinst(label_t, chunk_ind, trk, i):
 
             continuum_in = rebin_jv(a0contx,continuum,x_piece,False)
             s_piece /= np.median(s_piece)
-            fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in)
+            fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,inparam.maskdict[order])
         #-------------------------------------------------------------------------------
                 ######## Begin optimization  ########
 
@@ -386,7 +386,9 @@ Input Parameters:
     starts  = np.array(bounddata['start'])
     ends    = np.array(bounddata['end'])
     labels  = np.array(bounddata['label'], dtype=str)
+    masks    = np.array(bounddata['masks'])
     xbounddict = {labels[i]:np.array([starts[i],ends[i]]) for i in range(len(starts))}
+    maskdict = {labels[i]:np.array(masks[i])}
 
     # Attribute A and B exposures to right file numbers
     tagsA = {}; tagsB = {}; mjds = {}; bvcs = {};
@@ -476,15 +478,10 @@ Input Parameters:
             watm,satm, mwave0, mflux0 = setup_templates()
             print('Using: SpotAtl Organized')
 
-    inparam = inparams(inpath,outpath,initvsini,vsinivary,args.plotfigs,initguesses,bvcs,tagsA,tagsB,nightsFinal,mwave0,mflux0,None,xbounddict)
+    inparam = inparams(inpath,outpath,initvsini,vsinivary,args.plotfigs,initguesses,bvcs,tagsA,tagsB,nightsFinal,mwave0,mflux0,None,xbounddict,maskdict)
 
     # Only use first wavelength region listed
-    ### label = labels[0] IF ONLY RV STANDARD, SPECIFY OTHERWISE. OR USE METHOD2
-
-    orders = [ int(labels[i].split('-')[0]) for i in range(len(labels)) ]
-    oindex = [ int(labels[i].split('-')[1]) for i in range(len(labels)) ]
-    label_t = Table(names=('0', '1'), data=(orders, oindex))
-    label_t.sort(['0', '1'])
+    label_t = labels[0]
 #-------------------------------------------------------------------------------
     pool = mp.Pool(processes = args.Nthreads)
     func = partial(ini_MPinst, label_t, int(args.label_use), trk )
