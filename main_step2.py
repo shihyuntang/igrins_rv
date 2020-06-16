@@ -33,9 +33,9 @@ def ini_MPinst(label_t, chunk_ind, trk, i):
     nights   = inparam.nights
     night    = nights[i]
 
-    label = '{}-{}'.format( label_t['0'][chunk_ind], label_t['1'][chunk_ind] )
-    order = label_t['0'][chunk_ind]
-    chunk = label_t['1'][chunk_ind]
+    
+    label = label_t[chunk_ind]
+    order = label_t[chunk_ind]
     xbounds = inparam.xbounddict[label]
 
     print('Working on label {}, night {:03d}/{:03d} ({}) PID:{}...'.format(label,
