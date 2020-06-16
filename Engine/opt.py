@@ -116,12 +116,9 @@ def fmodel_chi(par,grad):
     mask = np.ones_like(smod,dtype=bool)
     mask[(fitobj_cp.s < .0)] = False
     
-    try:
-        if len(fitobj_cp.mask) != 0:
-            for maskbounds in fitobj_cp.mask:
-                mask[maskbounds[0]:maskbounds[1]] = False
-    except IndexError:
-        pass
+    if len(fitobj_cp.mask) != 0:
+        for maskbounds in fitobj_cp.mask:
+            mask[(fitobj_cp.x > maskbounds[0]) & (fitobj_cp.x < maskbounds[1]) ] = False
     
     # Compute chisq
     chisq = np.sum((fitobj_cp.s[mask] - smod[mask])**2. / fitobj_cp.u[mask]**2.)
