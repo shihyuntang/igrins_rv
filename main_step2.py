@@ -101,10 +101,9 @@ def ini_MPinst(label_t, chunk_ind, trk, i):
 #-------------------------------------------------------------------------------
     # Use instrumental profile dictionary corresponding to whether IGRINS mounting was loose or not
     if int(night[:8]) < 20180401 or int(night[:8]) > 20190531:
-        print(order)
-        IPpars = inparam.ips_tightmount_pars[args.band][order]
+        IPpars = inparam.ips_tightmount_pars[args.band][int(order)]
     else:
-        IPpars = inparam.ips_loosemount_pars[args.band][order]
+        IPpars = inparam.ips_loosemount_pars[args.band][int(order)]
 
     # Collect initial RV guesses
     if type(inparam.initguesses) == dict:
