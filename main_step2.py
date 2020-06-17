@@ -132,7 +132,7 @@ def ini_MPinst(label_t, chunk_ind, trk, i):
         return night,np.nan,np.nan
 
     num_orders = 0
-    for i in np.arange(1,25):
+    for i in np.arange(25):
         try:
             hdulist[i].columns[0].name[9:]
             num_orders += 1
