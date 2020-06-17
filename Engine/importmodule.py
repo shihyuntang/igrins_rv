@@ -31,6 +31,7 @@ import nlopt
 from datetime import datetime
 # matplotlib  -----------------------------------------------------
 import matplotlib
+from matplotlib import gridspec
 from matplotlib.ticker import (MultipleLocator, FormatStrFormatter,
                                AutoMinorLocator)
 
