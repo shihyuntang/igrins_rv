@@ -15,7 +15,6 @@ def outplotter(parfit,fitobj,title,trk,debug):
 
     fig, axes = plt.subplots(1, 1, figsize=(5,3), facecolor='white', dpi=300)
     
-    
     n = len(fitobj.mask)
 
     if n > 0:
@@ -74,7 +73,7 @@ def outplotter(parfit,fitobj,title,trk,debug):
 
         axes.tick_params(axis='both', labelsize=4.5, right=True, top=True, direction='in')
         axes.legend(fontsize=4, edgecolor='white')
-        
+
     if debug == 0:
         fig.savefig('{}/figs/main_step3_{}/{}.png'.format(inparam.outpath, trk, title), bbox_inches='tight', format='png', overwrite=True)
     elif debug == 1:
@@ -187,7 +186,7 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
                       IPpars[0]])                                              #14: IP quadratic component
 
     # Iterate over all A/B exposures
-    for t in np.arange(len(tagsnight)):
+    for t in [0]:#np.arange(len(tagsnight)):
         tag = tagsnight[t]
         beam = beamsnight[t]
 
@@ -426,7 +425,7 @@ Input Parameters:
     bounddata = Table.read('./Input_Data/Use_w/XRegions_{}_{}.csv'.format(args.WRegion, args.band), format='csv')
     starts  = np.array(bounddata['start'])
     ends    = np.array(bounddata['end'])
-    labels  = np.array(bounddata['label'], dtype=str)
+    labels  = np.array(bounddata['label'], dtype=int)
     masks    = np.array(bounddata['masks'])
     xbounddict = {labels[i]:np.array([starts[i],ends[i]]) for i in range(len(starts))}
     maskdict = {labels[i]:masks[i] for i in range(len(starts))}

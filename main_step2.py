@@ -10,13 +10,14 @@ from Engine.rotint import rotint
 from Engine.opt import optimizer, fmod
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
+
 def outplotter(parfit,fitobj,title,trk,debug):
     fit,chi = fmod(parfit, fitobj)
     w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
 
     fig, axes = plt.subplots(1, 1, figsize=(5,3), facecolor='white', dpi=300)
-
-
+    
+    
     n = len(fitobj.mask)
 
     if n > 0:
@@ -80,7 +81,7 @@ def outplotter(parfit,fitobj,title,trk,debug):
         fig.savefig('{}/figs/main_step2_{}/{}.png'.format(inparam.outpath, trk, title), bbox_inches='tight', format='png', overwrite=True)
     elif debug == 1:
         fig.savefig('./Temp/Debug/{}_{}/main_step2_{}/{}.png'.format(args.targname, args.band, trk, title), bbox_inches='tight', format='png', overwrite=True)
-
+#-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 
 def ini_MPinst(label_t, chunk_ind, trk, i):
@@ -101,9 +102,9 @@ def ini_MPinst(label_t, chunk_ind, trk, i):
 #-------------------------------------------------------------------------------
     # Use instrumental profile dictionary corresponding to whether IGRINS mounting was loose or not
     if int(night[:8]) < 20180401 or int(night[:8]) > 20190531:
-        IPpars = inparam.ips_tightmount_pars[args.band][int(order)]
+        IPpars = inparam.ips_tightmount_pars[args.band][order]
     else:
-        IPpars = inparam.ips_loosemount_pars[args.band][int(order)]
+        IPpars = inparam.ips_loosemount_pars[args.band][order]
 
     # Collect initial RV guesses
     if type(inparam.initguesses) == dict:
@@ -132,7 +133,7 @@ def ini_MPinst(label_t, chunk_ind, trk, i):
         return night,np.nan,np.nan
 
     num_orders = 0
-    for i in np.arange(25):
+    for i in np.arange(1,25):
         try:
             hdulist[i].columns[0].name[9:]
             num_orders += 1
@@ -140,7 +141,7 @@ def ini_MPinst(label_t, chunk_ind, trk, i):
             continue
 
     # order in A0_treated.fits is no longer sequential...
-    fits_layer = [ i for i in np.arange(num_orders)+1 if int(hdulist[i].columns[0].name[9:]) == int(order) ][0]
+    fits_layer = [ i for i in np.arange(num_orders)+1 if int(hdulist[i].columns[0].name[9:]) == order ][0]
 
     tbdata = hdulist[ fits_layer ].data
     flag = np.array(tbdata['ERRORFLAG'+str(order)])[0]
@@ -232,22 +233,27 @@ def ini_MPinst(label_t, chunk_ind, trk, i):
 
             par[0] = initrvguess-inparam.bvcs[night+tag]
             # Arrays defining parameter variations during optimization steps
-            dpars1 = {'cont' : np.array([0.0,   0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0]),
-                      'wave' : np.array([0.0,   0.0, 0.0, 0.0, 0.0,               0.0, 10.0,  10.0, 5.00000e-5, 0.,   0,   0, 0, 0,    0]),
-                      't'    : np.array([0.0,   0.0, 5.0, 1.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0]),
-                      'ip'   : np.array([0.0,   0.0, 0.0, 0.0, 0,                 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0]),
-                      's'    : np.array([400.0, 2.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0]),
-                      'v'    : np.array([0.0,   0.0, 0.0, 0.0, inparam.vsinivary, 0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0])}
-            dpars2 = {'cont' : np.array([0.0,   0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0]),
-                      'wave' : np.array([0.0,   0.0, 0.0, 0.0, 0.0,               0.0, 10.0,  10.0, 5.00000e-5, 0.,   0,   0, 0, 0,    0]),
-                      't'    : np.array([0.0,   0.0, 5.0, 1.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0]),
-                      'ip'   : np.array([0.0,   0.0, 0.0, 0.0, 0,                 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0]),
-                      's'    : np.array([5.0,   2.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0]),
-                      'v'    : np.array([0.0,   0.0, 0.0, 0.0, inparam.vsinivary, 0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0])}
+            dpars1 = {'cont' : np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0]),
+                     'wave' : np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 10.0,  10.0, 5.00000e-5, 0.,   0,   0, 0, 0,    0]),
+                     't'    : np.array([0.0, 0.0, 5.0, 1.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0]),
+                     'ip'   : np.array([0.0, 0.0, 0.0, 0.0, 0,                 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0]),
+                     's'    : np.array([20.0, 2.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0]),
+                     'v'    : np.array([0.0, 0.0, 0.0, 0.0, inparam.vsinivary, 0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0])}
+            dpars2 = {'cont' : np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0]),
+                     'wave' : np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 10.0,  10.0, 5.00000e-5, 0.,   0,   0, 0, 0,    0]),
+                     't'    : np.array([0.0, 0.0, 5.0, 1.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0]),
+                     'ip'   : np.array([0.0, 0.0, 0.0, 0.0, 0,                 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0]),
+                     's'    : np.array([5.0, 2.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0]),
+                     'v'    : np.array([0.0, 0.0, 0.0, 0.0, inparam.vsinivary, 0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0])}
 
             continuum_in = rebin_jv(a0contx,continuum,x_piece,False)
             s_piece /= np.median(s_piece)
+
             fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]))
+
+            mask = np.ones_like(s_piece,dtype=bool)
+            mask[(fitobj.s < .0)] = False
+
         #-------------------------------------------------------------------------------
                 ######## Begin optimization  ########
 
@@ -266,7 +272,6 @@ def ini_MPinst(label_t, chunk_ind, trk, i):
                         'wave',
                         't',
                         'cont',
-                        't',
                         's',
                         'cont',
                         'wave',
@@ -439,7 +444,7 @@ Input Parameters:
     bounddata = Table.read('./Input_Data/Use_w/XRegions_{}_{}.csv'.format(args.WRegion, args.band), format='csv')
     starts  = np.array(bounddata['start'])
     ends    = np.array(bounddata['end'])
-    labels  = np.array(bounddata['label'], dtype=str)
+    labels  = np.array(bounddata['label'], dtype=int)
     masks    = np.array(bounddata['masks'])
     xbounddict = {labels[i]:np.array([starts[i],ends[i]]) for i in range(len(starts))}
     maskdict = {labels[i]:masks[i] for i in range(len(starts))}
@@ -477,7 +482,7 @@ Input Parameters:
     # nightsFinal = nightsFinal[24:45]
 
     if args.nights_use != '':
-        nightstemp = np.array(ast.literal_eval(args.nights_use), dtype=int)
+        nightstemp = np.array(ast.literal_eval(args.nights_use), dtype=str)
         for nnn in nightstemp:
             if nnn not in nightsFinal:
                 sys.exit('NIGHT {} NOT FOUND UNDER ./Input_Data/{}'.format(nnn, args.targname))
@@ -499,7 +504,7 @@ Input Parameters:
         if iniguess_dir not in filesndirs:
             break
         trk += 1
-
+                                        
     if args.debug:
         try:
             os.listdir('./Temp/Debug/{}_{}/'.format(args.targname, args.band))
@@ -534,9 +539,7 @@ Input Parameters:
 
     inparam = inparams(inpath,outpath,initvsini,vsinivary,args.plotfigs,initguesses,bvcs,tagsA,tagsB,nightsFinal,mwave0,mflux0,None,xbounddict,maskdict)
 
-    orders = labels
-    label_t = orders
-
+    label_t = labels
 #-------------------------------------------------------------------------------
     pool = mp.Pool(processes = args.Nthreads)
     func = partial(ini_MPinst, label_t, int(args.label_use), trk )
