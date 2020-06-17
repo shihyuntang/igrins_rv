@@ -419,7 +419,7 @@ def MPinst(args, chunk_ind, orders, i):
 
 def mp_run(args, Nthreads, jerp, orders, nights):
     pool = mp.Pool(processes = Nthreads)
-    func = partial(MPinst, args, jerporders, )
+    func = partial(MPinst, args, jerp, orders )
     outs = pool.map(func, np.arange(len(nights)))
     pool.close()
     pool.join()
