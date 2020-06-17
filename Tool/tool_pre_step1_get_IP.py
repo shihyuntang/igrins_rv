@@ -356,12 +356,12 @@ def MPinst(args, chunk_ind, orders, i):
         # needed with quadratic adjustment
         fitobj = fitobjs(s, x, u, continuum,watm1,satm1,mflux_in,mwave_in,[])
 
-        parfit_1 = optimizer(par_in,   dpar_st,   fitobj, optimize)
-        parfit_2 = optimizer(parfit_1, dpar_wave, fitobj, optimize)
-        parfit_3 = optimizer(parfit_2, dpar_st,   fitobj, optimize)
-        parfit_4 = optimizer(parfit_3, dpar_ip,   fitobj, optimize)
-        parfit_5 = optimizer(parfit_4, dpar_wave, fitobj, optimize)
-        parfit   = optimizer(parfit_5, dpar,      fitobj, optimize)
+        parfit_1 = optimizer(par_in,   dpar_st,   hardbounds,fitobj, optimize)
+        parfit_2 = optimizer(parfit_1, dpar_wave, hardbounds,fitobj, optimize)
+        parfit_3 = optimizer(parfit_2, dpar_st,   hardbounds,fitobj, optimize)
+        parfit_4 = optimizer(parfit_3, dpar_ip,   hardbounds,fitobj, optimize)
+        parfit_5 = optimizer(parfit_4, dpar_wave, hardbounds,fitobj, optimize)
+        parfit   = optimizer(parfit_5, dpar,      hardbounds,fitobj, optimize)
 
         if inparam.plotfigs == True:
             fig, axes = plt.subplots(1, 1, figsize=(5,3), facecolor='white', dpi=300)
