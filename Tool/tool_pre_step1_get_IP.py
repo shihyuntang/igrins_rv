@@ -207,18 +207,23 @@ def DataPrep(args):
     print('To achieve highest precision, this pipeline defaults to not analyzing target spectra for these nights.\n')
 
 
-def MPinst(args, chunk_ind, i):
-    nights = inparam.nights
+def MPinst(args, chunk_ind, orders, i):
+    # nights = inparam.nights
+    #
+    # order = inparam.xbounddict[chunk_ind]
+    # night = str(nights[i])
+    # firstorder = int(inparam.xbounddict[0])
 
-    order = inparam.xbounddict[chunk_ind]
-    night = str(nights[i])
-    firstorder = int(inparam.xbounddict[0])
+    order = orders[chunk_ind]
+    night = str(inparam.nights[i])
+    firstorder = orders[0]
 
-    print('Working on chunk {}/{}, night {} {}/{} ...'.format(chunk_ind+1,
-                                                             len(inparam.xbounddict),
+    print('Working on order {}/{}, night {} {}/{} PID:{}...'.format(chunk_ind+1,
+                                                             len(orders),
                                                              night,
                                                              i+1,
-                                                             len(inparam.nights)) )
+                                                             len(inparam.nights),
+                                                             mp.current_process().pid) )
 
     IPpars = np.array([ 0,  0,  3.3])
 
@@ -412,9 +417,9 @@ def MPinst(args, chunk_ind, i):
             hh.writeto('{}/{}A0_treated_{}.fits'.format(inparam.outpath, night, args.band), overwrite=True)
 
 
-def mp_run(args, Nthreads, jerp, nights):
+def mp_run(args, Nthreads, jerp, orders, nights):
     pool = mp.Pool(processes = Nthreads)
-    func = partial(MPinst, args, jerp)
+    func = partial(MPinst, args, jerporders, )
     outs = pool.map(func, np.arange(len(nights)))
     pool.close()
     pool.join()
@@ -511,11 +516,11 @@ if __name__ == '__main__':
         orders = np.append(np.arange(2, 7), np.array([10, 11, 13, 14, 16, 17, 20, 21, 22]))
 
     inparam = inparamsA0(inpath,outpath,args.plotfigs,tags,nightsFinal,humids,
-                         temps,zds,press,obs,watm,satm,mwave0,mflux0,cdbs_loc,None,None)
+                         temps,zds,press,obs,watm,satm,mwave0,mflux0,cdbs_loc,xbounddict,None)
 
     print('Processing Orders: {}'.format(orders))
     for jerp in range(len(orders)): # Iterate over regions
-        outs = mp_run(args, args.Nthreads, jerp, nightsFinal)
+        outs = mp_run(args, args.Nthreads, jerp, orders, nightsFinal)
 
     print('\n')
     print('A0 Fitting Done!')
