@@ -427,7 +427,7 @@ Input Parameters:
     labels  = np.array(bounddata['label'], dtype=str)
     masks    = np.array(bounddata['masks'])
     xbounddict = {labels[i]:np.array([starts[i],ends[i]]) for i in range(len(starts))}
-    maskdict = {labels[i]:np.array(masks[i])}) for i in range(len(starts))}
+    maskdict = {labels[i]:np.array(masks[i]) for i in range(len(starts))}
 
     # Attribute A and B exposures to right file numbers
     tagsA = {}; tagsB = {}; mjds = {}; bvcs = {};
@@ -462,7 +462,7 @@ Input Parameters:
     # labels      = labels[-2:]
 
     if args.nights_use != '':
-        nightstemp = np.array(ast.literal_eval(args.nights_use), dtype=int)
+        nightstemp = np.array(ast.literal_eval(args.nights_use), dtype=str)
         for nnn in nightstemp:
             if nnn not in nightsFinal:
                 sys.exit('NIGHT {} NOT FOUND UNDER ./Input_Data/{}'.format(nnn, args.targname))
@@ -513,7 +513,7 @@ Input Parameters:
             watm,satm, mwave0, mflux0 = setup_templates()
             print('Using: SpotAtl Organized')
 
-    inparam = inparams(inpath,outpath,initvsini,vsinivary,args.plotfigs,initguesses,bvcs,tagsA,tagsB,nightsFinal,mwave0,mflux0,None,xbounddict)
+    inparam = inparams(inpath,outpath,initvsini,vsinivary,args.plotfigs,initguesses,bvcs,tagsA,tagsB,nightsFinal,mwave0,mflux0,None,xbounddict,maskdict)
 
     # Divide between nights where IGRINS mounting was loose (L) and when it was tight (T)
     nights    = inparam.nights
