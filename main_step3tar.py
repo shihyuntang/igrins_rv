@@ -15,8 +15,8 @@ def outplotter(parfit,fitobj,title,trk,debug):
     w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
 
     fig, axes = plt.subplots(1, 1, figsize=(5,3), facecolor='white', dpi=300)
-    
-    
+
+
     n = len(fitobj.mask)
 
     if n > 0:
@@ -80,7 +80,7 @@ def outplotter(parfit,fitobj,title,trk,debug):
         fig.savefig('{}/figs/main_step3_{}/{}.png'.format(inparam.outpath, trk, title), bbox_inches='tight', format='png', overwrite=True)
     elif debug == 1:
         fig.savefig('./Temp/Debug/{}_{}/main_step3_{}/{}.png'.format(args.targname, args.band, trk, title), bbox_inches='tight', format='png', overwrite=True)
-        
+
 #-------------------------------------------------------------------------------
 def rv_MPinst(label_t, chunk_ind, trk, i):
     # Main function to compute RVs for a given night and order
@@ -104,9 +104,9 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
     # --------------------------------------------------------------
     # Use instrumental profile dictionary corresponding to whether IGRINS mounting was loose or not
     if int(night[:8]) < 20180401 or int(night[:8]) > 20190531:
-        IPpars = inparam.ips_tightmount_pars[args.band][order]
+        IPpars = inparam.ips_tightmount_pars[args.band][int(order)]
     else:
-        IPpars = inparam.ips_loosemount_pars[args.band][order]
+        IPpars = inparam.ips_loosemount_pars[args.band][int(order)]
 
     # Collect relevant beam and filenum info
     tagsnight = []; beamsnight = [];
@@ -266,7 +266,7 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
             hardbounds[0] = 0
         if hardbounds[3] < 0:
             hardbounds[3] = 1
-                      
+
 #        if args.plotfigs == True:#
 #            outplotter(targname,par_in,fitobj,'{}_{}_{}_1'.format(label,night,tag))
 
