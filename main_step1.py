@@ -357,8 +357,8 @@ def MPinst(args, chunk_ind, orders, i):
                       '-k', lw=0.5, label='data', alpha=.6)
 
             axes.tick_params(axis='both', labelsize=4.5, right=True, top=True, direction='in')
-            axes.set_ylabel(r'Normalized Flux',   size=5, style='normal' , family='sans-serif' )
-            axes.set_xlabel('Wavelength',       size=5, style='normal' , family='sans-serif' )
+            axes.set_ylabel(r'IP',   size=5, style='normal' , family='sans-serif' )
+            axes.set_xlabel('Pixel Number',       size=5, style='normal' , family='sans-serif' )
             axes.legend(fontsize=4, edgecolor='white')
             fig.savefig('{}/figs_{}/IP_{}_{}.png'.format(inparam.outpath, args.band, order, night), bbox_inches='tight', format='png', overwrite=True)
 
@@ -436,11 +436,11 @@ def use_w(args):
     m_orders_unique = np.unique(m_order)
 
     for o in range(len(m_orders_unique)):
-        pixs = []; 
+        pixs = [];
         mini = np.where(m_order == m_orders_unique[o])[0]
         for j in range(len(mini)):
             i = mini[j]
-        
+
             wavebounds = [starts[i],ends[i]]
             wO   = wavesols['w'+str(m_orders_unique[o])]
             pixO = wavesols['x'+str(m_orders_unique[o])];
@@ -589,4 +589,3 @@ if __name__ == '__main__':
     print('You can start to run main_step2.py for RV initial guess')
     print('###############################################################')
     print('\n')
-
