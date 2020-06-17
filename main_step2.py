@@ -16,8 +16,8 @@ def outplotter(parfit,fitobj,title,trk,debug):
     w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
 
     fig, axes = plt.subplots(1, 1, figsize=(5,3), facecolor='white', dpi=300)
-    
-    
+
+
     n = len(fitobj.mask)
 
     if n > 0:
@@ -133,13 +133,12 @@ def ini_MPinst(label_t, chunk_ind, trk, i):
         return night,np.nan,np.nan
 
     num_orders = 0
-    for i in np.arange(1,25):
+    for i in range(25):
         try:
             hdulist[i].columns[0].name[9:]
             num_orders += 1
         except:
             continue
-
     # order in A0_treated.fits is no longer sequential...
     fits_layer = [ i for i in np.arange(num_orders)+1 if int(hdulist[i].columns[0].name[9:]) == order ][0]
 
@@ -504,7 +503,7 @@ Input Parameters:
         if iniguess_dir not in filesndirs:
             break
         trk += 1
-                                        
+
     if args.debug:
         try:
             os.listdir('./Temp/Debug/{}_{}/'.format(args.targname, args.band))
