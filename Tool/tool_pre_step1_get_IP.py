@@ -28,6 +28,7 @@ def outplotter(parfit,fitobj,title,debug):
     axes.set_ylabel(r'Normalized Flux',   size=5, style='normal' , family='sans-serif' )
     axes.set_xlabel(r'Wavelength [$\AA$]',       size=5, style='normal' , family='sans-serif' )
     axes.legend(fontsize=4, edgecolor='white')
+    
     if debug == 0:
         fig.savefig('{}/figs_{}/{}.png'.format(inparam.outpath, args.band, title), bbox_inches='tight', format='png', overwrite=True)
     elif debug == 1:
