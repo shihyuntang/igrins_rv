@@ -489,7 +489,7 @@ if __name__ == '__main__':
 
     nightsFinal = np.array(list(sorted(set(Tnights))))
     if args.nights_use != '':
-        nightstemp = np.array(ast.literal_eval(args.nights_use), dtype=int)
+        nightstemp = np.array(ast.literal_eval(args.nights_use), dtype=str)
         for nnn in nightstemp:
             if nnn not in nightsFinal:
                 sys.exit('NIGHT {} NOT FOUND UNDER ./Input_Data/{}'.format(nnn, args.targname))
@@ -540,7 +540,7 @@ if __name__ == '__main__':
             watm,satm, mwave0, mflux0 = setup_templates()
             print('Using: SpotAtl Organized')
 
-    inparam = inparams(inpath,outpath,initvsini,vsinivary,args.plotfigs,initguesses,bvcs,tagsA,tagsB,nightsFinal,mwave0,mflux0,None,xbounddict)
+    inparam = inparams(inpath,outpath,initvsini,vsinivary,args.plotfigs,initguesses,bvcs,tagsA,tagsB,nightsFinal,mwave0,mflux0,None,xbounddict,maskdict)
 
     # Divide between nights where IGRINS mounting was loose (L) and when it was tight (T)
     nights    = inparam.nights
