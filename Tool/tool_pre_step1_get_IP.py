@@ -516,7 +516,7 @@ if __name__ == '__main__':
         orders = np.append(np.arange(2, 7), np.array([10, 11, 13, 14, 16, 17, 20, 21, 22]))
 
     inparam = inparamsA0(inpath,outpath,args.plotfigs,tags,nightsFinal,humids,
-                         temps,zds,press,obs,watm,satm,mwave0,mflux0,cdbs_loc,xbounddict,None)
+                         temps,zds,press,obs,watm,satm,mwave0,mflux0,cdbs_loc,None,None)
 
     print('Processing Orders: {}'.format(orders))
     for jerp in range(len(orders)): # Iterate over regions
