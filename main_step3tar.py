@@ -15,8 +15,7 @@ def outplotter(parfit,fitobj,title,trk,debug):
     w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
 
     fig, axes = plt.subplots(1, 1, figsize=(5,3), facecolor='white', dpi=300)
-
-
+    
     n = len(fitobj.mask)
 
     if n > 0:
@@ -104,9 +103,9 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
     # --------------------------------------------------------------
     # Use instrumental profile dictionary corresponding to whether IGRINS mounting was loose or not
     if int(night[:8]) < 20180401 or int(night[:8]) > 20190531:
-        IPpars = inparam.ips_tightmount_pars[args.band][int(order)]
+        IPpars = inparam.ips_tightmount_pars[args.band][order]
     else:
-        IPpars = inparam.ips_loosemount_pars[args.band][int(order)]
+        IPpars = inparam.ips_loosemount_pars[args.band][order]
 
     # Collect relevant beam and filenum info
     tagsnight = []; beamsnight = [];
@@ -266,7 +265,7 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
             hardbounds[0] = 0
         if hardbounds[3] < 0:
             hardbounds[3] = 1
-
+                      
 #        if args.plotfigs == True:#
 #            outplotter(targname,par_in,fitobj,'{}_{}_{}_1'.format(label,night,tag))
 
@@ -455,10 +454,10 @@ if __name__ == '__main__':
     bounddata = Table.read('./Input_Data/Use_w/XRegions_{}_{}.csv'.format(args.WRegion, args.band), format='csv')
     starts  = np.array(bounddata['start'])
     ends    = np.array(bounddata['end'])
-    labels  = np.array(bounddata['label'], dtype=str)
+    labels  = np.array(bounddata['label'], dtype=int)
     masks    = np.array(bounddata['masks'])
     xbounddict = {labels[i]:np.array([starts[i],ends[i]]) for i in range(len(starts))}
-    maskdict = {labels[i]:masks[i]}
+    maskdict = {labels[i]:masks[i] for i in range(len(starts))}}
 
     # Attribute A and B exposures to right file numbers
     tagsA = {}; tagsB = {}; mjds = {}; bvcs = {};
