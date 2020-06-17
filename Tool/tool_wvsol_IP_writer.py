@@ -8,17 +8,17 @@ from Engine.rebin_jv import rebin_jv
 
 def IPval(tar,band):
 
-    filesndirs = os.listdir('./A0_Fits/A0_Fits_{}/'.format(tar))
+    filesndirs = os.listdir('./A0_Fits/A0_Fits_{}_IP/'.format(tar))
     filesndirs = [j for j in filesndirs if j[-6:] == '{}.fits'.format(band)]
 
     nights  = np.array([int(j[:8]) for j in filesndirs ])
     nightsT = np.where((nights < 20180401)  | (nights > 20190531))
     nightsL = np.where((nights >= 20180401) & (nights < 20190531))
 
-    Tdirs = [ './A0_Fits/A0_Fits_{}/{}A0_treated_{}.fits'.format(tar, nn, band) for nn in nights[nightsT] ]
-    Ldirs = [ './A0_Fits/A0_Fits_{}/{}A0_treated_{}.fits'.format(tar, nn, band) for nn in nights[nightsL] ]
+    Tdirs = [ './A0_Fits/A0_Fits_{}_IP/{}A0_treated_{}.fits'.format(tar, nn, band) for nn in nights[nightsT] ]
+    Ldirs = [ './A0_Fits/A0_Fits_{}_IP/{}A0_treated_{}.fits'.format(tar, nn, band) for nn in nights[nightsL] ]
 
-    filew = open('./Temp/IP_{}.txt'.format(band),'w')
+    filew = open('../Temp/IP_{}.txt'.format(band),'w')
 
     if len(nightsT) != 0:
         dump1 = 0
@@ -223,13 +223,13 @@ if __name__ == '__main__':
         sys.exit('NO SPACE IS ALLOWED BETWEEN NAMES!' )
 #-------------------------------------------------------------------------------
     for i in tars:
-        if os.path.isdir( './A0_Fits/A0_Fits_{}'.format(i) ):
-            filesndirs = os.listdir('./A0_Fits/A0_Fits_{}/'.format(i))
+        if os.path.isdir( f'./A0_Fits/A0_Fits_{i}_IP' ):
+            filesndirs = os.listdir(f'./A0_Fits/A0_Fits_{i}_IP/')
             filesndirs_H = [j for j in filesndirs if j[-6:] == 'H.fits']
             filesndirs_K = [j for j in filesndirs if j[-6:] == 'K.fits']
 
             print('CONFIRMING... ')
-            print('{} of H band & {} of K band under ./A0_Fits/A0_Fits_{}'.format(len(filesndirs_H), len(filesndirs_K), i))
+            print('{} of H band & {} of K band under ./A0_Fits/A0_Fits_{}_IP'.format(len(filesndirs_H), len(filesndirs_K), i))
             time.sleep(2)
 #-------------------------------------------------------------------------------
             if (args.mode == 1) or (args.mode == 2): #get IP & WaveSol
@@ -241,17 +241,17 @@ if __name__ == '__main__':
                 else:
                     IPval(i,'H')
                     IPval(i,'K')
-                print('DONE, saving under ./Temp/IP_X.txt')
+                print('DONE, saving under ../Temp/IP_X.txt')
                 time.sleep(1)
         else:
-            sys.exit('NO FILES FOUND UNDER ./A0_Fits/A0_Fits_{}/'.format(i) )
+            sys.exit(f'NO FILES FOUND UNDER ./A0_Fits/A0_Fits_{i}_IP/' )
 #-------------------------------------------------------------------------------
 
     for i in tars:
-        if os.path.isdir( './A0_Fits/A0_Fits_{}'.format(i) ):
+        if os.path.isdir( f'./A0_Fits/A0_Fits_{i}_IP' ):
             continue
         else:
-            sys.exit('NO FILES FOUND UNDER ./A0_Fits/A0_Fits_{}/'.format(i) )
+            sys.exit(f'NO FILES FOUND UNDER ./A0_Fits/A0_Fits_{i}_IP/' )
 
     if (args.mode == 1) or (args.mode == 3):
         print('-------------------------------------------------------------')
