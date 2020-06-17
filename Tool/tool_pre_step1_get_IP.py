@@ -502,8 +502,8 @@ if __name__ == '__main__':
     if not os.path.isdir(f'./A0_Fits/A0_Fits_{args.targname}_IP'):
         os.mkdir(f'./A0_Fits/A0_Fits_{args.targname}_IP')
 
-    if not os.path.isdir(f'./A0_Fits/A0_Fits_{args.targname}_IP/fig_{args.band}'):
-        os.mkdir(f'./A0_Fits/A0_Fits_{args.targname}_IP/fig_{args.band}')
+    if not os.path.isdir(f'./A0_Fits/A0_Fits_{args.targname}_IP/figs_{args.band}'):
+        os.mkdir(f'./A0_Fits/A0_Fits_{args.targname}_IP/figs_{args.band}')
 
     outpath = f'./A0_Fits/A0_Fits_{args.targname}_IP'
     # Retrieve stellar and telluric templates
