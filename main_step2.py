@@ -534,6 +534,9 @@ Input Parameters:
 
     inparam = inparams(inpath,outpath,initvsini,vsinivary,args.plotfigs,initguesses,bvcs,tagsA,tagsB,nightsFinal,mwave0,mflux0,None,xbounddict,maskdict)
 
+    orders = labels
+    label_t = orders
+
 #-------------------------------------------------------------------------------
     pool = mp.Pool(processes = args.Nthreads)
     func = partial(ini_MPinst, label_t, int(args.label_use), trk )
