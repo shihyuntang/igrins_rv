@@ -440,7 +440,7 @@ Input Parameters:
     labels  = np.array(bounddata['label'], dtype=str)
     masks    = np.array(bounddata['masks'])
     xbounddict = {labels[i]:np.array([starts[i],ends[i]]) for i in range(len(starts))}
-    maskdict = {labels[i]:np.array(masks[i])}
+    maskdict = {labels[i]:masks[i]}
 
     # Attribute A and B exposures to right file numbers
     tagsA = {}; tagsB = {}; mjds = {}; bvcs = {};
