@@ -16,9 +16,11 @@ def outplotter(parfit,fitobj,title,trk,debug):
 
     fig, axes = plt.subplots(1, 1, figsize=(5,3), facecolor='white', dpi=300)
     
-    try: 
-        n = len(fitobj.mask)
-        #fig, axes = plt.subplots(1, n+1, sharey=True, figsize=(5,3), facecolor='white', dpi=300)
+    
+    n = len(fitobj.mask)
+
+    if n > 0:
+
         widths = [fitobj.mask[0][0]-fitobj.x[0]]
         for m in range(n-1):
             widths.append(fitobj.mask[m+1][0]-fitobj.mask[m][1])
@@ -61,7 +63,7 @@ def outplotter(parfit,fitobj,title,trk,debug):
         fig.text(-0.04, 0.5, r'Normalized Flux', va='center', rotation='vertical',size=5, style='normal', family='sans-serif')
         ax0.legend(fontsize=4, edgecolor='white')
 
-    except TypeError:
+    else:
         fig, axes = plt.subplots(1, 1, figsize=(5,3), facecolor='white', dpi=300)
         axes.plot(w,fitobj.s, '-k',  lw=0.5, label='data',alpha=.6)
         axes.plot(w,fit,      '--r', lw=0.5, label='model',alpha=.6)
