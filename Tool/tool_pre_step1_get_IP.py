@@ -31,12 +31,12 @@ def outplotter(parfit,fitobj,title,debug):
     if debug == 0:
         fig.savefig('{}/figs/{}.png'.format(inparam.outpath, title), bbox_inches='tight', format='png', overwrite=True)
     elif debug == 1:
-        fig.savefig('./Temp/Debug/{}/{}.png'.format(args.targname, title), bbox_inches='tight', format='png', overwrite=True)
+        fig.savefig('../Temp/Debug/{}/{}.png'.format(args.targname, title), bbox_inches='tight', format='png', overwrite=True)
 
 
 def DataPrep(args):
     # Find all nights of observations of target in master log
-    master_log_fh = './Engine/IGRINS_MASTERLOG.csv'
+    master_log_fh = '../Engine/IGRINS_MASTERLOG.csv'
     master_log    = pd.read_csv(master_log_fh)
 
     star_files    = master_log[(master_log['OBJNAME'].str.contains(args.targname, regex=True, na=False)) & (master_log['OBJTYPE'].str.contains('TAR', regex=True, na=False))]
@@ -53,7 +53,7 @@ def DataPrep(args):
 
     #---------------------------------------------------------------------------
     ## Collect target star information
-    fileT = open('./Temp/Prepdata/Prepdata_targ_{}.txt'.format(args.targname), 'w')
+    fileT = open('../Temp/Prepdata/Prepdata_targ_{}_tool.txt'.format(args.targname), 'w')
     fileT.write('night beam tag mjd facility airmass bvc\n')
 
     nightsT = [];
@@ -101,7 +101,7 @@ def DataPrep(args):
 
     #---------------------------------------------------------------------------
     ## Now collect A0 information
-    fileA0 = open('./Temp/Prepdata/Prepdata_A0_{}.txt'.format(args.targname), 'w')
+    fileA0 = open('../Temp/Prepdata/Prepdata_A0_{}_tool.txt'.format(args.targname), 'w')
     fileA0.write('night tag humid temp zd press obs airmass\n')
     noA0nights = []
 
@@ -220,43 +220,7 @@ def MPinst(args, chunk_ind, i):
                                                              i+1,
                                                              len(inparam.nights)) )
 
-    # if int(night) < 20180401 or int(night) > 20190531:
-    #     IPpars = inparam.ips_tightmount_pars[order]
-    # else:
-    #     IPpars = inparam.ips_loosemount_pars[order]
-
     IPpars = np.array([ 0,  0,  3.3])
-
-    if args.band=='K':
-        if order==11:
-            bound_cut = [200, 100]
-        elif order==12:
-            bound_cut = [900, 300]
-        elif order==13:
-            bound_cut = [200, 400]
-        elif order==14:
-            bound_cut = [150, 300]
-        else:
-            bound_cut = [150, 100]
-    elif args.band=='H':
-        if order==10:
-            bound_cut = [250, 150]#ok
-        elif order==11:
-            bound_cut = [600, 150]
-        elif order==13:
-            bound_cut = [200, 600]#ok
-        elif order==14:
-            bound_cut = [700, 100]
-        elif order==16:
-            bound_cut = [400, 100]
-        elif order==17:
-            bound_cut = [1000, 100]
-        elif order==20:
-            bound_cut = [500, 150]
-        elif (order==7) or (order==8) or (order==9) or (order==12) or (order==15) or (order==18) or (order==19):
-            bound_cut = [500, 500]
-        else:
-            bound_cut = [150, 100]
 
     ### Load relevant A0 spectrum
     x, a0wavelist, a0fluxlist, u = init_fitsread(inparam.inpath,
@@ -266,13 +230,11 @@ def MPinst(args, chunk_ind, i):
                                                 order,
                                                 '{:04d}'.format(int(inparam.tags[night])),
                                                 args.band,
-                                                bound_cut)
+                                                [150,150])
 
     nzones = 12
     a0wavelist = basicclip_above(a0wavelist,a0fluxlist,nzones);   a0x = basicclip_above(x,a0fluxlist,nzones);
     a0u        = basicclip_above(u,a0fluxlist,nzones);     a0fluxlist = basicclip_above(a0fluxlist,a0fluxlist,nzones);
-
-    # do twice?
     a0wavelist = basicclip_above(a0wavelist,a0fluxlist,nzones);   a0x = basicclip_above(a0x,a0fluxlist,nzones);
     a0u        = basicclip_above(a0u,a0fluxlist,nzones);   a0fluxlist = basicclip_above(a0fluxlist,a0fluxlist,nzones);
 
@@ -328,28 +290,32 @@ def MPinst(args, chunk_ind, i):
     fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in)
 
     # Arrays defining parameter variations during optimization steps
-    dpar_cont = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,   0.0, 0.0,  0,    1e7, 1, 1, 0,    0])
-    dpar_wave = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 10.0, 10.0, 5e-5, 1e-7, 0,   0, 0, 0,    0])
-    dpar      = np.array([0.0, 0.0, 5.0, 3.0, 0.0, 0.5, 0.0,   0.0, 0.0,  0,    1e4, 1, 1, 1e-2, 1e-5])
-    dpar_st   = np.array([0.0, 0.0, 5.0, 3.0, 0.0, 0.0, 0.0,   0.0, 0.0,  0,    1e4, 1, 1, 0,    0])
-    dpar_ip   = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0,   0.0, 0.0,  0,    1e4, 1, 1, 1e-2, 1e-5])
+    dpar_cont = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0])
+    dpar_wave = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 10.0,  10.0, 5.00000e-5, 1e-7, 0,   0, 0, 0,    0])
+    dpar      = np.array([0.0, 0.0, 5.0, 3.0, 0.0, 0.5, 0.0,   0.0,  0.0,        0,    1e4, 1, 1, 0,    0])
+    dpar_st   = np.array([0.0, 0.0, 5.0, 3.0, 0.0, 0.0, 0.0,   0.0,  0.0,        0,    1e4, 1, 1, 0,    0])
+    dpar_ip   = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0])
 
     # For every pre-Telfit spectral fit, first fit just template strength/rv/continuum, then just wavelength soln, then template/continuum again, then ip,
     # then finally wavelength. Normally would fit for all but wavelength at the end, but there's no need for the pre-Telfit fit, since all we want
     # is the wavelength solution.
 
-
     optimize = True
     par_in = parA0.copy()
-    parfit_1 = optimizer(par_in,   dpar_st,   fitobj, optimize)
-    parfit_2 = optimizer(parfit_1, dpar_wave, fitobj, optimize)
-    parfit_3 = optimizer(parfit_2, dpar_st,   fitobj, optimize)
-    parfit_4 = optimizer(parfit_3, dpar_ip,   fitobj, optimize)
-    parfit = optimizer(parfit_4, dpar_wave, fitobj, optimize)
+    hardbounds = [par_in[4] -dpar[4],   par_in[4]+dpar[4],
+                  par_in[5] -dpar[5],   par_in[5]+dpar[5]]
+    if hardbounds[0] < 0:
+        hardbounds[0] = 0
+    if hardbounds[3] < 0:
+        hardbounds[3] = 1
 
-    # if inparam.plotfigs == True:
-    #     outplotter(parfit, fitobj, '{}_{}_1'.format(order,night), 0)
+    parfit_1 = optimizer(par_in,   dpar_st,   hardbounds,fitobj,optimize)
+    parfit_2 = optimizer(parfit_1, dpar_wave, hardbounds,fitobj,optimize)
+    parfit_3 = optimizer(parfit_2, dpar_st,   hardbounds,fitobj,optimize)
+    parfit_4 = optimizer(parfit_3, dpar,      hardbounds,fitobj,optimize)
+    parfit = optimizer(parfit_4,   dpar_wave, hardbounds,fitobj,optimize)
 
+#-------------------------------------------------------------------------------
     # Get fitted wavelength solution
     a0w_out_fit = parfit[6] + parfit[7]*x + parfit[8]*(x**2.) + parfit[9]*(x**3.)
 
@@ -360,25 +326,24 @@ def MPinst(args, chunk_ind, i):
     watm1, satm1, telfitparnames, telfitpars, a0contwave, continuum = telfitter(a0w_out_fit,a0fluxlist,a0u,inparam,night,order,args)
 
     if len(watm1) == 1: # If Telfit encountered error mentioned in Telfitter.py, skip night/order combo
-
         print('TELFIT ENCOUNTERED CRITICAL ERROR, ORDER '+str(order)+' NIGHT '+str(night))
 
         # Write out table to fits header with errorflag = 1
         c0    = fits.Column(name='ERRORFLAG'+str(order),array=np.array([1]),format='K')
         cols  = fits.ColDefs([c0])
         hdu_1 = fits.BinTableHDU.from_columns(cols)
+
         if order == firstorder: # If first time writing fits file, make up filler primary hdu
             bleh = np.ones((3,3))
             primary_hdu = fits.PrimaryHDU(bleh)
             hdul = fits.HDUList([primary_hdu,hdu_1])
-            hdul.writeto(inparam.outpath+'/'+night+'A0_treated.fits')
+            hdul.writeto('{}/{}A0_treated_{}.fits'.format(inparam.outpath, night, args.band) )
         else:
-            hh = fits.open(inparam.outpath+'/'+night+'A0_treated.fits')
+            hh = fits.open('{}/{}A0_treated_{}.fits'.format(inparam.outpath, night, args.band))
             hh.append(hdu_1)
-            hh.writeto(inparam.outpath+'/'+night+'A0_treated.fits', overwrite=True)
+            hh.writeto('{}/{}A0_treated_{}.fits'.format(inparam.outpath, night, args.band), overwrite=True)
 
     else:
-
         a0contwave /= 1e4
         continuum = rebin_jv(a0contwave,continuum,a0wavelist,False)
 
@@ -403,7 +368,7 @@ def MPinst(args, chunk_ind, i):
             axes.set_ylabel(r'IP',   size=5, style='normal' , family='sans-serif' )
             axes.set_xlabel('Pixel Number',       size=5, style='normal' , family='sans-serif' )
             axes.legend(fontsize=4, edgecolor='white')
-            fig.savefig(inparam.outpath+'/figs/{}_{}_ip.png'.format(order,night), bbox_inches='tight', format='png', overwrite=True)
+            fig.savefig('{}/figs_{}/IP_{}_{}.png'.format(inparam.outpath, args.band, order, night), bbox_inches='tight', format='png', overwrite=True)
 
             outplotter(parfit,fitobj,'{}_{}_post_parfit'.format(order,night), 0)
 
@@ -440,11 +405,11 @@ def MPinst(args, chunk_ind, i):
             bleh = np.ones((3,3))
             primary_hdu = fits.PrimaryHDU(bleh)
             hdul = fits.HDUList([primary_hdu,hdu_1])
-            hdul.writeto(inparam.outpath+'/'+night+'A0_treated.fits',overwrite=True)
+            hdul.writeto('{}/{}A0_treated_{}.fits'.format(inparam.outpath, night, args.band) ,overwrite=True)
         else:
-            hh = fits.open(inparam.outpath+'/'+night+'A0_treated.fits')
+            hh = fits.open('{}/{}A0_treated_{}.fits'.format(inparam.outpath, night, args.band))
             hh.append(hdu_1)
-            hh.writeto(inparam.outpath+'/'+night+'A0_treated.fits',overwrite=True)
+            hh.writeto('{}/{}A0_treated_{}.fits'.format(inparam.outpath, night, args.band), overwrite=True)
 
 
 def mp_run(args, Nthreads, jerp, nights):
@@ -481,12 +446,12 @@ if __name__ == '__main__':
 
 
     cdbs_loc = '~/cdbs/'
-    inpath     = './Input_Data/{}/'.format(args.targname)
+    inpath     = '../Input_Data/{}/'.format(args.targname)
     if args.debug:
         try:
-            os.listdir('./Temp/Debug/{}/'.format(args.targname))
+            os.listdir('../Temp/Debug/{}/'.format(args.targname))
         except OSError:
-            os.mkdir('./Temp/Debug/{}/'.format(args.targname))
+            os.mkdir('../Temp/Debug/{}/'.format(args.targname))
 
     targname   = args.targname
     Nthreads   = args.Nthreads
@@ -513,7 +478,7 @@ if __name__ == '__main__':
 
 
     ## Collect relevant file information from Predata files
-    A0data = Table.read('./Temp/Prepdata/Prepdata_A0_{}.txt'.format(args.targname), format='ascii')
+    A0data = Table.read('../Temp/Prepdata/Prepdata_A0_{}.txt'.format(args.targname), format='ascii')
 
     ind    = [i != 'NA' for i in A0data['humid']]
     humids = {str(k):str(v) for k,v in zip(A0data[ind]['night'],A0data[ind]['humid'])}
