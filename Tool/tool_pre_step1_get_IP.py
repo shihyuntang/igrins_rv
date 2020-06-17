@@ -28,7 +28,7 @@ def outplotter(parfit,fitobj,title,debug):
     axes.set_ylabel(r'Normalized Flux',   size=5, style='normal' , family='sans-serif' )
     axes.set_xlabel(r'Wavelength [$\AA$]',       size=5, style='normal' , family='sans-serif' )
     axes.legend(fontsize=4, edgecolor='white')
-    
+
     if debug == 0:
         fig.savefig('{}/figs_{}/{}.png'.format(inparam.outpath, args.band, title), bbox_inches='tight', format='png', overwrite=True)
     elif debug == 1:
@@ -355,7 +355,7 @@ def MPinst(args, chunk_ind, orders, i):
 
         # Fit whole A0 again to get even better wave soln to use for a0contwave and tweak blaze fn fit as
         # needed with quadratic adjustment
-        fitobj = fitobjs(s, x, u, continuum,watm1,satm1,mflux_in,mwave_in)
+        fitobj = fitobjs(s, x, u, continuum,watm1,satm1,mflux_in,mwave_in,[])
 
         parfit_1 = optimizer(par_in,   dpar_st,   fitobj, optimize)
         parfit_2 = optimizer(parfit_1, dpar_wave, fitobj, optimize)
@@ -497,16 +497,16 @@ if __name__ == '__main__':
 
     nightsFinal = np.append( nightsFinal[1:10:2], nightsFinal[-10:-1:2])
 
-    if not os.path.isdir(f'./{args.targname}_IP/'):
-        os.mkdir(f'./{args.targname}_IP/' )
+    if not os.path.isdir(f'./A0_Fits/'):
+        os.mkdir(f'./A0_Fits/')
 
-    if not os.path.isdir(f'./{args.targname}_IP/A0_Fits/'):
-        os.mkdir(f'./{args.targname}_IP/A0_Fits/' )
+    if not os.path.isdir(f'./A0_Fits/A0_Fits_{args.targname}_IP'):
+        os.mkdir(f'./A0_Fits/A0_Fits_{args.targname}_IP')
 
-    if not os.path.isdir(f'./{args.targname}_IP/figs_{args.band}'):
-        os.mkdir(f'./{args.targname}_IP/figs_{args.band}')
+    if not os.path.isdir(f'./A0_Fits/A0_Fits_{args.targname}_IP/fig_{args.band}'):
+        os.mkdir(f'./A0_Fits/A0_Fits_{args.targname}_IP/fig_{args.band}')
 
-    outpath = f'./{args.targname}_IP/'
+    outpath = f'./A0_Fits/A0_Fits_{args.targname}_IP/'
     # Retrieve stellar and telluric templates
     watm, satm, mwave0, mflux0 = setup_templates()
 
