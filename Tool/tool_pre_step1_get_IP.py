@@ -29,7 +29,7 @@ def outplotter(parfit,fitobj,title,debug):
     axes.set_xlabel(r'Wavelength [$\AA$]',       size=5, style='normal' , family='sans-serif' )
     axes.legend(fontsize=4, edgecolor='white')
     if debug == 0:
-        fig.savefig('{}/figs/{}.png'.format(inparam.outpath, title), bbox_inches='tight', format='png', overwrite=True)
+        fig.savefig('{}/figs_{}/{}.png'.format(inparam.outpath, args.band, title), bbox_inches='tight', format='png', overwrite=True)
     elif debug == 1:
         fig.savefig('../Temp/Debug/{}/{}.png'.format(args.targname, title), bbox_inches='tight', format='png', overwrite=True)
 
@@ -491,13 +491,16 @@ if __name__ == '__main__':
 
     nightsFinal = np.append( nightsFinal[1:10:2], nightsFinal[-10:-1:2])
 
-    filesndirs = os.listdir('./A0_Fits/')
-    name = 'A0_Fits_'+ args.targname
-    if name not in filesndirs:
-        os.mkdir('./A0_Fits/{}'.format(name) )
-        os.mkdir('./A0_Fits/{}/figs'.format(name) )
-    outpath = './A0_Fits/' + name
+    if not os.path.isdir(f'./{args.targname}_IP/'):
+        os.mkdir(f'./{args.targname}_IP/' )
 
+    if not os.path.isdir(f'./{args.targname}_IP/A0_Fits/'):
+        os.mkdir(f'./{args.targname}_IP/A0_Fits/' )
+
+    if not os.path.isdir(f'./{args.targname}_IP/A0_Fits/figs_{args.band}'):
+        os.mkdir(f'./{args.targname}_IP/A0_Fits/figs_{args.band}')
+
+    outpath = f'./{args.targname}_IP/'
     # Retrieve stellar and telluric templates
     watm, satm, mwave0, mflux0 = setup_templates()
 
