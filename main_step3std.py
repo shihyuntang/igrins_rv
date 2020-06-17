@@ -14,7 +14,7 @@ def outplotter(parfit,fitobj,title,trk,debug):
     w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
 
     fig, axes = plt.subplots(1, 1, figsize=(5,3), facecolor='white', dpi=300)
-    
+
     n = len(fitobj.mask)
 
     if n > 0:
@@ -186,7 +186,7 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
                       IPpars[0]])                                              #14: IP quadratic component
 
     # Iterate over all A/B exposures
-    for t in [0]:#np.arange(len(tagsnight)):
+    for t in np.arange(len(tagsnight)):
         tag = tagsnight[t]
         beam = beamsnight[t]
 
@@ -493,7 +493,7 @@ Input Parameters:
     if not os.path.isdir('./Results/{}_{}/figs/main_step3_{}'.format(args.targname, args.band, trk)):
         os.mkdir('./Results/{}_{}/figs/main_step3_{}'.format(args.targname, args.band, trk) )
     outpath = './Results/{}_{}'.format(args.targname, args.band)
-    
+
     if args.debug:
         try:
             os.listdir('./Temp/Debug/{}_{}/'.format(args.targname, args.band))
