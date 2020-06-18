@@ -18,8 +18,8 @@ def IPval(tar,band):
     Tdirs = [ './A0_Fits/A0_Fits_{}_IP/{}A0_treated_{}.fits'.format(tar, nn, band) for nn in nights[nightsT] ]
     Ldirs = [ './A0_Fits/A0_Fits_{}_IP/{}A0_treated_{}.fits'.format(tar, nn, band) for nn in nights[nightsL] ]
 
-    pirnt(f'We have Tight nights: {nights[nightsT]}')
-    pirnt(f'We have Loose nights: {nights[nightsL]}')
+    print(f'We have Tight nights: {nights[nightsT]}')
+    print(f'We have Loose nights: {nights[nightsL]}')
 
     print(len(nightsL), nightsL)
 
