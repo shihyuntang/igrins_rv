@@ -190,6 +190,37 @@ def ini_MPinst(label_t, chunk_ind, trk, i):
             tag = tagsnight[t]
             beam = beamsnight[t]
 
+            if args.band=='K':
+                if order==11:
+                    bound_cut = [200, 100]
+                elif order==12:
+                    bound_cut = [900, 300]
+                elif order==13:
+                    bound_cut = [200, 400]
+                elif order==14:
+                    bound_cut = [150, 300]
+                else:
+                    bound_cut = [150, 150]
+            elif args.band=='H':
+                if order==10:
+                    bound_cut = [250, 150]#ok
+                elif order==11:
+                    bound_cut = [600, 150]
+                elif order==13:
+                    bound_cut = [200, 600]#ok
+                elif order==14:
+                    bound_cut = [700, 100]
+                elif order==16:
+                    bound_cut = [400, 100]
+                elif order==17:
+                    bound_cut = [1000, 100]
+                elif order==20:
+                    bound_cut = [500, 150]
+                elif (order==7) or (order==8) or (order==9) or (order==12) or (order==15) or (order==18) or (order==19):
+                    bound_cut = [500, 500]
+                else:
+                    bound_cut = [150, 150]
+
             x,wave,s,u = init_fitsread('{}{}/{}/'.format(inparam.inpath, night, beam),
                                         'target',
                                         'separate',
@@ -197,7 +228,7 @@ def ini_MPinst(label_t, chunk_ind, trk, i):
                                         order,
                                         tag,
                                         args.band,
-                                        None)
+                                        bound_cut)
 #-------------------------------------------------------------------------------
             s2n = s/u
             if np.nanmedian(s2n) < float(args.SN_cut):
