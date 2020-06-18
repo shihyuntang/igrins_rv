@@ -229,6 +229,37 @@ def MPinst(args, chunk_ind, orders, i):
     IPpars = np.array([ 0,  0,  3.3])
 
     ### Load relevant A0 spectrum
+    if args.band=='K':
+        if order==11:
+            bound_cut = [200, 100]
+        elif order==12:
+            bound_cut = [900, 300]
+        elif order==13:
+            bound_cut = [200, 400]
+        elif order==14:
+            bound_cut = [150, 300]
+        else:
+            bound_cut = [150, 100]
+    elif args.band=='H':
+        if order==10:
+            bound_cut = [250, 150]#ok
+        elif order==11:
+            bound_cut = [600, 150]
+        elif order==13:
+            bound_cut = [200, 600]#ok
+        elif order==14:
+            bound_cut = [700, 100]
+        elif order==16:
+            bound_cut = [400, 100]
+        elif order==17:
+            bound_cut = [1000, 100]
+        elif order==20:
+            bound_cut = [500, 150]
+        elif (order==7) or (order==8) or (order==9) or (order==12) or (order==15) or (order==18) or (order==19):
+            bound_cut = [500, 500]
+        else:
+            bound_cut = [150, 150]
+
     x, a0wavelist, a0fluxlist, u = init_fitsread(inparam.inpath,
                                                 'A0',
                                                 'separate',
@@ -236,7 +267,7 @@ def MPinst(args, chunk_ind, orders, i):
                                                 order,
                                                 '{:04d}'.format(int(inparam.tags[night])),
                                                 args.band,
-                                                [400,150])
+                                                bound_cut)
 
     nzones = 12
     a0wavelist = basicclip_above(a0wavelist,a0fluxlist,nzones);   a0x = basicclip_above(x,a0fluxlist,nzones);
@@ -513,8 +544,8 @@ if __name__ == '__main__':
         orders = np.append(np.arange(2, 9), np.array([10, 11, 12, 13, 14, 16]))
         #orders = [3]
     elif args.band=='H':
-        orders = np.array([16, 21, 22])
-        # orders = np.array([5, 6, 13, 14, 16, 21, 22])
+        orders = np.array([5, 6, 13, 14, 16, 21, 22])
+
     inparam = inparamsA0(inpath,outpath,args.plotfigs,tags,nightsFinal,humids,
                          temps,zds,press,obs,watm,satm,mwave0,mflux0,cdbs_loc,None,None)
 
