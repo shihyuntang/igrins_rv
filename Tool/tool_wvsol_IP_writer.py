@@ -18,8 +18,12 @@ def IPval(tar,band):
     Tdirs = [ './A0_Fits/A0_Fits_{}_IP/{}A0_treated_{}.fits'.format(tar, nn, band) for nn in nights[nightsT] ]
     Ldirs = [ './A0_Fits/A0_Fits_{}_IP/{}A0_treated_{}.fits'.format(tar, nn, band) for nn in nights[nightsL] ]
 
-    filew = open('../Temp/IP_{}.txt'.format(band),'w')
+    pirnt(f'We have Tight nights: {nights[nightsT]}')
+    pirnt(f'We have Loose nights: {nights[nightsL]}')
 
+    print(len(nightsL), nightsL)
+
+    filew = open('../Temp/IP_{}.txt'.format(band),'w')
     if len(nightsT) != 0:
         dump1 = 0
         for a0 in Tdirs:
