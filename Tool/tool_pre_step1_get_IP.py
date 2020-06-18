@@ -236,7 +236,7 @@ def MPinst(args, chunk_ind, orders, i):
                                                 order,
                                                 '{:04d}'.format(int(inparam.tags[night])),
                                                 args.band,
-                                                [150,150])
+                                                [400,150])
 
     nzones = 12
     a0wavelist = basicclip_above(a0wavelist,a0fluxlist,nzones);   a0x = basicclip_above(x,a0fluxlist,nzones);
@@ -513,8 +513,8 @@ if __name__ == '__main__':
         orders = np.append(np.arange(2, 9), np.array([10, 11, 12, 13, 14, 16]))
         #orders = [3]
     elif args.band=='H':
-        orders = np.array([5, 6, 13, 14, 16, 21, 22])
-
+        orders = np.array([14, 16, 21, 22])
+        # orders = np.array([5, 6, 13, 14, 16, 21, 22])
     inparam = inparamsA0(inpath,outpath,args.plotfigs,tags,nightsFinal,humids,
                          temps,zds,press,obs,watm,satm,mwave0,mflux0,cdbs_loc,None,None)
 
