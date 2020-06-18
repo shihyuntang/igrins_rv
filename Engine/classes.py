@@ -61,11 +61,11 @@ class inparams:
         self.ips_loosemount_pars = { 'H':{
                                              5: np.array([np.nan, np.nan, np.nan]),#HD26257, HD26736 full
                                              6: np.array([np.nan, np.nan, np.nan]),#HD26257, HD26736 full
-                                             13: np.array([np.nan, np.nan, np.nan),#HD26257, HD26736 full
-                                             14: np.array([np.nan, np.nan, np.nan),#HD26257, HD26736 full
-                                             16: np.array([np.nan, np.nan, np.nan),#HD26257, HD26736 full
-                                             21: np.array([np.nan, np.nan, np.nan),#HD26257, HD26736 full
-                                             22: np.array([np.nan, np.nan, np.nan) },#HD26257, HD26736 full
+                                             13: np.array([np.nan, np.nan, np.nan]),#HD26257, HD26736 full
+                                             14: np.array([np.nan, np.nan, np.nan]),#HD26257, HD26736 full
+                                             16: np.array([np.nan, np.nan, np.nan]),#HD26257, HD26736 full
+                                             21: np.array([np.nan, np.nan, np.nan]),#HD26257, HD26736 full
+                                             22: np.array([np.nan, np.nan, np.nan]) },#HD26257, HD26736 full
                                     'K':{    2: np.array([-0.00000030, -0.00136354, 5.2787831]),#CITau + GJ281 full
                                              3: np.array([-0.00000064, -0.00055100, 5.0549681]),#CITau + GJ281 full
                                              4: np.array([-0.00000029, -0.00130082, 5.5659733]),#CITau + GJ281 full
@@ -135,13 +135,13 @@ class inparamsA0:
                                             16: np.array([-0.00000000, +0.00063948, 1.7424173]) }
                                     }
         self.ips_loosemount_pars = { 'H':{
-                                             5: np.array([np.nan, np.nan, np.nan),#HD26257, HD26736 full
-                                             6: np.array([np.nan, np.nan, np.nan),#HD26257, HD26736 full
-                                             13: np.array([np.nan, np.nan, np.nan),#HD26257, HD26736 full
-                                             14: np.array([np.nan, np.nan, np.nan),#HD26257, HD26736 full
+                                             5: np.array([np.nan, np.nan, np.nan]),#HD26257, HD26736 full
+                                             6: np.array([np.nan, np.nan, np.nan]),#HD26257, HD26736 full
+                                             13: np.array([np.nan, np.nan, np.nan]),#HD26257, HD26736 full
+                                             14: np.array([np.nan, np.nan, np.nan]),#HD26257, HD26736 full
                                              16: np.array([np.nan, np.nan, np.nan]),#HD26257, HD26736 full
-                                             21: np.array([np.nan, np.nan, np.nan),#HD26257, HD26736 full
-                                             22: np.array([np.nan, np.nan, np.nan) },#HD26257, HD26736 full
+                                             21: np.array([np.nan, np.nan, np.nan]),#HD26257, HD26736 full
+                                             22: np.array([np.nan, np.nan, np.nan]) },#HD26257, HD26736 full
                                     'K':{    2: np.array([-0.00000030, -0.00136354, 5.2787831]),#CITau + GJ281 full
                                              3: np.array([-0.00000064, -0.00055100, 5.0549681]),#CITau + GJ281 full
                                              4: np.array([-0.00000029, -0.00130082, 5.5659733]),#CITau + GJ281 full
