@@ -239,7 +239,7 @@ def MPinst(args, chunk_ind, orders, i):
         elif order==14:
             bound_cut = [150, 300]
         else:
-            bound_cut = [150, 100]
+            bound_cut = [150, 150]
     elif args.band=='H':
         if order==10:
             bound_cut = [250, 150]#ok
