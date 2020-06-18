@@ -21,10 +21,10 @@ def IPval(tar,band):
     print(f'We have Tight nights: {nights[nightsT]}')
     print(f'We have Loose nights: {nights[nightsL]}')
 
-    print(len(nightsL), nightsL)
+    print(len(nightsL[0]), nightsL)
 
     filew = open('../Temp/IP_{}.txt'.format(band),'w')
-    if len(nightsT) != 0:
+    if len(nightsT[0]) != 0:
         dump1 = 0
         for a0 in Tdirs:
             hdulist = fits.open(a0)
@@ -68,7 +68,7 @@ def IPval(tar,band):
         for o in np.arange(len(orders)):
             filew.write('{}: np.array([{:+1.8f}, {:+1.8f}, {:1.8}]),\n'.format(orders[o], np.nanmean(IP14box[:, o]), np.nanmean(IP13box[:, o]), np.nanmean(IP5box[:, o]) ))
 
-    if len(nightsL) != 0:
+    if len(nightsL[0]) != 0:
         dump1 = 0
         for a0 in Ldirs:
             hdulist = fits.open(a0)
