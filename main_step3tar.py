@@ -488,7 +488,7 @@ if __name__ == '__main__':
     labels  = np.array(bounddata['label'], dtype=int)
     masks    = np.array(bounddata['masks'])
     xbounddict = {labels[i]:np.array([starts[i],ends[i]]) for i in range(len(starts))}
-    maskdict = {labels[i]:masks[i] for i in range(len(starts))}}
+    maskdict = {labels[i]:masks[i] for i in range(len(starts))}
 
     # Attribute A and B exposures to right file numbers
     tagsA = {}; tagsB = {}; mjds = {}; bvcs = {};
