@@ -147,6 +147,7 @@ def ini_MPinst(label_t, chunk_ind, trk, i):
     flag = np.array(tbdata['ERRORFLAG'+str(order)])[0]
 
     if flag == 1:  # Telfit hit unknown critical error
+    print('  --> TELFIT RESULT IS BAD, SKIP')
         return night,np.nan,np.nan
 
     watm = tbdata['WATM'+str(order)]
