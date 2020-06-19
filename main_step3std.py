@@ -354,6 +354,7 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
         rvsminibox[t]   = rv0  + inparam.bvcs[night+tag] + rv0*inparam.bvcs[night+tag]/(3e5**2) # bvcs correct
         parfitminibox[t]= parfit
         vsiniminibox[t] = parfit[4]
+    print(parfit)
     # print(nightsout,rvsminibox,parfitminibox,vsiniminibox)
     return nightsout,rvsminibox,parfitminibox,vsiniminibox
 
