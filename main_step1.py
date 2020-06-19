@@ -585,6 +585,9 @@ if __name__ == '__main__':
     time.sleep(6)
     print('\n')
 #-------------------------------------------------------------------------------
+    if not os.path.isdir('./A0_Fits/'):
+        os.mkdir('./A0_Fits/' )
+
     try:
         filesndirs = os.listdir('./A0_Fits/')
     except FileNotFoundError:
