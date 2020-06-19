@@ -534,8 +534,10 @@ Input Parameters:
     # Retrieve stellar and telluric templates
 
     if (args.targname == 'TauBoo') | (args.targname == 'HD26257'):
-        print('Using: SpotAtl_Solar')
-        watm,satm, mwave0, mflux0 = setup_templates_sun()
+        # print('Using: SpotAtl_Solar')
+        # watm,satm, mwave0, mflux0 = setup_templates_sun()
+        print('Using: setup_templates')
+        watm,satm, mwave0, mflux0 = setup_templates()
     else:
         if args.band=='K':
             watm,satm, mwave0, mflux0 = setup_templates_syn()
