@@ -354,7 +354,7 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
         rvsminibox[t]   = rv0  + inparam.bvcs[night+tag] + rv0*inparam.bvcs[night+tag]/(3e5**2) # bvcs correct
         parfitminibox[t]= parfit
         vsiniminibox[t] = parfit[4]
-    print(parfit)
+        print(parfit)
     # print(nightsout,rvsminibox,parfitminibox,vsiniminibox)
     return nightsout,rvsminibox,parfitminibox,vsiniminibox
 
@@ -541,7 +541,8 @@ Input Parameters:
         # watm,satm, mwave0, mflux0 = setup_templates()
     else:
         if args.band=='K':
-            watm,satm, mwave0, mflux0 = setup_templates_syn()
+            # watm,satm, mwave0, mflux0 = setup_templates_syn()
+            watm,satm, mwave0, mflux0 = setup_templates()
             print('Using: syntheticstellar_kband')
         elif args.band=='H':
             watm,satm, mwave0, mflux0 = setup_templates()
