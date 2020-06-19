@@ -98,6 +98,7 @@ def ini_MPinst(label_t, chunk_ind, trk, i):
                                                                     len(inparam.nights),
                                                                     night,
                                                                     mp.current_process().pid) )
+    print('1')
 
 #-------------------------------------------------------------------------------
     # Use instrumental profile dictionary corresponding to whether IGRINS mounting was loose or not
@@ -105,7 +106,7 @@ def ini_MPinst(label_t, chunk_ind, trk, i):
         IPpars = inparam.ips_tightmount_pars[args.band][order]
     else:
         IPpars = inparam.ips_loosemount_pars[args.band][order]
-
+    print('2')
     # Collect initial RV guesses
     if type(inparam.initguesses) == dict:
         initguesses = inparam.initguesses[night]
@@ -122,7 +123,7 @@ def ini_MPinst(label_t, chunk_ind, trk, i):
     for tag in inparam.tagsB[night]:
         tagsnight.append(tag)
         beamsnight.append('B')
-
+    print('3')
     # Load telluric template from Telfit'd A0
     A0loc = './A0_Fits/A0_Fits_{}/{}A0_treated_{}.fits'.format(args.targname, night[:8], args.band)
     try:
@@ -131,7 +132,7 @@ def ini_MPinst(label_t, chunk_ind, trk, i):
         print('No A0-fitted template for night {}, skipping...'.format(night))
         print(A0loc)
         return night,np.nan,np.nan
-
+    print('4')
     num_orders = 0
     for i in range(25):
         try:
@@ -142,14 +143,14 @@ def ini_MPinst(label_t, chunk_ind, trk, i):
 
     # order in A0_treated.fits is no longer sequential...
     fits_layer = [ i for i in np.arange(num_orders)+1 if int(hdulist[i].columns[0].name[9:]) == order ][0]
-
+    print('5')
     tbdata = hdulist[ fits_layer ].data
     flag = np.array(tbdata['ERRORFLAG'+str(order)])[0]
 
     if flag == 1:  # Telfit hit unknown critical error
         print('  --> TELFIT RESULT IS BAD, SKIP')
         return night,np.nan,np.nan
-
+    print('6')
     watm = tbdata['WATM'+str(order)]
     satm = tbdata['SATM'+str(order)]
     a0contx    = tbdata['X'+str(order)]
@@ -184,6 +185,7 @@ def ini_MPinst(label_t, chunk_ind, trk, i):
     ### Load relevant A0 spectra,
     rvcollect = []; vsinicollect = [];
     # Iterate over initial RV guesses
+    print('7')
     for initrvguess in initguesses:
         rvsmini = []; vsinismini = [];
         # Iterate over all A/B exposures
@@ -235,7 +237,7 @@ def ini_MPinst(label_t, chunk_ind, trk, i):
             if np.nanmedian(s2n) < float(args.SN_cut):
                 print('  --> Bad S/N {:1.3f} < {} for {}{} {}, SKIP'.format( np.nanmedian(s2n), args.SN_cut, night, beam, tag))
                 continue
-
+            print('8')
             nzones = 5
             x = basicclip_above(x,s,nzones); wave = basicclip_above(wave,s,nzones); u = basicclip_above(u,s,nzones); s = basicclip_above(s,s,nzones);
             x = basicclip_above(x,s,nzones); wave = basicclip_above(wave,s,nzones); u = basicclip_above(u,s,nzones); s = basicclip_above(s,s,nzones);
