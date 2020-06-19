@@ -490,7 +490,7 @@ Input Parameters:
     tagsB[Tnights[-1]] = tagsB0
 
     nightsFinal = np.array(list(sorted(set(Tnights))))
-    nightsFinal = nightsFinal[:1]
+    # nightsFinal = nightsFinal[:1]
     # labels      = labels[-2:]
 
     if args.nights_use != '':
