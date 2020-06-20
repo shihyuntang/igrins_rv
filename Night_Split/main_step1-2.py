@@ -149,7 +149,7 @@ def MPinst(args, chunk_ind, orders, i):
     s = a0fluxlist.copy(); x = a0x.copy(); u = a0u.copy();
 
     # Collect all fit variables into one class
-    fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in)
+    fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [])
 
     # Arrays defining parameter variations during optimization steps
     dpar_cont = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0, 0])
@@ -218,7 +218,7 @@ def MPinst(args, chunk_ind, orders, i):
 
         # Fit whole A0 again to get even better wave soln to use for a0contwave and tweak blaze fn fit as
         # needed with quadratic adjustment
-        fitobj = fitobjs(s, x, u, continuum,watm1,satm1,mflux_in,mwave_in)
+        fitobj = fitobjs(s, x, u, continuum,watm1,satm1,mflux_in,mwave_in, [])
 
         parfit_1 = optimizer(par_in,   dpar_st,   hardbounds, fitobj, optimize)
         parfit_2 = optimizer(parfit_1, dpar_wave, hardbounds, fitobj, optimize)
