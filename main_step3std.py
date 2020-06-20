@@ -541,8 +541,8 @@ Input Parameters:
         # watm,satm, mwave0, mflux0 = setup_templates()
     else:
         if args.band=='K':
-            # watm,satm, mwave0, mflux0 = setup_templates_syn()
-            watm,satm, mwave0, mflux0 = setup_templates()
+            watm,satm, mwave0, mflux0 = setup_templates_syn()
+            # watm,satm, mwave0, mflux0 = setup_templates()
             print('Using: syntheticstellar_kband')
         elif args.band=='H':
             watm,satm, mwave0, mflux0 = setup_templates()
