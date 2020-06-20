@@ -431,7 +431,7 @@ if __name__ == '__main__':
     watm, satm, mwave0, mflux0 = setup_templates()
 
     inparam = inparamsA0(inpath,outpath,args.plotfigs,tags,nightsFinal,humids,
-                         temps,zds,press,obs,watm,satm,mwave0,mflux0,cdbs_loc,xbounddict)
+                         temps,zds,press,obs,watm,satm,mwave0,mflux0,cdbs_loc,xbounddict,None)
 
 #    global order
 
