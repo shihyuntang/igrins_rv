@@ -407,6 +407,13 @@ if __name__ == '__main__':
                         help="Please give the number, X, under ./*targname/Initguesser_results_X OR ./*targname/RV_results_X, that you wish to use",
                         type=int, default='')
 
+    parser.add_argument('-t',       dest="template",           action="store",
+                        help="Stellar template. Pick from 'synthetic','livingston'",
+                        type=str,   default='synthetic' )
+    parser.add_argument('-sp',       dest="sptype",           action="store",
+                        help="Spectral type of star",
+                        type=str,   default='' )
+    
     parser.add_argument('-c',       dest="Nthreads",         action="store",
                         help="Number of cpu (threads) to use, default is 1/2 of avalible ones (you have %i cpus (threads) avaliable)"%(mp.cpu_count()),
                         type=int,   default=int(mp.cpu_count()//2) )
@@ -423,6 +430,14 @@ if __name__ == '__main__':
     cdbs_loc = '~/cdbs/'
     inpath     = './Input_Data/{}/'.format(args.targname)
     vsinivary = float(args.vsinivary)
+
+    if args.template not in ['synthetic','livingston']:
+        sys.exit('Unexpected stellar template "-t" input!')
+
+    spt = args.sptype[0]
+    
+    if spt not in ['F','G','K','M']:
+        sys.exit('Spectral type outside of expected range (F-M)!')
 
     if args.initvsini != '':
         initvsini = float(args.initvsini)
@@ -560,17 +575,7 @@ if __name__ == '__main__':
     outpath = './Results/{}_{}'.format(args.targname, args.band)
 #-------------------------------------------------------------------------------
     # Retrieve stellar and telluric templates
-
-    if (args.targname == 'TauBoo') | (args.targname == 'HD26257') | (args.targname == 'HD26736'):
-        print('Using: SpotAtl_Solar')
-        watm,satm, mwave0, mflux0 = setup_templates_sun()
-    else:
-        if args.band=='K':
-            watm,satm, mwave0, mflux0 = setup_templates_syn()
-            print('Using: syntheticstellar_kband')
-        elif args.band=='H':
-            watm,satm, mwave0, mflux0 = setup_templates()
-            print('Using: SpotAtl Organized')
+    watm,satm, mwave0, mflux0 = setup_templates(args.template,args.band,spt)
 
     inparam = inparams(inpath,outpath,initvsini,vsinivary,args.plotfigs,initguesses,bvcs,tagsA,tagsB,nightsFinal,mwave0,mflux0,None,xbounddict,maskdict)
 
