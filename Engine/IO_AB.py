@@ -151,71 +151,60 @@ def airtovac(wave):
     newwave = wave*fact
     return newwave
 
-def setup_templates():
+def setup_templates(kind='synthetic',band='K',sptype='M'):
 
+    
     curdir = os.getcwd()
-    if curdir[-1]=='v':
-        spotdata = Table.read('./Engine/SpotAtl Organized.txt',format='ascii')
-    else:
-        spotdata = Table.read('../Engine/SpotAtl Organized.txt',format='ascii')
+    if kind == 'synthetic' and band == 'K':
+        if sptype not in ['K','M']:
+            sys.exit('Pipeline does not have a stellar template for early type stars in K band! Upload your own?')
+        print('Using synthetic stellar template...')
+        stelldata = Table.read('./Engine/syntheticstellar_kband.txt',format='ascii')
+        mwave0 = np.array(stelldata['wave'])
+        mflux0 = np.array(stelldata['flux'])
+        mwave0 = mwave0[(np.isfinite(mflux0))]
+        mflux0 = mflux0[(np.isfinite(mflux0))]
+        mflux0[(mflux0 < 0)] = 0
+        mwave0 = airtovac(mwave0)
+    elif kind == 'livingston' and band == 'K':
+        if sptype not in ['K','M']:
+            sys.exit('Pipeline does not have a stellar template for early type stars in K band! Upload your own?')
+        print('Using sunspot for stellar template...')
+        stelldata = Table.read('./Engine/SpotAtl Organized_contadj.txt',format='ascii')
+        mwave0 = np.array(stelldata['wave'])*10000.0
+        mflux0 = np.array(stelldata['flux'])
+        mwave0 = mwave0[(np.isfinite(mflux0))]
+        mflux0 = mflux0[(np.isfinite(mflux0))]
+        mflux0[(mflux0 < 0)] = 0
+    elif kind == 'synthetic' and band == 'H':
+        if sptype not in ['F','G','K']:
+            sys.exit('Pipeline does not have a stellar template for late type stars in H band! Upload your own?')
+        print('Using synthetic stellar template...')
+        stelldata = Table.read('./Engine/syntheticstellar_hband_tauboo.txt',format='ascii')
+        mwave0 = np.array(stelldata['wave'])
+        mflux0 = np.array(stelldata['flux'])
+        mwave0 = mwave0[(np.isfinite(mflux0))]
+        mflux0 = mflux0[(np.isfinite(mflux0))]
+        mflux0[(mflux0 < 0)] = 0
+        mwave0 = airtovac(mwave0)
+    elif kind == 'livingston' and band == 'H':
+        if sptype not in ['F','G','K']:
+            sys.exit('Pipeline does not have a stellar template for late type stars in H band! Upload your own?')
+        print('Using quiet sun for stellar template...')
+        spotdata = Table.read('./Engine/SpotAtl_Solar_contadj.txt',format='ascii')
+        mwave0 = np.array(spotdata['wave'])*10000.0
+        mflux0 = np.array(spotdata['flux'])
+        mwave0 = mwave0[(np.isfinite(mflux0))]
+        mflux0 = mflux0[(np.isfinite(mflux0))]
+        mflux0[(mflux0 < 0)] = 0
 
-    mwave0 = np.array(spotdata['wave'])*10000.0
-    mflux0 = np.array(spotdata['flux'])
-    mwave0 = mwave0[(np.isfinite(mflux0))]
-    mflux0 = mflux0[(np.isfinite(mflux0))]
-    mflux0[(mflux0 < 0)] = 0
-
-    if curdir[-1]=='v':
-        telluricdata = Table.read('./Engine/PhotoAtl Organized.txt',format='ascii')
-    else:
-        telluricdata = Table.read('../Engine/PhotoAtl Organized.txt',format='ascii')
-
+    telluricdata = Table.read('./Engine/PhotoAtl Organized.txt',format='ascii')
     watm = np.array(telluricdata['wave'])*10000.0
     satm = np.array(telluricdata['flux'])
     watm = watm[(np.isfinite(satm))]
     satm = satm[(np.isfinite(satm))]
     satm[(satm < 0)] = 0
     return watm, satm, mwave0, mflux0
-
-def setup_templates_syn():
-
-    curdir = os.getcwd()
-    spotdata = Table.read('./Engine/syntheticstellar_kband.txt',format='ascii')
-    mwave0 = np.array(spotdata['wave'])
-    mflux0 = np.array(spotdata['flux'])
-    mwave0 = mwave0[(np.isfinite(mflux0))]
-    mflux0 = mflux0[(np.isfinite(mflux0))]
-    mflux0[(mflux0 < 0)] = 0
-
-    mwave0 = airtovac(mwave0)
-    telluricdata = Table.read('./Engine/PhotoAtl Organized.txt',format='ascii')
-    watm = np.array(telluricdata['wave'])*10000.0
-    satm = np.array(telluricdata['flux'])
-    watm = watm[(np.isfinite(satm))]
-    satm = satm[(np.isfinite(satm))]
-    satm[(satm < 0)] = 0
-    return watm,satm, mwave0, mflux0
-
-def setup_templates_sun():
-
-    curdir = os.getcwd()
-    # spotdata = Table.read('./Engine/syntheticstellar_hband_tauboo.txt',format='ascii')
-    # spotdata = Table.read('./Engine/SpotAtl_Solar.txt',format='ascii')
-    spotdata = Table.read('./Engine/SpotAtl HBand_contadjusted.txt',format='ascii')
-    mwave0 = np.array(spotdata['wave'])*10000.0
-    mflux0 = np.array(spotdata['flux'])
-    mwave0 = mwave0[(np.isfinite(mflux0))]
-    mflux0 = mflux0[(np.isfinite(mflux0))]
-    mflux0[(mflux0 < 0)] = 0
-
-    # mwave0 = airtovac(mwave0)
-    telluricdata = Table.read('./Engine/PhotoAtl Organized.txt',format='ascii')
-    watm = np.array(telluricdata['wave'])*10000.0
-    satm = np.array(telluricdata['flux'])
-    watm = watm[(np.isfinite(satm))]
-    satm = satm[(np.isfinite(satm))]
-    satm[(satm < 0)] = 0
-    return watm,satm, mwave0, mflux0
 
 def stellarmodel_setup(wave,mwave0,mflux0):
     mflux = mflux0[(mwave0/1e4 >= min(wave) - .003) & (mwave0/1e4 <= max(wave) + .002)]
