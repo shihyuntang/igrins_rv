@@ -154,7 +154,7 @@ def airtovac(wave):
 
 def setup_templates(kind='synthetic',band='K',sptype='M'):
 
-    
+
     curdir = os.getcwd()
     if kind == 'synthetic' and band == 'K':
         if sptype not in ['K','M']:
@@ -199,12 +199,16 @@ def setup_templates(kind='synthetic',band='K',sptype='M'):
         mflux0 = mflux0[(np.isfinite(mflux0))]
         mflux0[(mflux0 < 0)] = 0
 
-    telluricdata = Table.read('./Engine/PhotoAtl Organized.txt',format='ascii')
-    watm = np.array(telluricdata['wave'])*10000.0
-    satm = np.array(telluricdata['flux'])
-    watm = watm[(np.isfinite(satm))]
-    satm = satm[(np.isfinite(satm))]
-    satm[(satm < 0)] = 0
+    if curdir[-1]=='v':
+        telluricdata = Table.read('./Engine/PhotoAtl Organized.txt',format='ascii')
+    else:
+        telluricdata = Table.read('../Engine/PhotoAtl Organized.txt',format='ascii')
+
+        watm = np.array(telluricdata['wave'])*10000.0
+        satm = np.array(telluricdata['flux'])
+        watm = watm[(np.isfinite(satm))]
+        satm = satm[(np.isfinite(satm))]
+        satm[(satm < 0)] = 0
     return watm, satm, mwave0, mflux0
 
 def stellarmodel_setup(wave,mwave0,mflux0):
