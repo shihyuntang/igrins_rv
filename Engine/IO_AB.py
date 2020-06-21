@@ -200,7 +200,8 @@ def setup_templates_sun():
 
     curdir = os.getcwd()
     # spotdata = Table.read('./Engine/syntheticstellar_hband_tauboo.txt',format='ascii')
-    spotdata = Table.read('./Engine/SpotAtl_Solar.txt',format='ascii')
+    # spotdata = Table.read('./Engine/SpotAtl_Solar.txt',format='ascii')
+    spotdata = Table.read('./Engine/SpotAtl HBand_contadjusted.txt',format='ascii')
     mwave0 = np.array(spotdata['wave'])*10000.0
     mflux0 = np.array(spotdata['flux'])
     mwave0 = mwave0[(np.isfinite(mflux0))]
