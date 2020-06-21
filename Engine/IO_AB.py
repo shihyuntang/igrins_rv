@@ -192,7 +192,7 @@ def setup_templates(kind='synthetic',band='K',sptype='M'):
         if sptype not in ['F','G','K']:
             sys.exit('Pipeline does not have a stellar template for late type stars in H band! Upload your own?')
         print('Using quiet sun for stellar template...')
-        spotdata = Table.read('./Engine/SpotAtl_Solar_contadj.txt',format='ascii')
+        spotdata = Table.read('./Engine/PhotoAtl_Solar_contadj.txt',format='ascii')
         mwave0 = np.array(spotdata['wave'])*10000.0
         mflux0 = np.array(spotdata['flux'])
         mwave0 = mwave0[(np.isfinite(mflux0))]
