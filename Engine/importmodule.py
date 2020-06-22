@@ -72,11 +72,11 @@ np.seterr(divide='ignore', invalid='ignore')
 # -------------------------------------------------------------
 def read_prepdata(args):
         ## Collect relevant file information from Predata files
-        A0data   = Table.read('./Temp/Prepdata/Prepdata_A0_{}.txt'.format(args.targname), format='ascii')
+        A0data   = Table.read('./Input/Prepdata/Prepdata_A0_{}.txt'.format(args.targname), format='ascii')
         A0nights = np.array(A0data['night'],dtype='str')
         ams0     = np.array(A0data['airmass'])
 
-        targdata = Table.read('./Temp/Prepdata/Prepdata_targ_{}.txt'.format(args.targname), format='ascii')
+        targdata = Table.read('./Input/Prepdata/Prepdata_targ_{}.txt'.format(args.targname), format='ascii')
         Tnights = np.array(targdata['night'],dtype='str')
         tags0   = np.array(targdata['tag'], dtype='int')
         beams0  = np.array(targdata['beam'],dtype='str')
@@ -84,13 +84,13 @@ def read_prepdata(args):
         bvcs0   = np.array(targdata['bvc'])
         ams     = np.array(targdata['airmass'])
 
-        bounddata = Table.read('./Input_Data/Use_w/XRegions_{}_{}.csv'.format(args.WRegion, args.band), format='csv')
+        bounddata = Table.read('./Input/UseWv/XRegions_{}_{}.csv'.format(args.WRegion, args.band), format='csv')
         starts  = np.array(bounddata['start'])
         ends    = np.array(bounddata['end'])
-        labels  = np.array(bounddata['order'], dtype=int)
+        orders  = np.array(bounddata['order'], dtype=int)
         masks    = np.array(bounddata['masks'])
-        xbounddict = {labels[i]:np.array([starts[i],ends[i]]) for i in range(len(starts))}
-        maskdict = {labels[i]:masks[i] for i in range(len(starts))}
+        xbounddict = {orders[i]:np.array([starts[i],ends[i]]) for i in range(len(starts))}
+        maskdict = {orders[i]:masks[i] for i in range(len(starts))}
 
         # Attribute A and B exposures to right file numbers
         tagsA = {}; tagsB = {}; mjds = {}; bvcs = {};
@@ -122,4 +122,4 @@ def read_prepdata(args):
 
         nightsFinal = np.array(list(sorted(set(Tnights))))
 
-        return xbounddict, maskdict, tagsA, tagsB, mjds, bvcs, nightsFinal, labels
+        return xbounddict, maskdict, tagsA, tagsB, mjds, bvcs, nightsFinal, orders
