@@ -314,7 +314,7 @@ if __name__ == '__main__':
                         type=str,   default='')
     parser.add_argument('-DeBug',    dest="debug",           action="store_true",
                         help="If sets, DeBug logging and extra plots will be given")
-    parser.add_argument('--version',                          action='version',  version='%(prog)s 0.5')
+    parser.add_argument('--version',                          action='version',  version='%(prog)s 0.85')
     args = parser.parse_args()
     inpath   = './Input/{}/'.format(args.targname)
     cdbs_loc = '~/cdbs/'
@@ -340,9 +340,9 @@ if __name__ == '__main__':
     #------------------------------
     if args.guessesX != '':
         try:
-            guessdata = Table.read(f'./Output/{args.targname}_{args.band}/Initguesser_results_{args.band}.csv', format='ascii')
+            guessdata = Table.read(f'./Output/{args.targname}_{args.band}/Initguesser_results_{args.guessesX}.csv', format='ascii')
         except:
-            sys.exit(f'ERROR: "./Output/{args.targname}_{args.band}/Initguesser_results_{args.band}.csv" NOT FOUND!')
+            sys.exit(f'ERROR: "./Output/{args.targname}_{args.band}/Initguesser_results_{args.guessesX}.csv" NOT FOUND!')
 
         initnights = np.array(guessdata['night'])
         initrvs    = np.array(guessdata['bestguess'])
