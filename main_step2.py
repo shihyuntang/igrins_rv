@@ -436,7 +436,7 @@ if __name__ == '__main__':
 #-------------------------------------------------------------------------------
     logger.info(f'Writing output to ./Output/{args.targname}_{args.band}/{iniguess_dir}')
 
-    filew = open(f'./Output/{args.targname}_{args.ban}/{iniguess_dir}','w')
+    filew = open(f'./Output/{args.targname}_{args.band}/{iniguess_dir}','w')
     filew.write('night, bestguess, vsini')
     filew.write('\n')
 #-------------------------------------------------------------------------------
