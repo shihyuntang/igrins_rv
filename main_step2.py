@@ -51,9 +51,11 @@ def ini_MPinst(args, inparam, orders, order_use, trk, i):
         logger.warning(f'  --> No A0-fitted template for night {night}, skipping...')
         return night, np.nan, np.nan
 
-    for num_orders, i in enumerate(np.arange(25)):
+    num_orders = 0
+    for i in range(25):
         try:
             hdulist[i].columns[0].name[9:]
+            num_orders += 1
         except:
             continue
     print(np.arange(num_orders))
