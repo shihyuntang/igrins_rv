@@ -366,8 +366,8 @@ if __name__ == '__main__':
 
     if not os.path.isdir(f'./Output/{args.targname}_{args.band}/figs'):
         os.mkdir(f'./Output/{args.targname}_{args.band}/figs')
-    step2or3 = f'{__name__}'
-    print('!!!', step2or3)
+
+    step2or3 = 2
     if not os.path.isdir(f'./Output/{args.targname}_{args.band}/figs/main_step{step2or3}_{args.band}_{trk}'):
         os.mkdir(f'./Output/{args.targname}_{args.band}/figs/main_step{step2or3}_{args.band}_{trk}')
 
@@ -388,12 +388,6 @@ if __name__ == '__main__':
 
     logger.addHandler(file_hander)
     logger.addHandler(stream_hander)
-#-------------------------------------------------------------------------------
-    logger.info(f'Writing output to ./Output/{args.targname}_{args.band}/{iniguess_dir}')
-
-    filew = open(f'./Output/{args.targname}_{args.band}/{iniguess_dir}','w')
-    filew.write('night, bestguess, vsini')
-    filew.write('\n')
 #-------------------------------------------------------------------------------
     start_time = datetime.now()
     print('####################################################################################')
@@ -417,7 +411,13 @@ Input Parameters:
     print('---------------------------------------------------------------')
     print('RV Initial Guess for {} Per Night...'.format(args.targname))
     print('This Will Take a While..........')
+#-------------------------------------------------------------------------------
+    logger.info(f'Writing output to ./Output/{args.targname}_{args.band}/{iniguess_dir}')
 
+    filew = open(f'./Output/{args.targname}_{args.band}/{iniguess_dir}','w')
+    filew.write('night, bestguess, vsini')
+    filew.write('\n')
+#-------------------------------------------------------------------------------
     # Read in the Prepdata under ./Input/Prpedata/
     xbounddict, maskdict, tagsA, tagsB, mjds, bvcs, nightsFinal, orders = read_prepdata(args)
 
