@@ -27,7 +27,7 @@ def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 #-------------------------------------------------------------------------------
     # Collect initial RV guesses
     if type(inparam.initguesses) == dict:
-        initguesses = inparam.initguesses[night]
+        initguesses = inparam.initguesses[str(night)]
     elif type(inparam.initguesses) == float:
         initguesses = inparam.initguesses
     else:
