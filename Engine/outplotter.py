@@ -16,7 +16,7 @@ def outplotter_tel(parfit, fitobj, title, inparam, args):
     fig.savefig('{}/figs_{}/{}.png'.format(inparam.outpath, args.band, title), bbox_inches='tight', format='png', overwrite=True)
 
 
-def outplotter_23(parfit,fitobj,title,trk,debug):
+def outplotter_23(parfit,fitobj,title,trk):
     fit,chi = fmod(parfit, fitobj)
     w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
 
