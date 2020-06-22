@@ -220,7 +220,7 @@ def ini_MPinst(args, inparam, orders, order_use, trk, i):
                 parfit_1 = optimizer( parstart, dpars[optkind], hardbounds, fitobj, optimize)
                 parstart = parfit_1.copy()
                 if args.debug:
-                    outplotter_23(parfit_1, fitobj, '{}_{}_{}_parfit_{}{}'.format(order,night,tag,nc,optkind), trk)
+                    outplotter_23(parfit_1, fitobj, '{}_{}_{}_parfit_{}{}'.format(order,night,tag,nc,optkind), trk, inparam, args)
                     logger.debug(f'{Order}_{tag}_{nc}_{optkind}:\n {parfit_1}')
 
         parfit = parfit_1.copy()
@@ -242,9 +242,9 @@ def ini_MPinst(args, inparam, orders, order_use, trk, i):
         if args.plotfigs:
             parfitS = parfit.copy(); parfitS[3] = 0
             parfitT = parfit.copy(); parfitT[1] = 0
-            outplotter_23(parfitS, fitobj, 'parfitS_{}_{}_{}'.format(order,night,tag), trk)
-            outplotter_23(parfitT, fitobj, 'parfitT_{}_{}_{}'.format(order,night,tag), trk)
-            outplotter_23(parfit, fitobj,  'parfit_{}_{}_{}'.format(order,night,tag), trk)
+            outplotter_23(parfitS, fitobj, 'parfitS_{}_{}_{}'.format(order,night,tag), trk, inparam, args)
+            outplotter_23(parfitT, fitobj, 'parfitT_{}_{}_{}'.format(order,night,tag), trk, inparam, args)
+            outplotter_23(parfit, fitobj,  'parfit_{}_{}_{}'.format(order,night,tag), trk, inparam, args)
 
         rv0 = parfit[0] - parfit[2]  # atomosphere velocity correct
 
