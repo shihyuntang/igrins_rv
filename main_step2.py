@@ -17,15 +17,13 @@ def ini_MPinst(args, inparam, orders, order_use, trk, i):
     nights   = inparam.nights
     night    = nights[i]
 
-    order   = int(orders[order_use])
+    order   = orders[order_use]
     xbounds = inparam.xbounddict[order]
-    print('\n')
     print('Working on order {:02d}, night {:03d}/{:03d} ({}) PID:{}...'.format(int(order),
                                                                               i+1,
                                                                               len(inparam.nights),
                                                                               night,
                                                                               mp.current_process().pid) )
-
 #-------------------------------------------------------------------------------
     # Collect initial RV guesses
     if type(inparam.initguesses) == dict:
@@ -58,7 +56,7 @@ def ini_MPinst(args, inparam, orders, order_use, trk, i):
             hdulist[i].columns[0].name[9:]
         except:
             continue
-
+    print(np.arange(num_orders))
     # order in A0_treated.fits is no longer sequential...
     fits_layer = [ i for i in np.arange(num_orders)+1 if int(hdulist[i].columns[0].name[9:]) == order ][0]
 
