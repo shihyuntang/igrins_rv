@@ -221,7 +221,7 @@ def ini_MPinst(args, inparam, orders, order_use, trk, i):
                 parstart = parfit_1.copy()
                 if args.debug:
                     outplotter_23(parfit_1, fitobj, '{}_{}_{}_parfit_{}{}'.format(order,night,tag,nc,optkind), trk)
-                    logger.debug(f'{Order}_{tag}_{nc}_{optkind}: {parfit_1}')
+                    logger.debug(f'{Order}_{tag}_{nc}_{optkind}:\n {parfit_1}')
 
         parfit = parfit_1.copy()
 #-------------------------------------------------------------------------------
@@ -364,10 +364,10 @@ if __name__ == '__main__':
             break
         trk += 1
 
-    if not os.path.isdir(f'./Output/{args.targname}_{args.band}/main_step2_figs_{args.band}'):
-        os.mkdir(f'./Output/{args.targname}_{args.band}/main_step2_figs_{args.band}')
+    if not os.path.isdir(f'./Output/{args.targname}_{args.band}/main_step2_figs_{args.band}_{trk}'):
+        os.mkdir(f'./Output/{args.targname}_{args.band}/main_step2_figs_{args.band}_{trk}')
 
-    outpath = f'./Output/{args.targname}_{args.band}/'
+    outpath = f'./Output/{args.targname}_{args.band}'
 #-------------------------------------------------------------------------------
     logger = logging.getLogger(__name__)
     if args.debug:
