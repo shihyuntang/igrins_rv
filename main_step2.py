@@ -27,7 +27,7 @@ def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 #-------------------------------------------------------------------------------
     # Collect initial RV guesses
     if type(inparam.initguesses) == dict:
-        initguesses = inparam.initguesses[str(night)]
+        initguesses = inparam.initguesses[night]
     elif type(inparam.initguesses) == float:
         initguesses = inparam.initguesses
     else:
@@ -413,9 +413,9 @@ Input Parameters:
     xbounddict, maskdict, tagsA, tagsB, mjds, bvcs, nightsFinal, orders = read_prepdata(args)
 
     if args.nights_use != '':
-        nightstemp = np.array(ast.literal_eval(args.nights_use), dtype=int)
+        nightstemp = np.array(ast.literal_eval(args.nights_use), dtype=str)
         for nnn in nightstemp:
-            if str(nnn) not in nightsFinal:
+            if nnn not in nightsFinal:
                 sys.exit('NIGHT {} NOT FOUND UNDER ./Input_Data/{}'.format(nnn, args.targname))
         nightsFinal = nightstemp
         print('Only processing nights: {}'.format(nightsFinal))
