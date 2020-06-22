@@ -202,7 +202,7 @@ def ini_MPinst(args, inparam, orders, order_use, trk, i):
         cycles = 2
 
         optgroup = ['cont', 'wave', 't', 'cont', 's',
-                    'cont', 'wave',' t', 's', 'cont',
+                    'cont', 'wave', 't', 's', 'cont',
                     'wave',
                     'ip', 'v',
                     'ip', 'v',
