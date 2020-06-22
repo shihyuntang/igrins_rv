@@ -46,11 +46,11 @@ def ini_MPinst(args, inparam, orders, order_use, trk, i):
 
     # Load telluric template from Telfit'd A0
     # [:8] here is to ensure program works under Night_Split mode
-    A0loc = f'.Output/{args.targname}_{args.band}/A0Fits/{night[:8]}A0_treated_{args.band}.fits'
+    A0loc = f'./Output/{args.targname}_{args.band}/A0Fits/{night[:8]}A0_treated_{args.band}.fits'
     try:
         hdulist = fits.open(A0loc)
     except IOError:
-        logger.critical(f'  --> No A0-fitted template for night {night}, skipping...')
+        logger.warning(f'  --> No A0-fitted template for night {night}, skipping...')
         return night, np.nan, np.nan
 
     for num_orders, i in enumerate(np.arange(25)):
