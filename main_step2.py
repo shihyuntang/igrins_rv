@@ -434,7 +434,7 @@ if __name__ == '__main__':
     logger.addHandler(file_hander)
     logger.addHandler(stream_hander)
 #-------------------------------------------------------------------------------
-    logger.info(f'Writing output to ./Output/{args.targname}_{rgs.band}/{iniguess_dir}')
+    logger.info(f'Writing output to ./Output/{args.targname}_{args.band}/{iniguess_dir}')
 
     filew = open(f'./Output/{args.targname}_{args.ban}/{iniguess_dir}','w')
     filew.write('night, bestguess, vsini')
