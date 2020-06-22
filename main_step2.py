@@ -383,7 +383,7 @@ if __name__ == '__main__':
     #------------------------------
     if args.guesses != '':
         try:
-            initguesses = float(args.guesse)
+            initguesses = float(args.guesses)
         except:
             sys.exit('ERROR: -g ONLY TAKE NUMBER AS INPUT!')
     #------------------------------
