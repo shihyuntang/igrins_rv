@@ -172,47 +172,47 @@ def DataPrep(args):
 
 
 
-    #-------------------------------------------------------------------------------
-    if __name__ == '__main__':
-        parser = argparse.ArgumentParser(
-                                         prog        = 'IGRINS Spectra Radial Velocity Pipeline',
-                                         description = '''
-                                         This is a pipeline that helps you to extract radial velocity \n
-                                         from IGRINS spectra. \n
-                                         ''',
-                                         epilog = "Contact authors: asa.stahl@rice.edu; sytang@lowell.edu")
-        parser.add_argument("targname",                          action="store",
-                            help="Enter your *target name, no space",
-                            type=str)
-        parser.add_argument("-HorK",    dest="band",             action="store",
-                            help="Which band to process? H or K?. Default = K",
-                            type=str,   default='K')
+#-------------------------------------------------------------------------------
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(
+                                     prog        = 'IGRINS Spectra Radial Velocity Pipeline',
+                                     description = '''
+                                     This is a pipeline that helps you to extract radial velocity \n
+                                     from IGRINS spectra. \n
+                                     ''',
+                                     epilog = "Contact authors: asa.stahl@rice.edu; sytang@lowell.edu")
+    parser.add_argument("targname",                          action="store",
+                        help="Enter your *target name, no space",
+                        type=str)
+    parser.add_argument("-HorK",    dest="band",             action="store",
+                        help="Which band to process? H or K?. Default = K",
+                        type=str,   default='K')
 
-        parser.add_argument('-DeBug',    dest="debug",           action="store_true",
-                            help="If sets, will generate files and plots under ./Temp/Debug for debug")
-        parser.add_argument('--version',                         action='version',  version='%(prog)s 0.85')
-        args   = parser.parse_args()
-        inpath = './Input/{}/'.format(args.targname)
+    parser.add_argument('-DeBug',    dest="debug",           action="store_true",
+                        help="If sets, will generate files and plots under ./Temp/Debug for debug")
+    parser.add_argument('--version',                         action='version',  version='%(prog)s 0.85')
+    args   = parser.parse_args()
+    inpath = './Input/{}/'.format(args.targname)
 
-        if ' ' in args.targname:
-            sys.exit('ERROR! This is Weird... you have a SPACE in your input target name...')
-        # make logging dir
-        if not os.path.isdir(f'./Runlog/{args.targname}_{args.band}'):
-            os.mkdir(f'./Runlog/{args.targname}_{args.band}')
+    if ' ' in args.targname:
+        sys.exit('ERROR! This is Weird... you have a SPACE in your input target name...')
+    # make logging dir
+    if not os.path.isdir(f'./Runlog/{args.targname}_{args.band}'):
+        os.mkdir(f'./Runlog/{args.targname}_{args.band}')
 
-        # make logging dir
-        if not os.path.isdir(f'./Input/Prepdata'):
-            os.mkdir(f'./Input/Prepdata')
+    # make logging dir
+    if not os.path.isdir(f'./Input/Prepdata'):
+        os.mkdir(f'./Input/Prepdata')
 
-    #-------------------------------------------------------------------------------
-        print('\n')
-        print('###############################################################')
-        print(f'Making your Prepdata for {args.targname}')
-        time.sleep(3)
+#-------------------------------------------------------------------------------
+    print('\n')
+    print('###############################################################')
+    print(f'Making your Prepdata for {args.targname}')
+    time.sleep(3)
 
-        DataPrep(args)
+    DataPrep(args)
 
-        print('Finished!')
-        print('Prepdata saved under ./Input/Prepdata/')
-        print('###############################################################')
-        print('\n')
+    print('Finished!')
+    print('Prepdata saved under ./Input/Prepdata/')
+    print('###############################################################')
+    print('\n')
