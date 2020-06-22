@@ -300,17 +300,17 @@ if __name__ == '__main__':
                         help="Which band to process? H or K?. Default = K",
                         type=str,   default='K')
     parser.add_argument("-Wr",      dest="WRegion",          action="store",
-                        help="Which ./Input/Usewv/WaveRegions_X to use, Default X = 0",
+                        help="Which ./Input/UseWv/WaveRegions_X to use, Default X = 0",
                         type=int,   default=int(0))
 
     parser.add_argument('-c',       dest="Nthreads",         action="store",
                         help="Number of cpu (threads) to use, default is 1/2 of avalible ones (you have %i cpus (threads) avaliable)"%(mp.cpu_count()),
                         type=int,   default=int(mp.cpu_count()//2) )
     parser.add_argument('-plot',    dest="plotfigs",        action="store_true",
-                        help="If sets, will generate basic plots of A0 model fitting under ./Output/A0Fits/*target/fig/")
+                        help="If sets, will generate basic fitting result plots of A0 model fitting under ./Output/A0Fits/*target/fig/")
 
     parser.add_argument('-n_use',   dest="nights_use",       action="store",
-                        help="If you don't want all process all nights under the Input/*target/ folder, give an array of night you wish to process here. e.g., [20181111, 20181112]",
+                        help="If you don't want all process all nights under the ./Input/*target/ folder, give an array of night you wish to process here. e.g., [20181111, 20181112]",
                         type=str,   default='')
     parser.add_argument('-DeBug',    dest="debug",           action="store_true",
                         help="If sets, DeBug logging and extra plots will be given")
@@ -331,9 +331,6 @@ if __name__ == '__main__':
     if not os.path.isdir(f'./Output/{args.targname}_{args.band}/A0Fits/figs_{args.band}'):
         os.mkdir(f'./Output/{args.targname}_{args.band}/A0Fits/figs_{args.band}')
 
-    if not os.path.isdir(f'./Runlog/{args.targname}_{args.band}'):
-        os.mkdir(f'./Runlog/{args.targname}_{args.band}')
-
     outpath = f'./Output/{args.targname}_{args.band}/A0Fits'
 #-------------------------------------------------------------------------------
     logger = logging.getLogger(__name__)
@@ -341,7 +338,7 @@ if __name__ == '__main__':
         logger.setLevel(logging.DEBUG)
     else:
         logger.setLevel(logging.INFO)
-    formatter = logging.Formatter('%(asctime)s: %(module)s: %(levelname)s: %(message)s-->')
+    formatter = logging.Formatter('%(asctime)s: %(module)s.py: %(levelname)s: %(message)s-->')
 
     file_hander = logging.FileHandler(f'{outpath}/{args.targname}_{args.band}_A0Fits.log')
     stream_hander= logging.StreamHandler()

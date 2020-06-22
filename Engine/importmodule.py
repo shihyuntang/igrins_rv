@@ -68,3 +68,58 @@ import matplotlib.pyplot as plt
 import warnings
 warnings.filterwarnings("ignore")
 np.seterr(divide='ignore', invalid='ignore')
+
+# -------------------------------------------------------------
+def read_prepdata(args):
+        ## Collect relevant file information from Predata files
+        A0data   = Table.read('./Temp/Prepdata/Prepdata_A0_{}.txt'.format(args.targname), format='ascii')
+        A0nights = np.array(A0data['night'],dtype='str')
+        ams0     = np.array(A0data['airmass'])
+
+        targdata = Table.read('./Temp/Prepdata/Prepdata_targ_{}.txt'.format(args.targname), format='ascii')
+        Tnights = np.array(targdata['night'],dtype='str')
+        tags0   = np.array(targdata['tag'], dtype='int')
+        beams0  = np.array(targdata['beam'],dtype='str')
+        mjds0   = np.array(targdata['mjd'])
+        bvcs0   = np.array(targdata['bvc'])
+        ams     = np.array(targdata['airmass'])
+
+        bounddata = Table.read('./Input_Data/Use_w/XRegions_{}_{}.csv'.format(args.WRegion, args.band), format='csv')
+        starts  = np.array(bounddata['start'])
+        ends    = np.array(bounddata['end'])
+        labels  = np.array(bounddata['label'], dtype=int)
+        masks    = np.array(bounddata['masks'])
+        xbounddict = {labels[i]:np.array([starts[i],ends[i]]) for i in range(len(starts))}
+        maskdict = {labels[i]:masks[i] for i in range(len(starts))}
+
+        # Attribute A and B exposures to right file numbers
+        tagsA = {}; tagsB = {}; mjds = {}; bvcs = {};
+        night_orig = Tnights[0]; tagsA0 = []; tagsB0 = [];
+
+        for hrt in range(len(Tnights)):
+            tag1 = '{:04d}'.format(tags0[hrt])
+
+            mjds[Tnights[hrt]]                = float(mjds0[hrt])
+            bvcs[str(Tnights[hrt])+str(tag1)] = float(bvcs0[hrt])
+
+            if Tnights[hrt] == night_orig:
+                if beams0[hrt] == 'A':
+                    tagsA0.append(tag1)
+                else:
+                    tagsB0.append(tag1)
+            else:
+                tagsA[Tnights[hrt-1]] = tagsA0
+                tagsB[Tnights[hrt-1]] = tagsB0
+                tagsA0 = []; tagsB0 = [];
+                if beams0[hrt] == 'A':
+                    tagsA0.append(tag1)
+                else:
+                    tagsB0.append(tag1)
+                night_orig = Tnights[hrt].copy()
+
+        tagsA[Tnights[-1]] = tagsA0
+        tagsB[Tnights[-1]] = tagsB0
+
+        nightsFinal = np.array(list(sorted(set(Tnights))))
+
+        return xbounddict, maskdict, tagsA, tagsB, mjds, bvcs, nightsFinal, labels

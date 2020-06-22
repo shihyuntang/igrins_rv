@@ -580,7 +580,7 @@ if __name__ == '__main__':
         nightsFinal = nightstemp
         print('Only processing nights: {}'.format(nightsFinal))
 
-    print('Analyze with {} nights'.format(len(nightsFinal)))
+    logger.info('Analyze with {} nights'.format(len(nightsFinal)))
 
     time.sleep(6)
     print('\n')
