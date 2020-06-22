@@ -82,4 +82,6 @@ def outplotter_23(parfit,fitobj,title,trk):
         axes.tick_params(axis='both', labelsize=4.5, right=True, top=True, direction='in')
         axes.legend(fontsize=4, edgecolor='white')
 
-    fig.savefig(f'{inparam.outpath}/main_step2_figs_{args.band}_{trk}/{title}.png', bbox_inches='tight', format='png', overwrite=True)
+    print('f{__name__}')
+    dumpp = 'f{__name__}'
+    fig.savefig(f'{inparam.outpath}/figs/main_step{dumpp[-4]}_figs_{args.band}_{trk}/{title}.png', bbox_inches='tight', format='png', overwrite=True)
