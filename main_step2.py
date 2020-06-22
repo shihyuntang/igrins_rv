@@ -50,7 +50,7 @@ def ini_MPinst(args, inparam, orders, order_use, trk, i):
     try:
         hdulist = fits.open(A0loc)
     except IOError:
-        logger.warning(f'  --> No A0-fitted template for night {night}, skipping...')
+        logger.critical(f'  --> No A0-fitted template for night {night}, skipping...')
         return night, np.nan, np.nan
 
     for num_orders, i in enumerate(np.arange(25)):
