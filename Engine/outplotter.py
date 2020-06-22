@@ -1,7 +1,7 @@
 from Engine.importmodule import *
 from Engine.opt       import fmod
 
-def outplotter_tel(parfit, fitobj, title):
+def outplotter_tel(parfit, fitobj, title, inparam, args):
     fit,chi = fmod(parfit, fitobj)
     w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
 
