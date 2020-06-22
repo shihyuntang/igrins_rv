@@ -442,11 +442,11 @@ if __name__ == '__main__':
 #-------------------------------------------------------------------------------
     start_time = datetime.now()
     print('###############################################################\n')
-    print(r'''
+    print(u'''
 Input Parameters:
     Tartget             = {}
     Initial vsini       = {} km/s
-    vsini vary range    $\pm$ {} km/s
+    vsini vary range    \u00B1 {} km/s
     RV initial guess    = {} km/s
     '''.format(args.targname, initvsini, vsinivary, initguesses))
     print('---------------------------------------------------------------')
