@@ -163,14 +163,10 @@ def DataPrep(args):
 
     fileA0.close()
 
-    print('No reduced A0s found for following nights:')
-    for n in noA0nights:
+    if len(noA0nights) != 0:
+        print('No reduced A0s found for following nights:')
         print(n)
-    print('To achieve highest precision, this pipeline defaults to not analyzing target spectra for these nights.\n')
-
-
-
-
+        print('To achieve highest precision, this pipeline defaults to not analyzing target spectra for these nights.\n')
 
 #-------------------------------------------------------------------------------
 if __name__ == '__main__':
