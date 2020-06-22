@@ -195,16 +195,16 @@ def MPinst(args, inparam, jerp, orders, i):
             fig.savefig(f'{inparam.outpath}/figs_{args.band}/IP_{order}_{night}.png',
                         bbox_inches='tight', format='png', overwrite=True)
 
-            outplotter_tel(parfit_1,fitobj, f'Post_parfit_1_{order}_{night}', inparam, args)
-            outplotter_tel(parfit_2,fitobj, f'Post_parfit_2_{order}_{night}', inparam, args)
-            outplotter_tel(parfit_3,fitobj, f'Post_parfit_3_{order}_{night}', inparam, args)
-            outplotter_tel(parfit_4,fitobj, f'Post_parfit_4_{order}_{night}', inparam, args)
+            outplotter_tel(parfit_1,fitobj, f'Post_parfit1_{order}_{night}', inparam, args)
+            outplotter_tel(parfit_2,fitobj, f'Post_parfit2_{order}_{night}', inparam, args)
+            outplotter_tel(parfit_3,fitobj, f'Post_parfit3_{order}_{night}', inparam, args)
+            outplotter_tel(parfit_4,fitobj, f'Post_parfit4_{order}_{night}', inparam, args)
 
-        logger.debug(f'Post_par_in: {par_in}')
-        logger.debug(f'Post_parfit_1: {parfit_1}')
-        logger.debug(f'Post_parfit_2: {parfit_2}')
-        logger.debug(f'Post_parfit_3: {parfit_3}')
-        logger.debug(f'Post_parfit_4: {parfit_4}')
+        logger.debug(f'Post_par_in:\n {par_in}')
+        logger.debug(f'Post_parfit1:\n {parfit_1}')
+        logger.debug(f'Post_parfit2:\n {parfit_2}')
+        logger.debug(f'Post_parfit3:\n {parfit_3}')
+        logger.debug(f'Post_parfit4:\n {parfit_4}')
 #-------------------------------------------------------------------------------
         a0w_out  = parfit[6] + parfit[7]*x + parfit[8]*(x**2.) + parfit[9]*(x**3.)
         cont_adj = parfit[10] + parfit[11]*x + parfit[12]*(x**2.)
