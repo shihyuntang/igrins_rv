@@ -14,7 +14,7 @@ from Engine.outplotter import outplotter_tel
 #-------------------------------------------------------------------------------
 
 def MPinst(args, inparam, jerp, orders, i):
-    order = orders[jerp])           # urrent looped order
+    order = orders[jerp]           # urrent looped order
     night = str(inparam.nights[i])  # multiprocess assigned night
     firstorder = orders[0]
 
