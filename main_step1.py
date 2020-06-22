@@ -316,7 +316,7 @@ if __name__ == '__main__':
                         help="If sets, DeBug logging and extra plots will be given")
     parser.add_argument('--version',                         action='version',  version='%(prog)s 0.85')
     args = parser.parse_args()
-    inpath   = './Input/{}'.format(args.targname)
+    inpath   = './Input/{}/'.format(args.targname)
     cdbs_loc = '~/cdbs/'
 
     if not os.path.isdir('./Output'):
