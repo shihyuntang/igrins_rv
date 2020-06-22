@@ -341,7 +341,7 @@ if __name__ == '__main__':
         logger.setLevel(logging.DEBUG)
     else:
         logger.setLevel(logging.INFO)
-    formatter = logging.Formatter('%(asctime)s:%(name)s:%(module)s:%(message)s:')
+    formatter = logging.Formatter('%(asctime)s:%(module)s:%(message)s: ')
 
     file_hander = logging.FileHandler(f'{outpath}/{args.targname}_{args.band}_A0Fits.log')
     stream_hander= logging.StreamHandler()
@@ -411,8 +411,8 @@ if __name__ == '__main__':
         outs = mp_run(args, args.Nthreads, jerp, orders, nightsFinal)
 
     print('\n')
-    print('A0 Fitting Done!')
+    logger.info('A0 Fitting Done!')
     end_time = datetime.now()
-    print(f'A0 Fitting using TelFit finished, Duration: {end_time - start_time}')
+    logger.info(f'A0 Fitting using TelFit finished, Duration: {end_time - start_time}')
     print('You can start to run main_step2.py for RV initial guess')
     print('###############################################################')
