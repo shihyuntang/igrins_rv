@@ -43,7 +43,7 @@ def MPinst(args, inparam, jerp, orders, i):
                                                  'A0',
                                                  'separate',
                                                  night,
-                                                 order,
+                                                 int(order),
                                                  f'{int(inparam.tags[night]):04d}',
                                                  args.band,
                                                  bound_cut)
