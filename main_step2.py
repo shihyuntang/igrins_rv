@@ -221,7 +221,7 @@ def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                 parstart = parfit_1.copy()
                 if args.debug:
                     outplotter_23(parfit_1, fitobj, '{}_{}_{}_parfit_{}{}'.format(order,night,tag,nc,optkind), trk, inparam, args, step2or3)
-                    logger.debug(f'{Order}_{tag}_{nc}_{optkind}:\n {parfit_1}')
+                    logger.debug(f'{order}_{tag}_{nc}_{optkind}:\n {parfit_1}')
 
         parfit = parfit_1.copy()
 #-------------------------------------------------------------------------------
