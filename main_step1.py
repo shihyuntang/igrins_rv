@@ -341,7 +341,7 @@ if __name__ == '__main__':
         logger.setLevel(logging.DEBUG)
     else:
         logger.setLevel(logging.INFO)
-    formatter = logging.Formatter('%(asctime)s:%(module)s:%(message)s: ')
+    formatter = logging.Formatter('%(asctime)s: %(module)s: %(levelname)s: %(message)s-->')
 
     file_hander = logging.FileHandler(f'{outpath}/{args.targname}_{args.band}_A0Fits.log')
     stream_hander= logging.StreamHandler()
@@ -355,6 +355,7 @@ if __name__ == '__main__':
     start_time = datetime.now()
     print('###############################################################\n')
     print(f'Fetching Wavelength Regions to be Analyzed for {args.targname}...')
+    time.sleep(2)
 
     use_w(args)
 
