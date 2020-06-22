@@ -366,8 +366,8 @@ if __name__ == '__main__':
 
     if not os.path.isdir(f'./Output/{args.targname}_{args.band}/figs'):
         os.mkdir(f'./Output/{args.targname}_{args.band}/figs')
-    step2or3 = f'{__name__}'[-1]
-    print(f'{__name__}')
+    step2or3 = f'{__name__}'
+    print('!!!', step2or3)
     if not os.path.isdir(f'./Output/{args.targname}_{args.band}/figs/main_step{step2or3}_{args.band}_{trk}'):
         os.mkdir(f'./Output/{args.targname}_{args.band}/figs/main_step{step2or3}_{args.band}_{trk}')
 
