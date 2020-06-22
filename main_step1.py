@@ -76,9 +76,9 @@ def MPinst(args, inparam, jerp, orders, i):
     par6in = f[3]*1e4;
 
     if (int(night) < 20180401) or (int(night) > 20190531):
-        IPpars = inparam.ips_tightmount_pars[args.band][order]
+        IPpars = inparam.ips_tightmount_pars[args.band][int(order)]
     else:
-        IPpars = inparam.ips_loosemount_pars[args.band][order]
+        IPpars = inparam.ips_loosemount_pars[args.band][int(order)]
 
     ### Initialize parameter array for optimization as well as half-range values for each parameter during
     ### the various steps of the optimization.
