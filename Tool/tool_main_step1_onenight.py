@@ -225,36 +225,7 @@ def MPinst(i, order0, order):
         IPpars = inparam.ips_loosemount_pars[args.band][order]
     ### Load relevant A0 spectrum
     # x (list of wavelength used position)
-    if args.band=='K':
-        if order==11:
-            bound_cut = [200, 100]
-        elif order==12:
-            bound_cut = [900, 300]
-        elif order==13:
-            bound_cut = [200, 400]
-        elif order==14:
-            bound_cut = [150, 300]
-        else:
-            bound_cut = [150, 100]
-    elif args.band=='H':
-        if order==10:
-            bound_cut = [250, 150]#ok
-        elif order==11:
-            bound_cut = [600, 150]
-        elif order==13:
-            bound_cut = [200, 600]#ok
-        elif order==14:
-            bound_cut = [700, 100]
-        elif order==16:
-            bound_cut = [400, 100]
-        elif order==17:
-            bound_cut = [1000, 100]
-        elif order==20:
-            bound_cut = [500, 150]
-        elif (order==7) or (order==8) or (order==9) or (order==12) or (order==15) or (order==18) or (order==19):
-            bound_cut = [500, 500]
-        else:
-            bound_cut = [150, 100]
+
     x, a0wavelist, a0fluxlist, u = init_fitsread(inparam.inpath,
                                                 'A0',
                                                 'separate',
@@ -262,13 +233,11 @@ def MPinst(i, order0, order):
                                                 order,
                                                 '{:04d}'.format(int(inparam.tags[night])),
                                                 args.band,
-                                                bound_cut)
+                                                [150,150])
 
     nzones = 12
     a0wavelist = basicclip_above(a0wavelist,a0fluxlist,nzones);   a0x = basicclip_above(x,a0fluxlist,nzones);
     a0u        = basicclip_above(u,a0fluxlist,nzones);     a0fluxlist = basicclip_above(a0fluxlist,a0fluxlist,nzones);
-
-    # do twice?
     a0wavelist = basicclip_above(a0wavelist,a0fluxlist,nzones);   a0x = basicclip_above(a0x,a0fluxlist,nzones);
     a0u        = basicclip_above(a0u,a0fluxlist,nzones);   a0fluxlist = basicclip_above(a0fluxlist,a0fluxlist,nzones);
 
@@ -306,7 +275,8 @@ def MPinst(i, order0, order):
                       0.,               #11: Continuum linear component
                       0.,               #12: Continuum quadratic component
                       IPpars[1],        #13: IP linear component
-                      IPpars[0]])       #14: IP quadratic component
+                      IPpars[0],        #14: IP quadratic component
+                      0.0])          #15: Differential Rotation Coefficient
 
     # Save a copy of initial parameter array. Make sure stellar template isn't being used.
     parA0 = pars0.copy()
@@ -340,11 +310,11 @@ def MPinst(i, order0, order):
     fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in)
 
     # Arrays defining parameter variations during optimization steps
-    dpar_cont = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0])
-    dpar_wave = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 10.0,  10.0, 5.00000e-5, 1e-7, 0,   0, 0, 0,    0])
-    dpar      = np.array([0.0, 0.0, 5.0, 3.0, 0.0, 0.5, 0.0,   0.0,  0.0,        0,    1e4, 1, 1, 0,    0])
-    dpar_st   = np.array([0.0, 0.0, 5.0, 3.0, 0.0, 0.0, 0.0,   0.0,  0.0,        0,    1e4, 1, 1, 0,    0])
-    dpar_ip   = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0])
+    dpar_cont = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0, 0])
+    dpar_wave = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 10.0,  10.0, 5.00000e-5, 1e-7, 0,   0, 0, 0,    0, 0])
+    dpar      = np.array([0.0, 0.0, 5.0, 3.0, 0.0, 0.5, 0.0,   0.0,  0.0,        0,    1e4, 1, 1, 0,    0, 0])
+    dpar_st   = np.array([0.0, 0.0, 5.0, 3.0, 0.0, 0.0, 0.0,   0.0,  0.0,        0,    1e4, 1, 1, 0,    0, 0])
+    dpar_ip   = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0])
 
 #-------------------------------------------------------------------------------
     # For every pre-Telfit spectral fit, first fit just template strength/rv/continuum, then just wavelength soln, then template/continuum again, then ip,
@@ -353,7 +323,9 @@ def MPinst(i, order0, order):
 
     optimize = True
     par_in = parA0.copy()
-    hardbounds = [par_in[4]-dpar[4],par_in[4]+dpar[4],par_in[5]-dpar[5],par_in[5]+dpar[5]]
+    hardbounds = [par_in[4] -dpar[4],   par_in[4]+dpar[4],
+                  par_in[5] -dpar[5],   par_in[5]+dpar[5],
+                  par_in[15]-dpar[15], par_in[15]+dpar[15]]
     if hardbounds[0] < 0:
         hardbounds[0] = 0
     if hardbounds[3] < 0:
@@ -541,7 +513,7 @@ if __name__ == '__main__':
     # Thus, with 01 thread, one night for five orders is about 2135 sec.
 # ---------------------------------------
     if args.band == 'K':
-        order0 = np.arange(2,17)
+        order0 = np.append(np.arange(2, 9), np.array([10, 11, 12, 13, 14, 16]))
     elif args.band == 'H':
 #        order0 = np.arange(5,11)
         # order0 = np.arange(2,23)

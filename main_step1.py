@@ -1,6 +1,6 @@
 from Engine.importmodule import *
 
-from Engine.IO_AB     import setup_templates, init_fitsread, stellarmodel_setup, setup_outdir
+from Engine.IO_AB     import setup_templates_tel, init_fitsread, stellarmodel_setup, setup_outdir
 from Engine.clips     import basicclip_above
 from Engine.contfit   import A0cont
 from Engine.classes   import fitobjs,inparamsA0,orderdict_cla
@@ -18,11 +18,9 @@ def outplotter(parfit,fitobj,title,debug):
     fig, axes = plt.subplots(1, 1, figsize=(5,3), facecolor='white', dpi=300)
     axes.plot(w,fitobj.s, '-',  c = 'k',        lw=0.5, label='data',  alpha=.6)
     axes.plot(w,fit,      '--', c = 'tab:red',  lw=0.5, label='model', alpha=.6)
-
     axes.set_title( title,                 size=5, style='normal', family='sans-serif')
     axes.set_ylabel(r'Normalized Flux',    size=5, style='normal', family='sans-serif')
     axes.set_xlabel(r'Wavelength [$\AA$]', size=5, style='normal', family='sans-serif')
-
     axes.tick_params(axis='both', labelsize=4.5, right=True, top=True, direction='in')
     axes.legend(fontsize=4, edgecolor='white')
     if debug == 0:
@@ -33,10 +31,8 @@ def outplotter(parfit,fitobj,title,debug):
 #-------------------------------------------------------------------------------
 
 def DataPrep(args):
-    # Find all nights of observations of target in master log
-    master_log_fh = './Engine/IGRINS_MASTERLOG.csv'
-    master_log    = pd.read_csv(master_log_fh)
-
+# Find all nights of observations of target in master log
+    master_log    = pd.read_csv('./Engine/IGRINS_MASTERLOG.csv')
     star_files    = master_log[(master_log['OBJNAME'].str.contains(args.targname, regex=True, na=False)) &
                                (master_log['OBJTYPE'].str.contains('TAR',         regex=True, na=False)) ]
     allnights     = np.array(master_log['CIVIL'],dtype='str')
@@ -52,7 +48,7 @@ def DataPrep(args):
             sys.exit('TARGET NAME NOT FOUND IN CATALOG - CHECK INPUT!')
 
 #-------------------------------------------------------------------------------
-    ## Collect target star information
+# Collect target star information
     fileT = open('./Temp/Prepdata/Prepdata_targ_{}.txt'.format(args.targname), 'w')
     fileT.write('night beam tag mjd facility airmass bvc\n')
 
@@ -231,7 +227,7 @@ def MPinst(args, chunk_ind, orders, i):
         elif order==14:
             bound_cut = [150, 300]
         else:
-            bound_cut = [150, 100]
+            bound_cut = [150, 150]
     elif args.band=='H':
         if order==10:
             bound_cut = [250, 150]#ok
@@ -250,7 +246,7 @@ def MPinst(args, chunk_ind, orders, i):
         elif (order==7) or (order==8) or (order==9) or (order==12) or (order==15) or (order==18) or (order==19):
             bound_cut = [500, 500]
         else:
-            bound_cut = [150, 100]
+            bound_cut = [150, 150]
 
     x, a0wavelist, a0fluxlist, u = init_fitsread(inparam.inpath,
                                                 'A0',
@@ -303,7 +299,7 @@ def MPinst(args, chunk_ind, orders, i):
                       0.,            #11: Continuum linear component
                       0.,            #12: Continuum quadratic component
                       IPpars[1],     #13: IP linear component
-                      IPpars[0]])    #14: IP quadratic component
+                      IPpars[0]])     #14: IP quadratic component
 
     a0fluxlist = a0fluxlist[(a0wavelist*1e4 > min(watm_in)+5) & (a0wavelist*1e4 < max(watm_in)-5)]
     a0u        = a0u[       (a0wavelist*1e4 > min(watm_in)+5) & (a0wavelist*1e4 < max(watm_in)-5)]
@@ -315,7 +311,7 @@ def MPinst(args, chunk_ind, orders, i):
     s = a0fluxlist.copy(); x = a0x.copy(); u = a0u.copy();
 
     # Collect all fit variables into one class
-    fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in)
+    fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in,[])
 
     # Arrays defining parameter variations during optimization steps
     dpar_cont = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0])
@@ -331,14 +327,12 @@ def MPinst(args, chunk_ind, orders, i):
 
     optimize = True
     par_in = parA0.copy()
-    hardbounds = [par_in[4]-dpar[4],par_in[4]+dpar[4],par_in[5]-dpar[5],par_in[5]+dpar[5]]
+    hardbounds = [par_in[4] -dpar[4],   par_in[4]+dpar[4],
+                  par_in[5] -dpar[5],   par_in[5]+dpar[5]]
     if hardbounds[0] < 0:
         hardbounds[0] = 0
     if hardbounds[3] < 0:
         hardbounds[3] = 1
-
-#        if args.plotfigs == True:#
-#            outplotter(targname,par_in,fitobj,'{}_{}_{}_1'.format(label,night,tag))
 
     parfit_1 = optimizer(par_in,   dpar_st,   hardbounds,fitobj,optimize)
     parfit_2 = optimizer(parfit_1, dpar_wave, hardbounds,fitobj,optimize)
@@ -346,8 +340,6 @@ def MPinst(args, chunk_ind, orders, i):
     parfit_4 = optimizer(parfit_3, dpar,      hardbounds,fitobj,optimize)
     parfit = optimizer(parfit_4,   dpar_wave, hardbounds,fitobj,optimize)
 
-    # if inparam.plotfigs == True:
-    #     outplotter(parfit, fitobj, '{}_{}_1'.format(label,night), 0)
 #-------------------------------------------------------------------------------
     # Get fitted wavelength solution
     a0w_out_fit = parfit[6] + parfit[7]*x + parfit[8]*(x**2.) + parfit[9]*(x**3.)
@@ -376,13 +368,12 @@ def MPinst(args, chunk_ind, orders, i):
             hh.append(hdu_1)
             hh.writeto('{}/{}A0_treated_{}.fits'.format(inparam.outpath, night, args.band), overwrite=True)
     else:
-
         a0contwave /= 1e4
         continuum = rebin_jv(a0contwave,continuum,a0wavelist,False)
 
         # Fit whole A0 again to get even better wave soln to use for a0contwave and tweak blaze fn fit as
         # needed with quadratic adjustment
-        fitobj = fitobjs(s, x, u, continuum,watm1,satm1,mflux_in,mwave_in)
+        fitobj = fitobjs(s, x, u, continuum,watm1,satm1,mflux_in,mwave_in,[])
 
         parfit_1 = optimizer(par_in,   dpar_st,   hardbounds, fitobj, optimize)
         parfit_2 = optimizer(parfit_1, dpar_wave, hardbounds, fitobj, optimize)
@@ -397,8 +388,8 @@ def MPinst(args, chunk_ind, orders, i):
                       '-k', lw=0.5, label='data', alpha=.6)
 
             axes.tick_params(axis='both', labelsize=4.5, right=True, top=True, direction='in')
-            axes.set_ylabel(r'Normalized Flux',   size=5, style='normal' , family='sans-serif' )
-            axes.set_xlabel('Wavelength',       size=5, style='normal' , family='sans-serif' )
+            axes.set_ylabel(r'IP',   size=5, style='normal' , family='sans-serif' )
+            axes.set_xlabel('Pixel Number',       size=5, style='normal' , family='sans-serif' )
             axes.legend(fontsize=4, edgecolor='white')
             fig.savefig('{}/figs_{}/IP_{}_{}.png'.format(inparam.outpath, args.band, order, night), bbox_inches='tight', format='png', overwrite=True)
 
@@ -453,15 +444,16 @@ def mp_run(args, Nthreads, jerp, orders, nights):
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 
+
 def use_w(args):
     try:
         bounddata = Table.read('./Input_Data/Use_w/WaveRegions_{}_{}.csv'.format(args.WRegion, args.band), format='csv')
     except IOError:
         sys.exit('WaveRegions FILE ./Input_Data/Use_w/WaveRegions_{}_{}.csv NOT FOUND!'.format(args.WRegion, args.band))
-    wavesols = pd.read_csv('./Input_Data/Use_w/WaveSolns_{}_{}.csv'.format(args.WRegion, args.band))
+    wavesols = pd.read_csv('./Input_Data/Use_w/WaveSolns_{}.csv'.format(args.band))
 #-------------------------------------------------------------------------------
     filew = open('./Input_Data/Use_w/XRegions_{}_{}.csv'.format(args.WRegion, args.band),'w')
-    filew.write('label, start,  end\n')
+    filew.write('label, start,  end, masks\n')
 
     m_order  = np.array(bounddata['order'])
     starts   = np.array(bounddata['start'])
@@ -471,27 +463,26 @@ def use_w(args):
     Ostarts  = [orderdict_cla().orderdict[args.band][k][0] for k in ords]
     Oends    = [orderdict_cla().orderdict[args.band][k][1] for k in ords]
     labels   = []
-    for i in range(len(starts)):
-        indS = list(np.where((starts[i] > Ostarts) & (starts[i] < Oends))[0])
-        indE = list(np.where((ends[i]   > Ostarts) & (ends[i]   < Oends))[0])
-        indboth = indS
-        indboth.extend(x for x in indE if x not in indboth)
-        for ind in indboth:
-            wavebounds = [max([starts[i],Ostarts[ind]]),min([ends[i],Oends[ind]])]
-            wO   = wavesols['w'+str(ords[ind])]
-            pixO = wavesols['x'+str(ords[ind])];
-            pix  = [pixO[(np.argmin(abs(wO-wavebounds[k])))] for k in [0,1]]
 
-            p = 1
-            if ords[ind] == m_order[i]:
-                while 1 == 1:
-                    lab = '{}-{}'.format(ords[ind],p)
-                    if lab not in labels:
-                        filew.write('{}, {}, {}\n'.format(lab,pix[0],pix[1]))
-                        labels.append(lab)
-                        break
-                    else:
-                        p += 1
+    m_orders_unique = np.unique(m_order)
+
+    for o in range(len(m_orders_unique)):
+        pixs = [];
+        mini = np.where(m_order == m_orders_unique[o])[0]
+        for j in range(len(mini)):
+            i = mini[j]
+
+            wavebounds = [starts[i],ends[i]]
+            wO   = wavesols['w'+str(m_orders_unique[o])]
+            pixO = wavesols['x'+str(m_orders_unique[o])];
+            pix  = [pixO[(np.argmin(abs(wO-wavebounds[k])))] for k in [0,1]]
+            pixs = pixs + pix
+
+        pixsS = list(sorted(pixs))
+        if len(pixsS) == 2:
+            filew.write('{}, {}, {},[]\n'.format(m_orders_unique[o],pixsS[0],pixsS[-1]))
+        else:
+            filew.write('{}, {}, {},"{}"\n'.format(m_orders_unique[o],pixsS[0],pixsS[-1],[pixsS[n:n+2] for n in range(1,len(pixs)-2)]))
     filew.close()
 
 #-------------------------------------------------------------------------------
@@ -582,27 +573,26 @@ if __name__ == '__main__':
     nightsFinal = np.array(list(sorted(set(A0data[ind]['night']))))
 
     if args.nights_use != '':
-        nightstemp = np.array(args.nights_use, dtype=np.int)
+        nightstemp = np.array(ast.literal_eval(args.nights_use), dtype=int)
         for nnn in nightstemp:
             if nnn not in nightsFinal:
                 sys.exit('NIGHT {} NOT FOUND UNDER ./Input_Data/{}'.format(nnn, args.targname))
         nightsFinal = nightstemp
         print('Only processing nights: {}'.format(nightsFinal))
 
-    # Takes 10 threads 42mins to deal with one order with 57 nights.
-    # Thus, with 01 thread, one night for five orders is about 2135 sec.
-    # th1n1o5 = 2140
-    # extimated_runt = 2140 * len(nightsFinal) / args.Nthreads
-#    nightsFinal = nightsFinal[:10]
     print('Analyze with {} nights'.format(len(nightsFinal)))
-#    print('Estimated runtime is {:1.2f} mins ({:1.1f} hours)'.format(extimated_runt/60, extimated_runt/3600))
-#    print('This is just a rough estimation...')
-#    print('Program starts in 5 sec...')
+
     time.sleep(6)
     print('\n')
 #-------------------------------------------------------------------------------
+    if not os.path.isdir('./A0_Fits'):
+        os.mkdir('./A0_Fits' )
 
-    filesndirs = os.listdir('./A0_Fits/')
+    try:
+        filesndirs = os.listdir('./A0_Fits/')
+    except FileNotFoundError:
+        os.mkdir('./A0_Fits/')
+        filesndirs = os.listdir('./A0_Fits/')
     name = 'A0_Fits_'+ args.targname
     if name not in filesndirs:
         os.mkdir('./A0_Fits/{}'.format(name) )
@@ -613,17 +603,17 @@ if __name__ == '__main__':
     outpath = './A0_Fits/' + name
 
     # Retrieve stellar and telluric templates
-    watm, satm, mwave0, mflux0 = setup_templates()
+    watm, satm, mwave0, mflux0 = setup_templates_tel()
+
 
     inparam = inparamsA0(inpath,outpath,args.plotfigs,tags,nightsFinal,humids,
-                         temps,zds,press,obs,watm,satm,mwave0,mflux0,cdbs_loc,xbounddict)
+                         temps,zds,press,obs,watm,satm,mwave0,mflux0,cdbs_loc,xbounddict,None)
 #-------------------------------------------------------------------------------
 
     orders = [ int(labels[i].split('-')[0]) for i in range(len(labels)) ]
     orders = np.unique(orders)
     orders = np.sort(orders)
     for jerp in range(len(orders)):
-#    for jerp in range(1):
         outs = mp_run(args, args.Nthreads, jerp, orders, nightsFinal)
 
 

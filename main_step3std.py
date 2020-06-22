@@ -1,6 +1,6 @@
 from Engine.importmodule import *
 
-from Engine.IO_AB import setup_templates, setup_templates_syn, setup_templates_sun, init_fitsread, stellarmodel_setup, setup_outdir
+from Engine.IO_AB import setup_templates, init_fitsread,stellarmodel_setup, setup_outdir
 from Engine.clips import basicclip_above
 from Engine.contfit import A0cont
 from Engine.classes import fitobjs,inparams
@@ -15,19 +15,70 @@ def outplotter(parfit,fitobj,title,trk,debug):
     w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
 
     fig, axes = plt.subplots(1, 1, figsize=(5,3), facecolor='white', dpi=300)
-    axes.plot(w,fitobj.s, '-k',  lw=0.5, label='data',alpha=.6)
-    axes.plot(w,fit,      '--r', lw=0.5, label='model',alpha=.6)
 
-    axes.tick_params(axis='both', labelsize=4.5, right=True, top=True, direction='in')
-    axes.set_title(title,   size=5, style='normal' , family='sans-serif' )
-    axes.set_ylabel(r'Normalized Flux',   size=5, style='normal' , family='sans-serif' )
-    axes.set_xlabel(r'Wavelength [$\AA$]',       size=5, style='normal' , family='sans-serif' )
-    axes.legend(fontsize=4, edgecolor='white')
+    n = len(fitobj.mask)
+
+    if n > 0:
+
+        widths = [fitobj.mask[0][0]-fitobj.x[0]]
+        for m in range(n-1):
+            widths.append(fitobj.mask[m+1][0]-fitobj.mask[m][1])
+        widths.append(fitobj.x[-1]-fitobj.mask[n-1][1])
+        gs = gridspec.GridSpec(1, n+1, width_ratios=widths)
+        for m in range(n+1):
+            ax0 = plt.subplot(gs[m])
+            ax0.plot(w,fitobj.s, '-k',  lw=0.5, label='data',  alpha=.6)
+            ax0.plot(w,fit,      '--r', lw=0.5, label='model',  alpha=.6)
+            kwargs = dict(transform=ax0.transAxes, color='k', clip_on=False,lw= 0.6)
+            if m == 0:
+                ax0.tick_params(axis='both', labelsize=4.5, right=False, top=True, direction='in')
+                left = w[0]
+                right = parfit[6] + parfit[7]*fitobj.mask[m][0] + parfit[8]*(fitobj.mask[m][0]**2.) + parfit[9]*(fitobj.mask[m][0]**3.)
+                ax0.plot([right,right],[min(fitobj.s),max(fitobj.s)],'--k',lw=0.75)
+            elif m == n:
+                ax0.tick_params(axis='both', labelsize=4.5, left=False, right=True, top=True, direction='in')
+                ax0.set_yticklabels([])
+                #ax0.vlines([left+1],'--k',lw=0.75)
+                left = parfit[6] + parfit[7]*fitobj.mask[m-1][1] + parfit[8]*(fitobj.mask[m-1][1]**2.) + parfit[9]*(fitobj.mask[m-1][1]**3.)
+                right = w[-1]
+            else:
+                ax0.tick_params(axis='both', labelsize=4.5, right=False, left=False,top=True, direction='in')
+                ax0.set_yticklabels([])
+                #ax0.vlines([left+1],'--k',lw=0.75)
+                ax0.plot([right,right],[min(fitobj.s),max(fitobj.s)],'--k',lw=0.75)
+                left = parfit[6] + parfit[7]*fitobj.mask[m-1][1] + parfit[8]*(fitobj.mask[m-1][1]**2.) + parfit[9]*(fitobj.mask[m-1][1]**3.)
+                right = parfit[6] + parfit[7]*fitobj.mask[m][0] + parfit[8]*(fitobj.mask[m][0]**2.) + parfit[9]*(fitobj.mask[m][0]**3.)
+
+            ax0.set_xlim(left,right)
+
+            if m != 0:
+                ax0.spines['left'].set_visible(False)
+            if m != n:
+                ax0.spines['right'].set_visible(False)
+
+        fig.tight_layout(pad=0.0)
+        fig.suptitle( title,     x=0.5,y=1.05,size=5, style='normal', family='sans-serif')
+        fig.text(0.5, -0.04, r'Wavelength [$\rm\AA$]', ha='center',size=5, style='normal', family='sans-serif')
+        fig.text(-0.04, 0.5, r'Normalized Flux', va='center', rotation='vertical',size=5, style='normal', family='sans-serif')
+        ax0.legend(fontsize=4, edgecolor='white')
+
+    else:
+        fig, axes = plt.subplots(1, 1, figsize=(5,3), facecolor='white', dpi=300)
+        axes.plot(w,fitobj.s, '-k',  lw=0.5, label='data',alpha=.6)
+        axes.plot(w,fit,      '--r', lw=0.5, label='model',alpha=.6)
+
+        axes.tick_params(axis='both', labelsize=4.5, right=True, top=True, direction='in')
+        axes.set_title(title,   size=5, style='normal' , family='sans-serif' )
+        axes.set_ylabel(r'Normalized Flux',   size=5, style='normal' , family='sans-serif' )
+        axes.set_xlabel(r'Wavelength [$\AA$]',       size=5, style='normal' , family='sans-serif' )
+
+        axes.tick_params(axis='both', labelsize=4.5, right=True, top=True, direction='in')
+        axes.legend(fontsize=4, edgecolor='white')
+
     if debug == 0:
         fig.savefig('{}/figs/main_step3_{}/{}.png'.format(inparam.outpath, trk, title), bbox_inches='tight', format='png', overwrite=True)
     elif debug == 1:
         fig.savefig('./Temp/Debug/{}_{}/main_step3_{}/{}.png'.format(args.targname, args.band, trk, title), bbox_inches='tight', format='png', overwrite=True)
-
 
 #-------------------------------------------------------------------------------
 def rv_MPinst(label_t, chunk_ind, trk, i):
@@ -35,9 +86,8 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
     nights   = inparam.nights
     night = nights[i]
 
-    label = '{}-{}'.format( label_t['0'][chunk_ind], label_t['1'][chunk_ind] )
-    order = label_t['0'][chunk_ind]
-    chunk = label_t['1'][chunk_ind]
+    label = label_t[chunk_ind]
+    order = label_t[chunk_ind]
 
     xbounds = inparam.xbounddict[label]
 
@@ -52,7 +102,7 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
     # --------------------------------------------------------------
     # --------------------------------------------------------------
     # Use instrumental profile dictionary corresponding to whether IGRINS mounting was loose or not
-    if int(night) < 20180401 or int(night) > 20190531:
+    if int(night[:8]) < 20180401 or int(night[:8]) > 20190531:
         IPpars = inparam.ips_tightmount_pars[args.band][order]
     else:
         IPpars = inparam.ips_loosemount_pars[args.band][order]
@@ -79,14 +129,20 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
         nightsout.append(night)
 
     # Load telluric template from Telfit'd A0
-    A0loc = './A0_Fits/A0_Fits_{}/{}A0_treated_{}.fits'.format(args.targname, night, args.band)
+    A0loc = './A0_Fits/A0_Fits_{}/{}A0_treated_{}.fits'.format(args.targname, night[:8], args.band)
     try:
         hdulist = fits.open(A0loc)
     except IOError:
         print('  --> No A0-fitted template for night '+night+', skipping...')
         return nightsout, rvsminibox, parfitminibox, vsiniminibox
 
-    num_orders = len( np.unique(label_t['0']) )
+    num_orders = 0
+    for i in range(25):
+        try:
+            hdulist[i].columns[0].name[9:]
+            num_orders += 1
+        except:
+            continue
 
     # order in A0_treated.fits is no longer sequential...
     fits_layer = [ i for i in np.arange(num_orders)+1 if int(hdulist[i].columns[0].name[9:]) == order ][0]
@@ -95,7 +151,6 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
     flag = np.array(tbdata['ERRORFLAG'+str(order)])[0]
 
     if flag == 1:  # Telfit hit unknown critical error
-        print('  --> Telfit hit unknown critical error, flag=1 for night '+night+', skipping...')
         return nightsout, rvsminibox, parfitminibox, vsiniminibox
 
     watm = tbdata['WATM'+str(order)]
@@ -129,43 +184,42 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
                       0.,                                                    #11: Continuum linear component
                       0.,                                                    #12: Continuum quadratic component
                       IPpars[1],                                             #13: IP linear component
-                      IPpars[0]])                                            #14: IP quadratic component
+                      IPpars[0]])                                              #14: IP quadratic component
 
+    if args.band=='K':
+      if order==11:
+          bound_cut = [200, 100]
+      elif order==12:
+          bound_cut = [900, 300]
+      elif order==13:
+          bound_cut = [200, 400]
+      elif order==14:
+          bound_cut = [150, 300]
+      else:
+          bound_cut = [150, 150]
+    elif args.band=='H':
+      if order==10:
+          bound_cut = [250, 150]#ok
+      elif order==11:
+          bound_cut = [600, 150]
+      elif order==13:
+          bound_cut = [200, 600]#ok
+      elif order==14:
+          bound_cut = [700, 100]
+      elif order==16:
+          bound_cut = [400, 100]
+      elif order==17:
+          bound_cut = [1000, 100]
+      elif order==20:
+          bound_cut = [500, 150]
+      elif (order==7) or (order==8) or (order==9) or (order==12) or (order==15) or (order==18) or (order==19):
+          bound_cut = [500, 500]
+      else:
+          bound_cut = [150, 150]
     # Iterate over all A/B exposures
     for t in np.arange(len(tagsnight)):
         tag = tagsnight[t]
         beam = beamsnight[t]
-
-        if args.band=='K':
-            if order==11:
-                bound_cut = [200, 100]
-            elif order==12:
-                bound_cut = [900, 300]
-            elif order==13:
-                bound_cut = [200, 400]
-            elif order==14:
-                bound_cut = [150, 300]
-            else:
-                bound_cut = [150, 100]
-        elif args.band=='H':
-            if order==10:
-                bound_cut = [250, 150]#ok
-            elif order==11:
-                bound_cut = [600, 150]
-            elif order==13:
-                bound_cut = [200, 600]#ok
-            elif order==14:
-                bound_cut = [700, 100]
-            elif order==16:
-                bound_cut = [400, 100]
-            elif order==17:
-                bound_cut = [1000, 100]
-            elif order==20:
-                bound_cut = [500, 150]
-            elif (order==7) or (order==8) or (order==9) or (order==12) or (order==15) or (order==18) or (order==19):
-                bound_cut = [500, 500]
-            else:
-                bound_cut = [150, 100]
 
         x,wave,s,u = init_fitsread('{}{}/{}/'.format(inparam.inpath, night, beam),
                                     'target',
@@ -210,68 +264,98 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
 
         par[0] = inparam.initguesses-inparam.bvcs[night+tag]
         # Arrays defining parameter variations during optimization steps
-        # Arrays defining parameter variations during optimization steps
-        dpar_cont = np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0])
-        dpar_wave = np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 10.0,  10.0, 5.00000e-5, 1e-7, 0,   0, 0, 0,    0])
-        dpar      = np.array([5.0, 1.0, 5.0, 3.0, inparam.vsinivary, 0.5, 0.0,   0.0,  0.0,        0,    1e4, 1, 1, 0,    0])
-                     #'st'   : np.array([5.0, 1.0, 5.0, 3.0, inparam.vsinivary, 0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0])
-        dpar_st   = np.array([5.0, 1.0, 5.0, 3.0, inparam.vsinivary, 0.5, 0.0,   0.0,  0.0,        0,    1e4, 1, 1, 0,    0])
-        dpar_ip   = np.array([0.0, 0.0, 0.0, 0.0, 0,                 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0])
+        dpars = {'cont' : np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0]),
+                 'wave' : np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 10.0,  10.0, 5.00000e-5, 1e-7, 0,   0, 0, 0,    0]),
+                 't'    : np.array([0.0, 0.0, 5.0, 1.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0]),
+                 'ip'   : np.array([0.0, 0.0, 0.0, 0.0, 0,                 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0]),
+                 's'    : np.array([5.0, 1.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0]),
+                 'v'    : np.array([0.0, 0.0, 0.0, 0.0, inparam.vsinivary, 0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0])}
 
         continuum_in = rebin_jv(a0contx,continuum,x_piece,False)
         s_piece /= np.median(s_piece)
-        fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in)
+        fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]))
 #-------------------------------------------------------------------------------
         ######## Begin optimization  ########
 
         optimize = True
         par_in = par.copy()
-        hardbounds = [par_in[4]-dpar[4],
-                      par_in[4]+dpar[4],
-                      par_in[5]-dpar[5],
-                      par_in[5]+dpar[5]]
+        hardbounds = [par_in[4]-dpars['v'][4],  par_in[4]+dpars['v'][4],
+                      par_in[5]-dpars['ip'][5], par_in[5]+dpars['ip'][5]]
+
         if hardbounds[0] < 0:
             hardbounds[0] = 0
         if hardbounds[3] < 0:
             hardbounds[3] = 1
-
 #        if args.plotfigs == True:#
 #            outplotter(targname,par_in,fitobj,'{}_{}_{}_1'.format(label,night,tag))
 
-        parfit_1 = optimizer(par_in,   dpar_cont, hardbounds,fitobj,optimize)
-        parfit_2 = optimizer(parfit_1, dpar_wave, hardbounds,fitobj,optimize)
-        parfit_3 = optimizer(parfit_2, dpar_st,   hardbounds,fitobj,optimize)
-        parfit_4 = optimizer(parfit_3, dpar_wave, hardbounds,fitobj,optimize)
-        parfit = optimizer(parfit_4,   dpar,      hardbounds,fitobj,optimize)   # RV fitting
+        cycles = 4
+
+        optgroup = ['cont',
+                    'wave',
+                    't',
+                    'cont',
+                    't',
+                    's',
+                    'cont',
+                    'wave',
+                    't',
+                    's',
+                    'cont',
+                    'wave',
+                    'ip',
+                    'v',
+                    'ip',
+                    'v',
+                    't',
+                    's',
+                    't',
+                    's']
+
+        nc = 1
+        for cycle in range(cycles):
+
+            if cycle == 0:
+                parstart = par_in.copy()
+
+            for optkind in optgroup:
+                parfit_1 = optimizer(parstart,dpars[optkind],hardbounds,fitobj,optimize)
+                parstart = parfit_1.copy()
+                if args.debug == True:
+                    outplotter(parfit_1,fitobj,'{}_{}_{}_parfit_{}{}'.format(label,night,tag,nc,optkind), trk, 1)
+                nc += 1
+
+        parfit = parfit_1.copy()
 
         # if stellar template power is very low, throw out result
         if parfit[1] < 0.1:
+            print('parfit[1] < 0.1, {} parfit={}'.format(night, parfit))
             continue
 
         # if stellar or telluric template powers are exactly equal to their starting values, fit failed, throw out result
         if parfit[1] == par_in[1] or parfit[3] == par_in[3]:
+            print('parfit[1] == par_in[1] or parfit[3] == par_in[3], {}'.format(night))
             continue
 
         # if model dips below zero at any point, we're to close to edge of blaze, fit may be comrpomised, throw out result
         smod,chisq = fmod(parfit,fitobj)
         if len(smod[(smod < 0)]) > 0:
+            print('len(smod[(smod < 0)]) > 0, {}'.format(night))
             continue
 
         if args.plotfigs == True:
-            outplotter(parfit, fitobj,'Post_parfit_{}_{}_{}'.format(label,night,tag), trk, 0)
-
-        if args.debug == True:
-            outplotter(parfit_1,fitobj,'Post_parfit_1_{}_{}_{}'.format(label,night,tag), trk, 1)
-            outplotter(parfit_2,fitobj,'Post_parfit_2_{}_{}_{}'.format(label,night,tag), trk, 1)
-            outplotter(parfit_3,fitobj,'Post_parfit_3_{}_{}_{}'.format(label,night,tag), trk, 1)
-            outplotter(parfit_4,fitobj,'Post_parfit_4_{}_{}_{}'.format(label,night,tag), trk, 1)
-            outplotter(parfit  ,fitobj,'Post_parfit_{}_{}_{}'.format(label,night,tag), trk, 1)
+            parfitS = parfit.copy(); parfitS[3] = 0
+            parfitT = parfit.copy(); parfitT[1] = 0
+            outplotter(parfitS, fitobj,'parfitS_{}_{}_{}'.format(label,night,tag), trk, 0)
+            outplotter(parfitT, fitobj,'parfitT_{}_{}_{}'.format(label,night,tag), trk, 0)
+            outplotter(parfit, fitobj,'parfit_{}_{}_{}'.format(label,night,tag), trk, 0)
 
         rv0 = parfit[0] - parfit[2]                         # atomosphere velocity correct
 
         rvsminibox[t]   = rv0  + inparam.bvcs[night+tag] + rv0*inparam.bvcs[night+tag]/(3e5**2) # bvcs correct
         parfitminibox[t]= parfit
         vsiniminibox[t] = parfit[4]
+        # print(parfit)
     # print(nightsout,rvsminibox,parfitminibox,vsiniminibox)
     return nightsout,rvsminibox,parfitminibox,vsiniminibox
 
@@ -311,6 +395,12 @@ if __name__ == '__main__':
                         help=". Should use the single value given by step2 (float, km/s)",
                         type=str,   default='' )
 
+    parser.add_argument('-t',       dest="template",           action="store",
+                        help="Stellar template. Pick from 'synthetic','livingston'",
+                        type=str,   default='synthetic' )
+    parser.add_argument('-sp',       dest="sptype",           action="store",
+                        help="Spectral type of star",
+                        type=str,   default='' )
     parser.add_argument('-c',       dest="Nthreads",         action="store",
                         help="Number of cpu (threads) to use, default is 1/2 of avalible ones (you have %i cpus (threads) avaliable)"%(mp.cpu_count()),
                         type=int,   default=int(mp.cpu_count()//2) )
@@ -327,6 +417,14 @@ if __name__ == '__main__':
     cdbs_loc = '~/cdbs/'
     inpath    = './Input_Data/{}/'.format(args.targname)
     vsinivary = float(args.vsinivary)
+
+    if args.template not in ['synthetic','livingston']:
+        sys.exit('Unexpected stellar template "-t" input!')
+
+    spt = args.sptype[0]
+    
+    if spt not in ['F','G','K','M']:
+        sys.exit('Spectral type outside of expected range (F-M)!')
 
     if args.initvsini != '':
         initvsini = float(args.initvsini)
@@ -373,8 +471,10 @@ Input Parameters:
     bounddata = Table.read('./Input_Data/Use_w/XRegions_{}_{}.csv'.format(args.WRegion, args.band), format='csv')
     starts  = np.array(bounddata['start'])
     ends    = np.array(bounddata['end'])
-    labels  = np.array(bounddata['label'], dtype=str)
+    labels  = np.array(bounddata['label'], dtype=int)
+    masks    = np.array(bounddata['masks'])
     xbounddict = {labels[i]:np.array([starts[i],ends[i]]) for i in range(len(starts))}
+    maskdict = {labels[i]:masks[i] for i in range(len(starts))}
 
     # Attribute A and B exposures to right file numbers
     tagsA = {}; tagsB = {}; mjds = {}; bvcs = {};
@@ -405,11 +505,11 @@ Input Parameters:
     tagsB[Tnights[-1]] = tagsB0
 
     nightsFinal = np.array(list(sorted(set(Tnights))))
-    # nightsFinal = nightsFinal[24:45]
+    # nightsFinal = nightsFinal[:1]
     # labels      = labels[-2:]
 
     if args.nights_use != '':
-        nightstemp = np.array(args.nights_use, dtype=np.int)
+        nightstemp = np.array(ast.literal_eval(args.nights_use), dtype=str)
         for nnn in nightstemp:
             if nnn not in nightsFinal:
                 sys.exit('NIGHT {} NOT FOUND UNDER ./Input_Data/{}'.format(nnn, args.targname))
@@ -439,25 +539,28 @@ Input Parameters:
     if not os.path.isdir('./Results/{}_{}/figs/main_step3_{}'.format(args.targname, args.band, trk)):
         os.mkdir('./Results/{}_{}/figs/main_step3_{}'.format(args.targname, args.band, trk) )
     outpath = './Results/{}_{}'.format(args.targname, args.band)
+
+    if args.debug:
+        try:
+            os.listdir('./Temp/Debug/{}_{}/'.format(args.targname, args.band))
+        except OSError:
+            os.mkdir('./Temp/Debug/{}_{}/'.format(args.targname, args.band))
+        os.mkdir('./Temp/Debug/{}_{}/main_step3_{}/'.format(args.targname, args.band, trk))
 #-------------------------------------------------------------------------------
     # Retrieve stellar and telluric templates
-    if args.band=='K':
-        watm,satm, mwave0, mflux0 = setup_templates_syn()
-    elif args.band=='H':
-        watm,satm, mwave0, mflux0 = setup_templates_sun()
+    watm,satm, mwave0, mflux0 = setup_templates(args.template,args.band,spt)
 
-    inparam = inparams(inpath,outpath,initvsini,vsinivary,args.plotfigs,initguesses,bvcs,tagsA,tagsB,nightsFinal,mwave0,mflux0,None,xbounddict)
+    inparam = inparams(inpath,outpath,initvsini,vsinivary,args.plotfigs,initguesses,bvcs,tagsA,tagsB,nightsFinal,mwave0,mflux0,None,xbounddict,maskdict)
 
     # Divide between nights where IGRINS mounting was loose (L) and when it was tight (T)
     nights    = inparam.nights
-    intnights = nights.astype(int)
+    intnights = np.array([int(i[:8]) for i in nights])
 
     indT = np.where((intnights < 20180401) | (intnights > 20190531))
     indL = np.where((intnights >= 20180401) & (intnights < 20190531))
 
     nightsT = nights[indT]
     nightsL = nights[indL]
-
     rvmasterboxT  = np.ones((len(nightsT),len(labels)))
     stdmasterboxT = np.ones((len(nightsT),len(labels)))
     rvmasterboxL  = np.ones((len(nightsL),len(labels)))
@@ -470,10 +573,8 @@ Input Parameters:
     else:
         nightscomblist = [nightsT]
 
-    orders = [ int(labels[i].split('-')[0]) for i in range(len(labels)) ]
-    oindex = [ int(labels[i].split('-')[1]) for i in range(len(labels)) ]
-    label_t = Table(names=('0', '1'), data=(orders, oindex))
-    label_t.sort(['0', '1'])
+    orders = labels
+    label_t = orders
 
 #-------------------------------------------------------------------------------
     for jerp in range(len(label_t)): # Iterate over orders
@@ -483,7 +584,7 @@ Input Parameters:
         pool.close()
         pool.join()
 
-        label = '{}-{}'.format( label_t['0'][jerp], label_t['1'][jerp] )
+        label = label_t[jerp]
 #-------------------------------------------------------------------------------
         # Collect outputs
         for i in range(len(nights)):
