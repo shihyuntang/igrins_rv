@@ -13,7 +13,7 @@ from Engine.outplotter import outplotter_23
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 
-def ini_MPinst(args, inparam, orders, order_use, trk, i):
+def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     nights   = inparam.nights
     night    = nights[i]
 
@@ -220,7 +220,7 @@ def ini_MPinst(args, inparam, orders, order_use, trk, i):
                 parfit_1 = optimizer( parstart, dpars[optkind], hardbounds, fitobj, optimize)
                 parstart = parfit_1.copy()
                 if args.debug:
-                    outplotter_23(parfit_1, fitobj, '{}_{}_{}_parfit_{}{}'.format(order,night,tag,nc,optkind), trk, inparam, args)
+                    outplotter_23(parfit_1, fitobj, '{}_{}_{}_parfit_{}{}'.format(order,night,tag,nc,optkind), trk, inparam, args, step2or3)
                     logger.debug(f'{Order}_{tag}_{nc}_{optkind}:\n {parfit_1}')
 
         parfit = parfit_1.copy()
@@ -242,9 +242,9 @@ def ini_MPinst(args, inparam, orders, order_use, trk, i):
         if args.plotfigs:
             parfitS = parfit.copy(); parfitS[3] = 0
             parfitT = parfit.copy(); parfitT[1] = 0
-            outplotter_23(parfitS, fitobj, 'parfitS_{}_{}_{}'.format(order,night,tag), trk, inparam, args)
-            outplotter_23(parfitT, fitobj, 'parfitT_{}_{}_{}'.format(order,night,tag), trk, inparam, args)
-            outplotter_23(parfit, fitobj,  'parfit_{}_{}_{}'.format(order,night,tag), trk, inparam, args)
+            outplotter_23(parfitS, fitobj, 'parfitS_{}_{}_{}'.format(order,night,tag), trk, inparam, args, step2or3)
+            outplotter_23(parfitT, fitobj, 'parfitT_{}_{}_{}'.format(order,night,tag), trk, inparam, args, step2or3)
+            outplotter_23(parfit, fitobj,  'parfit_{}_{}_{}'.format(order,night,tag), trk, inparam, args, step2or3)
 
         rv0 = parfit[0] - parfit[2]  # atomosphere velocity correct
 
@@ -366,9 +366,9 @@ if __name__ == '__main__':
 
     if not os.path.isdir(f'./Output/{args.targname}_{args.band}/figs'):
         os.mkdir(f'./Output/{args.targname}_{args.band}/figs')
-
-    if not os.path.isdir(f'./Output/{args.targname}_{args.band}/figs/main_step2_{args.band}_{trk}'):
-        os.mkdir(f'./Output/{args.targname}_{args.band}/figs/main_step2_{args.band}_{trk}')
+    step2or3 = f'{__name__}'[-1]
+    if not os.path.isdir(f'./Output/{args.targname}_{args.band}/figs/main_step{step2or3}_{args.band}_{trk}'):
+        os.mkdir(f'./Output/{args.targname}_{args.band}/figs/main_step{step2or3}_{args.band}_{trk}')
 
     outpath = f'./Output/{args.targname}_{args.band}'
 #-------------------------------------------------------------------------------
@@ -395,7 +395,16 @@ if __name__ == '__main__':
     filew.write('\n')
 #-------------------------------------------------------------------------------
     start_time = datetime.now()
-    print('###############################################################\n')
+    print('####################################################################################\n')
+    print('''
+    ************************************************************************************
+    ___    _____    ___    ____     ___   __     _    ____        ____    __       __
+     |    /     \    |    |     \    |    | \    |  /            |     \   \       /
+     |   |   ____    |    |____ /    |    |  \   |  | ____       |_____/    \     /
+     |   |       |   |    |     \    |    |   \  |         |     |     \     \   /
+    ---   \_____/   ---   |      \  ---   |    \_|   ____ /      |      \     \_/
+    ************************************************************************************
+    ''')
     print(u'''
 Input Parameters:
     Tartget             = {}
@@ -428,7 +437,7 @@ Input Parameters:
                        initguesses,bvcs,tagsA,tagsB,nightsFinal,mwave0,mflux0,None,xbounddict,maskdict)
 #-------------------------------------------------------------------------------
     pool = mp.Pool(processes = args.Nthreads)
-    func = partial(ini_MPinst, args, inparam, orders, int(args.label_use), trk )
+    func = partial(ini_MPinst, args, inparam, orders, int(args.label_use), trk, step2or3 )
     outs = pool.map(func, np.arange(len(nightsFinal)))
     pool.close()
     pool.join()
@@ -456,3 +465,4 @@ Input Parameters:
     print('---------------------------------------------------------------')
     print('You can now try to get a better RV initial guess with by using -gX and rerun main_step2.py')
     print('OR, you can go on to the full RV extractor in main_step3.py')
+    print('####################################################################################')
