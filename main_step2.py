@@ -417,7 +417,7 @@ Input Parameters:
         for nnn in nightstemp:
             if nnn not in nightsFinal:
                 sys.exit('NIGHT {} NOT FOUND UNDER ./Input_Data/{}'.format(nnn, args.targname))
-        nightsFinal = nightstemp
+        nightsFinal = np.array(list(nightstemp))
         print('Only processing nights: {}'.format(nightsFinal))
 
     logger.info('Analyze with {} nights'.format(len(nightsFinal)))
