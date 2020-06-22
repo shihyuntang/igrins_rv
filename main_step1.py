@@ -306,7 +306,7 @@ if __name__ == '__main__':
                         help="Number of cpu (threads) to use, default is 1/2 of avalible ones (you have %i cpus (threads) avaliable)"%(mp.cpu_count()),
                         type=int,   default=int(mp.cpu_count()//2) )
     parser.add_argument('-plot',    dest="plotfigs",        action="store_true",
-                        help="If sets, will generate basic plots of A0 model fitting under ./Output/A0_Fits/*target/fig/")
+                        help="If sets, will generate basic plots of A0 model fitting under ./Output/A0Fits/*target/fig/")
 
     parser.add_argument('-n_use',   dest="nights_use",       action="store",
                         help="If you don't want all process all nights under the Input/*target/ folder, give an array of night you wish to process here. e.g., [20181111, 20181112]",
@@ -333,7 +333,7 @@ if __name__ == '__main__':
     if not os.path.isdir(f'./Runlog/{args.targname}_{args.band}'):
         os.mkdir(f'./Runlog/{args.targname}_{args.band}')
 
-    outpath = f'./Output/{args.targname}_{args.band}/A0_Fits'
+    outpath = f'./Output/{args.targname}_{args.band}/A0Fits'
 #-------------------------------------------------------------------------------
     logger = logging.getLogger(__name__)
     if args.debug:
