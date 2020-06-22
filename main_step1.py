@@ -1,6 +1,6 @@
 from Engine.importmodule import *
 
-from Engine.IO_AB     import setup_templates, init_fitsread, stellarmodel_setup, setup_outdir
+from Engine.IO_AB     import setup_templates_tel, init_fitsread, stellarmodel_setup, setup_outdir
 from Engine.clips     import basicclip_above
 from Engine.contfit   import A0cont
 from Engine.classes   import fitobjs,inparamsA0,orderdict_cla
