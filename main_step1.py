@@ -356,7 +356,7 @@ if __name__ == '__main__':
     logger.addHandler(stream_hander)
 #-------------------------------------------------------------------------------
     start_time = datetime.now()
-    print('###############################################################\n')
+    print('####################################################################################\n')
     print(f'Fetching Wavelength Regions to be Analyzed for {args.targname}...')
     time.sleep(2)
 
@@ -367,7 +367,7 @@ if __name__ == '__main__':
     time.sleep(5)
 #-------------------------------------------------------------------------------
     print('###############################################################\n')
-    print(f'Using TelFit to get A0 model spectra for {args.targname} ...')
+    logger.info(f'Using TelFit to get A0 model spectra for {args.targname} ...')
     print('This will take a while..........')
     print('\n')
 
@@ -416,4 +416,4 @@ if __name__ == '__main__':
     end_time = datetime.now()
     logger.info(f'A0 Fitting using TelFit finished, Duration: {end_time - start_time}')
     print('You can start to run main_step2.py for RV initial guess')
-    print('###############################################################')
+    print('####################################################################################')
