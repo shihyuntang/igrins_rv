@@ -426,7 +426,7 @@ if __name__ == '__main__':
     outpath = '../A0_Fits/' + name
 
     # Retrieve stellar and telluric templates
-    watm, satm, mwave0, mflux0 = setup_templates()
+    watm, satm, mwave0, mflux0 = setup_templates_tel()
 
     inparam = inparamsA0(inpath,outpath,args.plotfigs,tags,nightsFinal,humids,
                          temps,zds,press,obs,watm,satm,mwave0,mflux0,cdbs_loc,xbounddict,None)
