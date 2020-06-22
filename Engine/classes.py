@@ -104,6 +104,7 @@ class inparams:
                                     12: [900, 300],
                                     13: [200, 400],
                                     14: [150, 300]}
+                            }
 
 class inparamsA0:
 
