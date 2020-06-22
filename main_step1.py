@@ -368,8 +368,8 @@ if __name__ == '__main__':
     bounddata = Table.read(f'./Input/UseWv/XRegions_{args.WRegion}_{args.band}.csv', format='csv')
     starts  = np.array(bounddata['start'])
     ends    = np.array(bounddata['end'])
-    labels  = np.array(bounddata['label'], dtype=str)
-    xbounddict = {labels[i]:np.array([starts[i],ends[i]]) for i in range(len(starts))}
+    orders  = np.array(bounddata['order'], dtype=str)
+    xbounddict = {orders[i]:np.array([starts[i],ends[i]]) for i in range(len(starts))}
 
     ## Collect relevant file information from Predata files
     A0data = Table.read(f'./Input/Prepdata/Prepdata_A0_{args.targname}.txt', format='ascii')
@@ -402,10 +402,6 @@ if __name__ == '__main__':
     inparam = inparamsA0(inpath,outpath,args.plotfigs,tags,nightsFinal,humids,
                          temps,zds,press,obs,watm,satm,mwave0,mflux0,cdbs_loc,xbounddict,None)
 #-------------------------------------------------------------------------------
-
-    orders = [ int(labels[i].split('-')[0]) for i in range(len(labels)) ]
-    orders = np.unique(orders)
-    orders = np.sort(orders)
     for jerp in range(len(orders)):
         outs = mp_run(args, inparam, args.Nthreads, jerp, orders, nightsFinal)
 
