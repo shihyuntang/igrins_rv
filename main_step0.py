@@ -187,6 +187,9 @@ if __name__ == '__main__':
     parser.add_argument("-HorK",    dest="band",             action="store",
                         help="Which band to process? H or K?. Default = K",
                         type=str,   default='K')
+    parser.add_argument("-AM",      dest="AM_cut",           action="store",
+                        help="AirMass difference allowed between TAR and STD (A0) stars. Default X = 0.25 ",
+                        type=str,   default='0.25')
 
     parser.add_argument('-DeBug',    dest="debug",           action="store_true",
                         help="If sets, will generate files and plots under ./Temp/Debug for debug")
