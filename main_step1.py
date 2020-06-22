@@ -180,7 +180,7 @@ def MPinst(args, jerp, orders, i):
         parfit   = optimizer(parfit_4, dpar,      hardbounds, fitobj, optimize)
 
         if inparam.plotfigs:
-            outplotter_tel(parfit, fitobj, f'Post_parfit_{order}_{night}')
+            outplotter_tel(parfit, fitobj, f'Post_parfit_{order}_{night}', inparam, args)
 
         if args.debug:
             fig, axes = plt.subplots(1, 1, figsize=(5,3), facecolor='white', dpi=300)
@@ -195,10 +195,10 @@ def MPinst(args, jerp, orders, i):
             fig.savefig(f'{inparam.outpath}/figs_{args.band}/IP_{order}_{night}.png',
                         bbox_inches='tight', format='png', overwrite=True)
 
-            outplotter_tel(parfit_1,fitobj, f'Post_parfit_1_{order}_{night}')
-            outplotter_tel(parfit_2,fitobj, f'Post_parfit_2_{order}_{night}')
-            outplotter_tel(parfit_3,fitobj, f'Post_parfit_3_{order}_{night}')
-            outplotter_tel(parfit_4,fitobj, f'Post_parfit_4_{order}_{night}')
+            outplotter_tel(parfit_1,fitobj, f'Post_parfit_1_{order}_{night}', inparam, args)
+            outplotter_tel(parfit_2,fitobj, f'Post_parfit_2_{order}_{night}', inparam, args)
+            outplotter_tel(parfit_3,fitobj, f'Post_parfit_3_{order}_{night}', inparam, args)
+            outplotter_tel(parfit_4,fitobj, f'Post_parfit_4_{order}_{night}', inparam, args)
 #-------------------------------------------------------------------------------
         a0w_out  = parfit[6] + parfit[7]*x + parfit[8]*(x**2.) + parfit[9]*(x**3.)
         cont_adj = parfit[10] + parfit[11]*x + parfit[12]*(x**2.)
