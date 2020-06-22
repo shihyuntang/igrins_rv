@@ -2,7 +2,7 @@
 # coding: utf-8
 
 import numpy as np
-from scipy.interpolate import interp1d
+from scipy.interpolate import interp1d, splrep,splev
 import time
 
 def rotint(w,s,vsini,eps=None,nr=None,ntheta=None,dif=None):
@@ -31,34 +31,32 @@ def rotint(w,s,vsini,eps=None,nr=None,ntheta=None,dif=None):
     if dif == None:
         dif = 0
 
+    c = 2.99792e5
     tarea=0.0e00
 
     dr = 1./nr
-    c  = 0
+
+    ns = np.zeros(len(s))
+
     for j in range(nr):
-        r    = dr/2. + j*dr
-        area = ( (r+dr/2.)**2 - (r-dr/2.)**2) / int(ntheta*r)*(1.-eps + eps*np.cos(np.arcsin(r)) )
+        r=dr/2.+j*dr # step from dr/2 to 3dr/2, 5dr/2, etc til you hit edge
+        area=((r+dr/2.)**2-(r-dr/2.)**2)/int(ntheta*r)*(1.-eps+eps*np.cos(np.arcsin(r))) # annulus for 0 to r, r to 2r, etc, times (1 - e + e*cos(arcsin(r))) (limb darkening effectively changes area?
+        # divide by int(ntheta*r) because about to iterate through ntheta, higher r means a given ntheta corresponds to larger area, so...what
         for k in range(int(ntheta*r)):
-            c += 1
-            th= np.pi/int(ntheta*r)+k*2.*np.pi/int(ntheta*r)
-            if dif != 0:
-                vl=vsini*r*np.sin(th)*(1.-dif/2.-dif/2.*np.cos(2.*np.arccos(r*np.cos(th))))
-                # ns=ns+area*fspline(w+w*vl/3.e5,s,w)
-                f    = interp1d(w+w*vl/3.e5,s, kind='linear',bounds_error=False,fill_value='extrapolate')
-                ns   = ns+area*f(w)
-                tarea= tarea+area
+            th=np.pi/int(ntheta*r)+k*2.*np.pi/int(ntheta*r)
+
+            if dif != 0:    
+                vl = vsini*r*np.sin(th)*(1.-dif/2.-dif/2.*np.cos(2.*np.arccos(r*np.cos(th))))
             else:
-                vl = r*vsini*np.sin(th)
-                # ns=ns+area*fspline(w+w*vl/3.e5,s,w)
-                f = interp1d(w+w*vl/3.e5,s, kind='linear',bounds_error=False,fill_value='extrapolate')
-                #if vl != 0:
-                #    print '1',min(w+w*vl/3.e5),max(w+w*vl/3.e5)
-                #    print '2',min(w),max(w)
-                if j == 0 and k == 0:
-                    ns = area*f(w)
-                else:
-                    ns=ns+area*f(w)
-                tarea = tarea+area
-    #print 'm1',max(ns)
-    ns = ns/tarea
+                vl=r*vsini*np.sin(th)
+
+            f = interp1d(w+w*vl/c,s, kind='linear',bounds_error=False,fill_value='extrapolate')
+            ns = ns + area*f(w)
+            tarea += area
+
+    ns /= tarea
+                
     return ns
+            
+        
+    

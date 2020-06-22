@@ -3,7 +3,7 @@ sys.path.append("..") # Adds higher directory to python modules path.
 
 from Engine.importmodule import *
 
-from Engine.IO_AB     import setup_templates, init_fitsread, stellarmodel_setup, setup_outdir
+from Engine.IO_AB     import setup_templates_tel, init_fitsread, stellarmodel_setup, setup_outdir
 from Engine.clips     import basicclip_above
 from Engine.contfit   import A0cont
 from Engine.classes   import fitobjs,inparamsA0,orderdict_cla
@@ -35,7 +35,8 @@ def outplotter(parfit,fitobj,title,debug):
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 
-def MPinst(order, i):
+# def MPinst(order, i):
+def MPinst(args, chunk_ind, orders, i):
     order = orders[chunk_ind]
     night = str(inparam.nights[i])
     firstorder = orders[0]
@@ -135,7 +136,7 @@ def MPinst(order, i):
                       0.,            #11: Continuum linear component
                       0.,            #12: Continuum quadratic component
                       IPpars[1],     #13: IP linear component
-                      IPpars[0]])    #14: IP quadratic component
+                      IPpars[0]])     #14: IP quadratic component])
 
     a0fluxlist = a0fluxlist[(a0wavelist*1e4 > min(watm_in)+5) & (a0wavelist*1e4 < max(watm_in)-5)]
     a0u        = a0u[       (a0wavelist*1e4 > min(watm_in)+5) & (a0wavelist*1e4 < max(watm_in)-5)]
@@ -147,7 +148,7 @@ def MPinst(order, i):
     s = a0fluxlist.copy(); x = a0x.copy(); u = a0u.copy();
 
     # Collect all fit variables into one class
-    fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in)
+    fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [])
 
     # Arrays defining parameter variations during optimization steps
     dpar_cont = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0])
@@ -163,7 +164,8 @@ def MPinst(order, i):
 
     optimize = True
     par_in = parA0.copy()
-    hardbounds = [par_in[4]-dpar[4],par_in[4]+dpar[4],par_in[5]-dpar[5],par_in[5]+dpar[5]]
+    hardbounds = [par_in[4] -dpar[4],   par_in[4]+dpar[4],
+                  par_in[5] -dpar[5],   par_in[5]+dpar[5]]
     if hardbounds[0] < 0:
         hardbounds[0] = 0
     if hardbounds[3] < 0:
@@ -214,7 +216,7 @@ def MPinst(order, i):
 
         # Fit whole A0 again to get even better wave soln to use for a0contwave and tweak blaze fn fit as
         # needed with quadratic adjustment
-        fitobj = fitobjs(s, x, u, continuum,watm1,satm1,mflux_in,mwave_in)
+        fitobj = fitobjs(s, x, u, continuum,watm1,satm1,mflux_in,mwave_in, [])
 
         parfit_1 = optimizer(par_in,   dpar_st,   hardbounds, fitobj, optimize)
         parfit_2 = optimizer(parfit_1, dpar_wave, hardbounds, fitobj, optimize)
@@ -290,7 +292,7 @@ def use_w(args):
         bounddata = Table.read('../Input_Data/Use_w/WaveRegions_{}_{}.csv'.format(args.WRegion, args.band), format='csv')
     except IOError:
         sys.exit('WaveRegions FILE ../Input_Data/Use_w/WaveRegions_{}_{}.csv NOT FOUND!'.format(args.WRegion, args.band))
-    wavesols = pd.read_csv('../Input_Data/Use_w/WaveSolns_{}_{}.csv'.format(args.WRegion, args.band))
+    wavesols = pd.read_csv('../Input_Data/Use_w/WaveSolns_{}.csv'.format(args.band))
 #-------------------------------------------------------------------------------
     filew = open('../Input_Data/Use_w/XRegions_{}_{}.csv'.format(args.WRegion, args.band),'w')
     filew.write('label, start,  end\n')
@@ -362,13 +364,13 @@ if __name__ == '__main__':
     parser.add_argument('--version',                         action='version',  version='%(prog)s 0.5')
     args = parser.parse_args()
     cdbs_loc = '~/cdbs/'
-    inpath     = './Input_Data/{}/'.format(args.targname)
+    inpath     = '../Input_Data/{}/'.format(args.targname.replace(' ', ''))
 
     if args.debug:
         try:
-            os.listdir('./Temp/Debug/{}/'.format(args.targname))
+            os.listdir('../Temp/Debug/{}/'.format(args.targname))
         except OSError:
-            os.mkdir('./Temp/Debug/{}/'.format(args.targname))
+            os.mkdir('../Temp/Debug/{}/'.format(args.targname))
 
 #-------------------------------------------------------------------------------
     start_time = datetime.now()
@@ -395,7 +397,7 @@ if __name__ == '__main__':
     targname   = args.targname.replace(' ', '')
 
     ## Collect relevant file information from Predata files
-    A0data = Table.read('./Temp/Prepdata/Prepdata_A0_{}.txt'.format(targname), format='ascii')
+    A0data = Table.read('../Temp/Prepdata/Prepdata_A0_{}.txt'.format(targname), format='ascii')
 
     ind    = [i != 'NA' for i in A0data['humid']]
     humids = {str(k):str(v) for k,v in zip(A0data[ind]['night'],A0data[ind]['humid'])}
@@ -410,9 +412,11 @@ if __name__ == '__main__':
     time.sleep(6)
     print('\n')
 #-------------------------------------------------------------------------------
+    if not os.path.isdir('../A0_Fits/'):
+        os.mkdir('../A0_Fits/')
 
     filesndirs = os.listdir('../A0_Fits/')
-    name = 'A0_Fits_'+ args.targname
+    name = 'A0_Fits_'+ args.targname.replace(' ', '')
     if name not in filesndirs:
         os.mkdir('../A0_Fits/{}'.format(name) )
 
@@ -422,10 +426,10 @@ if __name__ == '__main__':
     outpath = '../A0_Fits/' + name
 
     # Retrieve stellar and telluric templates
-    watm, satm, mwave0, mflux0 = setup_templates()
+    watm, satm, mwave0, mflux0 = setup_templates_tel()
 
     inparam = inparamsA0(inpath,outpath,args.plotfigs,tags,nightsFinal,humids,
-                         temps,zds,press,obs,watm,satm,mwave0,mflux0,cdbs_loc,xbounddict)
+                         temps,zds,press,obs,watm,satm,mwave0,mflux0,cdbs_loc,xbounddict,None)
 
 #    global order
 

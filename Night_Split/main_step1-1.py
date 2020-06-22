@@ -2,25 +2,20 @@ import sys
 sys.path.append("..") # Adds higher directory to python modules path.
 
 from Engine.importmodule import *
-
-from Engine.IO_AB import setup_templates, init_fitsread, stellarmodel_setup, setup_outdir
-from Engine.clips import basicclip_above
-from Engine.contfit import A0cont
-from Engine.classes import fitobjs, inparamsA0
+from Engine.IO_AB    import setup_templates, init_fitsread, stellarmodel_setup, setup_outdir
+from Engine.clips    import basicclip_above
+from Engine.contfit  import A0cont
+from Engine.classes  import fitobjs, inparamsA0
 from Engine.rebin_jv import rebin_jv
-from Engine.rotint import rotint
-
-from Engine.opt import optimizer
+from Engine.rotint   import rotint
+from Engine.opt      import optimizer
 # -------------------------------------------------------------------------------
 # -------------------------------------------------------------------------------
-
-
 def DataPrep(args, tar_night, tar_num, tar_frame, file_night_num, std_name, std_num, std_night):
     star = args.targname.replace(' ', '')
-    inpath = args.inpath
+    inpath     = '../Input_Data/{}/'.format(star)
 
     # Find all nights of observations of target in master log
-    curdir = os.getcwd()
     master_log_fh = '../Engine/IGRINS_MASTERLOG.csv'
     master_log = Table.from_pandas(pd.read_csv(master_log_fh))
 
@@ -48,12 +43,38 @@ def DataPrep(args, tar_night, tar_num, tar_frame, file_night_num, std_name, std_
         facility = str(np.array(star_files['FACILITY'])[0])
 
         tag = '{:04d}'.format(tag0)
-
         try:
-            print('{}{}/{}/SDC{}_{}_{}.spec.fits'.format(inpath, night, frame, args.band, night, tag))
-            hdulist = fits.open('{}{}/{}/SDC{}_{}_{}.spec.fits'.format(inpath, night, frame, args.band, night, tag))
-        except FileNotFoundError:
-            continue
+            temp_dir = 'SDC{}_{}_{}.spec.fits'.format(args.band, night, tag)
+            if temp_dir in os.listdir('{}{}_{}/A'.format(inpath, night, tag)):
+                print('{}{}_{}/A/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag, args.band, night, tag))
+                hdulist = fits.open('{}{}_{}/A/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag, args.band, night, tag))
+                save_yn = 0 ; fram_ty = 'A'
+                print('first')
+            else:
+                print('{}{}_{}/B/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag, args.band, night, tag))
+                hdulist = fits.open('{}{}_{}/B/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag, args.band, night, tag))
+                save_yn = 0 ; fram_ty = 'B'
+                print('first')
+
+            # hdulist = fits.open('{}{}_{}/{}/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag, frame, args.band, night, tag))
+            # print('{}{}_{}/{}/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag, frame, args.band, night, tag))
+            # print('first')
+            # save_yn = 0
+
+        except:
+            temp_dir = 'SDC{}_{}_{}.spec.fits'.format(args.band, night, tag)
+            if temp_dir in os.listdir('{}{}_{}/A'.format(inpath, night, tag_temp)):
+                print('{}{}_{}/A/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag_temp, args.band, night, tag))
+                hdulist = fits.open('{}{}_{}/A/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag_temp, args.band, night, tag))
+                save_yn = 1 ; fram_ty = 'A'
+            else:
+                print('{}{}_{}/B/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag_temp, args.band, night, tag))
+                hdulist = fits.open('{}{}_{}/B/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag_temp, args.band, night, tag))
+                save_yn = 1 ; fram_ty = 'B'
+
+
+        if save_yn == 0:
+            tag_temp = tag
 
         head = hdulist[0].header
         if head['OBSERVAT'] == 'Lowell Observatory':
@@ -74,7 +95,7 @@ def DataPrep(args, tar_night, tar_num, tar_frame, file_night_num, std_name, std_
             time_midpoint = np.mean(l0)
 
         mjd = time_midpoint
-        fileT.write(file_nn+' '+frame+' '+str(tag)+' '+str(mjd)+' ' +
+        fileT.write(file_nn+' '+fram_ty+' '+str(tag)+' '+str(mjd)+' ' +
                     str(facility)+' '+str(airmass)+' '+str(BVCfile))
         fileT.write('\n')
         nightsT.append(night)
@@ -115,7 +136,7 @@ def DataPrep(args, tar_night, tar_num, tar_frame, file_night_num, std_name, std_
             tagA0 = int(num)
 
             tagA = '{:04d}'.format(tagA0)
-                subpath = '{}std/{}/AB/SDC{}_{}_{}.spec.fits'.format(inpath, night, args.band, night, tagA)
+            subpath = '{}std/{}/AB/SDC{}_{}_{}.spec.fits'.format(inpath, night, args.band, night, tagA)
 
             try:
                 hdulist = fits.open(subpath)
@@ -195,6 +216,9 @@ if __name__ == '__main__':
                                      epilog = "Contact authors: asa.stahl@rice.edu; sytang@lowell.edu")
     parser.add_argument("targname",                          action="store",
                         help="Enter your *target name",            type=str)
+    parser.add_argument("-HorK",    dest="band",            action="store",
+                        help="Which band to process? H or K?",
+                        type=str,   default='K')
     parser.add_argument('-c',       dest="Nthreads",         action="store",
                         help="Number of cpu (threads) to use, default is 1/2 of avalible ones (you have %i cpus (threads) avaliable)" % (
                             mp.cpu_count()),
