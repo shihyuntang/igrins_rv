@@ -27,13 +27,13 @@ def MPinst(args, jerp, orders, i):
 #-------------------------------------------------------------------------------
     ### Load relevant A0 spectrum
     if args.band=='K':
-        if int(order) not in [11, 12, 13, 14]:
+        if int(order) in [11, 12, 13, 14]:
             bound_cut = inparam.bound_cut_dic[args.band][order]
         else:
             bound_cut = [150, 150]
 
     elif args.band=='H':
-        if int(order) not in [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]:
+        if int(order) in [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]:
             bound_cut = inparam.bound_cut_dic[args.band][order]
         else:
             bound_cut = [150, 150]
@@ -360,7 +360,7 @@ if __name__ == '__main__':
     print('Fetching Done!')
     time.sleep(3)
 #-------------------------------------------------------------------------------
-    print('###############################################################')
+    print('###############################################################\n')
     print(f'Using TelFit to get A0 model spectra for {args.targname} ...')
     print('This will take a while..........')
     print('\n')
