@@ -359,7 +359,8 @@ if __name__ == '__main__':
     use_w(args)
 
     print('Fetching Done!')
-    time.sleep(3)
+    print(f'File "XRegions_{args.WRegion}_{args.band}.csv" saved under "./Input/UseWv/"')
+    time.sleep(5)
 #-------------------------------------------------------------------------------
     print('###############################################################\n')
     print(f'Using TelFit to get A0 model spectra for {args.targname} ...')
