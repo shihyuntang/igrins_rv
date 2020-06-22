@@ -250,7 +250,7 @@ def use_w(args):
 
     wavesols = pd.read_csv(f'./Input/UseWv/WaveSolns_{args.band}.csv')
 #-------------------------------------------------------------------------------
-    with open(f'./Input/UseWv/XRegions_{args.WRegion}_{rgs.band}.csv','w') as filew:
+    with open(f'./Input/UseWv/XRegions_{args.WRegion}_{args.band}.csv','w') as filew:
         filew.write('label, start,  end, masks\n')
 
         m_order  = np.array(bounddata['order'])
