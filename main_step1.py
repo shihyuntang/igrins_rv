@@ -13,7 +13,7 @@ from Engine.outplotter import outplotter_tel
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 
-def MPinst(args, jerp, orders, i):
+def MPinst(args, inparam, jerp, orders, i):
     order = orders[jerp]            # urrent looped order
     night = str(inparam.nights[i])  # multiprocess assigned night
     firstorder = orders[0]
@@ -233,9 +233,9 @@ def MPinst(args, jerp, orders, i):
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 
-def mp_run(args, Nthreads, jerp, orders, nights):
+def mp_run(args, inparam, Nthreads, jerp, orders, nights):
     pool = mp.Pool(processes = Nthreads)
-    func = partial(MPinst, args, jerp, orders)
+    func = partial(MPinst, args, inparam, jerp, orders)
     outs = pool.map(func, np.arange(len(nights)))
     pool.close()
     pool.join()
@@ -252,7 +252,7 @@ def use_w(args):
     wavesols = pd.read_csv(f'./Input/UseWv/WaveSolns_{args.band}.csv')
 #-------------------------------------------------------------------------------
     with open(f'./Input/UseWv/XRegions_{args.WRegion}_{args.band}.csv','w') as filew:
-        filew.write('label, start,  end, masks\n')
+        filew.write('order, start,  end, masks\n')
 
         m_order  = np.array(bounddata['order'])
         starts   = np.array(bounddata['start'])
@@ -338,9 +338,9 @@ if __name__ == '__main__':
         logger.setLevel(logging.DEBUG)
     else:
         logger.setLevel(logging.INFO)
-    formatter = logging.Formatter('%(asctime)s: %(module)s.py: %(levelname)s: %(message)s-->')
+    formatter = logging.Formatter('%(asctime)s: %(module)s.py: %(levelname)s--> %(message)s')
 
-    file_hander = logging.FileHandler(f'{outpath}/{args.targname}_{args.band}_A0Fits.log')
+    file_hander  = logging.FileHandler(f'{outpath}/{args.targname}_{args.band}_A0Fits.log')
     stream_hander= logging.StreamHandler()
 
     # file_hander.setLevel()
@@ -407,7 +407,7 @@ if __name__ == '__main__':
     orders = np.unique(orders)
     orders = np.sort(orders)
     for jerp in range(len(orders)):
-        outs = mp_run(args, args.Nthreads, jerp, orders, nightsFinal)
+        outs = mp_run(args, inparam, args.Nthreads, jerp, orders, nightsFinal)
 
     print('\n')
     logger.info('A0 Fitting Done!')

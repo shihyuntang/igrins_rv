@@ -87,7 +87,7 @@ def read_prepdata(args):
         bounddata = Table.read('./Input_Data/Use_w/XRegions_{}_{}.csv'.format(args.WRegion, args.band), format='csv')
         starts  = np.array(bounddata['start'])
         ends    = np.array(bounddata['end'])
-        labels  = np.array(bounddata['label'], dtype=int)
+        labels  = np.array(bounddata['order'], dtype=int)
         masks    = np.array(bounddata['masks'])
         xbounddict = {labels[i]:np.array([starts[i],ends[i]]) for i in range(len(starts))}
         maskdict = {labels[i]:masks[i] for i in range(len(starts))}
