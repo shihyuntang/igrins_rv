@@ -16,7 +16,7 @@ def outplotter_tel(parfit, fitobj, title, inparam, args):
     fig.savefig('{}/figs_{}/{}.png'.format(inparam.outpath, args.band, title), bbox_inches='tight', format='png', overwrite=True)
 
 
-def outplotter_23(parfit, fitobj, title, trk, inparam, args):
+def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3):
     fit,chi = fmod(parfit, fitobj)
     w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
 
@@ -82,16 +82,16 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args):
         axes.tick_params(axis='both', labelsize=4.5, right=True, top=True, direction='in')
         axes.legend(fontsize=4, edgecolor='white')
 
-    print(f'{__main__}')
-    dumpp = f'{__mian__}'
-    fig.savefig(f'{inparam.outpath}/figs/main_step{dumpp[-1]}_figs_{args.band}_{trk}/{title}.png', bbox_inches='tight', format='png', overwrite=True)
+    fig.savefig(f'{inparam.outpath}/figs/main_step{step2or3}_{args.band}_{trk}/{title}.png', bbox_inches='tight', format='png', overwrite=True)
 
 
 
 # print('''
-#     ___    _____    ___    ____     ___   __     _
-#      |    /     \    |    |     \    |    | \    |
-#      |   |   ____    |    |____ /    |    |  \   |
-#      |   |       |   |    |     \    |    |   \  |
-#     ---   \_____/   ---   |      \  ---   |    \_|
+# ************************************************************************************
+# ___    _____    ___    ____     ___   __     _    ____        ____    __       __
+#  |    /     \    |    |     \    |    | \    |  /            |     \   \       /
+#  |   |   ____    |    |____ /    |    |  \   |  | ____       |_____/    \     /
+#  |   |       |   |    |     \    |    |   \  |         |     |     \     \   /
+# ---   \_____/   ---   |      \  ---   |    \_|   ____ /      |      \     \_/
+# ************************************************************************************
 # ''')
