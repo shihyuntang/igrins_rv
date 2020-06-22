@@ -14,9 +14,9 @@ from Engine.outplotter import outplotter_tel
 #-------------------------------------------------------------------------------
 
 def MPinst(args, inparam, jerp, orders, i):
-    order = int(orders[jerp])            # urrent looped order
+    order = orders[jerp])           # urrent looped order
     night = str(inparam.nights[i])  # multiprocess assigned night
-    firstorder = int(orders[0])
+    firstorder = orders[0]
 
     print('Working on order {}/{} ({}), night {}/{} ({}) PID:{}...'.format(jerp+1,
                                                                            len(orders),
@@ -368,7 +368,7 @@ if __name__ == '__main__':
     bounddata = Table.read(f'./Input/UseWv/XRegions_{args.WRegion}_{args.band}.csv', format='csv')
     starts  = np.array(bounddata['start'])
     ends    = np.array(bounddata['end'])
-    orders  = np.array(bounddata['order'], dtype=str)
+    orders  = np.array(bounddata['order'], dtype=int)
     xbounddict = {orders[i]:np.array([starts[i],ends[i]]) for i in range(len(starts))}
 
     ## Collect relevant file information from Predata files
