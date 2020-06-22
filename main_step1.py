@@ -14,7 +14,7 @@ from Engine.outplotter import outplotter_tel
 #-------------------------------------------------------------------------------
 
 def MPinst(args, inparam, jerp, orders, i):
-    order = orders[jerp]            # urrent looped order
+    order = int(orders[jerp])            # urrent looped order
     night = str(inparam.nights[i])  # multiprocess assigned night
     firstorder = orders[0]
 
@@ -43,7 +43,7 @@ def MPinst(args, inparam, jerp, orders, i):
                                                  'A0',
                                                  'separate',
                                                  night,
-                                                 int(order),
+                                                 order,
                                                  f'{int(inparam.tags[night]):04d}',
                                                  args.band,
                                                  bound_cut)
@@ -76,9 +76,9 @@ def MPinst(args, inparam, jerp, orders, i):
     par6in = f[3]*1e4;
 
     if (int(night) < 20180401) or (int(night) > 20190531):
-        IPpars = inparam.ips_tightmount_pars[args.band][int(order)]
+        IPpars = inparam.ips_tightmount_pars[args.band][order]
     else:
-        IPpars = inparam.ips_loosemount_pars[args.band][int(order)]
+        IPpars = inparam.ips_loosemount_pars[args.band][order]
 
     ### Initialize parameter array for optimization as well as half-range values for each parameter during
     ### the various steps of the optimization.
