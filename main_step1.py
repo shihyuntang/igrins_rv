@@ -18,12 +18,13 @@ def MPinst(args, jerp, orders, i):
     night = str(inparam.nights[i])  # multiprocess assigned night
     firstorder = orders[0]
 
-    print('Working on order {}/{}, night {}/{} ({}) PID:{}...'.format(jerp+1,
-                                                                      len(orders),
-                                                                      i+1,
-                                                                      len(inparam.nights),
-                                                                      night,
-                                                                      mp.current_process().pid) )
+    print('Working on order {}/{} ({}), night {}/{} ({}) PID:{}...'.format(jerp+1,
+                                                                           len(orders),
+                                                                           order,
+                                                                           i+1,
+                                                                           len(inparam.nights),
+                                                                           night,
+                                                                           mp.current_process().pid) )
 #-------------------------------------------------------------------------------
     ### Load relevant A0 spectrum
     if args.band=='K':
@@ -179,7 +180,7 @@ def MPinst(args, jerp, orders, i):
         parfit   = optimizer(parfit_4, dpar,      hardbounds, fitobj, optimize)
 
         if inparam.plotfigs:
-            outplotter_tel(parfit, fitobj, f'Post_parfit_{order}_{night}', 0)
+            outplotter_tel(parfit, fitobj, f'Post_parfit_{order}_{night}')
 
         if args.debug:
             fig, axes = plt.subplots(1, 1, figsize=(5,3), facecolor='white', dpi=300)
@@ -194,10 +195,10 @@ def MPinst(args, jerp, orders, i):
             fig.savefig(f'{inparam.outpath}/figs_{args.band}/IP_{order}_{night}.png',
                         bbox_inches='tight', format='png', overwrite=True)
 
-            outplotter_tel(parfit_1,fitobj, f'Post_parfit_1_{order}_{night}', 1)
-            outplotter_tel(parfit_2,fitobj, f'Post_parfit_2_{order}_{night}', 1)
-            outplotter_tel(parfit_3,fitobj, f'Post_parfit_3_{order}_{night}', 1)
-            outplotter_tel(parfit_4,fitobj, f'Post_parfit_4_{order}_{night}', 1)
+            outplotter_tel(parfit_1,fitobj, f'Post_parfit_1_{order}_{night}')
+            outplotter_tel(parfit_2,fitobj, f'Post_parfit_2_{order}_{night}')
+            outplotter_tel(parfit_3,fitobj, f'Post_parfit_3_{order}_{night}')
+            outplotter_tel(parfit_4,fitobj, f'Post_parfit_4_{order}_{night}')
 #-------------------------------------------------------------------------------
         a0w_out  = parfit[6] + parfit[7]*x + parfit[8]*(x**2.) + parfit[9]*(x**3.)
         cont_adj = parfit[10] + parfit[11]*x + parfit[12]*(x**2.)
@@ -327,8 +328,8 @@ if __name__ == '__main__':
     if not os.path.isdir(f'./Output/{args.targname}_{args.band}/A0Fits'):
         os.mkdir(f'./Output/{args.targname}_{args.band}/A0Fits')
 
-    if not os.path.isdir(f'./Output/{args.targname}_{args.band}/A0Fits/fig_{args.band}'):
-        os.mkdir(f'./Output/{args.targname}_{args.band}/A0Fits/fig_{args.band}')
+    if not os.path.isdir(f'./Output/{args.targname}_{args.band}/A0Fits/figs_{args.band}'):
+        os.mkdir(f'./Output/{args.targname}_{args.band}/A0Fits/figs_{args.band}')
 
     if not os.path.isdir(f'./Runlog/{args.targname}_{args.band}'):
         os.mkdir(f'./Runlog/{args.targname}_{args.band}')
