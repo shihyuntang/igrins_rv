@@ -204,14 +204,13 @@ if __name__ == '__main__':
         os.mkdir(f'./Input/Prepdata')
 
 #-------------------------------------------------------------------------------
-    print('\n')
-    print('###############################################################')
-    print(f'Making your Prepdata for {args.targname}')
-    time.sleep(3)
+    print('###############################################################\n')
+    print(f'Making your *Prepdata* for {args.targname}')
+    time.sleep(1)
 
     DataPrep(args)
 
     print('Finished!')
-    print('Prepdata saved under ./Input/Prepdata/')
+    print('Prepdata saved under ./Input/Prepdata/\n')
     print('###############################################################')
     print('\n')
