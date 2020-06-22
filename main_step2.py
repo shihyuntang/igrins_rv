@@ -219,8 +219,9 @@ def ini_MPinst(args, inparam, orders, order_use, trk, i):
             for optkind in optgroup:
                 parfit_1 = optimizer( parstart, dpars[optkind], hardbounds, fitobj, optimize)
                 parstart = parfit_1.copy()
-                if args.debug == True:
-                    outplotter_23(parfit_1,fitobj,'{}_{}_{}_parfit_{}{}'.format(order,night,tag,nc,optkind), trk)
+                if args.debug:
+                    outplotter_23(parfit_1, fitobj, '{}_{}_{}_parfit_{}{}'.format(order,night,tag,nc,optkind), trk)
+                    logger.debug(f'{Order}_{tag}_{nc}_{optkind}: {parfit_1}')
 
         parfit = parfit_1.copy()
 #-------------------------------------------------------------------------------
