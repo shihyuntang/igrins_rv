@@ -303,6 +303,9 @@ if __name__ == '__main__':
                                      epilog = "Contact authors: asa.stahl@rice.edu; sytang@lowell.edu")
     parser.add_argument("targname",                          action="store",
                         help="Enter your *target name",            type=str)
+    parser.add_argument("-mode",    dest="mode",             action="store",
+                        help="RV standard star (STD) OR a normal target (TAR)??.",
+                        type=str,   default='')
     parser.add_argument("-HorK",    dest="band",             action="store",
                         help="Which band to process? H or K?. Default = K",
                         type=str,   default='K')
@@ -313,7 +316,7 @@ if __name__ == '__main__':
                         help="Spectrum S/N quality cut. Default = 50 ",
                         type=str,   default='50')
     parser.add_argument("-nAB",      dest="nAB",           action="store",
-                        help="Minium request of # of AB sets. Default = for STD is 1 and TAR is 3 ",
+                        help="Minium request of # of AB sets. Default = 1",
                         type=str,   default='1')
 
     parser.add_argument('-i',       dest="initvsini",        action="store",
