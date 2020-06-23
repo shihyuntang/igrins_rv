@@ -376,16 +376,16 @@ Input Parameters:
     Initial vsini       = {} km/s
     vsini vary range    \u00B1 {} km/s
     RV initial guess    = {} km/s
-    Stellar template use= {:10s}          <------- \33[41m F, G, early K SpTy recommended 'livingston' \033[0m
+    Stellar template use= {}          <------- \33[41m F, G, early K SpTy recommended 'livingston' \033[0m
     Target Spectral Type= {}              <------- \33[41m late K, M     SpTy recommended 'synthetic'  \033[0m
     '''.format(args.targname, args.band, args.WRegion, args.SN_cut, args.nAB,
                initvsini, vsinivary, initguesses, args.template, args.sptype))
 
     while True:
         inpp = input("Press [Y]es to continue, [N]o to quite...")
-        if 'n' in input.lower():
+        if 'n' in inpp.lower():
             sys.exit('QUIT, PLEASE RE-ENTER YOUR PARAMETERS')
-        elif 'y' in input.lower():
+        elif 'y' in inpp.lower():
             break
         else:
             continue
