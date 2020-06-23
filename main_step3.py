@@ -612,20 +612,18 @@ Input Parameters:
                 stdfinal[n]   = np.nan
                 vsinifinal[n] = np.nan
 #-------------------------------------------------------------------------------
-
-        f = plt.figure(figsize=(5,3))
-        ax1 = plt.subplot(111)
-        ax1.plot(    np.arange(len(rvfinal))+1, rvfinal, '.k', ms=5)
-        ax1.errorbar(np.arange(len(rvfinal))+1, rvfinal, yerr=stdfinal, ls='none', lw=.5, ecolor='black')
-        ax1.text(0.05, 0.93, r'RV mean= {:1.5f} $\pm$ {:1.5f} km/s'.format(np.nanmean(rvfinal), np.nanstd(rvfinal)),
-                             transform=ax1.transAxes)
-        ax1.set_ylim(np.nanmin(rvfinal)-.08,
+        f, axes = plt.subplots(1, 1, figsize=(5,3), facecolor='white', dpi=300)
+        axes.plot(    np.arange(len(rvfinal))+1, rvfinal, '.k', ms=5)
+        axes.errorbar(np.arange(len(rvfinal))+1, rvfinal, yerr=stdfinal, ls='none', lw=.5, ecolor='black')
+        axes.text(0.05, 0.93, r'RV mean= {:1.5f} $\pm$ {:1.5f} km/s'.format(np.nanmean(rvfinal), np.nanstd(rvfinal)),
+                             transform=axes.transAxes)
+        axes.set_ylim(np.nanmin(rvfinal)-.08,
                      np.nanmax(rvfinal)+.08)
-        ax1.set_ylabel('RV [km/s]')
-        ax1.set_xlabel('Night (#)')
-        ax1.xaxis.set_minor_locator(AutoMinorLocator(5))
-        ax1.yaxis.set_minor_locator(AutoMinorLocator(5))
-        ax1.tick_params(axis='both', labelsize=6, right=True, top=True, direction='in', width=.6)
+        axes.set_ylabel('RV [km/s]')
+        axes.set_xlabel('Night (#)')
+        axes.xaxis.set_minor_locator(AutoMinorLocator(5))
+        axes.yaxis.set_minor_locator(AutoMinorLocator(5))
+        axes.tick_params(axis='both', which='both', labelsize=6, right=True, top=True, direction='in', width=.6)
         f.savefig('{}/{}/FinalRVs_{}_.png'.format(inparam.outpath, name, kind), format='png', bbox_inches='tight')
 
         c1 = fits.Column( name='NIGHT',         array=nights_use,    format='8A')
@@ -665,32 +663,31 @@ Input Parameters:
 #-------------------------------------------------------------------------------
     xscale = np.arange(len(rvfinalCombined))+1
 
-    f = plt.figure(figsize=(5,3))
-    ax1 = plt.subplot(111)
-    ax1.plot(xscale,rvfinalCombined, '.k', ms=5)
-    ax1.errorbar(xscale,rvfinalCombined,yerr=stdfinalCombined,ls='none',lw=.5, ecolor='black')
-    ax1.text(0.05, 0.93, r'RV mean= {:1.5f} $\pm$ {:1.5f} km/s'.format(np.nanmean(rvfinalCombined), np.nanstd(rvfinalCombined)),
-                         transform=ax1.transAxes)
+    f, axes = plt.subplots(1, 1, figsize=(5,3), facecolor='white', dpi=300)
+    axes.plot(xscale,rvfinalCombined, '.k', ms=5)
+    axes.errorbar(xscale,rvfinalCombined,yerr=stdfinalCombined,ls='none',lw=.5, ecolor='black')
+    axes.text(0.05, 0.93, r'RV mean= {:1.5f} $\pm$ {:1.5f} km/s'.format(np.nanmean(rvfinalCombined), np.nanstd(rvfinalCombined)),
+                         transform=axes.transAxes)
 
     if (len(nightsT) != 0) & (len(nightsL) == 0):
-        ax1.text(0.05, 0.1, 'Tight', transform=ax1.transAxes)
+        axes.text(0.05, 0.1, 'Tight', transform=axes.transAxes)
     elif (len(nightsT) == 0) & (len(nightsL) != 0):
-        ax1.text(0.05, 0.1, 'Loose', transform=ax1.transAxes)
+        axes.text(0.05, 0.1, 'Loose', transform=axes.transAxes)
     else:
         if nightsT[-1] < nightsL[0]: # if tight epoch precedes loose epoch #sy
-            ax1.axvline(xscale[len(nightsT)] - 0.5, linewidth=.7, color='black')
-            ax1.text(0.05, 0.1, 'Tight', transform=ax1.transAxes)
-            ax1.text(0.9,  0.1, 'Loose', transform=ax1.transAxes)
+            axes.axvline(xscale[len(nightsT)] - 0.5, linewidth=.7, color='black')
+            axes.text(0.05, 0.1, 'Tight', transform=axes.transAxes)
+            axes.text(0.9,  0.1, 'Loose', transform=axes.transAxes)
         else:
-            ax1.axvline(xscale[len(nightsL)] - 0.5, linewidth=.7, color='black')
-            ax1.text(0.05, 0.1, 'Tight', transform=ax1.transAxes)
-            ax1.text(0.9,  0.1, 'Loose', transform=ax1.transAxes)
-    ax1.set_ylim(np.nanmin(rvfinalCombined)-.08,np.nanmax(rvfinalCombined)+.08)
-    ax1.set_ylabel('RV (km/s)')
-    ax1.set_xlabel('Night (#)')
-    ax1.xaxis.set_minor_locator(AutoMinorLocator(5))
-    ax1.yaxis.set_minor_locator(AutoMinorLocator(5))
-    ax1.tick_params(axis='both', labelsize=6, right=True, top=True, direction='in', width=.6)
+            axes.axvline(xscale[len(nightsL)] - 0.5, linewidth=.7, color='black')
+            axes.text(0.05, 0.1, 'Tight', transform=axes.transAxes)
+            axes.text(0.9,  0.1, 'Loose', transform=axes.transAxes)
+    axes.set_ylim(np.nanmin(rvfinalCombined)-.08,np.nanmax(rvfinalCombined)+.08)
+    axes.set_ylabel('RV (km/s)')
+    axes.set_xlabel('Night (#)')
+    axes.xaxis.set_minor_locator(AutoMinorLocator(5))
+    axes.yaxis.set_minor_locator(AutoMinorLocator(5))
+    axes.tick_params(axis='both', which='both', labelsize=6, right=True, top=True, direction='in', width=.6)
     f.savefig('{}/{}/FinalRVs.png'.format(inparam.outpath, name), format='png', bbox_inches='tight')
 
 
