@@ -165,7 +165,7 @@ def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         par9in = f[0]*1e4; par8in = f[1]*1e4; par7in = f[2]*1e4; par6in = f[3]*1e4;
         par[9] = par9in ;  par[8] = par8in ;  par[7] = par7in ;  par[6] = par6in
 
-        par[0] = initguesses-inparam.bvcs[str(night)+str(tag)]
+        par[0] = initguesses-inparam.bvcs[night+tag]
         # Arrays defining parameter variations during optimization steps
         dpars1 = {'cont' : np.array([ 0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0]),
                   'wave' : np.array([ 0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 10.0,  10.0, 5.00000e-5, 0.,   0,   0, 0, 0,    0]),
@@ -348,7 +348,7 @@ if __name__ == '__main__':
         initrvs    = np.array(guessdata['bestguess'])
         initguesses = {}
         for hrt in range(len(initnights)):
-            initguesses[str(initnights[hrt])] = [float(initrvs[hrt])]
+            initguesses[str(initnights[hrt])] = float(initrvs[hrt])
 #-------------------------------------------------------------------------------
     if not os.path.isdir('./Output'):
         os.mkdir('./Output')
