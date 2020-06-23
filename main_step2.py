@@ -182,14 +182,12 @@ def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
         continuum_in = rebin_jv(a0contx,continuum,x_piece,False)
         s_piece /= np.median(s_piece)
-
         fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]))
 
-        mask = np.ones_like(s_piece,dtype=bool)
-        mask[(fitobj.s < .0)] = False
+        # mask = np.ones_like(s_piece,dtype=bool)
+        # mask[(fitobj.s < .0)] = False
 #-------------------------------------------------------------------------------
         ######## Begin optimization  ########
-
         optimize = True
         par_in = par.copy()
         hardbounds = [par_in[4]-dpars1['v'][4],  par_in[4]+dpars1['v'][4],
@@ -340,7 +338,8 @@ if __name__ == '__main__':
     #------------------------------
     if args.guessesX != '':
         try:
-            guessdata = Table.read(f'./Output/{args.targname}_{args.band}/Initguesser_results_{args.guessesX}.csv', format='ascii')
+            guessdata = Table.read(f'./Output/{args.targname}_{args.band}/Initguesser_results_{args.guessesX}.csv', format='csv')
+
         except:
             sys.exit(f'ERROR: "./Output/{args.targname}_{args.band}/Initguesser_results_{args.guessesX}.csv" NOT FOUND!')
 
