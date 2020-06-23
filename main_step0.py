@@ -193,7 +193,7 @@ if __name__ == '__main__':
     inpath = './Input/{}/'.format(args.targname)
 
     if ' ' in args.targname:
-        sys.exit('ERROR! This is weird... you have a SPACE in your input target name...)
+        sys.exit('ERROR! This is weird... you have a SPACE in your input *target name...')
 
     if not os.path.isdir(f'./Input/Prepdata'):
         os.mkdir(f'./Input/Prepdata')
