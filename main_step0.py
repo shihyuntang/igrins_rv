@@ -193,11 +193,7 @@ if __name__ == '__main__':
 
     if ' ' in args.targname:
         sys.exit('ERROR! This is Weird... you have a SPACE in your input target name...')
-    # make logging dir
-    if not os.path.isdir(f'./Runlog/{args.targname}_{args.band}'):
-        os.mkdir(f'./Runlog/{args.targname}_{args.band}')
 
-    # make logging dir
     if not os.path.isdir(f'./Input/Prepdata'):
         os.mkdir(f'./Input/Prepdata')
 
