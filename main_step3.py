@@ -376,7 +376,7 @@ Input Parameters:
     Initial vsini       = {} km/s
     vsini vary range    \u00B1 {} km/s
     RV initial guess    = {} km/s
-    Stellar template use= {:U10}          <------- \33[41m F, G, early K SpTy recommended 'livingston' \033[0m
+    Stellar template use= {:10s}          <------- \33[41m F, G, early K SpTy recommended 'livingston' \033[0m
     Target Spectral Type= {}              <------- \33[41m late K, M     SpTy recommended 'synthetic'  \033[0m
     '''.format(args.targname, args.band, args.WRegion, args.SN_cut, args.nAB,
                initvsini, vsinivary, initguesses, args.template, args.sptype))
