@@ -413,7 +413,7 @@ if __name__ == '__main__':
     parser.add_argument('-sp',       dest="sptype",           action="store",
                         help="Spectral type of star",
                         type=str,   default='' )
-    
+
     parser.add_argument('-c',       dest="Nthreads",         action="store",
                         help="Number of cpu (threads) to use, default is 1/2 of avalible ones (you have %i cpus (threads) avaliable)"%(mp.cpu_count()),
                         type=int,   default=int(mp.cpu_count()//2) )
@@ -435,7 +435,7 @@ if __name__ == '__main__':
         sys.exit('Unexpected stellar template "-t" input!')
 
     spt = args.sptype[0]
-    
+
     if spt not in ['F','G','K','M']:
         sys.exit('Spectral type outside of expected range (F-M)!')
 
@@ -707,12 +707,12 @@ if __name__ == '__main__':
             nights_use = nightsL.copy()
             kind = 'Loose'
             sigma_method2 = inparam.methodvariance_loose[args.band]
-#-------------------------------------------------------------------------------
-        # Note rvmasterbox indexed as [nights,orders]
-        Nnights = len(rvmasterbox[:,0])
 
         # Calculate the uncertainty in each night/order RV as the sum of the uncertainty in method and the uncertainty in that night's As and Bs RVs
         sigma_ON2    = np.ones_like(rvmasterbox)
+#-------------------------------------------------------------------------------
+        # Note rvmasterbox indexed as [nights,orders]
+        Nnights = len(rvmasterbox[:,0])
 
         for ll in range(len(labels)):
             for night in range(Nnights):
