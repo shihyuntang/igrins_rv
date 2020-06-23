@@ -18,7 +18,7 @@ def MPinst(args, inparam, jerp, orders, i):
     night = str(inparam.nights[i])  # multiprocess assigned night
     firstorder = orders[0]
 
-    print('Working on order {:02d}/{:02d} (), night {}/{} ({}) PID:{}...'.format(int(jerp+1),
+    print('Working on order {:02d}/{:02d} ({}), night {}/{} ({}) PID:{}...'.format(int(jerp+1),
                                                                                  len(orders),
                                                                                  order,
                                                                                  i+1,
@@ -238,14 +238,12 @@ def MPinst(args, inparam, jerp, orders, i):
             hh.writeto('{}/{}A0_treated_{}.fits'.format(inparam.outpath, night, args.band), overwrite=True)
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
-
 def mp_run(args, inparam, Nthreads, jerp, orders, nights):
     pool = mp.Pool(processes = Nthreads)
     func = partial(MPinst, args, inparam, jerp, orders)
     outs = pool.map(func, np.arange(len(nights)))
     pool.close()
     pool.join()
-
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 
@@ -324,7 +322,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     inpath   = './Input/{}/'.format(args.targname)
     cdbs_loc = '~/cdbs/'
-
+#-------------------------------------------------------------------------------
     if not os.path.isdir('./Output'):
         os.mkdir('./Output')
 
@@ -413,6 +411,7 @@ if __name__ == '__main__':
 
     print('\n')
     logger.info('A0 Fitting Done!')
+
     end_time = datetime.now()
     logger.info(f'A0 Fitting using TelFit finished, Duration: {end_time - start_time}')
     print('You can start to run main_step2.py for RV initial guess')
