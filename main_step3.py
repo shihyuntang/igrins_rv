@@ -646,15 +646,15 @@ Input Parameters:
         axes.plot(    np.arange(len(rvfinal))+1, rvfinal, '.k', ms=5)
         axes.errorbar(np.arange(len(rvfinal))+1, rvfinal, yerr=stdfinal, ls='none', lw=.5, ecolor='black')
         axes.text(0.05, 0.93, r'RV mean= {:1.5f} $\pm$ {:1.5f} km/s'.format(np.nanmean(rvfinal), np.nanstd(rvfinal)),
-                             transform=axes.transAxes)
+                             transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
         axes.set_ylim(np.nanmin(rvfinal)-.08,
                      np.nanmax(rvfinal)+.08)
-        axes.set_ylabel('RV [km/s]')
-        axes.set_xlabel('Night (#)')
+        axes.set_ylabel('RV [km/s]', size=6, style='normal', family='sans-serif' )
+        axes.set_xlabel('Night (#)', size=6, style='normal', family='sans-serif' )
         axes.xaxis.set_minor_locator(AutoMinorLocator(5))
         axes.yaxis.set_minor_locator(AutoMinorLocator(5))
-        axes.tick_params(axis='both', which='both', labelsize=6, right=True, top=True, direction='in', width=.6)
-        f.savefig('{}/{}/FinalRVs_{}_.png'.format(inparam.outpath, name, kind), format='png', boxtoinch='tight')
+        axes.tick_params(axis='both', which='both', labelsize=5, right=True, top=True, direction='in', width=.6)
+        f.savefig('{}/{}/FinalRVs_{}_.png'.format(inparam.outpath, name, kind), format='png', bbox_inches='tight')
 
         c1 = fits.Column( name='NIGHT',         array=nights_use,    format='8A')
         c2 = fits.Column( name='JD',            array=mjds_out,      format='D')
@@ -697,28 +697,28 @@ Input Parameters:
     axes.plot(xscale,rvfinalCombined, '.k', ms=5)
     axes.errorbar(xscale,rvfinalCombined,yerr=stdfinalCombined,ls='none',lw=.5, ecolor='black')
     axes.text(0.05, 0.93, r'RV mean= {:1.5f} $\pm$ {:1.5f} km/s'.format(np.nanmean(rvfinalCombined), np.nanstd(rvfinalCombined)),
-                         transform=axes.transAxes)
+                         transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
 
     if (len(nightsT) != 0) & (len(nightsL) == 0):
-        axes.text(0.05, 0.1, 'Tight', transform=axes.transAxes)
+        axes.text(0.05, 0.1, 'Tight', transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
     elif (len(nightsT) == 0) & (len(nightsL) != 0):
-        axes.text(0.05, 0.1, 'Loose', transform=axes.transAxes)
+        axes.text(0.05, 0.1, 'Loose', transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
     else:
         if nightsT[-1] < nightsL[0]: # if tight epoch precedes loose epoch #sy
             axes.axvline(xscale[len(nightsT)] - 0.5, linewidth=.7, color='black')
-            axes.text(0.05, 0.1, 'Tight', transform=axes.transAxes)
-            axes.text(0.9,  0.1, 'Loose', transform=axes.transAxes)
+            axes.text(0.05, 0.1, 'Tight', transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
+            axes.text(0.9,  0.1, 'Loose', transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
         else:
             axes.axvline(xscale[len(nightsL)] - 0.5, linewidth=.7, color='black')
-            axes.text(0.05, 0.1, 'Tight', transform=axes.transAxes)
-            axes.text(0.9,  0.1, 'Loose', transform=axes.transAxes)
+            axes.text(0.05, 0.1, 'Tight', transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
+            axes.text(0.9,  0.1, 'Loose', transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
     axes.set_ylim(np.nanmin(rvfinalCombined)-.08,np.nanmax(rvfinalCombined)+.08)
-    axes.set_ylabel('RV (km/s)')
-    axes.set_xlabel('Night (#)')
+    axes.set_ylabel('RV (km/s)', size=6, style='normal', family='sans-serif' )
+    axes.set_xlabel('Night (#)', size=6, style='normal', family='sans-serif' )
     axes.xaxis.set_minor_locator(AutoMinorLocator(5))
     axes.yaxis.set_minor_locator(AutoMinorLocator(5))
     axes.tick_params(axis='both', which='both', labelsize=6, right=True, top=True, direction='in', width=.6)
-    f.savefig('{}/{}/FinalRVs.png'.format(inparam.outpath, name), format='png', boxtoinch='tight')
+    f.savefig('{}/{}/FinalRVs.png'.format(inparam.outpath, name), format='png', bbox_inches='tight')
 
 
     c1 = fits.Column(name='NIGHT',    array=nightsCombined,         format='{}A'.format(len(nights[0])) )

@@ -72,16 +72,16 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3):
         ax0.legend(fontsize=5, edgecolor='white')
 
     else:
-        fig, axes = plt.subplots(1, 1, figsize=(5,3), facecolor='white', dpi=300)
+        fig, axes = plt.subplots(1, 1, figsize=(6,2.5), facecolor='white', dpi=300)
         axes.plot(w,fitobj.s, '-',  c='k',       lw=0.7, label='data',  alpha=.6)
         axes.plot(w,fit,      '--', c='tab:red', lw=0.7, label='model', alpha=.6)
 
         axes.tick_params(axis='both', labelsize=6, right=True, top=True, direction='in')
-        axes.set_title(title,  size=5, style='normal' , family='sans-serif' )
+        axes.set_title(title,  size=6, style='normal' , family='sans-serif' )
         axes.set_ylabel(r'Normalized Flux',        size=6, style='normal', family='sans-serif' )
         axes.set_xlabel(r'Wavelength [$\rm\AA$]',  size=6, style='normal', family='sans-serif' )
 
-        axes.tick_params(axis='both', labelsize=4.5, right=True, top=True, direction='in')
+        axes.tick_params(axis='both', labelsize=6, right=True, top=True, direction='in')
         axes.legend(fontsize=5, edgecolor='white')
 
     fig.savefig(f'{inparam.outpath}/figs/main_step{step2or3}_{args.band}_{trk}/{title}.png', bbox_inches='tight', format='png', overwrite=True)
