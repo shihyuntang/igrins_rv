@@ -1,4 +1,4 @@
-# IGRINS RV
+# IGRINS Radial Relocity Pipeline
 
 This is a pipeline under development for extracting radial velocity (RV) from the IGRINS instrument.
 This package is *NOT yet* ready for public use.
