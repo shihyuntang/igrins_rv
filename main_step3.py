@@ -372,20 +372,24 @@ Input Parameters:
     Filter              = {} band         <------- \33[41m Double Check!! \033[0m
     WaveLength file     = WaveRegions_{}  <------- \33[41m Double Check!! \033[0m
     S/N cut             > {}
-    Minium # of AB sets = {}              <------- \33[41m TAR mode should at lease to be 2 \033[0m
+    Minium # of AB sets = {}              <------- \33[41m If is TAR mode, this should be at lease 2 \033[0m
     Initial vsini       = {} km/s
     vsini vary range    \u00B1 {} km/s
     RV initial guess    = {} km/s
-    Stellar template use= {}              <------- \33[41m F, G, early K SpTy recommended 'livingston' \033[0m
+    Stellar template use= {:U10}          <------- \33[41m F, G, early K SpTy recommended 'livingston' \033[0m
     Target Spectral Type= {}              <------- \33[41m late K, M     SpTy recommended 'synthetic'  \033[0m
     '''.format(args.targname, args.band, args.WRegion, args.SN_cut, args.nAB,
                initvsini, vsinivary, initguesses, args.template, args.sptype))
-    print('You have 10 sec to use Command (Ctrl) + C to quite and modify the INPUTs.')
 
-    for _ in np.arange(10):
-        time.sleep(1)
-        print('*', end='')
-    print('\n')
+    while True:
+        inpp = input("Press [Y]es to continue, [N]o to quite...")
+        if 'n' in input.lower():
+            sys.exit('QUIT, PLEASE RE-ENTER YOUR PARAMETERS')
+        elif 'y' in input.lower():
+            break
+        else:
+            continue
+
     print('---------------------------------------------------------------')
     print('RV calculation for RV standard star {}...'.format(args.targname))
     print('This will take a while..........')
