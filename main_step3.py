@@ -288,7 +288,7 @@ if __name__ == '__main__':
                         type=str, default='')
     parser.add_argument('-gX',       dest="guessesX",           action="store",
                         help="For TAR star, Please give the number, X, under ./*targname/Initguesser_results_X OR ./*targname/RV_results_X, that you wish to use",
-                        type=int, default='')
+                        type=str, default='')
 
     parser.add_argument('-t',       dest="template",         action="store",
                         help="Stellar template. Pick from 'synthetic', 'livingston', or 'user_defined'. Default = 'synthetic'",
