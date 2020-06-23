@@ -440,12 +440,12 @@ Input Parameters:
 
     nightsT = nights[indT]
     nightsL = nights[indL]
-    rvmasterboxT  = np.ones((len(nightsT),len(labels)))
-    stdmasterboxT = np.ones((len(nightsT),len(labels)))
-    rvmasterboxL  = np.ones((len(nightsL),len(labels)))
-    stdmasterboxL = np.ones((len(nightsL),len(labels)))
-    vsinisT = np.ones((len(nightsT),len(labels)))
-    vsinisL  = np.ones((len(nightsL),len(labels)))
+    rvmasterboxT  = np.ones((len(nightsT),len(orders)))
+    stdmasterboxT = np.ones((len(nightsT),len(orders)))
+    rvmasterboxL  = np.ones((len(nightsL),len(orders)))
+    stdmasterboxL = np.ones((len(nightsL),len(orders)))
+    vsinisT = np.ones((len(nightsT),len(orders)))
+    vsinisL  = np.ones((len(nightsL),len(orders)))
 
     if len(nightsL) > 0:
         nightscomblist = [nightsT,nightsL]
