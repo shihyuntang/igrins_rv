@@ -373,7 +373,7 @@ Input Parameters:
     Tartget             = {}
     Filter              = \33[41m {} band \033[0m
     WaveLength file     = \33[41m WaveRegions_{} \033[0m
-    S/N cut             > {}
+    S/N cut             > \33[41m {} \033[0m
     Minium # of AB sets = \33[41m {} \033[0m             <------- If is TAR mode, this should be at lease 2
     Initial vsini       = \33[41m {} km/s \033[0m
     vsini vary range    \u00B1 \33[41m {} km/s \033[0m
