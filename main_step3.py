@@ -718,5 +718,5 @@ Input Parameters:
     print('\n')
     end_time = datetime.now()
     logger.info('Whole process DONE!!!!!!, Duration: {}'.format(end_time - start_time))
-    logger.info('Output saved under {}/{}'.format(args.outpath, name) )
+    logger.info('Output saved under {}/{}'.format(inparam.outpath, name) )
     print('####################################################################################')
