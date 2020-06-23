@@ -425,7 +425,7 @@ Input Parameters:
     logger.info('Analyze with {} nights'.format(len(nightsFinal)))
 #-------------------------------------------------------------------------------
     # Retrieve stellar and telluric templates
-    watm,satm, mwave0, mflux0 = setup_templates(args.template, args.band, args.sptype)
+    watm,satm, mwave0, mflux0 = setup_templates(logger, args.template, args.band, args.sptype)
 
     # Save pars in class for future use
     inparam = inparams(inpath,outpath,initvsini,vsinivary,args.plotfigs,
