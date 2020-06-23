@@ -1,5 +1,5 @@
 from Engine.importmodule import *
-
+# -------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 def DataPrep(args):
 # Find all nights of observations of target in master log
@@ -168,6 +168,8 @@ def DataPrep(args):
         print(n)
         print('To achieve highest precision, this pipeline defaults to not analyzing target spectra for these nights.\n')
 
+# -------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
@@ -186,7 +188,6 @@ if __name__ == '__main__':
     parser.add_argument("-AM",      dest="AM_cut",           action="store",
                         help="AirMass difference allowed between TAR and STD (A0) stars. Default X = 0.25 ",
                         type=str,   default='0.25')
-
     parser.add_argument('--version',                         action='version',  version='%(prog)s 0.85')
     args   = parser.parse_args()
     inpath = './Input/{}/'.format(args.targname)

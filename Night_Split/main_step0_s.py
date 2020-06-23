@@ -23,7 +23,7 @@ def DataPrep(args, tar_night, tar_num, tar_frame, file_night_num, std_name, std_
     master_log['FILENUMBER'].format = '%i'
 
     # Collect target star information
-    fileT = open('../Temp/Prepdata/Prepdata_targ_{}.txt'.format(star), 'w')
+    fileT = open('../Input/Prepdata/Prepdata_targ_{}.txt'.format(star), 'w')
     fileT.write('night beam tag mjd facility airmass bvc\n')
 
     nightsT = []
@@ -102,7 +102,7 @@ def DataPrep(args, tar_night, tar_num, tar_frame, file_night_num, std_name, std_
     fileT.close()
 
     # Now collect A0 information
-    fileA0 = open('../Temp/Prepdata/Prepdata_A0_{}.txt'.format(star), 'w')
+    fileA0 = open('../Input/Prepdata/Prepdata_A0_{}.txt'.format(star), 'w')
     fileA0.write('night tag humid temp zd press obs airmass\n')
     noA0nights = []
 
@@ -198,13 +198,14 @@ def DataPrep(args, tar_night, tar_num, tar_frame, file_night_num, std_name, std_
         fileA0.write('\n')
     fileA0.close()
 
-    print('No reduced A0s found for following nights:')
-    for n in noA0nights:
+    if len(noA0nights) != 0:
+        print('No reduced A0s found for following nights:')
         print(n)
-    print('To achieve highest precision, this pipeline defaults to not analyzing target spectra for these nights.')
-    print('\n')
+        print('To achieve highest precision, this pipeline defaults to not analyzing target spectra for these nights.\n')
 
 
+# -------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # -------------------------------------------------------------------------------
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
@@ -224,10 +225,10 @@ if __name__ == '__main__':
                             mp.cpu_count()),
                         type=int,   default=int(mp.cpu_count()//2))
     parser.add_argument('--version',
-                        action='version',  version='%(prog)s 0.5')
+                        action='version',  version='%(prog)s 0.85')
     args = parser.parse_args()
     cdbs_loc = '~/cdbs/'
-    inpath     = '../Input_Data/{}/'.format(args.targname)
+    inpath     = '../Input/{}/'.format(args.targname)
 
     new_tar_list = os.listdir('./{}_recipes'.format(args.targname.replace(' ', '')))
     target_have  = np.sort([int(dump[:8]) for dump in new_tar_list if dump[-1] == 'p'])
