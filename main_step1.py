@@ -18,13 +18,13 @@ def MPinst(args, inparam, jerp, orders, i):
     night = str(inparam.nights[i])  # multiprocess assigned night
     firstorder = orders[0]
 
-    print('Working on order {}/{} ({}), night {}/{} ({}) PID:{}...'.format(jerp+1,
-                                                                           len(orders),
-                                                                           order,
-                                                                           i+1,
-                                                                           len(inparam.nights),
-                                                                           night,
-                                                                           mp.current_process().pid) )
+    print('Working on order {:02d}/{:02d} (), night {}/{} ({}) PID:{}...'.format(int(jerp+1),
+                                                                                 len(orders),
+                                                                                 order,
+                                                                                 i+1,
+                                                                                 len(inparam.nights),
+                                                                                 night,
+                                                                                 mp.current_process().pid) )
 #-------------------------------------------------------------------------------
     ### Load relevant A0 spectrum
     if args.band=='K':
@@ -316,7 +316,7 @@ if __name__ == '__main__':
                         help="If sets, will generate basic fitting result plots of A0 model fitting under ./Output/A0Fits/*target/fig/")
 
     parser.add_argument('-n_use',   dest="nights_use",       action="store",
-                        help="If you don't want all process all nights under the ./Input/*target/ folder, give an array of night you wish to process here. e.g., [20181111, 20181112]",
+                        help="If you don't want all process all nights under the ./Input/*target/ folder, give an array of night you wish to process here. e.g., [20181111,20181112]",
                         type=str,   default='')
     parser.add_argument('-DeBug',    dest="debug",           action="store_true",
                         help="If sets, DeBug logging and extra plots will be given")

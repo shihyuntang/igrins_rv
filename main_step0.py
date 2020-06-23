@@ -192,13 +192,13 @@ if __name__ == '__main__':
     inpath = './Input/{}/'.format(args.targname)
 
     if ' ' in args.targname:
-        sys.exit('ERROR! This is Weird... you have a SPACE in your input target name...')
+        sys.exit('ERROR! This is weird... you have a SPACE in your input target name...)
 
     if not os.path.isdir(f'./Input/Prepdata'):
         os.mkdir(f'./Input/Prepdata')
 
 #-------------------------------------------------------------------------------
-    print('###############################################################\n')
+    print('####################################################################################\n')
     print(f'Making your *Prepdata* for {args.targname}')
     time.sleep(1)
 
@@ -206,5 +206,4 @@ if __name__ == '__main__':
 
     print('Finished!')
     print('Prepdata saved under ./Input/Prepdata/\n')
-    print('###############################################################')
-    print('\n')
+    print('####################################################################################')

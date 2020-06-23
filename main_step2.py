@@ -139,15 +139,17 @@ def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
             continue
 
         nzones = 5
-        x = basicclip_above(x,s,nzones); wave = basicclip_above(wave,s,nzones); u = basicclip_above(u,s,nzones); s = basicclip_above(s,s,nzones);
-        x = basicclip_above(x,s,nzones); wave = basicclip_above(wave,s,nzones); u = basicclip_above(u,s,nzones); s = basicclip_above(s,s,nzones);
+        x = basicclip_above(x,s,nzones); wave = basicclip_above(wave,s,nzones);
+        u = basicclip_above(u,s,nzones); s = basicclip_above(s,s,nzones);
+        x = basicclip_above(x,s,nzones); wave = basicclip_above(wave,s,nzones);
+        u = basicclip_above(u,s,nzones); s = basicclip_above(s,s,nzones);
 
         s_piece    = s[    (x > xbounds[0]) & (x < xbounds[-1]) ]
         u_piece    = u[    (x > xbounds[0]) & (x < xbounds[-1]) ]
         wave_piece = wave[ (x > xbounds[0]) & (x < xbounds[-1]) ]
         x_piece    = x[    (x > xbounds[0]) & (x < xbounds[-1]) ]
 
-        mwave_in,mflux_in = stellarmodel_setup(wave_piece,inparam.mwave0,inparam.mflux0)
+        mwave_in,mflux_in = stellarmodel_setup(wave_piece, inparam.mwave0, inparam.mflux0)
 
         satm_in = satm[(watm > min(wave_piece)*1e4 - 11) & (watm < max(wave_piece)*1e4 + 11)]
         watm_in = watm[(watm > min(wave_piece)*1e4 - 11) & (watm < max(wave_piece)*1e4 + 11)]
@@ -308,7 +310,7 @@ if __name__ == '__main__':
                         help="If sets, will generate basic fitting result plots")
 
     parser.add_argument('-n_use',   dest="nights_use",       action="store",
-                        help="If you don't want all process all nights under the ./Input/*target folder, give an array of night you wish to process here. e.g., [20181111, 20181112]",
+                        help="If you don't want all process all nights under the ./Input/*target folder, give an array of night you wish to process here. e.g., [20181111,20181112]",
                         type=str,   default='')
     parser.add_argument('-DeBug',    dest="debug",           action="store_true",
                         help="If sets, DeBug logging and extra plots will be given")
@@ -316,14 +318,15 @@ if __name__ == '__main__':
     args = parser.parse_args()
     inpath   = './Input/{}/'.format(args.targname)
     cdbs_loc = '~/cdbs/'
-
+#-------------------------------------------------------------------------------
+    # INPUT CHECKING...
     initvsini = float(args.initvsini)
     vsinivary = float(args.vsinivary)
     #------------------------------
-    if args.template not in ['synthetic', 'livingston', 'user_defined']:
+    if args.template.lower() not in ['synthetic', 'livingston', 'user_defined']:
         sys.exit('ERROR: UNEXPECTED STELLAR TEMPLATE FOR "-t" INPUT!')
     #------------------------------
-    if args.template in ['synthetic', 'livingston']:
+    if args.template.lower() in ['synthetic', 'livingston']:
         if args.sptype not in ['F','G','K','M']:
             sys.exit('ERROR: SPECTRAL TYPE FOR DEFAULT TEMPALTE ARE ONLY FOR F G K M! STARS')
     #------------------------------
@@ -348,6 +351,33 @@ if __name__ == '__main__':
         initguesses = {}
         for hrt in range(len(initnights)):
             initguesses[str(initnights[hrt])] = float(initrvs[hrt])
+#-------------------------------------------------------------------------------
+    start_time = datetime.now()
+    print('####################################################################################\n')
+    print('---------------------------------------------------------------')
+    print(u'''
+Input Parameters:
+    Tartget             = {}
+    Filter              = {} band        <------- Double Check!!
+    WaveLength file     = WaveRegions_{} <------- Double Check!!
+    S/N cut             > {}
+    Order Use           = Order {}
+    Initial vsini       = {} km/s
+    vsini vary range    \u00B1 {} km/s
+    RV initial guess    = {} km/s
+    Stellar template use= {}             <------- F, G, early K SpTy recommended 'livingston'
+    Target Spectral Type= {}             <------- late K, M     SpTy recommended 'synthetic'
+    '''.format(args.targname, args.band, args.WRegion, args.SN_cut, args.label_use,
+               initvsini, vsinivary, initguesses, args.template, args.sptype))
+    print('You have 5 sec to use Command (Ctrl) + C to quite and modify the INPUTs.')
+    time.sleep(1) ; print('.....')
+    time.sleep(1) ; print('....')
+    time.sleep(1) ; print('...')
+    time.sleep(1) ; print('..')
+    time.sleep(1) ; print('.') ; time.sleep(1)
+    print('---------------------------------------------------------------')
+    logger.info('RV Initial Guess for {}...'.format(args.targname))
+    print('This Will Take a While..........')
 #-------------------------------------------------------------------------------
     if not os.path.isdir('./Output'):
         os.mkdir('./Output')
@@ -387,20 +417,6 @@ if __name__ == '__main__':
 
     logger.addHandler(file_hander)
     logger.addHandler(stream_hander)
-#-------------------------------------------------------------------------------
-    start_time = datetime.now()
-    print('####################################################################################\n')
-    print('---------------------------------------------------------------')
-    print(u'''
-Input Parameters:
-    Tartget             = {}
-    Initial vsini       = {} km/s
-    vsini vary range    \u00B1 {} km/s
-    RV initial guess    = {} km/s
-    '''.format(args.targname, initvsini, vsinivary, initguesses))
-    print('---------------------------------------------------------------')
-    logger.info('RV Initial Guess for {} Per Night...'.format(args.targname))
-    print('This Will Take a While..........')
 #-------------------------------------------------------------------------------
     logger.info(f'Writing output to ./Output/{args.targname}_{args.band}/{iniguess_dir}')
 

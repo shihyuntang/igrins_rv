@@ -289,7 +289,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args):
     wcont1 = model.x
 
     if inparam.plotfigs == True:
-        fig, axes = plt.subplots(1, 1, figsize=(5,3), facecolor='white', dpi=300)
+        fig, axes = plt.subplots(1, 1, figsize=(6,2.5), facecolor='white', dpi=300)
 
         axes.plot(watm_in, satm_in,       color='black',    alpha=.6, label='data',      lw=0.7)
         axes.plot(model.x, model.y*cont1, color='tab:red',  alpha=.6, label='model fit', lw=0.7)
@@ -299,7 +299,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args):
         axes.yaxis.set_minor_locator(AutoMinorLocator(2))
         axes.tick_params(axis='both', labelsize=6, right=True, top=True, direction='in')
         axes.set_ylabel(r'Normalized Flux',    size=6, style='normal' , family='sans-serif' )
-        axes.set_xlabel(r'Wavelength [$\AA$]', size=6, style='normal' , family='sans-serif' )
+        axes.set_xlabel(r'Wavelength [$\rm\AA$]', size=6, style='normal' , family='sans-serif' )
         axes.legend(fontsize=5, edgecolor='white')
         fig.savefig('{}/figs_{}/A0Telfit_{}_{}.png'.format(inparam.outpath, args.band, order, night),
                     format='png', boxtoinch='tight', overwrite=True)
