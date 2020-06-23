@@ -12,32 +12,20 @@ from Engine.opt        import optimizer, fmod, fmod_conti
 from Engine.outplotter import outplotter_23
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
-def rv_MPinst(label_t, chunk_ind, trk, i):
-    # Main function to compute RVs for a given night and order
+def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     nights   = inparam.nights
     night = nights[i]
 
-    label = label_t[chunk_ind]
-    order = label_t[chunk_ind]
-
-    xbounds = inparam.xbounddict[label]
-
-    print('Working on label {:03d}/{:03d} ({}), night {:03d}/{:03d} ({}) PID:{}...'.format(int(chunk_ind)+1,
-                                                                                    len(label_t),
-                                                                                    label,
-                                                                                    i+1,
-                                                                                    len(inparam.nights),
-                                                                                    night,
-                                                                                    mp.current_process().pid) )
-
-    # --------------------------------------------------------------
-    # --------------------------------------------------------------
-    # Use instrumental profile dictionary corresponding to whether IGRINS mounting was loose or not
-    if int(night[:8]) < 20180401 or int(night[:8]) > 20190531:
-        IPpars = inparam.ips_tightmount_pars[args.band][order]
-    else:
-        IPpars = inparam.ips_loosemount_pars[args.band][order]
-
+    order = orders[order_use]
+    xbounds = inparam.xbounddict[order]
+    print('Working on order {:02d}/{:02d} ({}), night {:03d}/{:03d} ({}) PID:{}...'.format(int(order_use)+1,
+                                                                                           len(orders),
+                                                                                           order,
+                                                                                           i+1,
+                                                                                           len(inparam.nights),
+                                                                                           night,
+                                                                                           mp.current_process().pid) )
+#-------------------------------------------------------------------------------
     # Collect relevant beam and filenum info
     tagsnight = []; beamsnight = [];
     for tag in inparam.tagsA[night]:
@@ -50,7 +38,7 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
     nightsout = [];
     rvsminibox     = np.ones(len(tagsnight));
     vsiniminibox   = np.ones(len(tagsnight));
-    parfitminibox  = np.ones((len(tagsnight),15));
+    parfitminibox  = np.ones((len(tagsnight),15)); # need to match the dpar numbers
 
     rvsminibox[:]    = np.nan
     vsiniminibox[:]  = np.nan
@@ -60,11 +48,11 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
         nightsout.append(night)
 
     # Load telluric template from Telfit'd A0
-    A0loc = './A0_Fits/A0_Fits_{}/{}A0_treated_{}.fits'.format(args.targname, night[:8], args.band)
+    A0loc = f'./Output/{args.targname}_{args.band}/A0Fits/{night[:8]}A0_treated_{args.band}.fits'
     try:
         hdulist = fits.open(A0loc)
     except IOError:
-        print('  --> No A0-fitted template for night '+night+', skipping...')
+        logger.warning(f'  --> No A0-fitted template for night {night}, skipping...')
         return nightsout, rvsminibox, parfitminibox, vsiniminibox
 
     num_orders = 0
@@ -79,14 +67,15 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
     fits_layer = [ i for i in np.arange(num_orders)+1 if int(hdulist[i].columns[0].name[9:]) == order ][0]
 
     tbdata = hdulist[ fits_layer ].data
-    flag = np.array(tbdata['ERRORFLAG'+str(order)])[0]
+    flag = np.array(tbdata[f'ERRORFLAG{order}'])[0]
 
     if flag == 1:  # Telfit hit unknown critical error
+        logger.warning(f'  --> TELFIT ENCOUNTERED CRITICAL ERROR IN ORDER: {order} NIGHT: {night}, skipping...')
         return nightsout, rvsminibox, parfitminibox, vsiniminibox
 
     watm = tbdata['WATM'+str(order)]
     satm = tbdata['SATM'+str(order)]
-    a0contx = tbdata['X'+str(order)]
+    a0contx    = tbdata['X'+str(order)]
     continuum  = tbdata['BLAZE'+str(order)]
 
     # Remove extra rows leftover from having columns of unequal length
@@ -96,11 +85,14 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
     a0contx = a0contx[(continuum != 0)]
     continuum = continuum[(continuum != 0)]
 
-    # --------------------------------------------------------------
-    # --------------------------------------------------------------
+    # Use instrumental profile dictionary corresponding to whether IGRINS mounting was loose or not
+    if int(night[:8]) < 20180401 or int(night[:8]) > 20190531:
+        IPpars = inparam.ips_tightmount_pars[args.band][order]
+    else:
+        IPpars = inparam.ips_loosemount_pars[args.band][order]
+#-------------------------------------------------------------------------------
     ### Initialize parameter array for optimization as well as half-range values for each parameter during the various steps of the optimization.
     ### Many of the parameters initialized here will be changed throughout the code before optimization and in between optimization steps.
-
     pars0 = np.array([np.nan,                                                # 0: The shift of the sunspot spectrum (km/s) [assigned later]
                       0.3,                                                   # 1: The scale factor for the sunspot spectrum
                       0.0,                                                   # 2: The shift of the telluric spectrum (km/s)
@@ -117,42 +109,26 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
                       IPpars[1],                                             #13: IP linear component
                       IPpars[0]])                                              #14: IP quadratic component
 
-    if args.band=='K':
-      if order==11:
-          bound_cut = [200, 100]
-      elif order==12:
-          bound_cut = [900, 300]
-      elif order==13:
-          bound_cut = [200, 400]
-      elif order==14:
-          bound_cut = [150, 300]
-      else:
-          bound_cut = [150, 150]
-    elif args.band=='H':
-      if order==10:
-          bound_cut = [250, 150]#ok
-      elif order==11:
-          bound_cut = [600, 150]
-      elif order==13:
-          bound_cut = [200, 600]#ok
-      elif order==14:
-          bound_cut = [700, 100]
-      elif order==16:
-          bound_cut = [400, 100]
-      elif order==17:
-          bound_cut = [1000, 100]
-      elif order==20:
-          bound_cut = [500, 150]
-      elif (order==7) or (order==8) or (order==9) or (order==12) or (order==15) or (order==18) or (order==19):
-          bound_cut = [500, 500]
-      else:
-          bound_cut = [150, 150]
+
     # Iterate over all A/B exposures
     for t in np.arange(len(tagsnight)):
         tag = tagsnight[t]
         beam = beamsnight[t]
 
-        x,wave,s,u = init_fitsread('{}{}/{}/'.format(inparam.inpath, night, beam),
+        ### Load relevant A0 spectrum
+        if args.band=='K':
+            if int(order) in [11, 12, 13, 14]:
+                bound_cut = inparam.bound_cut_dic[args.band][order]
+            else:
+                bound_cut = [150, 150]
+
+        elif args.band=='H':
+            if int(order) in [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]:
+                bound_cut = inparam.bound_cut_dic[args.band][order]
+            else:
+                bound_cut = [150, 150]
+
+        x,wave,s,u = init_fitsread(f'{inparam.inpath}{night}/{beam}/',
                                     'target',
                                     'separate',
                                     night,
@@ -163,7 +139,7 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
 #-------------------------------------------------------------------------------
         s2n = s/u
         if np.nanmedian(s2n) < float(args.SN_cut):
-            print('  --> Bad S/N {:1.3f} < {} for {}{} {}, SKIP'.format( np.nanmedian(s2n), args.SN_cut, night, beam, tag))
+            logger.warning('  --> Bad S/N {:1.3f} < {} for {}{} {}, SKIP'.format( np.nanmedian(s2n), args.SN_cut, night, beam, tag))
             continue
 
         nzones = 5
@@ -187,8 +163,8 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
         wave_piece = wave_piece[(wave_piece*1e4 > min(watm_in)+5) & (wave_piece*1e4 < max(watm_in)-5)]
 
         # --------------------------------------------------------------
-        # Load initial parameters, assign inital RV guess
         par = pars0.copy()
+        ##Set initial wavelength guess
         f = np.polyfit(x_piece,wave_piece,3)
         par9in = f[0]*1e4; par8in = f[1]*1e4; par7in = f[2]*1e4; par6in = f[3]*1e4;
         par[9] = par9in ; par[8] = par8in ; par[7] = par7in ; par[6] = par6in
@@ -207,87 +183,65 @@ def rv_MPinst(label_t, chunk_ind, trk, i):
         fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]))
 #-------------------------------------------------------------------------------
         ######## Begin optimization  ########
-
         optimize = True
         par_in = par.copy()
         hardbounds = [par_in[4]-dpars['v'][4],  par_in[4]+dpars['v'][4],
                       par_in[5]-dpars['ip'][5], par_in[5]+dpars['ip'][5]]
-
         if hardbounds[0] < 0:
             hardbounds[0] = 0
         if hardbounds[3] < 0:
             hardbounds[3] = 1
-#        if args.plotfigs == True:#
-#            outplotter(targname,par_in,fitobj,'{}_{}_{}_1'.format(label,night,tag))
 
         cycles = 4
 
-        optgroup = ['cont',
+        optgroup = ['cont', 'wave', 't', 'cont', 's',
+                    'cont', 'wave', 't', 's', 'cont',
                     'wave',
-                    't',
-                    'cont',
-                    't',
-                    's',
-                    'cont',
-                    'wave',
-                    't',
-                    's',
-                    'cont',
-                    'wave',
-                    'ip',
-                    'v',
-                    'ip',
-                    'v',
-                    't',
-                    's',
-                    't',
-                    's']
+                    'ip', 'v',
+                    'ip', 'v',
+                    't',  's',
+                    't',  's']
 
-        nc = 1
-        for cycle in range(cycles):
 
+        for nc, cycle in enumerate(np.arange(cycles), start=1):
             if cycle == 0:
                 parstart = par_in.copy()
 
             for optkind in optgroup:
-                parfit_1 = optimizer(parstart,dpars[optkind],hardbounds,fitobj,optimize)
+                parfit_1 = optimizer(parstart, dpars[optkind], ardbounds,fitobj, optimize)
                 parstart = parfit_1.copy()
                 if args.debug == True:
-                    outplotter(parfit_1,fitobj,'{}_{}_{}_parfit_{}{}'.format(label,night,tag,nc,optkind), trk, 1)
-                nc += 1
+                    outplotter_23(parfit_1,fitobj,'{}_{}_{}_parfit_{}{}'.format(label,night,tag,nc,optkind), trk, , inparam, args, step2or3)
+                    logger.debug(f'{order}_{tag}_{nc}_{optkind}:\n {parfit_1}')
 
         parfit = parfit_1.copy()
-
+#-------------------------------------------------------------------------------
         # if stellar template power is very low, throw out result
         if parfit[1] < 0.1:
-            print('parfit[1] < 0.1, {} parfit={}'.format(night, parfit))
+            logger.warning(f'  --> parfit[1] < 0.1, {night} parfit={parfit}')
             continue
-
         # if stellar or telluric template powers are exactly equal to their starting values, fit failed, throw out result
         if parfit[1] == par_in[1] or parfit[3] == par_in[3]:
-            print('parfit[1] == par_in[1] or parfit[3] == par_in[3], {}'.format(night))
+            logger.warning(f'  --> parfit[1] == par_in[1] or parfit[3] == par_in[3], {night}')
             continue
-
         # if model dips below zero at any point, we're to close to edge of blaze, fit may be comrpomised, throw out result
         smod,chisq = fmod(parfit,fitobj)
         if len(smod[(smod < 0)]) > 0:
-            print('len(smod[(smod < 0)]) > 0, {}'.format(night))
+            logger.warning(f'  --> len(smod[(smod < 0)]) > 0, {night}')
             continue
-
+#-------------------------------------------------------------------------------
         if args.plotfigs == True:
             parfitS = parfit.copy(); parfitS[3] = 0
             parfitT = parfit.copy(); parfitT[1] = 0
-            outplotter(parfitS, fitobj,'parfitS_{}_{}_{}'.format(label,night,tag), trk, 0)
-            outplotter(parfitT, fitobj,'parfitT_{}_{}_{}'.format(label,night,tag), trk, 0)
-            outplotter(parfit, fitobj,'parfit_{}_{}_{}'.format(label,night,tag), trk, 0)
+            outplotter_23(parfitS, fitobj, 'parfitS_{}_{}_{}'.format(order,night,tag), trk, inparam, args, step2or3)
+            outplotter_23(parfitT, fitobj, 'parfitT_{}_{}_{}'.format(order,night,tag), trk, inparam, args, step2or3)
+            outplotter_23(parfit, fitobj,  'parfit_{}_{}_{}'.format(order,night,tag), trk, inparam, args, step2or3)
 
         rv0 = parfit[0] - parfit[2]                         # atomosphere velocity correct
 
         rvsminibox[t]   = rv0  + inparam.bvcs[night+tag] + rv0*inparam.bvcs[night+tag]/(3e5**2) # bvcs correct
         parfitminibox[t]= parfit
         vsiniminibox[t] = parfit[4]
-        # print(parfit)
-    # print(nightsout,rvsminibox,parfitminibox,vsiniminibox)
     return nightsout,rvsminibox,parfitminibox,vsiniminibox
 
 #-------------------------------------------------------------------------------
@@ -323,124 +277,142 @@ if __name__ == '__main__':
                         help="Initial vsini (float, km/s). Should use the value given by step2",
                         type=str,   default='' )
     parser.add_argument('-v',       dest="vsinivary",         action="store",
-                        help="Range of allowed vsini variation during optimization, default = 0.0 km/s",
-                        type=str, default='0.0' )
+                        help="Range of allowed vsini variation during optimization, default = 5.0 km/s",
+                        type=str, default='5.0' )
     parser.add_argument('-g',       dest="guesses",           action="store",
-                        help=". Should use the single value given by step2 (float, km/s)",
+                        help="For STD star, single value given by step2 (float, km/s)",
                         type=str,   default='' )
 
-    parser.add_argument('-t',       dest="template",           action="store",
-                        help="Stellar template. Pick from 'synthetic','livingston'",
+    parser.add_argument('-gS',       dest="guesses_source",           action="store",
+                        help="For TAR star, Source for initial guesses list for RV. Enter init OR rvre (init: Initguesser_results_X, rvre: RV_results_X)",
+                        type=str, default='')
+    parser.add_argument('-gX',       dest="guessesX",           action="store",
+                        help="For TAR star, Please give the number, X, under ./*targname/Initguesser_results_X OR ./*targname/RV_results_X, that you wish to use",
+                        type=int, default='')
+
+    parser.add_argument('-t',       dest="template",         action="store",
+                        help="Stellar template. Pick from 'synthetic', 'livingston', or 'user_defined'. Default = 'synthetic'",
                         type=str,   default='synthetic' )
-    parser.add_argument('-sp',       dest="sptype",           action="store",
-                        help="Spectral type of star",
+    parser.add_argument('-sp',      dest="sptype",           action="store",
+                        help="The spectral type of the *target.",
                         type=str,   default='' )
     parser.add_argument('-c',       dest="Nthreads",         action="store",
                         help="Number of cpu (threads) to use, default is 1/2 of avalible ones (you have %i cpus (threads) avaliable)"%(mp.cpu_count()),
                         type=int,   default=int(mp.cpu_count()//2) )
     parser.add_argument('-plot',    dest="plotfigs",          action="store_true",
-                        help="If sets, will generate plots")
+                        help="If sets, will generate basic fitting result plots")
 
     parser.add_argument('-n_use',   dest="nights_use",       action="store",
-                        help="If you don't want all process all nights under the Input_Data folder, give an array of night you wish to process here. e.g., [20181111, 20181112]",
+                        help="If you don't want all process all nights under the ./Input/*target folder, give an array of night you wish to process here. e.g., [20181111, 20181112]",
                         type=str,   default='')
     parser.add_argument('-DeBug',    dest="debug",           action="store_true",
-                        help="If sets, will generate files and plots under ./Temp/Debug for debug")
-    parser.add_argument('--version',                          action='version',  version='%(prog)s 0.5')
+                        help="If sets, DeBug logging and extra plots will be given")
+    parser.add_argument('--version',                          action='version',  version='%(prog)s 0.85')
     args = parser.parse_args()
+    inpath   = './Input/{}/'.format(args.targname)
     cdbs_loc = '~/cdbs/'
-    inpath    = './Input_Data/{}/'.format(args.targname)
+
+    initvsini = float(args.initvsini)
     vsinivary = float(args.vsinivary)
+    #------------------------------
+    if args.template not in ['synthetic', 'livingston', 'user_defined']:
+        sys.exit('ERROR: UNEXPECTED STELLAR TEMPLATE FOR "-t" INPUT!')
+    #------------------------------
+    if args.template in ['synthetic', 'livingston']:
+        if args.sptype not in ['F','G','K','M']:
+            sys.exit('ERROR: SPECTRAL TYPE FOR DEFAULT TEMPALTE ARE ONLY FOR F G K M! STARS')
+    #------------------------------
+    if (args.mode.lower() == 'std') & (args.guesses_source != ''):
+        sys.exit('ERROR: STD CANNOT USE -gS, PLEASE USE -g')
+    if (args.mode.lower() == 'tar') & (args.guesses != ''):
+        sys.exit('ERROR: TAR CANNOT USE -g, PLEASE USE -gS')
+    #------------------------------
 
-    if args.template not in ['synthetic','livingston']:
-        sys.exit('Unexpected stellar template "-t" input!')
-
-    spt = args.sptype[0]
-
-    if spt not in ['F','G','K','M']:
-        sys.exit('Spectral type outside of expected range (F-M)!')
-
-    if args.initvsini != '':
-        initvsini = float(args.initvsini)
+    if args.mode.lower() == 'std':
+        initguesses = float(args.guesses)
     else:
-        sys.exit('ERROR: EXPECTED FLOAT')
+        if args.guesses_source == 'init':
+            guesses = './Output/{}_{}/Initguesser_results_{}.csv'.format(args.targname,
+                                                                         args.band,
+                                                                         int(args.guessesX))
+            guessdata  = Table.read(guesses, format='csv')
+            initnights = np.array(guessdata['night'])
+            initrvs    = np.array(guessdata['bestguess'])
+            initguesses = {}
+            for hrt in range(len(initnights)):
+                initguesses[str(initnights[hrt])] = float(initrvs[hrt])
 
-    if args.guesses != '':
-        guesses = float(args.guesses)
-    else:
-        sys.exit('ERROR: EXPECTED FLOAT')
+        elif args.guesses_source == 'rvre':
+            guesses = './Output/{}_{}/RVresultsSummary_{}.csv'.format(args.targname,
+                                                                      args.band,
+                                                                      int(args.guessesX))
+            guessdata  = Table.read(guesses, format='csv')
+            initnights = np.array(guessdata['NIGHT'])
+            initrvs    = np.array(guessdata['RVfinal'])
+            initguesses = {}
+            for hrt in range(len(initnights)):
+                initguesses[str(initnights[hrt])] = float(initrvs[hrt])
+#-------------------------------------------------------------------------------
+    if not os.path.isdir('./Output'):
+        os.mkdir('./Output')
 
-    if type(guesses) == float:
-        initguesses = guesses
+    if not os.path.isdir(f'./Output/{args.targname}_{args.band}'):
+        os.mkdir(f'./Output/{args.targname}_{args.band}')
+    filesndirs = os.listdir(f'./Output/{args.targname}_{args.band}')
+
+    trk = 1; go = True;
+    while go == True:
+        name = f'RV_results_{trk}'
+        if name not in filesndirs:
+            break
+        trk += 1
+
+    os.mkdir(f'./Output/{args.targname}_{args.band}/{name}')
+
+    if not os.path.isdir(f'./Output/{args.targname}_{args.band}/figs'):
+        os.mkdir(f'./Output/{args.targname}_{args.band}/figs')
+
+    step2or3 = 3
+    if not os.path.isdir(f'./Output/{args.targname}_{args.band}/figs/main_step{step2or3}_{args.band}_{trk}'):
+        os.mkdir(f'./Output/{args.targname}_{args.band}/figs/main_step{step2or3}_{args.band}_{trk}')
+
+    outpath = f'./Output/{args.targname}_{args.band}'
+#-------------------------------------------------------------------------------
+    logger = logging.getLogger(__name__)
+    if args.debug:
+        logger.setLevel(logging.DEBUG)
     else:
-        sys.exit('ERROR: INCORRECT INITIAL RV GUESSES INPUT PARAMETER SPECIFIED; EXPECTED FLOAT')
+        logger.setLevel(logging.INFO)
+    formatter = logging.Formatter('%(asctime)s: %(module)s.py: %(levelname)s--> %(message)s')
+
+    file_hander  = logging.FileHandler(f'{outpath}/{args.targname}_{args.band}.log')
+    stream_hander= logging.StreamHandler()
+
+    # file_hander.setLevel()
+    file_hander.setFormatter(formatter)
+
+    logger.addHandler(file_hander)
+    logger.addHandler(stream_hander)
 #-------------------------------------------------------------------------------
     start_time = datetime.now()
     print('\n')
-    print('###############################################################')
-    print('''
+    print('####################################################################################\n')
+    print('---------------------------------------------------------------')
+    print(u'''
 Input Parameters:
     Tartget             = {}
     Initial vsini       = {} km/s
-    vsini vary range    = {} km/s
+    vsini vary range    \u00B1 {} km/s
     RV initial guess    = {} km/s
     '''.format(args.targname, initvsini, vsinivary, initguesses))
     print('---------------------------------------------------------------')
-    print('RV calculation for RV standard star {}...'.format(args.targname))
+    logger.info('RV calculation for RV standard star {}...'.format(args.targname))
     print('This will take a while..........')
-
-    ## Collect relevant file information from Predata files
-    A0data   = Table.read('./Temp/Prepdata/Prepdata_A0_{}.txt'.format(args.targname), format='ascii')
-    A0nights = np.array(A0data['night'],dtype='str')
-    ams0     = np.array(A0data['airmass'])
-
-    targdata = Table.read('./Temp/Prepdata/Prepdata_targ_{}.txt'.format(args.targname), format='ascii')
-    Tnights = np.array(targdata['night'],dtype='str')
-    tags0   = np.array(targdata['tag'], dtype='int')
-    beams0  = np.array(targdata['beam'],dtype='str')
-    mjds0   = np.array(targdata['mjd'])
-    bvcs0   = np.array(targdata['bvc'])
-    ams     = np.array(targdata['airmass'])
-
-    bounddata = Table.read('./Input_Data/Use_w/XRegions_{}_{}.csv'.format(args.WRegion, args.band), format='csv')
-    starts  = np.array(bounddata['start'])
-    ends    = np.array(bounddata['end'])
-    labels  = np.array(bounddata['label'], dtype=int)
-    masks    = np.array(bounddata['masks'])
-    xbounddict = {labels[i]:np.array([starts[i],ends[i]]) for i in range(len(starts))}
-    maskdict = {labels[i]:masks[i] for i in range(len(starts))}
-
-    # Attribute A and B exposures to right file numbers
-    tagsA = {}; tagsB = {}; mjds = {}; bvcs = {};
-    night_orig = Tnights[0]; tagsA0 = []; tagsB0 = [];
-
-    for hrt in range(len(Tnights)):
-        tag1 = '{:04d}'.format(tags0[hrt])
-
-        mjds[Tnights[hrt]]                = float(mjds0[hrt])
-        bvcs[str(Tnights[hrt])+str(tag1)] = float(bvcs0[hrt])
-
-        if Tnights[hrt] == night_orig:
-            if beams0[hrt] == 'A':
-                tagsA0.append(tag1)
-            else:
-                tagsB0.append(tag1)
-        else:
-            tagsA[Tnights[hrt-1]] = tagsA0
-            tagsB[Tnights[hrt-1]] = tagsB0
-            tagsA0 = []; tagsB0 = [];
-            if beams0[hrt] == 'A':
-                tagsA0.append(tag1)
-            else:
-                tagsB0.append(tag1)
-            night_orig = Tnights[hrt].copy()
-
-    tagsA[Tnights[-1]] = tagsA0
-    tagsB[Tnights[-1]] = tagsB0
-
-    nightsFinal = np.array(list(sorted(set(Tnights))))
-    # nightsFinal = nightsFinal[:1]
-    # labels      = labels[-2:]
+#-------------------------------------------------------------------------------
+    logger.info(f'Writing output to ./Output/{args.targname}_{args.band}/{name}')
+#-------------------------------------------------------------------------------
+    # Read in the Prepdata under ./Input/Prpedata/
+    xbounddict, maskdict, tagsA, tagsB, mjds, bvcs, nightsFinal, orders = read_prepdata(args)
 
     if args.nights_use != '':
         nightstemp = np.array(ast.literal_eval(args.nights_use), dtype=str)
@@ -449,43 +421,16 @@ Input Parameters:
                 sys.exit('NIGHT {} NOT FOUND UNDER ./Input_Data/{}'.format(nnn, args.targname))
         nightsFinal = nightstemp
         print('Only processing nights: {}'.format(nightsFinal))
-#-------------------------------------------------------------------------------
 
-    # Create output directory
-    try:
-        filesndirs = os.listdir('./Results/{}_{}/'.format(args.targname, args.band) )
-    except OSError:
-        os.mkdir('./Results/{}_{}'.format(args.targname, args.band))
-        filesndirs = os.listdir( './Results/{}_{}'.format(args.targname, args.band) )
-    trk = 1; go = True;
-    while go == True:
-        name = 'RV_results_'+str(trk)
-        if name not in filesndirs:
-            break
-        trk += 1
-    os.mkdir('./Results/{}_{}/{}'.format(args.targname, args.band, name) )
-#-------------------------------------------------------------------------------
-    print('Writing output to folder ./Results/{}_{}'.format(args.targname, args.band, name))
-
-    if not os.path.isdir('./Results/{}_{}/figs'.format(args.targname, args.band)):
-        os.mkdir('./Results/{}_{}/figs'.format(args.targname, args.band) )
-
-    if not os.path.isdir('./Results/{}_{}/figs/main_step3_{}'.format(args.targname, args.band, trk)):
-        os.mkdir('./Results/{}_{}/figs/main_step3_{}'.format(args.targname, args.band, trk) )
-    outpath = './Results/{}_{}'.format(args.targname, args.band)
-
-    if args.debug:
-        try:
-            os.listdir('./Temp/Debug/{}_{}/'.format(args.targname, args.band))
-        except OSError:
-            os.mkdir('./Temp/Debug/{}_{}/'.format(args.targname, args.band))
-        os.mkdir('./Temp/Debug/{}_{}/main_step3_{}/'.format(args.targname, args.band, trk))
+    logger.info('Analyze with {} nights'.format(len(nightsFinal)))
 #-------------------------------------------------------------------------------
     # Retrieve stellar and telluric templates
-    watm,satm, mwave0, mflux0 = setup_templates(args.template,args.band,spt)
+    watm,satm, mwave0, mflux0 = setup_templates(args.template, args.band, args.sptype)
 
-    inparam = inparams(inpath,outpath,initvsini,vsinivary,args.plotfigs,initguesses,bvcs,tagsA,tagsB,nightsFinal,mwave0,mflux0,None,xbounddict,maskdict)
-
+    # Save pars in class for future use
+    inparam = inparams(inpath,outpath,initvsini,vsinivary,args.plotfigs,
+                       initguesses,bvcs,tagsA,tagsB,nightsFinal,mwave0,mflux0,None,xbounddict,maskdict)
+#-------------------------------------------------------------------------------
     # Divide between nights where IGRINS mounting was loose (L) and when it was tight (T)
     nights    = inparam.nights
     intnights = np.array([int(i[:8]) for i in nights])
@@ -507,18 +452,15 @@ Input Parameters:
     else:
         nightscomblist = [nightsT]
 
-    orders = labels
-    label_t = orders
-
 #-------------------------------------------------------------------------------
-    for jerp in range(len(label_t)): # Iterate over orders
+    for jerp in range(len(orders)): # Iterate over orders
         pool = mp.Pool(processes = args.Nthreads)
-        func = partial(rv_MPinst, label_t, jerp, trk )
+        func = partial(rv_MPinst, args, inparam, orders, jerp, trk, step2or3 )
         outs = pool.map(func, np.arange(len(nightsFinal)))
         pool.close()
         pool.join()
 
-        label = label_t[jerp]
+        order = orders[jerp]
 #-------------------------------------------------------------------------------
         # Collect outputs
         for i in range(len(nights)):
@@ -538,10 +480,10 @@ Input Parameters:
         vsinitags = []
 
         # Save results in fits file
-        c1    = fits.Column(name='NIGHT'+str(label),  array=nightsbox, format='8A')
-        c2    = fits.Column(name='RV'+str(label),     array=rvbox,     format='D')
-        c3    = fits.Column(name='PARFIT'+str(label), array=parfitbox, format=str(len(parfitbox[0,:]))+'D', dim=(1,len(parfitbox[0,:])))
-        c4    = fits.Column(name='VSINI'+str(label),  array=vsinibox,  format='D')
+        c1    = fits.Column(name='NIGHT'+str(order),  array=nightsbox, format='{}A'.format(len(nights[0])) )
+        c2    = fits.Column(name='RV'+str(order),     array=rvbox,     format='D')
+        c3    = fits.Column(name='PARFIT'+str(order), array=parfitbox, format=str(len(parfitbox[0,:]))+'D', dim=(1,len(parfitbox[0,:])))
+        c4    = fits.Column(name='VSINI'+str(order),  array=vsinibox,  format='D')
         cols  = fits.ColDefs([c1,c2,c3,c4])
         hdu_1 = fits.BinTableHDU.from_columns(cols)
 
@@ -606,22 +548,35 @@ Input Parameters:
         stdmasterbox = stdboxcomblist[boxind]
         vsinibox     = vsinicomblist[boxind]
 #-------------------------------------------------------------------------------
-        # Calculate the precision within an order across nights
-        sigma_O2     = np.array([np.nanstd(rvmasterbox[:,ll])**2 for ll in range(len(labels))])
-        sigma_ABbar2 = np.ones_like(sigma_O2)
-        sigma_ON2    = np.ones_like(rvmasterbox)
+        if args.mode=='STD':
+            # Calculate the precision within an order across nights
+            sigma_O2     = np.array([np.nanstd(rvmasterbox[:,ll])**2 for ll in range(len(orders))])
+            sigma_ABbar2 = np.ones_like(sigma_O2)
+            sigma_ON2    = np.ones_like(rvmasterbox)
 
+            # Calculate uncertainty in method as difference between variance within an order and mean variance within a night's As and Bs RVs
+            for ll in range(len(orders)):
+                sigma_ABbar2[ll] = np.nanmean(stdmasterbox[:,ll]**2)
+            sigma_method2 = sigma_O2 - sigma_ABbar2
+
+        else:
+            # Load the uncertainty from method from GJ 281 analysis
+            if boxind == 0:
+                nights_use = nightsT.copy()
+                kind = 'Tight'
+                sigma_method2 = inparam.methodvariance_tight[args.band]
+            else:
+                nights_use = nightsL.copy()
+                kind = 'Loose'
+                sigma_method2 = inparam.methodvariance_loose[args.band]
+            # Calculate the uncertainty in each night/order RV as the sum of the uncertainty in method and the uncertainty in that night's As and Bs RVs
+            sigma_ON2    = np.ones_like(rvmasterbox)
 #-------------------------------------------------------------------------------
         # Note rvmasterbox indexed as [nights,orders]
         Nnights = len(rvmasterbox[:,0])
 
-        # Calculate uncertainty in method as difference between variance within an order and mean variance within a night's As and Bs RVs
-        for ll in range(len(labels)):
-            sigma_ABbar2[ll] = np.nanmean(stdmasterbox[:,ll]**2)
-        sigma_method2 = sigma_O2 - sigma_ABbar2
-
         # Calculate the uncertainty in each night/order RV as the sum of the uncertainty in method and the uncertainty in that night's As and Bs RVs
-        for ll in range(len(labels)):
+        for ll in range(len(orders)):
             for night in range(Nnights):
                 sigma_ON2[night,ll] = sigma_method2[ll] + stdmasterbox[night,ll]**2
 
@@ -652,7 +607,7 @@ Input Parameters:
                 stdfinal[n]   = np.nan
                 vsinifinal[n] = np.nan
 
-            if np.sum( np.isnan(rvmasterbox[n,:]) ) > np.floor( len(labels) * 0.5 ):
+            if np.sum( np.isnan(rvmasterbox[n,:]) ) > np.floor( len(orders) * 0.5 ):
                 rvfinal[n]    = np.nan
                 stdfinal[n]   = np.nan
                 vsinifinal[n] = np.nan
@@ -673,20 +628,23 @@ Input Parameters:
         ax1.tick_params(axis='both', labelsize=6, right=True, top=True, direction='in', width=.6)
         f.savefig('{}/{}/FinalRVs_{}_.png'.format(inparam.outpath, name, kind), format='png', bbox_inches='tight')
 
-        c1 = fits.Column( name='NIGHT',         array=nights_use,        format='8A')
-        c2 = fits.Column( name='MJD',           array=mjds_out-2400000.5,format='D')
-        c3 = fits.Column( name='RVBOX',         array=rvmasterbox,   format='{}D'.format(len(label_t)))
-        c4 = fits.Column( name='STDBOX',        array=stdmasterbox,  format='{}D'.format(len(label_t)))
-        c5 = fits.Column( name='Sigma_O2',      array=sigma_O2,      format='D')
-        c6 = fits.Column( name='Sigma_ABbar2',  array=sigma_ABbar2,  format='D')
+        c1 = fits.Column( name='NIGHT',         array=nights_use,    format='8A')
+        c2 = fits.Column( name='JD',            array=mjds_out,      format='D')
+        c3 = fits.Column( name='RVBOX',         array=rvmasterbox,   format='{}D'.format(len(orders)))
+        c4 = fits.Column( name='STDBOX',        array=stdmasterbox,  format='{}D'.format(len(orders)))
         c7 = fits.Column( name='Sigma_method2', array=sigma_method2, format='D')
-        c8 = fits.Column( name='Sigma_ON2',     array=sigma_ON2,     format='{}D'.format(len(label_t)))
+        c8 = fits.Column( name='Sigma_ON2',     array=sigma_ON2,     format='{}D'.format(len(orders)))
         c9 = fits.Column( name='RVfinal',       array=rvfinal,       format='D')
         c10 = fits.Column(name='STDfinal',      array=stdfinal,      format='D')
 
-        cols  = fits.ColDefs([c1,c2,c3,c4,c5,c6,c7,c8,c9,c10])
-        hdu_1 = fits.BinTableHDU.from_columns(cols)
+        if args.mode=='STD':
+            c5 = fits.Column( name='Sigma_O2',      array=sigma_O2,      format='D')
+            c6 = fits.Column( name='Sigma_ABbar2',  array=sigma_ABbar2,  format='D')
+            cols  = fits.ColDefs([c1,c2,c3,c4,c7,c8,c9,c10])
+        else:
+            cols  = fits.ColDefs([c1,c2,c3,c4,c5,c6,c7,c8,c9,c10])
 
+        hdu_1 = fits.BinTableHDU.from_columns(cols)
         bleh = np.ones((3,3))
         primary_hdu = fits.PrimaryHDU(bleh)
         hdul        = fits.HDUList([primary_hdu,hdu_1])
@@ -698,10 +656,10 @@ Input Parameters:
         stdfinalCombined   = np.concatenate((stdfinalCombined,   stdfinal))
         vsinifinalCombined = np.concatenate((vsinifinalCombined, vsinifinal))
 
-        sigma_method2 = [np.around(float(i), 8) for i in sigma_method2]
-        print('sigma_method2 with type = {} is {}'.format(kind, sigma_method2))
-        #print('RV/std for observations when IGRINS mounting was '+kind+': ', np.nanmean(rvfinal),np.nanstd(rvfinal))
-        print('Observations when IGRINS is mounting {}: RV mean = {:1.4f} km/s, std = {:1.4f} km/s'.format( kind,
+        if args.mode='STD':
+            sigma_method2 = [np.around(float(i), 8) for i in sigma_method2]
+            logger.info('sigma_method2 with type = {} is {}'.format(kind, sigma_method2))
+        logger.info('Observations when IGRINS is mounting {}: RV mean = {:1.4f} km/s, std = {:1.4f} km/s'.format( kind,
                                                                                                             np.nanmean(rvfinal),
                                                                                                             np.nanstd(rvfinal) ))
 #-------------------------------------------------------------------------------
@@ -711,8 +669,6 @@ Input Parameters:
     ax1 = plt.subplot(111)
     ax1.plot(xscale,rvfinalCombined, '.k', ms=5)
     ax1.errorbar(xscale,rvfinalCombined,yerr=stdfinalCombined,ls='none',lw=.5, ecolor='black')
-#    ax1.text(1,np.nanmax(rvfinalCombined)+stdfinalCombined[np.nanargmax(rvfinalCombined)]+.03,
-#             'Mean RV: '+str(round(np.nanmean(rvfinalCombined),5))+r'$\ \pm$ '+str(round(np.nanstd(rvfinalCombined),5))+' km/s')
     ax1.text(0.05, 0.93, r'RV mean= {:1.5f} $\pm$ {:1.5f} km/s'.format(np.nanmean(rvfinalCombined), np.nanstd(rvfinalCombined)),
                          transform=ax1.transAxes)
 
@@ -723,14 +679,10 @@ Input Parameters:
     else:
         if nightsT[-1] < nightsL[0]: # if tight epoch precedes loose epoch #sy
             ax1.axvline(xscale[len(nightsT)] - 0.5, linewidth=.7, color='black')
-            #ax1.text(xscale[len(nightsT)] -6.5,np.nanmin(rvfinalCombined)-2*stdfinalCombined[np.nanargmax(rvfinalCombined)],'Tight')
-            #ax1.text(xscale[len(nightsT)] +1.5,np.nanmin(rvfinalCombined)-2*stdfinalCombined[np.nanargmax(rvfinalCombined)],'Loose')
             ax1.text(0.05, 0.1, 'Tight', transform=ax1.transAxes)
             ax1.text(0.9,  0.1, 'Loose', transform=ax1.transAxes)
         else:
             ax1.axvline(xscale[len(nightsL)] - 0.5, linewidth=.7, color='black')
-            #ax1.text(xscale[len(nightsL)] +1.5,np.nanmin(rvfinalCombined)-2*stdfinalCombined[np.nanargmax(rvfinalCombined)],'Tight')
-            #ax1.text(xscale[len(nightsL)] -6.5,np.nanmin(rvfinalCombined)-2*stdfinalCombined[np.nanargmax(rvfinalCombined)],'Loose')
             ax1.text(0.05, 0.1, 'Tight', transform=ax1.transAxes)
             ax1.text(0.9,  0.1, 'Loose', transform=ax1.transAxes)
     ax1.set_ylim(np.nanmin(rvfinalCombined)-.08,np.nanmax(rvfinalCombined)+.08)
@@ -742,8 +694,8 @@ Input Parameters:
     f.savefig('{}/{}/FinalRVs.png'.format(inparam.outpath, name), format='png', bbox_inches='tight')
 
 
-    c1 = fits.Column(name='NIGHT',    array=nightsCombined,         format='8A')
-    c2 = fits.Column(name='MJD',      array=mjdsCombined-2400000.5, format='D')
+    c1 = fits.Column(name='NIGHT',    array=nightsCombined,         format='{}A'.format(len(nights[0])) )
+    c2 = fits.Column(name='JD',       array=mjdsCombined,           format='D')
     c3 = fits.Column(name='RVfinal',  array=rvfinalCombined,        format='D')
     c4 = fits.Column(name='STDfinal', array=stdfinalCombined,       format='D')
     c5 = fits.Column(name='VSINI',    array=vsinifinalCombined,     format='D')
@@ -759,13 +711,12 @@ Input Parameters:
     tempin = Table.read('{}/{}/RVresultsSummary.fits'.format(inparam.outpath, name), format='fits')
     tempin.write('{}/RVresultsSummary_{}.csv'.format(inparam.outpath, trk), format='csv', overwrite=True)
 
-    print('Combined RV results: mean={:1.4f} km/s, std={:1.4f} km/s'.format(np.nanmean(rvfinalCombined),
+    logger.info('Combined RV results: mean={:1.4f} km/s, std={:1.4f} km/s'.format(np.nanmean(rvfinalCombined),
                                                                             np.nanstd(rvfinalCombined)))
-    print('vsini results:       mean={:1.4f} km/s, std={:1.4f} km/s'.format(np.nanmean(vsinifinalCombined),
+    logger.info('vsini results:       mean={:1.4f} km/s, std={:1.4f} km/s'.format(np.nanmean(vsinifinalCombined),
                                                                             np.nanstd(vsinifinalCombined)))
     print('\n')
     end_time = datetime.now()
-    print('Whole process DONE!!!!!!, Duration: {}'.format(end_time - start_time))
-    print('Output saved under {}/{}'.format(args.targname, name) )
-    print('###############################################################')
-    print('\n')
+    logger.info('Whole process DONE!!!!!!, Duration: {}'.format(end_time - start_time))
+    logger.info('Output saved under {}/{}'.format(args.outpath, name) )
+    print('####################################################################################')
