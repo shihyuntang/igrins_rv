@@ -369,15 +369,15 @@ if __name__ == '__main__':
     print(u'''
 Input Parameters:
     Tartget             = {}
-    Filter              = {} band        <------- Double Check!!
-    WaveLength file     = WaveRegions_{} <------- Double Check!!
+    Filter              = {} band        \33[41m <------- Double Check!! \033[0m
+    WaveLength file     = WaveRegions_{} \33[41m <------- Double Check!! \033[0m
     S/N cut             > {}
-    Minium # of AB sets = {}             <------- TAR mode shoild
+    Minium # of AB sets = {}             \33[41m <------- TAR mode should at lease to be 2 \033[0m
     Initial vsini       = {} km/s
     vsini vary range    \u00B1 {} km/s
     RV initial guess    = {} km/s
-    Stellar template use= {}             <------- F, G, early K SpTy recommended 'livingston'
-    Target Spectral Type= {}             <------- late K, M     SpTy recommended 'synthetic'
+    Stellar template use= {}             \33[41m <------- F, G, early K SpTy recommended 'livingston' \033[0m
+    Target Spectral Type= {}             \33[41m <------- late K, M     SpTy recommended 'synthetic'  \033[0m
     '''.format(args.targname, args.band, args.WRegion, args.SN_cut, args.nAB,
                initvsini, vsinivary, initguesses, args.template, args.sptype))
     print('You have 5 sec to use Command (Ctrl) + C to quite and modify the INPUTs.')
