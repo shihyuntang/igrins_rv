@@ -380,12 +380,12 @@ Input Parameters:
     Target Spectral Type= {}              <------- \33[41m late K, M     SpTy recommended 'synthetic'  \033[0m
     '''.format(args.targname, args.band, args.WRegion, args.SN_cut, args.nAB,
                initvsini, vsinivary, initguesses, args.template, args.sptype))
-    print('You have 5 sec to use Command (Ctrl) + C to quite and modify the INPUTs.')
-    time.sleep(1) ; print('.....')
-    time.sleep(1) ; print('....')
-    time.sleep(1) ; print('...')
-    time.sleep(1) ; print('..')
-    time.sleep(1) ; print('.') ; time.sleep(1)
+    print('You have 10 sec to use Command (Ctrl) + C to quite and modify the INPUTs.')
+
+    for _ in np.arange(10):
+        time.sleep(1)
+        print('*', end='')
+    print('\n')
     print('---------------------------------------------------------------')
     print('RV calculation for RV standard star {}...'.format(args.targname))
     print('This will take a while..........')
