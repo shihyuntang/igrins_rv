@@ -388,6 +388,7 @@ Input Parameters:
         elif 'y' in inpp.lower():
             break
         else:
+            print('I cannot understand what you are saying... TRY AGAIN')
             continue
 
     print('---------------------------------------------------------------')

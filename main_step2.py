@@ -369,12 +369,17 @@ Input Parameters:
     Target Spectral Type= {}             \33[41m <------- late K, M     SpTy recommended 'synthetic'  \033[0m
     '''.format(args.targname, args.band, args.WRegion, args.SN_cut, args.label_use,
                initvsini, vsinivary, initguesses, args.template, args.sptype))
-    print('You have 5 sec to use Command (Ctrl) + C to quite and modify the INPUTs.')
-    time.sleep(1) ; print('.....')
-    time.sleep(1) ; print('....')
-    time.sleep(1) ; print('...')
-    time.sleep(1) ; print('..')
-    time.sleep(1) ; print('.') ; time.sleep(1)
+
+    while True:
+        inpp = input("Press [Y]es to continue, [N]o to quite...\n --> ")
+        if 'n' in inpp.lower():
+            sys.exit('QUIT, PLEASE RE-ENTER YOUR PARAMETERS')
+        elif 'y' in inpp.lower():
+            break
+        else:
+            print('I cannot understand what you are saying... TRY AGAIN')
+            continue
+
     print('---------------------------------------------------------------')
     print('RV Initial Guess for {}...'.format(args.targname))
     print('This Will Take a While..........')
