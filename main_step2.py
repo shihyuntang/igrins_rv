@@ -359,7 +359,7 @@ if __name__ == '__main__':
     print('---------------------------------------------------------------')
     print(u'''
 Input Parameters:
-    Tartget             = {}
+    Tartget             =  {}
     Filter              = \33[41m {} band \033[0m
     WaveLength file     = \33[41m WaveRegions_{} \033[0m
     S/N cut             > \33[41m {} \033[0m

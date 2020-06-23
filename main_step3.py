@@ -219,7 +219,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                 parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize)
                 parstart = parfit_1.copy()
                 if args.debug == True:
-                    outplotter_23(parfit_1,fitobj,'{}_{}_{}_parfit_{}{}'.format(label,night,tag,nc,optkind), trk, inparam, args, step2or3)
+                    outplotter_23(parfit_1,fitobj,'{}_{}_{}_parfit_{}{}'.format(order,night,tag,nc,optkind), trk, inparam, args, step2or3)
                     logger.debug(f'{order}_{tag}_{nc}_{optkind}:\n {parfit_1}')
 
         parfit = parfit_1.copy()
@@ -370,7 +370,7 @@ if __name__ == '__main__':
     print('---------------------------------------------------------------')
     print(u'''
 Input Parameters:
-    Tartget             = {}
+    Tartget             =  {}
     Filter              = \33[41m {} band \033[0m
     WaveLength file     = \33[41m WaveRegions_{} \033[0m
     S/N cut             > \33[41m {} \033[0m
