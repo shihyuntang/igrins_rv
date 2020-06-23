@@ -314,6 +314,8 @@ if __name__ == '__main__':
                         type=str,   default='')
     parser.add_argument('-DeBug',    dest="debug",           action="store_true",
                         help="If sets, DeBug logging and extra plots will be given")
+    parser.add_argument('-sk_check', dest="skip",           action="store_true",
+                        help="If sets, will skip the input parameters check, handly when run muti-targets line by line ")
     parser.add_argument('--version',                          action='version',  version='%(prog)s 0.85')
     args = parser.parse_args()
     inpath   = './Input/{}/'.format(args.targname)
@@ -358,8 +360,8 @@ if __name__ == '__main__':
     print(u'''
 Input Parameters:
     Tartget             = {}
-    Filter              = {} band        \33[41m <------- Double Check!! \033[0m
-    WaveLength file     = WaveRegions_{} \33[41m <------- Double Check!! \033[0m
+    Filter              = {} band        <------- \33[41m Double Check!! \033[0m
+    WaveLength file     = WaveRegions_{} <------- \33[41m Double Check!! \033[0m
     S/N cut             > {}
     Order Use           = Order {}
     Initial vsini       = {} km/s
@@ -370,15 +372,16 @@ Input Parameters:
     '''.format(args.targname, args.band, args.WRegion, args.SN_cut, args.label_use,
                initvsini, vsinivary, initguesses, args.template, args.sptype))
 
-    while True:
-        inpp = input("Press [Y]es to continue, [N]o to quite...\n --> ")
-        if 'n' in inpp.lower():
-            sys.exit('QUIT, PLEASE RE-ENTER YOUR PARAMETERS')
-        elif 'y' in inpp.lower():
-            break
-        else:
-            print('I cannot understand what you are saying... TRY AGAIN')
-            continue
+    if not args.skip:
+        while True:
+            inpp = input("Press [Y]es to continue, [N]o to quite...\n --> ")
+            if 'n' in inpp.lower():
+                sys.exit('QUIT, PLEASE RE-ENTER YOUR PARAMETERS')
+            elif 'y' in inpp.lower():
+                break
+            else:
+                print('I cannot understand what you are saying... TRY AGAIN')
+                continue
 
     print('---------------------------------------------------------------')
     print('RV Initial Guess for {}...'.format(args.targname))
