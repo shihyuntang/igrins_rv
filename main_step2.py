@@ -31,7 +31,7 @@ def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     elif type(inparam.initguesses) == float:
         initguesses = inparam.initguesses
     else:
-        sys.exit('ERROR! EXPECTED FILE OR LIST FOR INITGUESSES! QUITTING!')
+        sys.exit('ERROR! EXPECING SINGAL NUMBER OR FILE FOR INITGUESSES! QUITTING!')
 
     # Collect relevant beam and filenum info
     tagsnight = []; beamsnight = [];
