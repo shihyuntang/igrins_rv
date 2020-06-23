@@ -382,7 +382,7 @@ Input Parameters:
                initvsini, vsinivary, initguesses, args.template, args.sptype))
 
     while True:
-        inpp = input("Press [Y]es to continue, [N]o to quite...")
+        inpp = input("Press [Y]es to continue, [N]o to quite...\n --> ")
         if 'n' in inpp.lower():
             sys.exit('QUIT, PLEASE RE-ENTER YOUR PARAMETERS')
         elif 'y' in inpp.lower():
