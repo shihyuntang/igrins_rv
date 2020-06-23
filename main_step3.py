@@ -26,6 +26,14 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                                                                                            night,
                                                                                            mp.current_process().pid) )
 #-------------------------------------------------------------------------------
+    # Collect initial RV guesses
+    if type(inparam.initguesses) == dict:
+        initguesses = inparam.initguesses[night]
+    elif type(inparam.initguesses) == float:
+        initguesses = inparam.initguesses
+    else:
+        sys.exit('ERROR! EXPECING SINGAL NUMBER OR FILE FOR INITGUESSES! QUITTING!')
+#-------------------------------------------------------------------------------
     # Collect relevant beam and filenum info
     tagsnight = []; beamsnight = [];
     for tag in inparam.tagsA[night]:
@@ -613,6 +621,7 @@ Input Parameters:
                 vsinifinal[n] = np.nan
 #-------------------------------------------------------------------------------
         f, axes = plt.subplots(1, 1, figsize=(5,3), facecolor='white', dpi=300)
+
         axes.plot(    np.arange(len(rvfinal))+1, rvfinal, '.k', ms=5)
         axes.errorbar(np.arange(len(rvfinal))+1, rvfinal, yerr=stdfinal, ls='none', lw=.5, ecolor='black')
         axes.text(0.05, 0.93, r'RV mean= {:1.5f} $\pm$ {:1.5f} km/s'.format(np.nanmean(rvfinal), np.nanstd(rvfinal)),
@@ -624,7 +633,7 @@ Input Parameters:
         axes.xaxis.set_minor_locator(AutoMinorLocator(5))
         axes.yaxis.set_minor_locator(AutoMinorLocator(5))
         axes.tick_params(axis='both', which='both', labelsize=6, right=True, top=True, direction='in', width=.6)
-        f.savefig('{}/{}/FinalRVs_{}_.png'.format(inparam.outpath, name, kind), format='png', bbox_inches='tight')
+        f.savefig('{}/{}/FinalRVs_{}_.png'.format(inparam.outpath, name, kind), format='png', boxtoinch='tight')
 
         c1 = fits.Column( name='NIGHT',         array=nights_use,    format='8A')
         c2 = fits.Column( name='JD',            array=mjds_out,      format='D')
@@ -688,7 +697,7 @@ Input Parameters:
     axes.xaxis.set_minor_locator(AutoMinorLocator(5))
     axes.yaxis.set_minor_locator(AutoMinorLocator(5))
     axes.tick_params(axis='both', which='both', labelsize=6, right=True, top=True, direction='in', width=.6)
-    f.savefig('{}/{}/FinalRVs.png'.format(inparam.outpath, name), format='png', bbox_inches='tight')
+    f.savefig('{}/{}/FinalRVs.png'.format(inparam.outpath, name), format='png', boxtoinch='tight')
 
 
     c1 = fits.Column(name='NIGHT',    array=nightsCombined,         format='{}A'.format(len(nights[0])) )

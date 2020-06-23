@@ -1,12 +1,11 @@
 
+import os, nlopt
 import numpy as np
 import matplotlib.pyplot as plt
-import os
-from astropy import units
-from Engine.rebin_jv import rebin_jv
-from telfit import TelluricFitter, DataStructures
-import nlopt
 import matplotlib.patches as mpatches
+from   astropy import units
+from   Engine.rebin_jv import rebin_jv
+from   telfit import TelluricFitter, DataStructures
 
 
 def gauss_fit(x):
@@ -27,12 +26,8 @@ def gauss(x,mu,sigma,offset,scale,slope,kurt):
 
 
 def wavefunc(par,grad):
-
     global watm_Liv, satm_Liv, satmLivGen, x;
-
     # This function takes Telfitted template and uses an input wavelength solution to rebin it for direct comparison with Livingston.
-
-
     #Make the wavelength scale
     f = np.poly1d(par)
     w = f(x)
@@ -41,7 +36,6 @@ def wavefunc(par,grad):
         return 1e20
 
     satmTel2 = rebin_jv(w,satmLivGen,watm_Liv,False)
-
     return np.sum((satm_Liv - satmTel2)**2.)
 
 
@@ -49,7 +43,7 @@ def wavefit(par0, dpar0):
     # NLopt convenience function.
     opt = nlopt.opt(nlopt.LN_NELDERMEAD, 7)
     opt.set_min_objective(wavefunc)
-    lows = par0-dpar0
+    lows  = par0-dpar0
     highs = par0+dpar0
     opt.set_lower_bounds(lows)
     opt.set_upper_bounds(highs)
@@ -63,24 +57,19 @@ def wavefit(par0, dpar0):
 
 
 def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args):
-
     # Code to produced fitted telluric template. How and why it works is detailed in comments throughout the code.
-
     os.environ['PYSYN_CDBS'] = inparam.cdbsloc
-
     fitter = TelluricFitter(debug=False)
 
     #Set the observatory location with a keyword
-    DCT_props = {"latitude": 34.744, "altitude":2.36} #altitude in km
-    McD_props = {"latitude": 30.71, "altitude": 2.07}
+    DCT_props = {"latitude": 34.744, "altitude": 2.36} #altitude in km
+    McD_props = {"latitude": 30.710, "altitude": 2.07}
     if inparam.obses[night] == 'DCT':
         fitter.SetObservatory(DCT_props)
     elif inparam.obses[night] == 'McD':
         fitter.SetObservatory(McD_props)
     else:
-        sys.exit('TELFIT OBSERVATORY ERROR')
-#        print('TELFIT OBSERVATORY ERROR')
-#        print(breaker) #force quit)
+        sys.exit('TELFIT OBSERVATORY ERROR, OLNY SUPPORT DCT & McD IN THIS VERSION!')
 
     # Read in data
     data = DataStructures.xypoint(x=watm_in*units.angstrom, y=satm_in, cont=None, err=a0ucut)
@@ -88,11 +77,11 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args):
     # DCT data has parameters describing night of observation that the McDonald data does not.
     if inparam.zds[night] != 'NOINFO': # If such information is available:
 
-        angle       = float(inparam.zds[night])  #Zenith distance
-        pressure    = float(inparam.press[night])  #Pressure, in hPa
-        humidity    = float(inparam.humids[night])  #Percent humidity, at the observatory altitude
+        angle       = float(inparam.zds[night])           #Zenith distance
+        pressure    = float(inparam.press[night])         #Pressure, in hPa
+        humidity    = float(inparam.humids[night])        #Percent humidity, at the observatory altitude
         temperature = float(inparam.temps[night])+273.15  #Temperature in Kelvin
-        resolution  = 45000.0                          #Resolution lambda/delta-lambda
+        resolution  = 45000.0                             #Resolution lambda/delta-lambda
 
         # Ideally, we'd fit resolution as well since that varies across the detector.
         # But in practice the Telfit's resolution fits often diverge to unphysically high values.
@@ -301,14 +290,19 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args):
 
     if inparam.plotfigs == True:
         fig, axes = plt.subplots(1, 1, figsize=(5,3), facecolor='white', dpi=300)
-        axes.plot(watm_in,satm_in,color='black',alpha=.6,label='data', lw=0.5)
-        axes.plot(model.x,model.y*cont1,color='tab:red',alpha=.6,label='model fit', lw=0.5)
-        axes.plot(model.x,cont1,color='tab:blue',alpha=.6,label='blaze fit', lw=0.5)
-        axes.tick_params(axis='both', labelsize=4.5, right=True, top=True, direction='in')
-        axes.set_ylabel(r'Normalized Flux',   size=5, style='normal' , family='sans-serif' )
-        axes.set_xlabel(r'Wavelength [$\AA$]',       size=5, style='normal' , family='sans-serif' )
-        axes.legend(fontsize=4, edgecolor='white')
-        fig.savefig('{}/figs_{}/A0Telfit_{}_{}.png'.format(inparam.outpath, args.band, order, night), format='png', overwrite=True)
+
+        axes.plot(watm_in, satm_in,       color='black',    alpha=.6, label='data',      lw=0.7)
+        axes.plot(model.x, model.y*cont1, color='tab:red',  alpha=.6, label='model fit', lw=0.7)
+        axes.plot(model.x, cont1,         color='tab:blue', alpha=.6, label='blaze fit', lw=0.7)
+
+        axes.xaxis.set_minor_locator(AutoMinorLocator(5))
+        axes.yaxis.set_minor_locator(AutoMinorLocator(2))
+        axes.tick_params(axis='both', labelsize=6, right=True, top=True, direction='in')
+        axes.set_ylabel(r'Normalized Flux',    size=6, style='normal' , family='sans-serif' )
+        axes.set_xlabel(r'Wavelength [$\AA$]', size=6, style='normal' , family='sans-serif' )
+        axes.legend(fontsize=5, edgecolor='white')
+        fig.savefig('{}/figs_{}/A0Telfit_{}_{}.png'.format(inparam.outpath, args.band, order, night),
+                    format='png', boxtoinch='tight', overwrite=True)
 
     ############### Generate template with these parameters but at higher resolution
 
@@ -319,7 +313,6 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args):
     parfitted = np.ones_like(names, dtype=float)
     for k in range(len(names)):
         parfitted[k] = float(fitter.GetValue(names[k]) )
-
 
     fitter2 = TelluricFitter(debug=False)
 
@@ -343,7 +336,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args):
     for k in range(len(names)):
         params[names[k]] = float(parfitted[k])
 
-    params['wavestart'] = data2.x[0]-0.01*units.angstrom
+    params['wavestart'] = data2.x[0] -0.01*units.angstrom
     params['waveend']   = data2.x[-1]+0.01*units.angstrom
 
     fitter2.AdjustValue(params)
