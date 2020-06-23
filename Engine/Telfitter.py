@@ -302,7 +302,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args):
         axes.set_xlabel(r'Wavelength [$\rm\AA$]', size=6, style='normal' , family='sans-serif' )
         axes.legend(fontsize=5, edgecolor='white')
         fig.savefig('{}/figs_{}/A0Telfit_{}_{}.png'.format(inparam.outpath, args.band, order, night),
-                    format='png', boxtoinch='tight', overwrite=True)
+                    format='png', bbox_inches='tight', overwrite=True)
 
     ############### Generate template with these parameters but at higher resolution
 
