@@ -360,15 +360,15 @@ if __name__ == '__main__':
     print(u'''
 Input Parameters:
     Tartget             = {}
-    Filter              = {} band        <------- \33[41m Double Check!! \033[0m
-    WaveLength file     = WaveRegions_{} <------- \33[41m Double Check!! \033[0m
+    Filter              = \33[41m {} band  \033[0m
+    WaveLength file     = \33[41m WaveRegions_{}  \033[0m
     S/N cut             > {}
-    Order Use           = Order {}
-    Initial vsini       = {} km/s
-    vsini vary range    \u00B1 {} km/s
-    RV initial guess    = {} km/s
-    Stellar template use= {}             \33[41m <------- F, G, early K SpTy recommended 'livingston' \033[0m
-    Target Spectral Type= {}             \33[41m <------- late K, M     SpTy recommended 'synthetic'  \033[0m
+    Order Use           = \33[41m Order {}  \033[0m
+    Initial vsini       = \33[41m \33[41m {} km/s  \033[0m
+    vsini vary range    \u00B1 \33[41m {} km/s  \033[0m
+    RV initial guess    = \33[41m {} km/s  \033[0m
+    Stellar template use= \33[41m {} \033[0m
+    Target Spectral Type= \33[41m {} \033[0m             <-------  [late K, M] recommended 'synthetic', [F, G, early K] SpTy recommended 'livingston'
     '''.format(args.targname, args.band, args.WRegion, args.SN_cut, args.label_use,
                initvsini, vsinivary, initguesses, args.template, args.sptype))
 
