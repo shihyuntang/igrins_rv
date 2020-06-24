@@ -52,7 +52,7 @@ def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
     # Load synthetic telluric template generated during Step 1
     # [:8] here is to ensure program works under Night_Split mode
-    A0loc = f'../Output/{args.targname}_{args.band}/A0Fits/{night[:8]}A0_treated_{args.band}.fits'
+    A0loc = f'../Output/{args.targname}_{args.band}_tool/A0Fits/{night[:8]}A0_treated_{args.band}.fits'
     try:
         hdulist = fits.open(A0loc)
     except IOError:
