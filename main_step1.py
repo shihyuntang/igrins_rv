@@ -391,7 +391,8 @@ if __name__ == '__main__':
         nightstemp = np.array(ast.literal_eval(args.nights_use), dtype=int)
         for nnn in nightstemp:
             if nnn not in nightsFinal:
-                sys.exit(f'NIGHT {nnn} NOT FOUND UNDER "./Input/{args.targname}"')
+                sys.exit(f'NIGHT {nnn} EITHER HAS NO CORRESPONDING A0 OR WAS NOT FOUND UNDER "./Input/{args.targname}"')
+
         nightsFinal = nightstemp
         logger.info(f'Only processing nights: {nightsFinal}')
 
