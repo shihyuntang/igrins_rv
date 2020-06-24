@@ -363,7 +363,7 @@ if __name__ == '__main__':
             initnights = np.array(guessdata['NIGHT'])
             initrvs    = np.array(guessdata['RVfinal'])
             initguesses = {}
-            initguesses_show = f'Initguesser_results_{args.guessesX}.csv'
+            initguesses_show = f'RVresultsSummary_{args.guessesX}.csv'
             for hrt in range(len(initnights)):
                 initguesses[str(initnights[hrt])] = float(initrvs[hrt])
 #-------------------------------------------------------------------------------
