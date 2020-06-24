@@ -690,9 +690,9 @@ Input Parameters:
         if args.mode=='STD':
             sigma_method2 = [np.around(float(i), 8) for i in sigma_method2]
             logger.info('sigma_method2 with type = {} is {}'.format(kind, sigma_method2))
-        logger.info('Observations when IGRINS is mounting {}: RV mean = {:1.4f} km/s, std = {:1.4f} km/s'.format( kind,
-                                                                                                            np.nanmean(rvfinal),
-                                                                                                            np.nanstd(rvfinal) ))
+        logger.info('During the {} mounting period: RV mean = {:1.4f} km/s, std = {:1.4f} km/s'.format( kind,
+                                                                                                        np.nanmean(rvfinal),
+                                                                                                        np.nanstd(rvfinal) ))
 #-------------------------------------------------------------------------------
     xscale = np.arange(len(rvfinalCombined))+1
 
