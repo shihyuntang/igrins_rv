@@ -341,7 +341,7 @@ if __name__ == '__main__':
 
     if args.mode.lower() == 'std':
         initguesses = float(args.guesses)
-        initguesses_show = std(initguesses)
+        initguesses_show = initguesses
     else:
         if args.guesses_source == 'init':
             guesses = './Output/{}_{}/Initguesser_results_{}.csv'.format(args.targname,
