@@ -2,7 +2,12 @@ from Engine.importmodule import *
 # -------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 def DataPrep(args):
-# Find all nights of observations of target in master log
+    
+    # Collects and organizes all relevant information on target observations and associated telluric standard observations, for ease of use in later steps.
+    # Requires that observation be listed in IGRINS_RV_MASTERLOG.csv that comes with this package in the /Engine folder.
+    # If your target is not listed, you must construct your own PrepData files. See ReadMe for more details.
+    
+   # Find all nights of observations of target in master log
     master_log    = pd.read_csv('./Engine/IGRINS_MASTERLOG.csv')
     star_files    = master_log[(master_log['OBJNAME'].str.contains(args.targname, regex=True, na=False)) &
                                (master_log['OBJTYPE'].str.contains('TAR',         regex=True, na=False)) ]
@@ -18,11 +23,12 @@ def DataPrep(args):
         if n == len(args.targname):
             sys.exit('TARGET NAME NOT FOUND IN CATALOG - CHECK INPUT!')
 
-#-------------------------------------------------------------------------------
-# Collect target star information
+    #-------------------------------------------------------------------------------
+    # Prepare PrepData file for target star
     fileT = open('./Input/Prepdata/Prepdata_targ_{}.txt'.format(args.targname), 'w')
     fileT.write('night beam tag mjd facility airmass bvc\n')
 
+    # Collect target star information
     nightsT = [];
     for x in range(len(star_files['CIVIL'])):
         night    = str(  np.array(star_files['CIVIL'])[x]     )
@@ -33,19 +39,22 @@ def DataPrep(args):
         facility = str(  np.array(star_files['FACILITY'])[x]  )
         tag = '{:04d}'.format(tag0)
 
+        # If observation in MASTER_LOG not found in local filesystem, don't list 
         try:
             hdulist = fits.open('{}{}/{}/SDC{}_{}_{}.spec.fits'.format(inpath, night, frame, args.band, night, tag))
         except FileNotFoundError:
             continue
 
+        # Collect observatory
         head = hdulist[0].header
         if head['OBSERVAT'] == 'Lowell Observatory':
             obs = 'DCT'
         elif head['OBSERVAT'] == 'McDonald':
             obs = 'McD'
         else:
-            print('EXPECTED LOWELL OR MCDONALD OBSERVATORY, GOT {}, MUST EDIT CODE TO INCLUDE THIS OPTION'.format( head['OBSERVAT'] ))
+            print('EXPECTED LOWELL OR MCDONALD OBSERVATORY, GOT {}. CODE MUST BE EDITED TO INCLUDE THIS OPTION - CONTACT AUTHORS WITH EXAMPLE OBSERVATION FITS FILE AND THEY WILL UPDATE'.format( head['OBSERVAT'] ))
 
+        # Collect time of mid-exposure
         try:
             time_midpoint = np.mean([float(head['JD-OBS']),float(head['JD-END'])])
         except KeyError:
@@ -56,17 +65,20 @@ def DataPrep(args):
                 l0.append(t1.jd)
             time_midpoint = np.mean(l0)
 
+        # Write out collected info
         mjd = time_midpoint;
         fileT.write(night+' '+frame+' '+str(tag)+' '+str(mjd)+' '+str(facility)+' '+str(airmass)+' '+str(BVCfile))
         fileT.write('\n')
         nightsT.append(night)
     fileT.close()
-#-------------------------------------------------------------------------------
-    ## Now collect A0 information
+   
+    #-------------------------------------------------------------------------------
+    # Prepare PrepData file for A0 stars
     fileA0 = open('./Input/Prepdata/Prepdata_A0_{}.txt'.format(args.targname), 'w')
     fileA0.write('night tag humid temp zd press obs airmass\n')
     noA0nights = []
 
+    ## Now collect A0 information
     for night0 in np.unique(nightsT):
         night    = str(night0)
         am_stars = star_files['AM'][(np.array(star_files['CIVIL'], dtype=str) == night)]
@@ -80,8 +92,7 @@ def DataPrep(args):
             noA0nights.append(night)
             tagA = 'NA'; humid = 'NA'; temp = 'NA'; zd = 'NA'; press = 'NA'; obs = 'NA'; AM = 'NA';
         else:
-            # Then check whether any A0s files for that night outputted by reduction pipeline.
-            # If not, Joe either didn't have the data for them or didn't copy them over.
+            # Then check whether any A0s files for that night are present in local filesystem.
             anyK = False
             subpath        = '{}std/{}/AB/'.format(inpath, night)
             fullpathprefix = '{}SDC{}_{}_'.format(subpath, args.band, night)
@@ -97,6 +108,7 @@ def DataPrep(args):
                 tagA = 'NA'; humid = 'NA'; temp = 'NA'; zd = 'NA'; press = 'NA'; obs = 'NA'; AM = 'NA';
                 noA0nights.append(night)
             else:
+                # If so, review all STD observations for the night and use the one taken soonest before or after the target observation that is also within the set airmass range.
                 stdname = std_files['OBJNAME'][abs(ams-am_star) == min(abs(ams-am_star))].values[0]
                 fileno0 = int(std_files['FILENUMBER'][abs(ams-am_star) == min(abs(ams-am_star))].values[0])
                 names   = np.array(std_files['OBJNAME'])
@@ -114,6 +126,7 @@ def DataPrep(args):
                 am0   = am0s[(tagA0s == tagA0)][0]
                 fac   = np.array(facs)[(tagA0s == tagA0)][0]
 
+                # If best STD observation still has airmass above range limit, throw warning
                 if abs(am0-am_star) > float(args.AM_cut):
                     print(night,stdname,am_star,am0,tagA0)
                     sys.exit('WARNING, STD (A0) AIRMASS FOR NIGHT {} HAS A DIFFERENCE LARGER THAN {} FROM TARGET!'.format(night, args.AM_cut))
@@ -121,12 +134,13 @@ def DataPrep(args):
                 tagA = '{:04d}'.format(tagA0)
                 subpath = '{}std/{}/AB/SDC{}_{}_{}.spec.fits'.format(inpath, night, args.band, night, tagA)
 
+                # Open the chosen STD observation
                 try:
                     hdulist = fits.open(subpath)
                     head    = hdulist[0].header
 
+                # If it is not found locally, use whatever A0 is present locally, in case user selected their STD observations differently
                 except FileNotFoundError:
-                    # If best airmass match A0 for night not found, check if Joe chose a different A0 instead
                     subpath        = '{}std/{}/AB/'.format(inpath, night)
                     fullpathprefix = '{}SDC{}_{}_'.format(subpath, args.band, night)
 
@@ -142,22 +156,25 @@ def DataPrep(args):
                         head = hdulist[0].header
                         am0 = np.mean([float(head['AMSTART']),float(head['AMEND'])])
 
+                # Collect observatory
                 if head['OBSERVAT'] == 'Lowell Observatory':
                     obs = 'DCT'
                 elif (head['OBSERVAT'] == 'McDonald Observatory') or (head['OBSERVAT'] == 'McDonald'):
                     obs = 'McD'
                 else:
-                    print('EXPECTED LOWELL OR MCDONALD OBSERVATORY, GOT {}, MUST EDIT CODE TO INCLUDE THIS OPTION'.format( head['OBSERVAT'] ))
+                    print('EXPECTED LOWELL OR MCDONALD OBSERVATORY, GOT {}. CODE MUST BE EDITED TO INCLUDE THIS OPTION - CONTACT AUTHORS WITH EXAMPLE OBSERVATION FITS FILE AND THEY WILL UPDATE'.format( head['OBSERVAT'] ))
 
+                # Collect other relevant information for use with Telfit
                 AM = str(am0)
                 try:
                     humid = float(head['HUMIDITY'])
                     temp  = float(head['AIRTEMP'])
                     press = float(head['BARPRESS'])
                     zd = np.mean([float(head['ZDSTART']),float(head['ZDEND'])])
-                except ValueError: # McDonald headers don't have these quantities :(
+                except ValueError: # McDonald headers don't have these quantities :( They will be fit by Telfit instead of set to their recorded values.
                     humid = 'NOINFO'; temp = 'NOINFO'; press = 'NOINFO'; zd = 'NOINFO';
 
+        # Write to file
         fileA0.write(night+' '+str(tagA)+' '+str(humid)+' '+str(temp)+' '+str(zd)+' '+str(press)+' '+str(obs)+' '+str(AM))
         fileA0.write('\n')
 
@@ -173,14 +190,15 @@ def DataPrep(args):
 #-------------------------------------------------------------------------------
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-                                     prog        = 'IGRINS Spectra Radial Velocity Pipeline',
+                                     prog        = 'IGRINS Spectra Radial Velocity Pipeline - Step 0',
                                      description = '''
-                                     This is a pipeline that helps you to extract radial velocity \n
-                                     from IGRINS spectra. \n
+                                     This step collects and organizes all relevant information on target observations and associated telluric standard observations, for ease of use in later steps.
+                                     It requires that your observations be listed in IGRINS_RV_MASTERLOG.csv, which comes with this package in the /Engine folder.
+                                     If your target is not listed, you must construct your own PrepData files. See ReadMe for more details. \n
                                      ''',
                                      epilog = "Contact authors: asa.stahl@rice.edu; sytang@lowell.edu")
     parser.add_argument("targname",                          action="store",
-                        help="Enter your *target name, no space",
+                        help="Enter your target name, no space",
                         type=str)
     parser.add_argument("-HorK",    dest="band",             action="store",
                         help="Which band to process? H or K?. Default = K",
