@@ -13,8 +13,11 @@ from Engine.outplotter import outplotter_23
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
+    
+    # Main function for RV fitting that will be threaded over by multiprocessing
+    
     nights   = inparam.nights
-    night = nights[i]
+    night = nights[i] # current looped night
 
     order = orders[order_use]
     xbounds = inparam.xbounddict[order]
@@ -25,7 +28,9 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                                                                                            len(inparam.nights),
                                                                                            night,
                                                                                            mp.current_process().pid) )
-#-------------------------------------------------------------------------------
+
+    #-------------------------------------------------------------------------------
+    
     # Collect initial RV guesses
     if type(inparam.initguesses) == dict:
         initguesses = inparam.initguesses[night]
@@ -33,7 +38,9 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         initguesses = inparam.initguesses
     else:
         sys.exit('ERROR! EXPECING SINGAL NUMBER OR FILE FOR INITGUESSES! QUITTING!')
-#-------------------------------------------------------------------------------
+    
+    #-------------------------------------------------------------------------------
+    
     # Collect relevant beam and filenum info
     tagsnight = []; beamsnight = [];
     for tag in inparam.tagsA[night]:
@@ -55,7 +62,8 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     for t in tagsnight:
         nightsout.append(night)
 
-    # Load telluric template from Telfit'd A0
+    # Load synthetic telluric template generated during Step 1
+    # [:8] here is to ensure program works under Night_Split mode
     A0loc = f'./Output/{args.targname}_{args.band}/A0Fits/{night[:8]}A0_treated_{args.band}.fits'
     try:
         hdulist = fits.open(A0loc)
@@ -63,6 +71,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         logger.warning(f'  --> No A0-fitted template for night {night}, skipping...')
         return nightsout, rvsminibox, parfitminibox, vsiniminibox
 
+    # Find corresponding table in fits file, given the tables do not go sequentially by order number due to multiprocessing in Step 1
     num_orders = 0
     for i in range(25):
         try:
@@ -71,13 +80,13 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         except:
             continue
 
-    # order in A0_treated.fits is no longer sequential...
     fits_layer = [ i for i in np.arange(num_orders)+1 if int(hdulist[i].columns[0].name[9:]) == order ][0]
 
     tbdata = hdulist[ fits_layer ].data
     flag = np.array(tbdata[f'ERRORFLAG{order}'])[0]
 
-    if flag == 1:  # Telfit hit unknown critical error
+    # Check whether Telfit hit critical error in Step 1 for the chosen order with this night. If so, skip.
+    if flag == 1: 
         logger.warning(f'  --> TELFIT ENCOUNTERED CRITICAL ERROR IN ORDER: {order} NIGHT: {night}, skipping...')
         return nightsout, rvsminibox, parfitminibox, vsiniminibox
 
@@ -101,10 +110,10 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 #-------------------------------------------------------------------------------
     ### Initialize parameter array for optimization as well as half-range values for each parameter during the various steps of the optimization.
     ### Many of the parameters initialized here will be changed throughout the code before optimization and in between optimization steps.
-    pars0 = np.array([np.nan,                                                # 0: The shift of the sunspot spectrum (km/s) [assigned later]
-                      0.3,                                                   # 1: The scale factor for the sunspot spectrum
-                      0.0,                                                   # 2: The shift of the telluric spectrum (km/s)
-                      0.6,                                                   # 3: The scale factor for the telluric spectrum
+    pars0 = np.array([np.nan,                                                # 0: The shift of the stellar template (km/s) [assigned later]
+                      0.3,                                                   # 1: The scale factor for the stellar template
+                      0.0,                                                   # 2: The shift of the telluric template (km/s)
+                      0.6,                                                   # 3: The scale factor for the telluric template
                       inparam.initvsini,                                     # 4: vsini (km/s)
                       IPpars[2],                                             # 5: The instrumental resolution (FWHM) in pixels
                       np.nan,                                                # 6: Wavelength 0-pt
@@ -114,8 +123,8 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                       1.0,                                                   #10: Continuum zero point
                       0.,                                                    #11: Continuum linear component
                       0.,                                                    #12: Continuum quadratic component
-                      IPpars[1],                                             #13: IP linear component
-                      IPpars[0]])                                              #14: IP quadratic component
+                      IPpars[1],                                             #13: Instrumental resolution linear component
+                      IPpars[0]])                                            #14: Instrumental resolution quadratic component
 
 
     # Iterate over all A/B exposures
@@ -123,7 +132,8 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         tag = tagsnight[t]
         beam = beamsnight[t]
 
-        ### Load relevant A0 spectrum
+        # Retrieve pixel bounds for where within each other significant telluric absorption is present. 
+        # If these bounds were not applied, analyzing some orders would give garbage fits.
         if args.band=='K':
             if int(order) in [11, 12, 13, 14]:
                 bound_cut = inparam.bound_cut_dic[args.band][order]
@@ -136,6 +146,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
             else:
                 bound_cut = [150, 150]
 
+        # Load target spectrum
         x,wave,s,u = init_fitsread(f'{inparam.inpath}{night}/{beam}/',
                                     'target',
                                     'separate',
@@ -144,40 +155,50 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                                     tag,
                                     args.band,
                                     bound_cut)
-#-------------------------------------------------------------------------------
+
+        #-------------------------------------------------------------------------------
+       
+        # Execute S/N cut
         s2n = s/u
         if np.nanmedian(s2n) < float(args.SN_cut):
             logger.warning('  --> Bad S/N {:1.3f} < {} for {}{} {}, SKIP'.format( np.nanmedian(s2n), args.SN_cut, night, beam, tag))
             continue
 
+        # Trim obvious outliers above the blaze (i.e. cosmic rays)
         nzones = 5
         x = basicclip_above(x,s,nzones); wave = basicclip_above(wave,s,nzones); u = basicclip_above(u,s,nzones); s = basicclip_above(s,s,nzones);
         x = basicclip_above(x,s,nzones); wave = basicclip_above(wave,s,nzones); u = basicclip_above(u,s,nzones); s = basicclip_above(s,s,nzones);
 
+        # Cut spectrum to within wavelength regions defined in input list
         s_piece    = s[    (x > xbounds[0]) & (x < xbounds[-1]) ]
         u_piece    = u[    (x > xbounds[0]) & (x < xbounds[-1]) ]
         wave_piece = wave[ (x > xbounds[0]) & (x < xbounds[-1]) ]
         x_piece    = x[    (x > xbounds[0]) & (x < xbounds[-1]) ]
 
+        # Trim stellar template to relevant wavelength range
         mwave_in,mflux_in = stellarmodel_setup(wave_piece,inparam.mwave0,inparam.mflux0)
 
+        # Trim telluric template to relevant wavelength range
         satm_in = satm[(watm > min(wave_piece)*1e4 - 11) & (watm < max(wave_piece)*1e4 + 11)]
         watm_in = watm[(watm > min(wave_piece)*1e4 - 11) & (watm < max(wave_piece)*1e4 + 11)]
 
-        # Cut target spec to be within A0 spec wave
+        # Make sure data is within telluric template range (shouldn't do anything)
         s_piece    = s_piece[   (wave_piece*1e4 > min(watm_in)+5) & (wave_piece*1e4 < max(watm_in)-5)]
         u_piece    = u_piece[   (wave_piece*1e4 > min(watm_in)+5) & (wave_piece*1e4 < max(watm_in)-5)]
         x_piece    = x_piece[   (wave_piece*1e4 > min(watm_in)+5) & (wave_piece*1e4 < max(watm_in)-5)]
         wave_piece = wave_piece[(wave_piece*1e4 > min(watm_in)+5) & (wave_piece*1e4 < max(watm_in)-5)]
 
         # --------------------------------------------------------------
+        
         par = pars0.copy()
-        ##Set initial wavelength guess
+        
+        # Get initial guess for cubic wavelength solution from reduction pipeline
         f = np.polyfit(x_piece,wave_piece,3)
         par9in = f[0]*1e4; par8in = f[1]*1e4; par7in = f[2]*1e4; par6in = f[3]*1e4;
         par[9] = par9in ; par[8] = par8in ; par[7] = par7in ; par[6] = par6in
 
-        par[0] = initguesses-inparam.bvcs[night+tag]
+        par[0] = initguesses-inparam.bvcs[night+tag] # Initial RV with barycentric correction
+        
         # Arrays defining parameter variations during optimization steps
         dpars = {'cont' : np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0]),
                  'wave' : np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 10.0,  10.0, 5.00000e-5, 1e-7, 0,   0, 0, 0,    0]),
@@ -189,8 +210,10 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         continuum_in = rebin_jv(a0contx,continuum,x_piece,False)
         s_piece /= np.median(s_piece)
         fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]))
-#-------------------------------------------------------------------------------
-        ######## Begin optimization  ########
+
+        #-------------------------------------------------------------------------------
+        
+        # Initialize an array that puts hard bounds on vsini and the instrumental resolution to make sure they do not diverge to unphysical values
         optimize = True
         par_in = par.copy()
         hardbounds = [par_in[4]-dpars['v'][4],  par_in[4]+dpars['v'][4],
@@ -200,6 +223,9 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         if hardbounds[3] < 0:
             hardbounds[3] = 1
 
+        # Begin optimization. Fit the blaze, the wavelength solution, the telluric template power and RV, the stellar template power and RV, the 
+        # zero point for the instrumental resolution, and the vsini of the star separately, iterating and cycling between each set of parameter fits. 
+        
         cycles = 4
 
         optgroup = ['cont', 'wave', 't', 'cont', 's',
@@ -223,21 +249,27 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                     logger.debug(f'{order}_{tag}_{nc}_{optkind}:\n {parfit_1}')
 
         parfit = parfit_1.copy()
-#-------------------------------------------------------------------------------
-        # if stellar template power is very low, throw out result
+
+        #-------------------------------------------------------------------------------
+        
+        # if best fit stellar template power is very low, throw out result
         if parfit[1] < 0.1:
             logger.warning(f'  --> parfit[1] < 0.1, {night} parfit={parfit}')
             continue
-        # if stellar or telluric template powers are exactly equal to their starting values, fit failed, throw out result
+            
+        # if best fit stellar or telluric template powers are exactly equal to their starting values, fit failed, throw out result
         if parfit[1] == par_in[1] or parfit[3] == par_in[3]:
             logger.warning(f'  --> parfit[1] == par_in[1] or parfit[3] == par_in[3], {night}')
             continue
-        # if model dips below zero at any point, we're to close to edge of blaze, fit may be comrpomised, throw out result
+            
+        # if best fit model dips below zero at any point, we're to close to edge of blaze, fit may be comrpomised, throw out result
         smod,chisq = fmod(parfit,fitobj)
         if len(smod[(smod < 0)]) > 0:
             logger.warning(f'  --> len(smod[(smod < 0)]) > 0, {night}')
             continue
-#-------------------------------------------------------------------------------
+
+        #-------------------------------------------------------------------------------
+        
         if args.plotfigs == True:
             parfitS = parfit.copy(); parfitS[3] = 0
             parfitT = parfit.copy(); parfitT[1] = 0
@@ -245,9 +277,9 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
             outplotter_23(parfitT, fitobj, 'parfitT_{}_{}_{}'.format(order,night,tag), trk, inparam, args, step2or3)
             outplotter_23(parfit, fitobj,  'parfit_{}_{}_{}'.format(order,night,tag), trk, inparam, args, step2or3)
 
-        rv0 = parfit[0] - parfit[2]                         # atomosphere velocity correct
+        rv0 = parfit[0] - parfit[2]   # Correct for RV of the atmosphere, since we're using that as the basis for the wavelength scale
 
-        rvsminibox[t]   = rv0  + inparam.bvcs[night+tag] + rv0*inparam.bvcs[night+tag]/(3e5**2) # bvcs correct
+        rvsminibox[t]   = rv0  + inparam.bvcs[night+tag] + rv0*inparam.bvcs[night+tag]/(3e5**2) # Barycentric correction
         parfitminibox[t]= parfit
         vsiniminibox[t] = parfit[4]
     return nightsout,rvsminibox,parfitminibox,vsiniminibox
@@ -257,93 +289,103 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 #-------------------------------------------------------------------------------
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-                                     prog        = 'IGRINS Spectra Radial Velocity Pipeline',
+                                     prog        = 'IGRINS Spectra Radial Velocity Pipeline - Step 3',
                                      description = '''
-                                     This is a pipeline that helps you to extract radial velocity \n
-                                     from IGRINS spectra. \n
+                                     Performs a full analysis of each target star observation to produce accurate and precise RVs.\n
+                                     All the wavelength regions defined in Step 1 are used, and the code analyzes each exposure that is part of a given observation separately (this allows estimates of the RV uncertainties). \n \n
+                                     Unless the target vsini is already known to high accuracy, an initial run of Step 3 is required. \n
+                                     This  will provide an estimate of the \vsini, which will then be plugged in as a fixed value in the second run of Step 3. \n \n
+                                     Even if vsini is already known, it is recommended to run Step 3 twice, as it allows the user to confirm that RVs between consecutive runs have converged within the calculated uncertainties. \n \n
+                                     Additional runs may be necessary depending on the quality of the observed spectra and the \vsini of the target star. 
                                      ''',
                                      epilog = "Contact authors: asa.stahl@rice.edu; sytang@lowell.edu")
     parser.add_argument("targname",                          action="store",
                         help="Enter your *target name",            type=str)
     parser.add_argument("-mode",    dest="mode",             action="store",
-                        help="RV standard star (STD) OR a normal target (TAR)??.",
+                        help="RV standard star (STD) or a normal target (TAR)?",
                         type=str,   default='')
     parser.add_argument("-HorK",    dest="band",             action="store",
                         help="Which band to process? H or K?. Default = K",
                         type=str,   default='K')
     parser.add_argument("-Wr",      dest="WRegion",          action="store",
-                        help="Which ./Input_Data/Use_w/WaveRegions_X to use, Default X = 1",
+                        help="Which list of wavelength regions file (./Input/UseWv/WaveRegions_X) to use? Defaults to those chosen by IGRINS RV team, -Wr 1",
                         type=int,   default=int(1))
     parser.add_argument("-SN",      dest="SN_cut",           action="store",
-                        help="Spectrum S/N quality cut. Default = 50 ",
+                        help="Spectrum S/N quality cut. Spectra with median S/N below this will not be analyzed. Default = 50 ",
                         type=str,   default='50')
     parser.add_argument("-nAB",      dest="nAB",           action="store",
-                        help="Minium request of # of AB sets. Default = 2",
+                        help="Minium number of separte A/B exposures within a set for a given observation (ensures accuracy of uncertainy estimates). Default = 1 for STD, 2 for TAR",
                         type=str,   default='1')
-
     parser.add_argument('-i',       dest="initvsini",        action="store",
-                        help="Initial vsini (float, km/s). Should use the value given by step2",
+                        help="Initial vsini (float, km/s). If no literature value known, use the value given by Step 2",
                         type=str,   default='' )
     parser.add_argument('-v',       dest="vsinivary",         action="store",
-                        help="Range of allowed vsini variation during optimization, default = 5.0 km/s",
+                        help="Range of allowed vsini variation during optimization, default = 5.0 km/s. Should be set to 0 for final run.",
                         type=str, default='5.0' )
     parser.add_argument('-g',       dest="guesses",           action="store",
-                        help="For STD star, single value given by step2 (float, km/s)",
+                        help="For STD star. Initial RV guess for all nights. Given by Step 2 results (float, km/s)",
                         type=str,   default='' )
-
     parser.add_argument('-gS',       dest="guesses_source",           action="store",
-                        help="For TAR star, Source for initial guesses list for RV. Enter init OR rvre (init: Initguesser_results_X, rvre: RV_results_X)",
+                        help="For TAR star. Source for list of initial RV guesses. 'init' = Initguesser_results_X = past Step 2 result OR 'rvre' = RV_results_X = past Step 3 result",
                         type=str, default='')
     parser.add_argument('-gX',       dest="guessesX",           action="store",
-                        help="For TAR star, Please give the number, X, under ./*targname/Initguesser_results_X OR ./*targname/RV_results_X, that you wish to use",
+                        help="For TAR star. The number, X, under ./*targname/Initguesser_results_X or ./*targname/RV_results_X, that you wish to use. Prefix determined by -gS",
                         type=str, default='')
-
     parser.add_argument('-t',       dest="template",         action="store",
                         help="Stellar template. Pick from 'synthetic', 'livingston', or 'user_defined'. Default = 'synthetic'",
                         type=str,   default='synthetic' )
     parser.add_argument('-sp',      dest="sptype",           action="store",
-                        help="The spectral type of the *target.",
+                        help="The spectral type of the *target (letter only).",
                         type=str,   default='' )
     parser.add_argument('-c',       dest="Nthreads",         action="store",
                         help="Number of cpu (threads) to use, default is 1/2 of avalible ones (you have %i cpus (threads) avaliable)"%(mp.cpu_count()),
                         type=int,   default=int(mp.cpu_count()//2) )
     parser.add_argument('-plot',    dest="plotfigs",          action="store_true",
-                        help="If sets, will generate basic fitting result plots")
-
+                        help="If set, will generate plots of the fitting results under ./Output/*targname_*band/figs/main_step3_*band_*runnumber")
     parser.add_argument('-n_use',   dest="nights_use",       action="store",
-                        help="If you don't want all process all nights under the ./Input/*target folder, give an array of night you wish to process here. e.g., [20181111,20181112]",
+                        help="If you don't want to process all nights under the ./Input/*target/ folder, specify an array of night you wish to process here. e.g., [20181111,20181112]",
                         type=str,   default='')
     parser.add_argument('-DeBug',    dest="debug",           action="store_true",
-                        help="If sets, DeBug logging and extra plots will be given")
+                        help="If set, DeBug logging will be output, as well as (lots of) extra plots under ./Temp/Debug/*target_*band/main_step3")
     parser.add_argument('-sk_check', dest="skip",           action="store_true",
-                        help="If sets, will skip the input parameters check, handly when run muti-targets line by line ")
+                        help="If set, will skip the input parameters check. Handy when running mutiple targets line by line")
     parser.add_argument('--version',                          action='version',  version='%(prog)s 0.85')
     args = parser.parse_args()
     inpath   = './Input/{}/'.format(args.targname)
     cdbs_loc = '~/cdbs/'
-#-------------------------------------------------------------------------------
-    # INPUT CHECKING...
+
+    #-------------------------------------------------------------------------------
+    
+    # Check user input
+    
     initvsini = float(args.initvsini)
     vsinivary = float(args.vsinivary)
+    
     #------------------------------
+    
     if args.template.lower() not in ['synthetic', 'livingston', 'user_defined']:
         sys.exit('ERROR: UNEXPECTED STELLAR TEMPLATE FOR "-t" INPUT!')
+        
     #------------------------------
+    
     if args.template.lower() in ['synthetic', 'livingston']:
         if args.sptype not in ['F','G','K','M']:
-            sys.exit('ERROR: SPECTRAL TYPE FOR DEFAULT TEMPALTE ARE ONLY FOR F G K M! STARS')
+            sys.exit('ERROR: DEFAULT TEMPLATES ONLY COVER F G K M STARS!')
+            
     #------------------------------
+    
     if (args.mode.lower() == 'std') & (args.guesses_source != ''):
         sys.exit('ERROR: STD CANNOT USE -gS, PLEASE USE -g')
     if (args.mode.lower() == 'tar') & (args.guesses != ''):
         sys.exit('ERROR: TAR CANNOT USE -g, PLEASE USE -gS')
+        
     #------------------------------
 
-    if args.mode.lower() == 'std':
+    if args.mode.lower() == 'std': # Specify initial RV guesses as a single value applied to all nights
         initguesses = float(args.guesses)
         initguesses_show = initguesses
-    else:
-        if args.guesses_source == 'init':
+    else: # Load initial RV guesses from file
+        if args.guesses_source == 'init': # From Step 2 results
             guesses = './Output/{}_{}/Initguesser_results_{}.csv'.format(args.targname,
                                                                          args.band,
                                                                          int(args.guessesX))
@@ -355,7 +397,7 @@ if __name__ == '__main__':
             for hrt in range(len(initnights)):
                 initguesses[str(initnights[hrt])] = float(initrvs[hrt])
 
-        elif args.guesses_source == 'rvre':
+        elif args.guesses_source == 'rvre': # From Step 3 results
             guesses = './Output/{}_{}/RVresultsSummary_{}.csv'.format(args.targname,
                                                                       args.band,
                                                                       int(args.guessesX))
@@ -366,7 +408,9 @@ if __name__ == '__main__':
             initguesses_show = f'RVresultsSummary_{args.guessesX}.csv'
             for hrt in range(len(initnights)):
                 initguesses[str(initnights[hrt])] = float(initrvs[hrt])
-#-------------------------------------------------------------------------------
+
+    #-------------------------------------------------------------------------------
+    
     start_time = datetime.now()
     print('\n')
     print('####################################################################################\n')
@@ -397,9 +441,12 @@ Input Parameters:
                 continue
 
     print('---------------------------------------------------------------')
-    print('RV calculation for RV standard star {}...'.format(args.targname))
+    print('Running Step 3 for {}...'.format(args.targname))
     print('This will take a while..........')
-#-------------------------------------------------------------------------------
+
+    #-------------------------------------------------------------------------------
+   
+    # Make output directories as needed
     if not os.path.isdir('./Output'):
         os.mkdir('./Output')
 
@@ -424,7 +471,10 @@ Input Parameters:
         os.mkdir(f'./Output/{args.targname}_{args.band}/figs/main_step{step2or3}_{args.band}_{trk}')
 
     outpath = f'./Output/{args.targname}_{args.band}'
-#-------------------------------------------------------------------------------
+
+    #-------------------------------------------------------------------------------
+    
+    # Set up logger
     logger = logging.getLogger(__name__)
     if args.debug:
         logger.setLevel(logging.DEBUG)
@@ -440,12 +490,15 @@ Input Parameters:
 
     logger.addHandler(file_hander)
     logger.addHandler(stream_hander)
-#-------------------------------------------------------------------------------
+    
     logger.info(f'Writing output to ./Output/{args.targname}_{args.band}/{name}')
-#-------------------------------------------------------------------------------
+    
+    #-------------------------------------------------------------------------------
+    
     # Read in the Prepdata under ./Input/Prpedata/
     xbounddict, maskdict, tagsA, tagsB, mjds, bvcs, nightsFinal, orders = read_prepdata(args)
 
+    # Use subset of nights if specified
     if args.nights_use != '':
         nightstemp = np.array(ast.literal_eval(args.nights_use), dtype=str)
         for nnn in nightstemp:
@@ -455,15 +508,20 @@ Input Parameters:
         print('Only processing nights: {}'.format(nightsFinal))
 
     logger.info('Analyze with {} nights'.format(len(nightsFinal)))
-#-------------------------------------------------------------------------------
+
+    #-------------------------------------------------------------------------------
+    
     # Retrieve stellar and telluric templates
     watm,satm, mwave0, mflux0 = setup_templates(logger, args.template, args.band, args.sptype)
 
     # Save pars in class for future use
     inparam = inparams(inpath,outpath,initvsini,vsinivary,args.plotfigs,
                        initguesses,bvcs,tagsA,tagsB,nightsFinal,mwave0,mflux0,None,xbounddict,maskdict)
-#-------------------------------------------------------------------------------
-    # Divide between nights where IGRINS mounting was loose (L) and when it was tight (T)
+
+    #-------------------------------------------------------------------------------
+    
+    # Divide between nights where IGRINS mounting was loose (L) and when it was tight (T). 
+    # All statistical analysis will be performed separately for these two datasets.
     nights    = inparam.nights
     intnights = np.array([int(i[:8]) for i in nights])
 
@@ -484,8 +542,11 @@ Input Parameters:
     else:
         nightscomblist = [nightsT]
 
-#-------------------------------------------------------------------------------
-    for jerp in range(len(orders)): # Iterate over orders
+
+    #-------------------------------------------------------------------------------
+    
+    # Run order by order, multiprocessing over nights within an order
+    for jerp in range(len(orders)): 
         pool = mp.Pool(processes = args.Nthreads)
         func = partial(rv_MPinst, args, inparam, orders, jerp, trk, step2or3 )
         outs = pool.map(func, np.arange(len(nightsFinal)))
@@ -493,8 +554,10 @@ Input Parameters:
         pool.join()
 
         order = orders[jerp]
-#-------------------------------------------------------------------------------
-        # Collect outputs
+
+        #-------------------------------------------------------------------------------
+        
+        # Collect outputs: the reference night, the best fit RV, vsini, and other parameters
         for i in range(len(nights)):
             outsbox = outs[i]
             if i == 0:
@@ -511,7 +574,7 @@ Input Parameters:
         nightsbox = np.array(nightsbox)
         vsinitags = []
 
-        # Save results in fits file
+        # Save results to fits file
         c1    = fits.Column(name='NIGHT'+str(order),  array=nightsbox, format='{}A'.format(len(nights[0])) )
         c2    = fits.Column(name='RV'+str(order),     array=rvbox,     format='D')
         c3    = fits.Column(name='PARFIT'+str(order), array=parfitbox, format=str(len(parfitbox[0,:]))+'D', dim=(1,len(parfitbox[0,:])))
@@ -528,17 +591,22 @@ Input Parameters:
             hh = fits.open('{}/{}/RVresultsRawBox.fits'.format(inparam.outpath, name))
             hh.append(hdu_1)
             hh.writeto('{}/{}/RVresultsRawBox.fits'.format(inparam.outpath, name),overwrite=True)
-#-------------------------------------------------------------------------------
+
+        #-------------------------------------------------------------------------------
+        
         # For each set of nights (tight, loose)...
         T_L = 'T'
         for nights_use in nightscomblist:
-            # Iterating over nights, use these weights to combine the RVs from different chunks of one spectrum into a single RV
+            
+            # For each night...
             for i in range(len(nights_use)):
+                # Collect the RVs and vsinis determined from different A/B exposures within a night
                 indnight  = np.where(nightsbox == nights_use[i])[0]
                 rvtags    = rvbox[indnight]
                 vsinitags = vsinibox[indnight]
 
-                # Take the mean and std of the RVs determined from different A/B exposures within a night.
+                # Take the mean of the vsinis, and the mean and std of the RVs.
+                # If the number of different successfully fitted A/B exposures is less than required, pass NaN instead.
                 if T_L == 'T':
                     vsinisT[i,jerp] = np.nanmean(vsinitags)
 
@@ -560,7 +628,10 @@ Input Parameters:
                         stdmasterboxL[i,jerp] = np.nanstd(rvtags)/np.sqrt(len(rvtags))
             T_L = 'L'
 
-#-------------------------------------------------------------------------------
+
+    #-------------------------------------------------------------------------------
+    
+    # Don't combine Loose and Tight datasets, but make them both easily referenceable 
     nightsCombined  = np.array([]); mjdsCombined = np.array([]);
     rvfinalCombined = np.array([]); stdfinalCombined = np.array([]); vsinifinalCombined = np.array([]);
 
@@ -573,26 +644,27 @@ Input Parameters:
         stdboxcomblist = [stdmasterboxT]
         vsinicomblist  = [vsinisT]
 
-    # Iterating over tight and loose mounting nights...
+    # Iterate over tight and loose mounting data sets...
     for boxind in range(len(rvboxcomblist)):
 
         rvmasterbox  = rvboxcomblist[boxind]
         stdmasterbox = stdboxcomblist[boxind]
         vsinibox     = vsinicomblist[boxind]
-#-------------------------------------------------------------------------------
-        if args.mode=='STD':
+
+        #-------------------------------------------------------------------------------
+        
+        if args.mode=='STD': # If RV STD star, calculate uncertainty in method
+            
             # Calculate the precision within an order across nights
             sigma_O2     = np.array([np.nanstd(rvmasterbox[:,ll])**2 for ll in range(len(orders))])
             sigma_ABbar2 = np.ones_like(sigma_O2)
-            sigma_ON2    = np.ones_like(rvmasterbox)
 
-            # Calculate uncertainty in method as difference between variance within an order and mean variance within a night's As and Bs RVs
+            # Calculate uncertainty in method as difference between variance within an order and mean variance within a night's different exposure RVs
             for ll in range(len(orders)):
                 sigma_ABbar2[ll] = np.nanmean(stdmasterbox[:,ll]**2)
             sigma_method2 = sigma_O2 - sigma_ABbar2
 
-        else:
-            # Load the uncertainty from method from GJ 281 analysis
+        else: # If target star, load the uncertainty in method calculated from our RV STD star runs
             if boxind == 0:
                 nights_use = nightsT.copy()
                 kind = 'Tight'
@@ -601,9 +673,11 @@ Input Parameters:
                 nights_use = nightsL.copy()
                 kind = 'Loose'
                 sigma_method2 = inparam.methodvariance_loose[args.band]
-            # Calculate the uncertainty in each night/order RV as the sum of the uncertainty in method and the uncertainty in that night's As and Bs RVs
-            sigma_ON2    = np.ones_like(rvmasterbox)
-#-------------------------------------------------------------------------------
+            
+        sigma_ON2    = np.ones_like(rvmasterbox)
+
+        #-------------------------------------------------------------------------------
+        
         # Note rvmasterbox indexed as [nights,orders]
         Nnights = len(rvmasterbox[:,0])
 
@@ -634,16 +708,21 @@ Input Parameters:
             vsinifinal[n] = np.nansum(weights*vsinibox[n,:])
             mjds_out[n]   = mjds[nights_use[n]]
 
-            if np.nansum(weights) == 0:
+            # if all the RVs going into the observation's final RV calculation were NaN due to any pevious errors, pass NaN
+            if np.nansum(weights) == 0: 
                 rvfinal[n]    = np.nan
                 stdfinal[n]   = np.nan
                 vsinifinal[n] = np.nan
 
+            # if more than half of the orders going into the observation's final RV calculation were NaN due to any pevious errors, pass NaN
             if np.sum( np.isnan(rvmasterbox[n,:]) ) > np.floor( len(orders) * 0.5 ):
                 rvfinal[n]    = np.nan
                 stdfinal[n]   = np.nan
                 vsinifinal[n] = np.nan
-#-------------------------------------------------------------------------------
+
+        #-------------------------------------------------------------------------------
+        
+        # Plot results
         f, axes = plt.subplots(1, 1, figsize=(5,3), facecolor='white', dpi=300)
 
         axes.plot(    np.arange(len(rvfinal))+1, rvfinal, '.k', ms=5)
@@ -659,6 +738,7 @@ Input Parameters:
         axes.tick_params(axis='both', which='both', labelsize=5, right=True, top=True, direction='in', width=.6)
         f.savefig('{}/{}/FinalRVs_{}_.png'.format(inparam.outpath, name, kind), format='png', bbox_inches='tight')
 
+        # Save results to fits file separately for each tight/loose dataset
         c1 = fits.Column( name='NIGHT',         array=nights_use,    format='8A')
         c2 = fits.Column( name='JD',            array=mjds_out,      format='D')
         c3 = fits.Column( name='RVBOX',         array=rvmasterbox,   format='{}D'.format(len(orders)))
@@ -681,19 +761,23 @@ Input Parameters:
         hdul        = fits.HDUList([primary_hdu,hdu_1])
         hdul.writeto('{}/{}/RVresultsSummary_{}.fits'.format(inparam.outpath, name, kind), overwrite=True)
 
+        # Combine final RVs from both tight and loose mounting data sets
         nightsCombined     = np.concatenate((nightsCombined,     nights_use))
         mjdsCombined       = np.concatenate((mjdsCombined,       mjds_out))
         rvfinalCombined    = np.concatenate((rvfinalCombined,    rvfinal))
         stdfinalCombined   = np.concatenate((stdfinalCombined,   stdfinal))
         vsinifinalCombined = np.concatenate((vsinifinalCombined, vsinifinal))
 
-        if args.mode=='STD':
+        if args.mode=='STD': # If uncertainty in method was calculated, save it
             sigma_method2 = [np.around(float(i), 8) for i in sigma_method2]
             logger.info('sigma_method2 with type = {} is {}'.format(kind, sigma_method2))
         logger.info('During the {} mounting period: RV mean = {:1.4f} km/s, std = {:1.4f} km/s'.format( kind,
                                                                                                         np.nanmean(rvfinal),
                                                                                                         np.nanstd(rvfinal) ))
-#-------------------------------------------------------------------------------
+
+    #-------------------------------------------------------------------------------
+    
+    # Plot combined results
     xscale = np.arange(len(rvfinalCombined))+1
 
     f, axes = plt.subplots(1, 1, figsize=(5,3), facecolor='white', dpi=300)
@@ -723,7 +807,7 @@ Input Parameters:
     axes.tick_params(axis='both', which='both', labelsize=6, right=True, top=True, direction='in', width=.6)
     f.savefig('{}/{}/FinalRVs.png'.format(inparam.outpath, name), format='png', bbox_inches='tight')
 
-
+    # Output combined final results to fits file
     c1 = fits.Column(name='NIGHT',    array=nightsCombined,         format='{}A'.format(len(nights[0])) )
     c2 = fits.Column(name='JD',       array=mjdsCombined,           format='D')
     c3 = fits.Column(name='RVfinal',  array=rvfinalCombined,        format='D')
