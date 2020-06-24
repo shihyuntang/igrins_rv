@@ -443,7 +443,7 @@ Input Parameters:
 
     if not os.path.isdir(f'../Output/{args.targname}_{args.band}_tool'):
         os.mkdir(f'../Output/{args.targname}_{args.band}_tool')
-    filesndirs = os.listdir(f'./Output/{args.targname}_{args.band}_tool')
+    filesndirs = os.listdir(f'../Output/{args.targname}_{args.band}_tool')
 
     trk = 1; go = True;
     while go == True:
