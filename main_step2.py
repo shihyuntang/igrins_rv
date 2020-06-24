@@ -338,7 +338,7 @@ if __name__ == '__main__':
     if args.guesses != '':
         try:
             initguesses = float(args.guesses)
-            initguesses_show = std(initguesses)
+            initguesses_show = initguesses
         except:
             sys.exit('ERROR: -g ONLY TAKE NUMBER AS INPUT!')
     #------------------------------
