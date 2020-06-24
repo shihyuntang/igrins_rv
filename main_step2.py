@@ -260,12 +260,14 @@ def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 #-------------------------------------------------------------------------------
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-                                     prog        = 'IGRINS Spectra Radial Velocity Pipeline STEP 2',
+                                     prog        = 'IGRINS Spectra Radial Velocity Pipeline - Step 2',
                                      description = '''
-                                     This is a pipeline that helps you to extract radial velocity \n
-                                     from IGRINS spectra. \n
-                                     Step 2 will help you get a best initial RV guess for starting \n
-                                     Step 3.
+                                     Only required if the average RV of the target star is unknown to $>$ 5 \kms precision. \n
+                                     Performs an abbreviated analysis of the target star observations in order to converge to coarsely accurate RVs, 
+                                     which will be used as starting points for the more precise analysis in the next step; 
+                                     simultaneously does the same for target star's \vsini.  \n
+                                     Only a single order is used - by default, the first one in the list of wavelength regions, but the user can specify otherwise.  \n
+                                     All separate exposures for a given observation are combined into one higher S/N spectrum before fitting occurs. 
                                      ''',
                                      epilog = "Contact authors: asa.stahl@rice.edu; sytang@lowell.edu")
     parser.add_argument("targname",                          action="store",
@@ -274,15 +276,14 @@ if __name__ == '__main__':
                         help="Which band to process? H or K?. Default = K",
                         type=str,   default='K')
     parser.add_argument("-Wr",      dest="WRegion",          action="store",
-                        help="Which ./Input/UseWv/WaveRegions_X to use, Default X = 1",
+                        help="Which list of wavelength regions file (./Input/UseWv/WaveRegions_X) to use? Defaults to those chosen by IGRINS RV team, -Wr 1",
                         type=int,   default=int(1))
     parser.add_argument("-l_use",   dest="label_use",        action="store",
-                        help="Only one wavelength range will be used to RV initial guess, pick a label to use, Default is the first label",
+                        help="Specify order used. Default is the first in WRegion list",
                         type=int,   default=int(0))
     parser.add_argument("-SN",      dest="SN_cut",           action="store",
-                        help="Spectrum S/N quality cut. Default = 50 ",
+                        help="Spectrum S/N quality cut. Spectra with median S/N below this will not be analyzed. Default = 50 ",
                         type=str,   default='50')
-
     parser.add_argument('-i',       dest="initvsini",        action="store",
                         help="Initial vsini (float, km/s)",
                         type=str,   default='' )
@@ -290,58 +291,71 @@ if __name__ == '__main__':
                         help="Range of allowed vsini variation during optimization (float, if set to zero vsini will be held constant), default = 5.0 km/s",
                         type=str,   default='5' )
     parser.add_argument('-g',       dest="guesses",          action="store",
-                        help="Initial guesses for RV (int or float, km/s), or use -gX",
+                        help="Initial guess for RV (int or float, km/s) for all nights. \n
+                        Use -gX instead if you want to reference an Initguesser_results file from a previous run of this step, which will have a different initial guess for each night",
                         type=str,   default='')
     parser.add_argument('-gX',      dest="guessesX",         action="store",
-                        help="Please give the number, X, under ./*targname/Initguesser_results_X that you wish to use as initial RV guesses",
+                        help="The number, X, that refers to the ./*targname/Initguesser_results_X file you wish to use for initial RV guesses",
                         type=str,   default='')
-
     parser.add_argument('-t',       dest="template",         action="store",
                         help="Stellar template. Pick from 'synthetic', 'livingston', or 'user_defined'. Default = 'synthetic'",
                         type=str,   default='synthetic' )
     parser.add_argument('-sp',      dest="sptype",           action="store",
-                        help="The spectral type of the *target.",
+                        help="The spectral type of the *target. (Letter only)",
                         type=str,   default='' )
-
     parser.add_argument('-c',       dest="Nthreads",         action="store",
                         help="Number of cpu (threads) to use, default is 1/2 of avalible ones (you have %i cpus (threads) avaliable)"%(mp.cpu_count()),
                         type=int,   default=int(mp.cpu_count()//2) )
     parser.add_argument('-plot',    dest="plotfigs",          action="store_true",
-                        help="If sets, will generate basic fitting result plots")
-
+                        help="If set, will generate plots of the basic fitting results under ./Output/*targname_*band/figs/main_step2_*band_*runnumber")
     parser.add_argument('-n_use',   dest="nights_use",       action="store",
-                        help="If you don't want all process all nights under the ./Input/*target folder, give an array of night you wish to process here. e.g., [20181111,20181112]",
+                        help="If you don't want to process all nights under the ./Input/*target/ folder, specify an array of night you wish to process here. e.g., [20181111,20181112]",
                         type=str,   default='')
     parser.add_argument('-DeBug',    dest="debug",           action="store_true",
-                        help="If sets, DeBug logging and extra plots will be given")
+                        help="If set, DeBug logging will be output, as well as (lots of) extra plots under ./Temp/Debug/*target_*band/main_step2")
     parser.add_argument('-sk_check', dest="skip",           action="store_true",
-                        help="If sets, will skip the input parameters check, handly when run muti-targets line by line ")
+                        help="If set, will skip the input parameters check. Handy when running mutiple targets line by line")
     parser.add_argument('--version',                          action='version',  version='%(prog)s 0.85')
     args = parser.parse_args()
     inpath   = './Input/{}/'.format(args.targname)
     cdbs_loc = '~/cdbs/'
-#-------------------------------------------------------------------------------
-    # INPUT CHECKING...
+
+    #-------------------------------------------------------------------------------
+    
+    #### Check user inputs
+    
     initvsini = float(args.initvsini)
     vsinivary = float(args.vsinivary)
+    
     #------------------------------
+    
     if args.template.lower() not in ['synthetic', 'livingston', 'user_defined']:
         sys.exit('ERROR: UNEXPECTED STELLAR TEMPLATE FOR "-t" INPUT!')
+        
     #------------------------------
+    
     if args.template.lower() in ['synthetic', 'livingston']:
         if args.sptype not in ['F','G','K','M']:
-            sys.exit('ERROR: SPECTRAL TYPE FOR DEFAULT TEMPALTE ARE ONLY FOR F G K M! STARS')
+            sys.exit('ERROR: DEFAULT TEMPLATES ONLY COVER F G K M STARS!')
+            
     #------------------------------
+    
     if (args.guesses != '') & (args.guessesX != ''):
         sys.exit('ERROR: YOU CAN ONLY CHOOSE EITHER -g OR -gX')
+        
     #------------------------------
+    # Specify initial RV guesses as a single value applied to all nights
+    
     if args.guesses != '':
         try:
             initguesses = float(args.guesses)
             initguesses_show = initguesses
         except:
-            sys.exit('ERROR: -g ONLY TAKE NUMBER AS INPUT!')
-    #------------------------------
+            sys.exit('ERROR: -g ONLY TAKES A NUMBER AS INPUT!')
+            
+    #------------------------------ 
+    
+    # Load initial RV guesses from file
     if args.guessesX != '':
         try:
             guessdata = Table.read(f'./Output/{args.targname}_{args.band}/Initguesser_results_{args.guessesX}.csv', format='csv')
@@ -355,7 +369,9 @@ if __name__ == '__main__':
         initguesses_show = f'Initguesser_results_{args.guessesX}.csv'
         for hrt in range(len(initnights)):
             initguesses[str(initnights[hrt])] = float(initrvs[hrt])
+            
 #-------------------------------------------------------------------------------
+
     start_time = datetime.now()
     print('####################################################################################\n')
     print('---------------------------------------------------------------')
@@ -376,7 +392,7 @@ Input Parameters:
 
     if not args.skip:
         while True:
-            inpp = input("Press [Y]es to continue, [N]o to quite...\n --> ")
+            inpp = input("Press [Y]es to continue, [N]o to quit...\n --> ")
             if 'n' in inpp.lower():
                 sys.exit('QUIT, PLEASE RE-ENTER YOUR PARAMETERS')
             elif 'y' in inpp.lower():
@@ -386,9 +402,12 @@ Input Parameters:
                 continue
 
     print('---------------------------------------------------------------')
-    print('RV Initial Guess for {}...'.format(args.targname))
+    print('Running Step 2 for {}...'.format(args.targname))
     print('This Will Take a While..........')
-#-------------------------------------------------------------------------------
+    
+    #-------------------------------------------------------------------------------
+
+    # Make output directories as needed
     if not os.path.isdir('./Output'):
         os.mkdir('./Output')
 
@@ -411,7 +430,10 @@ Input Parameters:
         os.mkdir(f'./Output/{args.targname}_{args.band}/figs/main_step{step2or3}_{args.band}_{trk}')
 
     outpath = f'./Output/{args.targname}_{args.band}'
-#-------------------------------------------------------------------------------
+
+    #-------------------------------------------------------------------------------
+    
+    # Set up logger
     logger = logging.getLogger(__name__)
     if args.debug:
         logger.setLevel(logging.DEBUG)
@@ -427,16 +449,21 @@ Input Parameters:
 
     logger.addHandler(file_hander)
     logger.addHandler(stream_hander)
-#-------------------------------------------------------------------------------
+
+    #-------------------------------------------------------------------------------
+    # Create output file to write to
     logger.info(f'Writing output to ./Output/{args.targname}_{args.band}/{iniguess_dir}')
 
     filew = open(f'./Output/{args.targname}_{args.band}/{iniguess_dir}','w')
     filew.write('night, bestguess, vsini')
     filew.write('\n')
-#-------------------------------------------------------------------------------
+
+    #-------------------------------------------------------------------------------
+    
     # Read in the Prepdata under ./Input/Prpedata/
     xbounddict, maskdict, tagsA, tagsB, mjds, bvcs, nightsFinal, orders = read_prepdata(args)
 
+    # Use subset of nights if specified
     if args.nights_use != '':
         nightstemp = np.array(ast.literal_eval(args.nights_use), dtype=str)
         for nnn in nightstemp:
@@ -446,20 +473,26 @@ Input Parameters:
         print('Only processing nights: {}'.format(nightsFinal))
 
     logger.info('Analyze with {} nights'.format(len(nightsFinal)))
-#-------------------------------------------------------------------------------
+
+    #-------------------------------------------------------------------------------
+    
     # Retrieve stellar and telluric templates
     watm,satm, mwave0, mflux0 = setup_templates(logger, args.template, args.band, args.sptype)
 
     # Save pars in class for future use
     inparam = inparams(inpath,outpath,initvsini,vsinivary,args.plotfigs,
                        initguesses,bvcs,tagsA,tagsB,nightsFinal,mwave0,mflux0,None,xbounddict,maskdict)
-#-------------------------------------------------------------------------------
+
+    #-------------------------------------------------------------------------------
+    
+    # Run order by order, multiprocessing over nights within an order
     pool = mp.Pool(processes = args.Nthreads)
     func = partial(ini_MPinst, args, inparam, orders, int(args.label_use), trk, step2or3 )
     outs = pool.map(func, np.arange(len(nightsFinal)))
     pool.close()
     pool.join()
 
+    # Write outputs to file
     vsinis = []; finalrvs = [];
     for n in range(len(nightsFinal)):
         nightout = outs[n]
@@ -481,6 +514,6 @@ Input Parameters:
     logger.info('RV Initial Guess DONE... Duration: {}'.format(end_time - start_time))
     logger.info(f'Output saved under ./Output/{args.targname}_{args.band}/{iniguess_dir}')
     print('---------------------------------------------------------------')
-    print('You can now try to get a better RV initial guess with by using -gX and rerun main_step2.py')
-    print('OR, you can go on to the full RV extractor in main_step3.py')
+    print('You can now try to get a better RV initial guess with by rerunning Step 2 with -gX set to the run number you just completed.')
+    print('OR, you can go on to the full RV analysis in Step 3.')
     print('####################################################################################')
