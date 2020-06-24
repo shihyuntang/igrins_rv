@@ -272,8 +272,8 @@ if __name__ == '__main__':
                         help="Which band to process? H or K?. Default = K",
                         type=str,   default='K')
     parser.add_argument("-Wr",      dest="WRegion",          action="store",
-                        help="Which ./Input_Data/Use_w/WaveRegions_X to use, Default X = 0",
-                        type=int,   default=int(0))
+                        help="Which ./Input_Data/Use_w/WaveRegions_X to use, Default X = 1",
+                        type=int,   default=int(1))
     parser.add_argument("-SN",      dest="SN_cut",           action="store",
                         help="Spectrum S/N quality cut. Default = 50 ",
                         type=str,   default='50')

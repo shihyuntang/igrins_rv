@@ -304,8 +304,8 @@ if __name__ == '__main__':
                         help="Which band to process? H or K?. Default = K",
                         type=str,   default='K')
     parser.add_argument("-Wr",      dest="WRegion",          action="store",
-                        help="Which ./Input/UseWv/WaveRegions_X to use, Default X = 0",
-                        type=int,   default=int(0))
+                        help="Which ./Input/UseWv/WaveRegions_X to use, Default X = 1",
+                        type=int,   default=int(1))
 
     parser.add_argument('-c',       dest="Nthreads",         action="store",
                         help="Number of cpu (threads) to use, default is 1/2 of avalible ones (you have %i cpus (threads) avaliable)"%(mp.cpu_count()),
