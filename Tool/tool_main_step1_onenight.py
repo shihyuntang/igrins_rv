@@ -342,8 +342,6 @@ if __name__ == '__main__':
 # #    order0 = np.array([16])
 # ---------------------------------------
     print('Analyze {} orders with {} nights'.format(len(orders), len(nightsFinal)))
-    print('Program starts in 5 sec...')
-    time.sleep(5)
     print('\n')
 
     #-------------------------------------------------------------------------------
