@@ -207,14 +207,23 @@ def setup_templates(logger, kind='synthetic', band='K', sptype='M'):
 
 
 def setup_templates_tel():
-    spotdata = Table.read('./Engine/SpotAtl Organized.txt',format='ascii')
+
+    if os.getcwd()[-1]=='v':
+        spotdata = Table.read('./Engine/SpotAtl Organized.txt',format='ascii')
+    else:
+        spotdata = Table.read('../Engine/SpotAtl Organized.txt',format='ascii')
+
     mwave0 = np.array(spotdata['wave'])*10000.0
     mflux0 = np.array(spotdata['flux'])
     mwave0 = mwave0[(np.isfinite(mflux0))]
     mflux0 = mflux0[(np.isfinite(mflux0))]
     mflux0[(mflux0 < 0)] = 0
 
-    telluricdata = Table.read('./Engine/PhotoAtl Organized.txt',format='ascii')
+    if os.getcwd()[-1]=='v':
+        telluricdata = Table.read('./Engine/PhotoAtl Organized.txt',format='ascii')
+    else:
+        telluricdata = Table.read('../Engine/PhotoAtl Organized.txt',format='ascii')
+
     watm = np.array(telluricdata['wave'])*10000.0
     satm = np.array(telluricdata['flux'])
     watm = watm[(np.isfinite(satm))]
