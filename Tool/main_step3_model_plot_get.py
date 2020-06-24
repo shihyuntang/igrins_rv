@@ -58,7 +58,7 @@ def rv_MPinst(args, inparam, i, orders, order):
     flminibox_mod[:]  = np.nan
 
     # Load telluric template from Telfit'd A0
-    A0loc = f'../Output/{args.targname}_{args.band}/A0Fits/{night[:8]}A0_treated_{args.band}.fits'
+    A0loc = f'../Output/{args.targname}_{args.band}_tool/A0Fits/{night[:8]}A0_treated_{args.band}.fits'
     try:
         hdulist = fits.open(A0loc)
     except IOError:
