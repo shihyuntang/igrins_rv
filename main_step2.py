@@ -21,7 +21,7 @@ def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     night    = nights[i] # current looped night
 
     order   = order_use
-    xbounds = inparam.xbounddict[order]
+    xbounds = inparam.xbounddict[str(order)]
     print('Working on order {:02d}, night {:03d}/{:03d} ({}) PID:{}...'.format(int(order),
                                                                               i+1,
                                                                               len(inparam.nights),
