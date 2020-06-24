@@ -338,6 +338,7 @@ if __name__ == '__main__':
     if args.guesses != '':
         try:
             initguesses = float(args.guesses)
+            initguesses_show = std(initguesses)
         except:
             sys.exit('ERROR: -g ONLY TAKE NUMBER AS INPUT!')
     #------------------------------
@@ -351,6 +352,7 @@ if __name__ == '__main__':
         initnights = np.array(guessdata['night'])
         initrvs    = np.array(guessdata['bestguess'])
         initguesses = {}
+        initguesses_show = f'Initguesser_results_{args.guessesX}.csv'
         for hrt in range(len(initnights)):
             initguesses[str(initnights[hrt])] = float(initrvs[hrt])
 #-------------------------------------------------------------------------------
@@ -366,11 +368,11 @@ Input Parameters:
     Order Use           = \33[41m Order {} \033[0m
     Initial vsini       = \33[41m {} km/s \033[0m
     vsini vary range    \u00B1 \33[41m {} km/s \033[0m
-    RV initial guess    = \33[41m {} km/s \033[0m
+    RV initial guess    = \33[41m {} \033[0m
     Stellar template use= \33[41m {} \033[0m
     Target Spectral Type= \33[41m {} \033[0m             <-------  [late K, M] recommended 'synthetic', [F, G, early K] SpTy recommended 'livingston'
     '''.format(args.targname, args.band, args.WRegion, args.SN_cut, args.label_use,
-               initvsini, vsinivary, initguesses, args.template, args.sptype))
+               initvsini, vsinivary, initguesses_show, args.template, args.sptype))
 
     if not args.skip:
         while True:
