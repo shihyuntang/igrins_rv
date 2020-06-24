@@ -14,17 +14,22 @@ from Engine.outplotter import outplotter_23
 #-------------------------------------------------------------------------------
 
 def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
+    
+    # Main function for RV fitting that will be threaded over by multiprocessing
+    
     nights   = inparam.nights
-    night    = nights[i]
+    night    = nights[i] # current looped night
 
-    order   = orders[order_use]
+    order   = order_use
     xbounds = inparam.xbounddict[order]
     print('Working on order {:02d}, night {:03d}/{:03d} ({}) PID:{}...'.format(int(order),
                                                                               i+1,
                                                                               len(inparam.nights),
                                                                               night,
                                                                               mp.current_process().pid) )
-#-------------------------------------------------------------------------------
+
+    #-------------------------------------------------------------------------------
+    
     # Collect initial RV guesses
     if type(inparam.initguesses) == dict:
         initguesses = inparam.initguesses[night]
@@ -42,7 +47,7 @@ def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         tagsnight.append(tag)
         beamsnight.append('B')
 
-    # Load telluric template from Telfit'd A0
+    # Load synthetic telluric template generated during Step 1
     # [:8] here is to ensure program works under Night_Split mode
     A0loc = f'./Output/{args.targname}_{args.band}/A0Fits/{night[:8]}A0_treated_{args.band}.fits'
     try:
@@ -51,6 +56,7 @@ def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         logger.warning(f'  --> No A0-fitted template for night {night}, skipping...')
         return night, np.nan, np.nan
 
+    # Find corresponding table in fits file, given the tables do not go sequentially by order number due to multiprocessing in Step 1
     num_orders = 0
     for i in range(25):
         try:
@@ -59,15 +65,26 @@ def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         except:
             continue
 
-    # order in A0_treated.fits is no longer sequential...
-    fits_layer = [ i for i in np.arange(num_orders)+1 if int(hdulist[i].columns[0].name[9:]) == order ][0]
+    # Check whether Telfit hit critical error in Step 1 for the chosen order with this night. If so, try another order. If all hit the error, skip the night.
+    nexto = 0
+    ordertry = order
+    while 1 == 1:
+        fits_layer = [ i for i in np.arange(num_orders)+1 if int(hdulist[i].columns[0].name[9:]) == ordertry ][0]
 
-    tbdata = hdulist[ fits_layer ].data
-    flag = np.array(tbdata[f'ERRORFLAG{order}'])[0]
+        tbdata = hdulist[ fits_layer ].data
+        flag = np.array(tbdata[f'ERRORFLAG{ordertry}'])[0]
 
-    if flag == 1:  # Telfit hit unknown critical error
-        logger.warning(f'  --> TELFIT ENCOUNTERED CRITICAL ERROR IN ORDER: {order} NIGHT: {night}, skipping...')
-        return night, np.nan, np.nan
+        if flag == 1:  # If Telfit hit unknown critical error in Step 1, this order can't be used for this night. Try another.
+            orderbad = ordertry
+            ordertry = orders[nexto]
+            logger.warning(f'  --> TELFIT ENCOUNTERED CRITICAL ERROR IN ORDER: {orderbad} NIGHT: {night}, TRYING ORDER {ordertry} INSTEAD...')
+        else: # All good, continue
+            break 
+            
+        nexto += 1
+        if nexto == len(orders):
+            logger.warning(f'  --> TELFIT ENCOUNTERED CRITICAL ERROR IN ALL ORDERS FOR NIGHT: {night}, skipping...')
+            return night, np.nan, np.nan
 
     watm = tbdata['WATM'+str(order)]
     satm = tbdata['SATM'+str(order)]
@@ -81,7 +98,7 @@ def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     a0contx   = a0contx[(continuum != 0)]
     continuum = continuum[(continuum != 0)]
 
-    # Use instrumental profile dictionary corresponding to whether IGRINS mounting was loose or not
+    # Use instrumental profile FWHM dictionary corresponding to whether IGRINS mounting was loose or not
     if int(night[:8]) < 20180401 or int(night[:8]) > 20190531:
         IPpars = inparam.ips_tightmount_pars[args.band][order]
     else:
@@ -89,10 +106,10 @@ def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 #-------------------------------------------------------------------------------
     ### Initialize parameter array for optimization as well as half-range values for each parameter during the various steps of the optimization.
     ### Many of the parameters initialized here will be changed throughout the code before optimization and in between optimization steps.
-    pars0 = np.array([np.nan,                                                # 0: The shift of the sunspot spectrum (km/s)
-                      0.3,                                                   # 1: The scale factor for the sunspot spectrum
-                      0.0,                                                   # 2: The shift of the telluric spectrum (km/s)
-                      0.6,                                                   # 3: The scale factor for the telluric spectrum
+    pars0 = np.array([np.nan,                                                # 0: The shift of the stellar template (km/s)
+                      0.3,                                                   # 1: The scale factor for the stellar template
+                      0.0,                                                   # 2: The shift of the telluric template (km/s)
+                      0.6,                                                   # 3: The scale factor for the telluric template
                       inparam.initvsini,                                     # 4: vsini (km/s)
                       IPpars[2],                                             # 5: The instrumental resolution (FWHM) in pixels
                       np.nan,                                                # 6: Wavelength 0-pt
@@ -102,16 +119,18 @@ def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                       1.0,                                                   #10: Continuum zero point
                       0.,                                                    #11: Continuum linear component
                       0.,                                                    #12: Continuum quadratic component
-                      IPpars[1],                                             #13: IP linear component
-                      IPpars[0]])                                            #14: IP quadratic component
+                      IPpars[1],                                             #13: Instrumental resolution linear component
+                      IPpars[0]])                                            #14: Instrumental resolution quadratic component
 
     rvsmini = []; vsinismini = [];
+    
     # Iterate over all A/B exposures
     for t in np.arange(len(tagsnight)):
         tag = tagsnight[t]
         beam = beamsnight[t]
 
-        ### Load relevant A0 spectrum
+        # Retrieve pixel bounds for where within each other significant telluric absorption is present. 
+        # If these bounds were not applied, analyzing some orders would give garbage fits.
         if args.band=='K':
             if int(order) in [11, 12, 13, 14]:
                 bound_cut = inparam.bound_cut_dic[args.band][order]
@@ -124,6 +143,7 @@ def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
             else:
                 bound_cut = [150, 150]
 
+        # Load target spectrum
         x,wave,s,u = init_fitsread(f'{inparam.inpath}{night}/{beam}/',
                                     'target',
                                     'separate',
@@ -132,43 +152,54 @@ def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                                     tag,
                                     args.band,
                                     bound_cut)
-#-------------------------------------------------------------------------------
+
+        #-------------------------------------------------------------------------------
+        
+        # Execute S/N cut
         s2n = s/u
         if np.nanmedian(s2n) < float(args.SN_cut):
             logger.warning('  --> Bad S/N {:1.3f} < {} for {}{} {}, SKIP'.format( np.nanmedian(s2n), args.SN_cut, night, beam, tag))
             continue
 
+        # Trim obvious outliers above the blaze (i.e. cosmic rays)
         nzones = 5
         x = basicclip_above(x,s,nzones); wave = basicclip_above(wave,s,nzones);
         u = basicclip_above(u,s,nzones); s = basicclip_above(s,s,nzones);
         x = basicclip_above(x,s,nzones); wave = basicclip_above(wave,s,nzones);
         u = basicclip_above(u,s,nzones); s = basicclip_above(s,s,nzones);
 
+        # Cut spectrum to within wavelength regions defined in input list
         s_piece    = s[    (x > xbounds[0]) & (x < xbounds[-1]) ]
         u_piece    = u[    (x > xbounds[0]) & (x < xbounds[-1]) ]
         wave_piece = wave[ (x > xbounds[0]) & (x < xbounds[-1]) ]
         x_piece    = x[    (x > xbounds[0]) & (x < xbounds[-1]) ]
 
+        # Trim stellar template to relevant wavelength range
         mwave_in,mflux_in = stellarmodel_setup(wave_piece, inparam.mwave0, inparam.mflux0)
 
+        # Trim telluric template to relevant wavelength range
         satm_in = satm[(watm > min(wave_piece)*1e4 - 11) & (watm < max(wave_piece)*1e4 + 11)]
         watm_in = watm[(watm > min(wave_piece)*1e4 - 11) & (watm < max(wave_piece)*1e4 + 11)]
 
-        # Cut target spec to be within A0 spec wave
+        # Make sure data is within telluric template range (shouldn't do anything)
         s_piece    = s_piece[   (wave_piece*1e4 > min(watm_in)+5) & (wave_piece*1e4 < max(watm_in)-5)]
         u_piece    = u_piece[   (wave_piece*1e4 > min(watm_in)+5) & (wave_piece*1e4 < max(watm_in)-5)]
         x_piece    = x_piece[   (wave_piece*1e4 > min(watm_in)+5) & (wave_piece*1e4 < max(watm_in)-5)]
         wave_piece = wave_piece[(wave_piece*1e4 > min(watm_in)+5) & (wave_piece*1e4 < max(watm_in)-5)]
 
-#-------------------------------------------------------------------------------
+        #-------------------------------------------------------------------------------
+        
         par = pars0.copy()
-        ##Set initial wavelength guess
+        
+        # Get initial guess for cubic wavelength solution from reduction pipeline
         f = np.polyfit(x_piece,wave_piece,3)
         par9in = f[0]*1e4; par8in = f[1]*1e4; par7in = f[2]*1e4; par6in = f[3]*1e4;
         par[9] = par9in ;  par[8] = par8in ;  par[7] = par7in ;  par[6] = par6in
 
-        par[0] = initguesses-inparam.bvcs[night+tag]
-        # Arrays defining parameter variations during optimization steps
+        par[0] = initguesses-inparam.bvcs[night+tag] # Initial RV with barycentric correction
+        
+        # Arrays defining parameter variations during optimization steps.
+        # Optimization will cycle twice. In the first cycle, the RVs can vary more than in the second.
         dpars1 = {'cont' : np.array([ 0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0]),
                   'wave' : np.array([ 0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 10.0,  10.0, 5.00000e-5, 0.,   0,   0, 0, 0,    0]),
                   't'    : np.array([ 0.0, 0.0, 5.0, 1.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0]),
@@ -186,10 +217,8 @@ def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         s_piece /= np.median(s_piece)
         fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]))
 
-        # mask = np.ones_like(s_piece,dtype=bool)
-        # mask[(fitobj.s < .0)] = False
-#-------------------------------------------------------------------------------
-        ######## Begin optimization  ########
+        #-------------------------------------------------------------------------------
+        # Initialize an array that puts hard bounds on vsini and the instrumental resolution to make sure they do not diverge to unphysical values
         optimize = True
         par_in = par.copy()
         hardbounds = [par_in[4]-dpars1['v'][4],  par_in[4]+dpars1['v'][4],
@@ -199,6 +228,8 @@ def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         if hardbounds[3] < 0:
             hardbounds[3] = 1
 
+        # Begin optimization. Fit the blaze, the wavelength solution, the telluric template power and RV, the stellar template power and RV, the 
+        # zero point for the instrumental resolution, and the vsini of the star separately, iterating and cycling between each set of parameter fits. 
         cycles = 2
 
         optgroup = ['cont', 'wave', 't', 'cont', 's',
@@ -224,21 +255,26 @@ def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                     logger.debug(f'{order}_{tag}_{nc}_{optkind}:\n {parfit_1}')
 
         parfit = parfit_1.copy()
-#-------------------------------------------------------------------------------
-        # if stellar template power is very low, throw out result
+
+        #-------------------------------------------------------------------------------
+        
+        # if best fit stellar template power is very low, throw out result
         if parfit[1] < 0.1:
             logger.warning(f'  --> parfit[1] < 0.1, {night} parfit={parfit}')
             continue
-        # if stellar or telluric template powers are exactly equal to their starting values, fit failed, throw out result
+            
+        # if best fit stellar or telluric template powers are exactly equal to their starting values, optimization failed, throw out result
         if parfit[1] == par_in[1] or parfit[3] == par_in[3]:
             logger.warning(f'  --> parfit[1] == par_in[1] or parfit[3] == par_in[3], {night}')
             continue
-        # if model dips below zero at any point, we're to close to edge of blaze, fit may be comrpomised, throw out result
+            
+        # if best fit model dips below zero at any point, we're too close to edge of blaze, fit may be comrpomised, throw out result
         smod,chisq = fmod(parfit,fitobj)
         if len(smod[(smod < 0)]) > 0:
             logger.warning(f'  --> len(smod[(smod < 0)]) > 0, {night}')
             continue
-#-------------------------------------------------------------------------------
+            
+    #-------------------------------------------------------------------------------
         if args.plotfigs:
             parfitS = parfit.copy(); parfitS[3] = 0
             parfitT = parfit.copy(); parfitT[1] = 0
@@ -246,9 +282,9 @@ def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
             outplotter_23(parfitT, fitobj, 'parfitT_{}_{}_{}'.format(order,night,tag), trk, inparam, args, step2or3)
             outplotter_23(parfit, fitobj,  'parfit_{}_{}_{}'.format(order,night,tag), trk, inparam, args, step2or3)
 
-        rv0 = parfit[0] - parfit[2]  # atomosphere velocity correct
+        rv0 = parfit[0] - parfit[2]  # Correct for RV of the atmosphere, since we're using that as the basis for the wavelength scale
 
-        rvsmini.append(rv0 + inparam.bvcs[night+tag] + rv0*inparam.bvcs[night+tag]/(3e5**2))
+        rvsmini.append(rv0 + inparam.bvcs[night+tag] + rv0*inparam.bvcs[night+tag]/(3e5**2)) # Barycentric correction
         vsinismini.append(parfit[4])
 
     bestguess = round(np.nanmean(rvsmini),5)
