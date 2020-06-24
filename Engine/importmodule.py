@@ -72,11 +72,17 @@ np.seterr(divide='ignore', invalid='ignore')
 # -------------------------------------------------------------
 def read_prepdata(args):
         ## Collect relevant file information from Predata files
-        A0data   = Table.read('./Input/Prepdata/Prepdata_A0_{}.txt'.format(args.targname), format='ascii')
+        if os.getcwd()[-1]=='v':
+            A0data   = Table.read('./Input/Prepdata/Prepdata_A0_{}.txt'.format(args.targname), format='ascii')
+        else:
+            A0data   = Table.read('../Input/Prepdata/Prepdata_A0_{}.txt'.format(args.targname), format='ascii')
         A0nights = np.array(A0data['night'],dtype='str')
         ams0     = np.array(A0data['airmass'])
 
-        targdata = Table.read('./Input/Prepdata/Prepdata_targ_{}.txt'.format(args.targname), format='ascii')
+        if os.getcwd()[-1]=='v':
+            targdata = Table.read('./Input/Prepdata/Prepdata_targ_{}.txt'.format(args.targname), format='ascii')
+        else:
+            targdata = Table.read('../Input/Prepdata/Prepdata_targ_{}.txt'.format(args.targname), format='ascii')
         Tnights = np.array(targdata['night'],dtype='str')
         tags0   = np.array(targdata['tag'], dtype='int')
         beams0  = np.array(targdata['beam'],dtype='str')
@@ -84,7 +90,10 @@ def read_prepdata(args):
         bvcs0   = np.array(targdata['bvc'])
         ams     = np.array(targdata['airmass'])
 
-        bounddata = Table.read('./Input/UseWv/XRegions_{}_{}.csv'.format(args.WRegion, args.band), format='csv')
+        if os.getcwd()[-1]=='v':
+            bounddata = Table.read('./Input/UseWv/XRegions_{}_{}.csv'.format(args.WRegion, args.band), format='csv')
+        else:
+            bounddata = Table.read('../Input/UseWv/XRegions_{}_{}.csv'.format(args.WRegion, args.band), format='csv')            
         starts  = np.array(bounddata['start'])
         ends    = np.array(bounddata['end'])
         orders  = np.array(bounddata['order'], dtype=int)
