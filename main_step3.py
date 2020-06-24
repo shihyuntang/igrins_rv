@@ -380,7 +380,7 @@ Input Parameters:
     Minium # of AB sets = \33[41m {} \033[0m             <------- If is TAR mode, this should be at lease 2
     Initial vsini       = \33[41m {} km/s \033[0m
     vsini vary range    \u00B1 \33[41m {} km/s \033[0m
-    RV initial guess    = \33[41m {} km/s \033[0m
+    RV initial guess    = \33[41m {} \033[0m
     Stellar template use= \33[41m {} \033[0m
     Target Spectral Type= \33[41m {} \033[0m             <-------  [late K, M] recommended 'synthetic', [F, G, early K] SpTy recommended 'livingston'
     '''.format(args.targname, args.band, args.WRegion, args.SN_cut, args.nAB,
