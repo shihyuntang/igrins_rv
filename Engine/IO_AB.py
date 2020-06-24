@@ -157,7 +157,10 @@ def setup_templates(logger, kind='synthetic', band='K', sptype='M'):
         if sptype not in ['K','M']:
             sys.exit('Pipeline does not have a stellar template for early type stars in K band! Upload your own?')
         logger.info('Using synthetic stellar template...')
-        stelldata = Table.read('./Engine/syntheticstellar_kband.txt',format='ascii')
+        if os.getcwd()[-1]=='v':
+            stelldata = Table.read('./Engine/syntheticstellar_kband.txt',format='ascii')
+        else:
+            telldata = Table.read('../Engine/syntheticstellar_kband.txt',format='ascii')
         mwave0 = np.array(stelldata['wave'])
         mflux0 = np.array(stelldata['flux'])
         mwave0 = mwave0[(np.isfinite(mflux0))]
@@ -168,7 +171,10 @@ def setup_templates(logger, kind='synthetic', band='K', sptype='M'):
         if sptype not in ['K','M']:
             sys.exit('Pipeline does not have a stellar template for early type stars in K band! Upload your own?')
         logger.info('Using sunspot for stellar template...')
-        stelldata = Table.read('./Engine/SpotAtl_contadjusted.txt',format='ascii')
+        if os.getcwd()[-1]=='v':
+            stelldata = Table.read('./Engine/SpotAtl_contadjusted.txt',format='ascii')
+        else:
+            stelldata = Table.read('../Engine/SpotAtl_contadjusted.txt',format='ascii')
         mwave0 = np.array(stelldata['wave'])*10000.0
         mflux0 = np.array(stelldata['flux'])
         mwave0 = mwave0[(np.isfinite(mflux0))]
@@ -178,7 +184,10 @@ def setup_templates(logger, kind='synthetic', band='K', sptype='M'):
         if sptype not in ['F','G','K']:
             sys.exit('Pipeline does not have a stellar template for late type stars in H band! Upload your own?')
         logger.info('Using synthetic stellar template...')
-        stelldata = Table.read('./Engine/syntheticstellar_hband_tauboo.txt',format='ascii')
+        if os.getcwd()[-1]=='v':
+            stelldata = Table.read('./Engine/syntheticstellar_hband_tauboo.txt',format='ascii')
+        else:
+            stelldata = Table.read('../Engine/syntheticstellar_hband_tauboo.txt',format='ascii')
         mwave0 = np.array(stelldata['wave'])
         mflux0 = np.array(stelldata['flux'])
         mwave0 = mwave0[(np.isfinite(mflux0))]
@@ -189,15 +198,20 @@ def setup_templates(logger, kind='synthetic', band='K', sptype='M'):
         if sptype not in ['F','G','K']:
             sys.exit('Pipeline does not have a stellar template for late type stars in H band! Upload your own?')
         logger.info('Using quiet sun for stellar template...')
-        spotdata = Table.read('./Engine/PhotoAtl_Solar_contadjusted.txt',format='ascii')
+        if os.getcwd()[-1]=='v':
+            spotdata = Table.read('./Engine/PhotoAtl_Solar_contadjusted.txt',format='ascii')
+        else:
+            spotdata = Table.read('./Engine/PhotoAtl_Solar_contadjusted.txt',format='ascii')
         mwave0 = np.array(spotdata['wave'])*10000.0
         mflux0 = np.array(spotdata['flux'])
         mwave0 = mwave0[(np.isfinite(mflux0))]
         mflux0 = mflux0[(np.isfinite(mflux0))]
         mflux0[(mflux0 < 0)] = 0
 
-
-    telluricdata = Table.read('./Engine/PhotoAtl Organized.txt',format='ascii')
+    if os.getcwd()[-1]=='v':
+        telluricdata = Table.read('./Engine/PhotoAtl Organized.txt',format='ascii')
+    else:
+        telluricdata = Table.read('../Engine/PhotoAtl Organized.txt',format='ascii')
     watm = np.array(telluricdata['wave'])*10000.0
     satm = np.array(telluricdata['flux'])
     watm = watm[(np.isfinite(satm))]
