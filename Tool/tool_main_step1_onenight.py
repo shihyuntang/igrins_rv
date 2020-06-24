@@ -224,7 +224,7 @@ def MPinst(args, inparam, i, order0, order):
         primary_hdu = fits.PrimaryHDU(bleh)
         hdul = fits.HDUList([primary_hdu,hdu_1])
         # hdul.writeto(inparam.outpath+'/'+night+'A0_treated_{}_order{}.fits'.format(args.band, order),overwrite=True)
-        hdul.writeto('{}/A0_Fits/{}A0_treated_{}_order{}.fits'.format(inparam.outpath, night, args.band, order) ,overwrite=True)
+        hdul.writeto('{}/{}A0_treated_{}_order{}.fits'.format(inparam.outpath, night, args.band, order) ,overwrite=True)
 
 def mp_run(args, inparam, Nthreads, night, order0):
     pool = mp.Pool(processes = Nthreads)
@@ -272,16 +272,16 @@ if __name__ == '__main__':
     cdbs_loc = '~/cdbs/'
 #-------------------------------------------------------------------------------
     # Create output directories as needed
-    if not os.path.isdir('./Output'):
-        os.mkdir('./Output')
+    if not os.path.isdir('../Output'):
+        os.mkdir('../Output')
 
-    if not os.path.isdir(f'./Output/{args.targname}_{args.band}_tool'):
-        os.mkdir(f'./Output/{args.targname}_{args.band}_tool')
+    if not os.path.isdir(f'../Output/{args.targname}_{args.band}_tool'):
+        os.mkdir(f'../Output/{args.targname}_{args.band}_tool')
 
-    if not os.path.isdir(f'./Output/{args.targname}_{args.band}_tool/A0Fits'):
-        os.mkdir(f'./Output/{args.targname}_{args.band}_tool/A0Fits')
+    if not os.path.isdir(f'../Output/{args.targname}_{args.band}_tool/A0Fits'):
+        os.mkdir(f'../Output/{args.targname}_{args.band}_tool/A0Fits')
 
-    outpath = f'./Output/{args.targname}_{args.band}_tool/A0Fits'
+    outpath = f'../Output/{args.targname}_{args.band}_tool/A0Fits'
 #-------------------------------------------------------------------------------
 
     #------------
@@ -361,14 +361,14 @@ if __name__ == '__main__':
     for order in order0:
         if order == order0[0]: # If first time writing fits file, make up filler primary hdu
             print('doing {}'.format(order))
-            hh = fits.open(inparam.outpath+'/A0_Fits/'+str(nightsFinal[0])+'A0_treated_{}_order{}.fits'.format(args.band, order))
-            hh.writeto(inparam.outpath+'/A0_Fits/'+str(nightsFinal[0])+'A0_treated_{}.fits'.format(args.band),overwrite=True)
+            hh = fits.open(inparam.outpath+'/'+str(nightsFinal[0])+'A0_treated_{}_order{}.fits'.format(args.band, order))
+            hh.writeto(inparam.outpath+'/'+str(nightsFinal[0])+'A0_treated_{}.fits'.format(args.band),overwrite=True)
         else:
             print('doing {}'.format(order))
-            hh   = fits.open(inparam.outpath+'/A0_Fits/'+str(nightsFinal[0])+'A0_treated_{}.fits'.format(args.band))
-            hh_t = fits.open(inparam.outpath+'/A0_Fits/'+str(nightsFinal[0])+'A0_treated_{}_order{}.fits'.format(args.band, order))
+            hh   = fits.open(inparam.outpath+'/'+str(nightsFinal[0])+'A0_treated_{}.fits'.format(args.band))
+            hh_t = fits.open(inparam.outpath+'/'+str(nightsFinal[0])+'A0_treated_{}_order{}.fits'.format(args.band, order))
             hh.append(hh_t[1])
-            hh.writeto(inparam.outpath+'/A0_Fits/'+str(nightsFinal[0])+'A0_treated_{}.fits'.format(args.band),overwrite=True)
+            hh.writeto(inparam.outpath+'/'+str(nightsFinal[0])+'A0_treated_{}.fits'.format(args.band),overwrite=True)
 
 
     print('\n')
