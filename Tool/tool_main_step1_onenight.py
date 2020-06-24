@@ -358,8 +358,8 @@ if __name__ == '__main__':
 
     print('merging orders...')
 #    order0 = np.arange(1,17)
-    for order in order0:
-        if order == order0[0]: # If first time writing fits file, make up filler primary hdu
+    for order in orders:
+        if order == orders[0]: # If first time writing fits file, make up filler primary hdu
             print('doing {}'.format(order))
             hh = fits.open(inparam.outpath+'/'+str(nightsFinal[0])+'A0_treated_{}_order{}.fits'.format(args.band, order))
             hh.writeto(inparam.outpath+'/'+str(nightsFinal[0])+'A0_treated_{}.fits'.format(args.band),overwrite=True)
