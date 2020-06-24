@@ -14,9 +14,11 @@ from Engine.outplotter import outplotter_tel
 #-------------------------------------------------------------------------------
 
 def MPinst(args, inparam, jerp, orders, i):
-    order = orders[jerp]            # urrent looped order
+    # Main function for A0 fitting that will be threaded over by multiprocessing
+    
+    order = orders[jerp]            # current looped order
     night = str(inparam.nights[i])  # multiprocess assigned night
-    firstorder = orders[0]
+    firstorder = orders[0]          # First order that will be analyzed, related to file writing
 
     print('Working on order {:02d}/{:02d} ({}), night {}/{} ({}) PID:{}...'.format(int(jerp+1),
                                                                                  len(orders),
@@ -25,8 +27,11 @@ def MPinst(args, inparam, jerp, orders, i):
                                                                                  len(inparam.nights),
                                                                                  night,
                                                                                  mp.current_process().pid) )
-#-------------------------------------------------------------------------------
-    ### Load relevant A0 spectrum
+    
+    #-------------------------------------------------------------------------------
+    
+    # Retrieve pixel bounds for where within each other significant telluric absorption is present. 
+    # If these bounds were not applied, analyzing some orders would give garbage fits.
     if args.band=='K':
         if int(order) in [11, 12, 13, 14]:
             bound_cut = inparam.bound_cut_dic[args.band][order]
@@ -39,6 +44,7 @@ def MPinst(args, inparam, jerp, orders, i):
         else:
             bound_cut = [150, 150]
 
+    ### Load relevant A0 spectrum
     x, a0wavelist, a0fluxlist, u = init_fitsread(inparam.inpath,
                                                  'A0',
                                                  'separate',
@@ -47,7 +53,10 @@ def MPinst(args, inparam, jerp, orders, i):
                                                  f'{int(inparam.tags[night]):04d}',
                                                  args.band,
                                                  bound_cut)
-#-------------------------------------------------------------------------------
+    
+    #-------------------------------------------------------------------------------
+    
+    # Trim obvious outliers above the blaze (i.e. cosmic rays)
     nzones = 12
     a0wavelist = basicclip_above(a0wavelist,a0fluxlist,nzones);   a0x = basicclip_above(x,a0fluxlist,nzones);
     a0u        = basicclip_above(u,a0fluxlist,nzones);     a0fluxlist = basicclip_above(a0fluxlist,a0fluxlist,nzones);
@@ -57,7 +66,7 @@ def MPinst(args, inparam, jerp, orders, i):
     # Normalize
     a0fluxlist /= np.median(a0fluxlist)
 
-    # Compute rough blaze fn estimate
+    # Compute rough blaze function estimate. Better fit will be provided by Telfit later.
     continuum    = A0cont(a0wavelist,a0fluxlist,night,order)
     a0masterwave = a0wavelist.copy()
     a0masterwave *= 1e4
@@ -69,12 +78,14 @@ def MPinst(args, inparam, jerp, orders, i):
     satm_in = inparam.satm[(inparam.watm > min(a0wavelist)*1e4 - 11) & (inparam.watm < max(a0wavelist)*1e4 + 11)]
     watm_in = inparam.watm[(inparam.watm > min(a0wavelist)*1e4 - 11) & (inparam.watm < max(a0wavelist)*1e4 + 11)]
 
+    # Get initial guess for cubic wavelength solution from reduction pipeline
     f = np.polyfit(a0x, a0wavelist, 3)
     par9in = f[0]*1e4;
     par8in = f[1]*1e4;
     par7in = f[2]*1e4;
     par6in = f[3]*1e4;
 
+    # Determine whether IGRINS mounting was loose or night for the night in question
     if (int(night) < 20180401) or (int(night) > 20190531):
         IPpars = inparam.ips_tightmount_pars[args.band][order]
     else:
@@ -84,10 +95,10 @@ def MPinst(args, inparam, jerp, orders, i):
     ### the various steps of the optimization.
     ### Many of the parameters initialized here will be changed throughout the code before optimization and
     ### in between optimization steps.
-    parA0 = np.array([0.0,           # 0: The shift of the sunspot spectrum (km/s)
-                      0.0,           # 1: The scale factor for the sunspot spectrum
-                      0.0,           # 2: The shift of the telluric spectrum (km/s)
-                      1.0,           # 3: The scale factor for the telluric spectrum
+    parA0 = np.array([0.0,           # 0: The shift of the stellar template (km/s)
+                      0.0,           # 1: The scale factor for the stellar template
+                      0.0,           # 2: The shift of the telluric  template (km/s)
+                      1.0,           # 3: The scale factor for the telluric template
                       0.0,           # 4: vsini (km/s)
                       IPpars[2],     # 5: The instrumental resolution (FWHM) in pixels
                       par6in,        # 6: Wavelength 0-pt
@@ -97,16 +108,17 @@ def MPinst(args, inparam, jerp, orders, i):
                       1.0,           #10: Continuum zero point
                       0.,            #11: Continuum linear component
                       0.,            #12: Continuum quadratic component
-                      IPpars[1],     #13: IP linear component
-                      IPpars[0]])    #14: IP quadratic component
+                      IPpars[1],     #13: Insrumental resolution linear component
+                      IPpars[0]])    #14: Insrumental resolution quadratic component
 
+    # Make sure data is within telluric template range (shouldn't do anything)
     a0fluxlist = a0fluxlist[(a0wavelist*1e4 > min(watm_in)+5) & (a0wavelist*1e4 < max(watm_in)-5)]
     a0u        = a0u[       (a0wavelist*1e4 > min(watm_in)+5) & (a0wavelist*1e4 < max(watm_in)-5)]
     a0x        = a0x[       (a0wavelist*1e4 > min(watm_in)+5) & (a0wavelist*1e4 < max(watm_in)-5)]
     continuum  = continuum[ (a0wavelist*1e4 > min(watm_in)+5) & (a0wavelist*1e4 < max(watm_in)-5)]
     a0wavelist = a0wavelist[(a0wavelist*1e4 > min(watm_in)+5) & (a0wavelist*1e4 < max(watm_in)-5)]
 
-    # Define main spectrum parameters
+    # Define main spectrum
     s = a0fluxlist.copy(); x = a0x.copy(); u = a0u.copy();
 
     # Collect all fit variables into one class
@@ -118,11 +130,10 @@ def MPinst(args, inparam, jerp, orders, i):
     dpar      = np.array([0.0, 0.0, 5.0, 3.0, 0.0, 0.5, 0.0,   0.0,  0.0,        0,    1e4, 1, 1, 0,    0])
     dpar_st   = np.array([0.0, 0.0, 5.0, 3.0, 0.0, 0.0, 0.0,   0.0,  0.0,        0,    1e4, 1, 1, 0,    0])
     dpar_ip   = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0])
-#-------------------------------------------------------------------------------
-    # For every pre-Telfit spectral fit, first fit just template strength/rv/continuum, then just wavelength soln, then template/continuum again, then ip,
-    # then finally wavelength. Normally would fit for all but wavelength at the end, but there's no need for the pre-Telfit fit, since all we want
-    # is the wavelength solution.
-
+    
+    #-------------------------------------------------------------------------------
+    
+    # Initialize an array that puts hard bounds on vsini and the instrumental resolution to make sure they do not diverge to unphysical values
     optimize = True
     par_in = parA0.copy()
     hardbounds = [par_in[4] -dpar[4],   par_in[4]+dpar[4],
@@ -132,31 +143,40 @@ def MPinst(args, inparam, jerp, orders, i):
     if hardbounds[3] < 0:
         hardbounds[3] = 1
 
+    # Begin optimization. 
+    # For every pre-Telfit spectral fit, first fit just template strength/rv/continuum, then just wavelength solution, then template/continuum again, then ip,
+    # then finally wavelength. Normally would fit for all but wavelength at the end, but there's no need for the pre-Telfit fit, since all we want
+    # is a nice wavelength solution to feed into Telfit.
     parfit_1 = optimizer(par_in,   dpar_st,   hardbounds,fitobj,optimize)
     parfit_2 = optimizer(parfit_1, dpar_wave, hardbounds,fitobj,optimize)
     parfit_3 = optimizer(parfit_2, dpar_st,   hardbounds,fitobj,optimize)
     parfit_4 = optimizer(parfit_3, dpar,      hardbounds,fitobj,optimize)
     parfit = optimizer(parfit_4,   dpar_wave, hardbounds,fitobj,optimize)
 
-#-------------------------------------------------------------------------------
-    # Get fitted wavelength solution
+    #-------------------------------------------------------------------------------
+    
+    # Get best fit wavelength solution
     a0w_out_fit = parfit[6] + parfit[7]*x + parfit[8]*(x**2.) + parfit[9]*(x**3.)
 
-    # Trim stellar template to relevant wavelength range
+    # Trim stellar template to new relevant wavelength range
     mwave_in,mflux_in = stellarmodel_setup(a0w_out_fit/1e4, inparam.mwave0, inparam.mflux0)
 
-    # Using this new wavelength solution, get Telfit'd telluric template, parameters of that best fit, and blaze fn best fit
+    # Feed this new wavelength solution into Telfit. Returns high-res synthetic telluric template, parameters of that best fit, and blaze function best fit
     watm1, satm1, telfitparnames, telfitpars, a0contwave, continuum = telfitter(a0w_out_fit,a0fluxlist,a0u,inparam,night,order,args)
-    # watm1, satm1 from Telfit, fack one.
-#-------------------------------------------------------------------------------
-    if len(watm1) == 1: # If Telfit encountered error mentioned in Telfitter.py, skip night/order combo
+    
+    #-------------------------------------------------------------------------------
+    
+    # If Telfit encountered error (details in Telfitter.py), skip night/order combo
+    if len(watm1) == 1: 
         logger.warning(f'TELFIT ENCOUNTERED CRITICAL ERROR IN ORDER: {order} NIGHT: {night}')
+        
         # Write out table to fits header with errorflag = 1
         c0    = fits.Column(name=f'ERRORFLAG{order}', array=np.array([1]), format='K')
         cols  = fits.ColDefs([c0])
         hdu_1 = fits.BinTableHDU.from_columns(cols)
-
-        if order == firstorder: # If first time writing fits file, make up filler primary hdu
+        
+        # If first time writing fits file, make up filler primary hdu
+        if order == firstorder: 
             bleh = np.ones((3,3))
             primary_hdu = fits.PrimaryHDU(bleh)
             hdul = fits.HDUList([primary_hdu,hdu_1])
@@ -165,12 +185,15 @@ def MPinst(args, inparam, jerp, orders, i):
             hh = fits.open('{}/{}A0_treated_{}.fits'.format(inparam.outpath, night, args.band))
             hh.append(hdu_1)
             hh.writeto('{}/{}A0_treated_{}.fits'.format(inparam.outpath, night, args.band), overwrite=True)
-    else:
+            
+    else: # If Telfit exited normally, proceed.
+        
+        #  Save best blaze function fit
         a0contwave /= 1e4
         continuum = rebin_jv(a0contwave,continuum,a0wavelist,False)
 
-        # Fit whole A0 again to get even better wave soln to use for a0contwave and tweak blaze fn fit as
-        # needed with quadratic adjustment
+        # Fit the A0 again using the new synthetic telluric template.
+        # This allows for any tweaks to the blaze function fit that may be necessary.
         fitobj = fitobjs(s, x, u, continuum,watm1,satm1,mflux_in,mwave_in,[])
 
         parfit_1 = optimizer(par_in,   dpar_st,   hardbounds, fitobj, optimize)
@@ -179,10 +202,10 @@ def MPinst(args, inparam, jerp, orders, i):
         parfit_4 = optimizer(parfit_3, dpar_wave, hardbounds, fitobj, optimize)
         parfit   = optimizer(parfit_4, dpar,      hardbounds, fitobj, optimize)
 
-        if inparam.plotfigs:
+        if inparam.plotfigs: # Plot results
             outplotter_tel(parfit, fitobj, f'Post_parfit_{order}_{night}', inparam, args)
 
-        if args.debug:
+        if args.debug: # Output debug stuff
             fig, axes = plt.subplots(1, 1, figsize=(6,3), facecolor='white', dpi=300)
             axes.plot(fitobj.x,
                       parfit[5] + parfit[13]*(fitobj.x) + parfit[14]*(fitobj.x**2),
@@ -205,7 +228,10 @@ def MPinst(args, inparam, jerp, orders, i):
         logger.debug(f'Post_parfit2:\n {parfit_2}')
         logger.debug(f'Post_parfit3:\n {parfit_3}')
         logger.debug(f'Post_parfit4:\n {parfit_4}')
-#-------------------------------------------------------------------------------
+        
+        #-------------------------------------------------------------------------------
+        
+        # Save slightly better wavelength and blaze function solution 
         a0w_out  = parfit[6] + parfit[7]*x + parfit[8]*(x**2.) + parfit[9]*(x**3.)
         cont_adj = parfit[10] + parfit[11]*x + parfit[12]*(x**2.)
 
@@ -236,14 +262,18 @@ def MPinst(args, inparam, jerp, orders, i):
             hh = fits.open('{}/{}A0_treated_{}.fits'.format(inparam.outpath, night, args.band))
             hh.append(hdu_1)
             hh.writeto('{}/{}A0_treated_{}.fits'.format(inparam.outpath, night, args.band), overwrite=True)
+            
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
-def mp_run(args, inparam, Nthreads, jerp, orders, nights):
+
+def mp_run(args, inparam, Nthreads, jerp, orders, nights): 
+    # Multiprocessing convenience function
     pool = mp.Pool(processes = Nthreads)
     func = partial(MPinst, args, inparam, jerp, orders)
     outs = pool.map(func, np.arange(len(nights)))
     pool.close()
     pool.join()
+    
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 
