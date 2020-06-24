@@ -276,7 +276,7 @@ def rv_MPinst(args, inparam, i, orders, order):
     return wminibox,sminibox,flminibox_mod,flminibox_tel,flminibox_ste,contiminibox,residualbox
 
 
-def mp_run(Nthreads, nights, order0):
+def mp_run(Nthreads, args, inparam, nights, order0):
     pool = mp.Pool(processes = Nthreads)
     func = partial(rv_MPinst, args, inparam, nights, order0)
     outs = pool.map(func, order0)
