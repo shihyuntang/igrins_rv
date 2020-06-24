@@ -248,6 +248,7 @@ def mp_run(args, inparam, Nthreads, jerp, orders, nights):
 #-------------------------------------------------------------------------------
 
 def use_w(args):
+    # Load wavelength regions list file
     try:
         bounddata = Table.read(f'./Input/UseWv/WaveRegions_{args.WRegion}_{args.band}.csv', format='csv')
     except IOError:
@@ -269,6 +270,8 @@ def use_w(args):
 
         m_orders_unique = np.unique(m_order)
 
+        # For each order specified, find what pixel numbers correspond to the wavelength bounds presented.
+        # If multiple wavelength bounds given for a single order, output a pixel mask between the two, as well.
         for o in range(len(m_orders_unique)):
             pixs = [];
             mini = np.where(m_order == m_orders_unique[o])[0]
@@ -292,10 +295,13 @@ def use_w(args):
 #-------------------------------------------------------------------------------
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-                                     prog        = 'IGRINS Spectra Radial Velocity Pipeline',
+                                     prog        = 'IGRINS Spectra Radial Velocity Pipeline - Step 1',
                                      description = '''
-                                     This is a pipeline that helps you to extract radial velocity \n
-                                     from IGRINS spectra. \n
+                                     This step 1) defines the wavelength regions to be analyzed based on user specification \n
+                                     2) generates a synthetic, high-resolution telluric 
+                                     template for use in later model fits on a night by night basis.  \n
+                                     Note that only target star observations will have their fits limited to the wavelength regions specified. \n
+                                     For A0 observations, only the orders specified will be analyzed, but each order will be fit as far as there is significant telluric absoprtion. 
                                      ''',
                                      epilog = "Contact authors: asa.stahl@rice.edu; sytang@lowell.edu")
     parser.add_argument("targname",                          action="store",
@@ -304,25 +310,26 @@ if __name__ == '__main__':
                         help="Which band to process? H or K?. Default = K",
                         type=str,   default='K')
     parser.add_argument("-Wr",      dest="WRegion",          action="store",
-                        help="Which ./Input/UseWv/WaveRegions_X to use, Default X = 1",
+                        help="Which list of wavelength regions file (./Input/UseWv/WaveRegions_X) to use? Defaults to those chosen by IGRINS RV team, -Wr 1",
                         type=int,   default=int(1))
 
     parser.add_argument('-c',       dest="Nthreads",         action="store",
                         help="Number of cpu (threads) to use, default is 1/2 of avalible ones (you have %i cpus (threads) avaliable)"%(mp.cpu_count()),
                         type=int,   default=int(mp.cpu_count()//2) )
     parser.add_argument('-plot',    dest="plotfigs",        action="store_true",
-                        help="If sets, will generate basic fitting result plots of A0 model fitting under ./Output/A0Fits/*target/fig/")
+                        help="If set, will generate plots of A0 fitting results under ./Output/A0Fits/*target/fig/")
 
     parser.add_argument('-n_use',   dest="nights_use",       action="store",
-                        help="If you don't want all process all nights under the ./Input/*target/ folder, give an array of night you wish to process here. e.g., [20181111,20181112]",
+                        help="If you don't want to process all nights under the ./Input/*target/ folder, specify an array of night you wish to process here. e.g., [20181111,20181112]",
                         type=str,   default='')
     parser.add_argument('-DeBug',    dest="debug",           action="store_true",
-                        help="If sets, DeBug logging and extra plots will be given")
+                        help="If set, DeBug logging will be output, as well as (lots of) extra plots under ./Temp/Debug/*target_*band/main_step1")
     parser.add_argument('--version',                         action='version',  version='%(prog)s 0.85')
     args = parser.parse_args()
     inpath   = './Input/{}/'.format(args.targname)
     cdbs_loc = '~/cdbs/'
 #-------------------------------------------------------------------------------
+    # Create output directories as needed
     if not os.path.isdir('./Output'):
         os.mkdir('./Output')
 
@@ -337,6 +344,7 @@ if __name__ == '__main__':
 
     outpath = f'./Output/{args.targname}_{args.band}/A0Fits'
 #-------------------------------------------------------------------------------
+    # Handle logger
     logger = logging.getLogger(__name__)
     if args.debug:
         logger.setLevel(logging.DEBUG)
@@ -352,7 +360,9 @@ if __name__ == '__main__':
 
     logger.addHandler(file_hander)
     logger.addHandler(stream_hander)
-#-------------------------------------------------------------------------------
+    
+    #-------------------------------------------------------------------------------
+    
     start_time = datetime.now()
     print('####################################################################################\n')
     print(f'Fetching Wavelength Regions to be Analyzed for {args.targname}...')
@@ -363,12 +373,17 @@ if __name__ == '__main__':
     print('Fetching Done!')
     print(f'File "XRegions_{args.WRegion}_{args.band}.csv" saved under "./Input/UseWv/"')
     time.sleep(5)
-#-------------------------------------------------------------------------------
+    
+    #-------------------------------------------------------------------------------
+    
     print('###############################################################\n')
-    logger.info(f'Using TelFit to get A0 model spectra for {args.targname} ...')
+    logger.info(f'Using TelFit to create high-resolution, synthetic telluric templates based off the telluric standards associated with {args.targname} on a night by night basis...')
     print('This will take a while..........')
     print('\n')
 
+    # Read in newly created pixel regions file to get list of orders to analyze.
+    # Note that only target star observations will have their fits limited to the wavelength regions specified.
+    # For A0 observations, only the orders specified will be analyzed, but each order will be fit as far as there is significant telluric absoprtion.
     bounddata = Table.read(f'./Input/UseWv/XRegions_{args.WRegion}_{args.band}.csv', format='csv')
     starts  = np.array(bounddata['start'])
     ends    = np.array(bounddata['end'])
@@ -387,6 +402,7 @@ if __name__ == '__main__':
     press  = {str(k):str(v) for k,v in zip(A0data[ind]['night'],A0data[ind]['press'])}
     nightsFinal = np.array(list(sorted(set(A0data[ind]['night']))))
 
+    # Take subset of nights, if specified
     if args.nights_use != '':
         nightstemp = np.array(ast.literal_eval(args.nights_use), dtype=int)
         for nnn in nightstemp:
@@ -400,13 +416,18 @@ if __name__ == '__main__':
 
     time.sleep(6)
     print('\n')
-#-------------------------------------------------------------------------------
+    
+    #-------------------------------------------------------------------------------
+    
     # Retrieve stellar and telluric templates
     watm, satm, mwave0, mflux0 = setup_templates_tel()
 
     inparam = inparamsA0(inpath,outpath,args.plotfigs,tags,nightsFinal,humids,
                          temps,zds,press,obs,watm,satm,mwave0,mflux0,cdbs_loc,xbounddict,None)
-#-------------------------------------------------------------------------------
+    
+    #-------------------------------------------------------------------------------
+    
+    # Run order by order, multiprocessing over nights within an order
     for jerp in range(len(orders)):
         outs = mp_run(args, inparam, args.Nthreads, jerp, orders, nightsFinal)
 
