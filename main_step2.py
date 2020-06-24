@@ -14,9 +14,9 @@ from Engine.outplotter import outplotter_23
 #-------------------------------------------------------------------------------
 
 def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
-    
+
     # Main function for RV fitting that will be threaded over by multiprocessing
-    
+
     nights   = inparam.nights
     night    = nights[i] # current looped night
 
@@ -29,7 +29,7 @@ def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                                                                               mp.current_process().pid) )
 
     #-------------------------------------------------------------------------------
-    
+
     # Collect initial RV guesses
     if type(inparam.initguesses) == dict:
         initguesses = inparam.initguesses[night]
@@ -79,8 +79,8 @@ def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
             ordertry = orders[nexto]
             logger.warning(f'  --> TELFIT ENCOUNTERED CRITICAL ERROR IN ORDER: {orderbad} NIGHT: {night}, TRYING ORDER {ordertry} INSTEAD...')
         else: # All good, continue
-            break 
-            
+            break
+
         nexto += 1
         if nexto == len(orders):
             logger.warning(f'  --> TELFIT ENCOUNTERED CRITICAL ERROR IN ALL ORDERS FOR NIGHT: {night}, skipping...')
@@ -123,13 +123,13 @@ def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                       IPpars[0]])                                            #14: Instrumental resolution quadratic component
 
     rvsmini = []; vsinismini = [];
-    
+
     # Iterate over all A/B exposures
     for t in np.arange(len(tagsnight)):
         tag = tagsnight[t]
         beam = beamsnight[t]
 
-        # Retrieve pixel bounds for where within each other significant telluric absorption is present. 
+        # Retrieve pixel bounds for where within each other significant telluric absorption is present.
         # If these bounds were not applied, analyzing some orders would give garbage fits.
         if args.band=='K':
             if int(order) in [11, 12, 13, 14]:
@@ -154,7 +154,7 @@ def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                                     bound_cut)
 
         #-------------------------------------------------------------------------------
-        
+
         # Execute S/N cut
         s2n = s/u
         if np.nanmedian(s2n) < float(args.SN_cut):
@@ -188,16 +188,16 @@ def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         wave_piece = wave_piece[(wave_piece*1e4 > min(watm_in)+5) & (wave_piece*1e4 < max(watm_in)-5)]
 
         #-------------------------------------------------------------------------------
-        
+
         par = pars0.copy()
-        
+
         # Get initial guess for cubic wavelength solution from reduction pipeline
         f = np.polyfit(x_piece,wave_piece,3)
         par9in = f[0]*1e4; par8in = f[1]*1e4; par7in = f[2]*1e4; par6in = f[3]*1e4;
         par[9] = par9in ;  par[8] = par8in ;  par[7] = par7in ;  par[6] = par6in
 
         par[0] = initguesses-inparam.bvcs[night+tag] # Initial RV with barycentric correction
-        
+
         # Arrays defining parameter variations during optimization steps.
         # Optimization will cycle twice. In the first cycle, the RVs can vary more than in the second.
         dpars1 = {'cont' : np.array([ 0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0]),
@@ -228,8 +228,8 @@ def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         if hardbounds[3] < 0:
             hardbounds[3] = 1
 
-        # Begin optimization. Fit the blaze, the wavelength solution, the telluric template power and RV, the stellar template power and RV, the 
-        # zero point for the instrumental resolution, and the vsini of the star separately, iterating and cycling between each set of parameter fits. 
+        # Begin optimization. Fit the blaze, the wavelength solution, the telluric template power and RV, the stellar template power and RV, the
+        # zero point for the instrumental resolution, and the vsini of the star separately, iterating and cycling between each set of parameter fits.
         cycles = 2
 
         optgroup = ['cont', 'wave', 't', 'cont', 's',
@@ -257,23 +257,23 @@ def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         parfit = parfit_1.copy()
 
         #-------------------------------------------------------------------------------
-        
+
         # if best fit stellar template power is very low, throw out result
         if parfit[1] < 0.1:
             logger.warning(f'  --> parfit[1] < 0.1, {night} parfit={parfit}')
             continue
-            
+
         # if best fit stellar or telluric template powers are exactly equal to their starting values, optimization failed, throw out result
         if parfit[1] == par_in[1] or parfit[3] == par_in[3]:
             logger.warning(f'  --> parfit[1] == par_in[1] or parfit[3] == par_in[3], {night}')
             continue
-            
+
         # if best fit model dips below zero at any point, we're too close to edge of blaze, fit may be comrpomised, throw out result
         smod,chisq = fmod(parfit,fitobj)
         if len(smod[(smod < 0)]) > 0:
             logger.warning(f'  --> len(smod[(smod < 0)]) > 0, {night}')
             continue
-            
+
     #-------------------------------------------------------------------------------
         if args.plotfigs:
             parfitS = parfit.copy(); parfitS[3] = 0
@@ -299,11 +299,11 @@ if __name__ == '__main__':
                                      prog        = 'IGRINS Spectra Radial Velocity Pipeline - Step 2',
                                      description = '''
                                      Only required if the average RV of the target star is unknown to $>$ 5 \kms precision. \n
-                                     Performs an abbreviated analysis of the target star observations in order to converge to coarsely accurate RVs, 
-                                     which will be used as starting points for the more precise analysis in the next step; 
+                                     Performs an abbreviated analysis of the target star observations in order to converge to coarsely accurate RVs,
+                                     which will be used as starting points for the more precise analysis in the next step;
                                      simultaneously does the same for target star's \vsini.  \n
                                      Only a single order is used - by default, the first one in the list of wavelength regions, but the user can specify otherwise.  \n
-                                     All separate exposures for a given observation are combined into one higher S/N spectrum before fitting occurs. 
+                                     All separate exposures for a given observation are combined into one higher S/N spectrum before fitting occurs.
                                      ''',
                                      epilog = "Contact authors: asa.stahl@rice.edu; sytang@lowell.edu")
     parser.add_argument("targname",                          action="store",
@@ -327,8 +327,7 @@ if __name__ == '__main__':
                         help="Range of allowed vsini variation during optimization (float, if set to zero vsini will be held constant), default = 5.0 km/s",
                         type=str,   default='5' )
     parser.add_argument('-g',       dest="guesses",          action="store",
-                        help="Initial guess for RV (int or float, km/s) for all nights. \n
-                        Use -gX instead if you want to reference an Initguesser_results file from a previous run of this step, which will have a different initial guess for each night",
+                        help="Initial guess for RV (int or float, km/s) for all nights. Use -gX instead if you want to reference an Initguesser_results file from a previous run of this step, which will have a different initial guess for each night",
                         type=str,   default='')
     parser.add_argument('-gX',      dest="guessesX",         action="store",
                         help="The number, X, that refers to the ./*targname/Initguesser_results_X file you wish to use for initial RV guesses",
@@ -357,40 +356,40 @@ if __name__ == '__main__':
     cdbs_loc = '~/cdbs/'
 
     #-------------------------------------------------------------------------------
-    
+
     #### Check user inputs
-    
+
     initvsini = float(args.initvsini)
     vsinivary = float(args.vsinivary)
-    
+
     #------------------------------
-    
+
     if args.template.lower() not in ['synthetic', 'livingston', 'user_defined']:
         sys.exit('ERROR: UNEXPECTED STELLAR TEMPLATE FOR "-t" INPUT!')
-        
+
     #------------------------------
-    
+
     if args.template.lower() in ['synthetic', 'livingston']:
         if args.sptype not in ['F','G','K','M']:
             sys.exit('ERROR: DEFAULT TEMPLATES ONLY COVER F G K M STARS!')
-            
+
     #------------------------------
-    
+
     if (args.guesses != '') & (args.guessesX != ''):
         sys.exit('ERROR: YOU CAN ONLY CHOOSE EITHER -g OR -gX')
-        
+
     #------------------------------
     # Specify initial RV guesses as a single value applied to all nights
-    
+
     if args.guesses != '':
         try:
             initguesses = float(args.guesses)
             initguesses_show = initguesses
         except:
             sys.exit('ERROR: -g ONLY TAKES A NUMBER AS INPUT!')
-            
-    #------------------------------ 
-    
+
+    #------------------------------
+
     # Load initial RV guesses from file
     if args.guessesX != '':
         try:
@@ -405,7 +404,7 @@ if __name__ == '__main__':
         initguesses_show = f'Initguesser_results_{args.guessesX}.csv'
         for hrt in range(len(initnights)):
             initguesses[str(initnights[hrt])] = float(initrvs[hrt])
-            
+
 #-------------------------------------------------------------------------------
 
     start_time = datetime.now()
@@ -440,7 +439,7 @@ Input Parameters:
     print('---------------------------------------------------------------')
     print('Running Step 2 for {}...'.format(args.targname))
     print('This Will Take a While..........')
-    
+
     #-------------------------------------------------------------------------------
 
     # Make output directories as needed
@@ -468,7 +467,7 @@ Input Parameters:
     outpath = f'./Output/{args.targname}_{args.band}'
 
     #-------------------------------------------------------------------------------
-    
+
     # Set up logger
     logger = logging.getLogger(__name__)
     if args.debug:
@@ -495,7 +494,7 @@ Input Parameters:
     filew.write('\n')
 
     #-------------------------------------------------------------------------------
-    
+
     # Read in the Prepdata under ./Input/Prpedata/
     xbounddict, maskdict, tagsA, tagsB, mjds, bvcs, nightsFinal, orders = read_prepdata(args)
 
@@ -511,7 +510,7 @@ Input Parameters:
     logger.info('Analyze with {} nights'.format(len(nightsFinal)))
 
     #-------------------------------------------------------------------------------
-    
+
     # Retrieve stellar and telluric templates
     watm,satm, mwave0, mflux0 = setup_templates(logger, args.template, args.band, args.sptype)
 
@@ -520,7 +519,7 @@ Input Parameters:
                        initguesses,bvcs,tagsA,tagsB,nightsFinal,mwave0,mflux0,None,xbounddict,maskdict)
 
     #-------------------------------------------------------------------------------
-    
+
     # Run order by order, multiprocessing over nights within an order
     pool = mp.Pool(processes = args.Nthreads)
     func = partial(ini_MPinst, args, inparam, orders, int(args.label_use), trk, step2or3 )
