@@ -160,7 +160,7 @@ def setup_templates(logger, kind='synthetic', band='K', sptype='M'):
         if os.getcwd()[-1]=='v':
             stelldata = Table.read('./Engine/syntheticstellar_kband.txt',format='ascii')
         else:
-            telldata = Table.read('../Engine/syntheticstellar_kband.txt',format='ascii')
+            stelldata = Table.read('../Engine/syntheticstellar_kband.txt',format='ascii')
         mwave0 = np.array(stelldata['wave'])
         mflux0 = np.array(stelldata['flux'])
         mwave0 = mwave0[(np.isfinite(mflux0))]
