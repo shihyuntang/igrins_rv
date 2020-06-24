@@ -183,15 +183,15 @@ def MPinst(args, inparam, jerp, orders, i):
             outplotter_tel(parfit, fitobj, f'Post_parfit_{order}_{night}', inparam, args)
 
         if args.debug:
-            fig, axes = plt.subplots(1, 1, figsize=(5,3), facecolor='white', dpi=300)
+            fig, axes = plt.subplots(1, 1, figsize=(6,3), facecolor='white', dpi=300)
             axes.plot(fitobj.x,
                       parfit[5] + parfit[13]*(fitobj.x) + parfit[14]*(fitobj.x**2),
-                      '-k', lw=0.5, label='data', alpha=.6)
+                      '-k', lw=0.7, label='data', alpha=.6)
 
-            axes.tick_params(axis='both', labelsize=4.5, right=True, top=True, direction='in')
-            axes.set_ylabel('IP',           size=5, style='normal', family='sans-serif')
-            axes.set_xlabel('Pixel Number', size=5, style='normal', family='sans-serif')
-            axes.legend(fontsize=4, edgecolor='white')
+            axes.tick_params(axis='both', labelsize=6, right=True, top=True, direction='in')
+            axes.set_ylabel('IP',           size=6, style='normal', family='sans-serif')
+            axes.set_xlabel('Pixel Number', size=6, style='normal', family='sans-serif')
+            axes.legend(fontsize=5, edgecolor='white')
             fig.savefig(f'{inparam.outpath}/figs_{args.band}/IP_{order}_{night}.png',
                         bbox_inches='tight', format='png', overwrite=True)
 

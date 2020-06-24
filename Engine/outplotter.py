@@ -5,7 +5,7 @@ def outplotter_tel(parfit, fitobj, title, inparam, args):
     fit,chi = fmod(parfit, fitobj)
     w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
 
-    fig, axes = plt.subplots(1, 1, figsize=(6,2.5), facecolor='white', dpi=300)
+    fig, axes = plt.subplots(1, 1, figsize=(6,3), facecolor='white', dpi=300)
 
     axes.plot(w,fitobj.s, '-',  c = 'k',        lw=0.7, label='data',  alpha=.6)
     axes.plot(w,fit,      '--', c = 'tab:red',  lw=0.7, label='model', alpha=.6)
@@ -24,7 +24,7 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3):
     fit,chi = fmod(parfit, fitobj)
     w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
 
-    fig, axes = plt.subplots(1, 1, figsize=(6,2.5), facecolor='white', dpi=300)
+    fig, axes = plt.subplots(1, 1, figsize=(6,3), facecolor='white', dpi=300)
 
     n = len(fitobj.mask)
 
@@ -67,12 +67,12 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3):
 
         fig.tight_layout(pad=0.0)
         fig.suptitle( title,     x=0.5,y=1.05, size=6, style='normal', family='sans-serif')
-        fig.text(0.5, -0.04, r'Wavelength [$\rm\AA$]', ha='center',size=6, style='normal', family='sans-serif')
-        fig.text(-0.04, 0.5, r'Normalized Flux',       va='center', rotation='vertical',size=6, style='normal', family='sans-serif')
+        fig.text(0.5, -0.04, r'Wavelength [$\rm\AA$]', ha='center', size=6, style='normal', family='sans-serif')
+        fig.text(-0.04, 0.5, r'Normalized Flux',       va='center', rotation='vertical', size=6, style='normal', family='sans-serif')
         ax0.legend(fontsize=5, edgecolor='white')
 
     else:
-        fig, axes = plt.subplots(1, 1, figsize=(6,2.5), facecolor='white', dpi=300)
+        fig, axes = plt.subplots(1, 1, figsize=(6,3), facecolor='white', dpi=300)
         axes.plot(w,fitobj.s, '-',  c='k',       lw=0.7, label='data',  alpha=.6)
         axes.plot(w,fit,      '--', c='tab:red', lw=0.7, label='model', alpha=.6)
 
