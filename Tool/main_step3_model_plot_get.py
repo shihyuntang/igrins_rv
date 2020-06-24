@@ -58,7 +58,7 @@ def rv_MPinst(args, inparam, i, orders, order):
     flminibox_mod[:]  = np.nan
 
     # Load telluric template from Telfit'd A0
-    A0loc = f'./Output/{args.targname}_{args.band}/A0Fits/{night[:8]}A0_treated_{args.band}.fits'
+    A0loc = f'../Output/{args.targname}_{args.band}/A0Fits/{night[:8]}A0_treated_{args.band}.fits'
     try:
         hdulist = fits.open(A0loc)
     except IOError:
@@ -376,7 +376,7 @@ if __name__ == '__main__':
         initguesses_show = initguesses
     else:
         if args.guesses_source == 'init':
-            guesses = './Output/{}_{}/Initguesser_results_{}.csv'.format(args.targname,
+            guesses = '../Output/{}_{}/Initguesser_results_{}.csv'.format(args.targname,
                                                                          args.band,
                                                                          int(args.guessesX))
             guessdata  = Table.read(guesses, format='csv')
@@ -388,7 +388,7 @@ if __name__ == '__main__':
                 initguesses[str(initnights[hrt])] = float(initrvs[hrt])
 
         elif args.guesses_source == 'rvre':
-            guesses = './Output/{}_{}/RVresultsSummary_{}.csv'.format(args.targname,
+            guesses = '../Output/{}_{}/RVresultsSummary_{}.csv'.format(args.targname,
                                                                       args.band,
                                                                       int(args.guessesX))
             guessdata  = Table.read(guesses, format='csv')
@@ -435,9 +435,9 @@ Input Parameters:
     if not os.path.isdir('./Output'):
         os.mkdir('./Output')
 
-    if not os.path.isdir(f'./Output/{args.targname}_{args.band}_tool'):
-        os.mkdir(f'./Output/{args.targname}_{args.band}_tool')
-    filesndirs = os.listdir(f'./Output/{args.targname}_{args.band}_tool')
+    if not os.path.isdir(f'../Output/{args.targname}_{args.band}_tool'):
+        os.mkdir(f'../Output/{args.targname}_{args.band}_tool')
+    filesndirs = os.listdir(f'../Output/{args.targname}_{args.band}_tool')
 
     trk = 1; go = True;
     while go == True:
@@ -446,9 +446,9 @@ Input Parameters:
             break
         trk += 1
 
-    os.mkdir(f'./Output/{args.targname}_{args.band}_tool/{name}')
+    os.mkdir(f'../Output/{args.targname}_{args.band}_tool/{name}')
 
-    outpath = f'./Output/{args.targname}_{args.band}_tool'
+    outpath = f'../Output/{args.targname}_{args.band}_tool'
 #-------------------------------------------------------------------------------
     logger = logging.getLogger(__name__)
     if args.debug:
