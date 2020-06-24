@@ -341,6 +341,7 @@ if __name__ == '__main__':
 
     if args.mode.lower() == 'std':
         initguesses = float(args.guesses)
+        initguesses_show = std(initguesses)
     else:
         if args.guesses_source == 'init':
             guesses = './Output/{}_{}/Initguesser_results_{}.csv'.format(args.targname,
@@ -350,6 +351,7 @@ if __name__ == '__main__':
             initnights = np.array(guessdata['night'])
             initrvs    = np.array(guessdata['bestguess'])
             initguesses = {}
+            initguesses_show = f'Initguesser_results_{args.guessesX}.csv'
             for hrt in range(len(initnights)):
                 initguesses[str(initnights[hrt])] = float(initrvs[hrt])
 
@@ -361,6 +363,7 @@ if __name__ == '__main__':
             initnights = np.array(guessdata['NIGHT'])
             initrvs    = np.array(guessdata['RVfinal'])
             initguesses = {}
+            initguesses_show = f'Initguesser_results_{args.guessesX}.csv'
             for hrt in range(len(initnights)):
                 initguesses[str(initnights[hrt])] = float(initrvs[hrt])
 #-------------------------------------------------------------------------------
@@ -381,7 +384,7 @@ Input Parameters:
     Stellar template use= \33[41m {} \033[0m
     Target Spectral Type= \33[41m {} \033[0m             <-------  [late K, M] recommended 'synthetic', [F, G, early K] SpTy recommended 'livingston'
     '''.format(args.targname, args.band, args.WRegion, args.SN_cut, args.nAB,
-               initvsini, vsinivary, initguesses, args.template, args.sptype))
+               initvsini, vsinivary, initguesses_show, args.template, args.sptype))
     if not args.skip:
         while True:
             inpp = input("Press [Y]es to continue, [N]o to quite...\n --> ")
