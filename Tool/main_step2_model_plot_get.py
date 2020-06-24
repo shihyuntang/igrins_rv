@@ -465,7 +465,7 @@ Input Parameters:
         logger.setLevel(logging.INFO)
     formatter = logging.Formatter('%(asctime)s: %(module)s.py: %(levelname)s--> %(message)s')
 
-    file_hander  = logging.FileHandler(f'{outpath}/{args.targname}_{args.band}.log')
+    file_hander  = logging.FileHandler(f'{outpath}/{args.targname}_{args.band}_tool.log')
     stream_hander= logging.StreamHandler()
 
     # file_hander.setLevel()
@@ -476,9 +476,9 @@ Input Parameters:
 
     #-------------------------------------------------------------------------------
     # Create output file to write to
-    logger.info(f'Writing output to ./Output/{args.targname}_{args.band}/{iniguess_dir}')
+    logger.info(f'Writing output to ./Output/{args.targname}_{args.band}_tool/{iniguess_dir}')
 
-    filew = open(f'./Output/{args.targname}_{args.band}/{iniguess_dir}','w')
+    filew = open(f'../Output/{args.targname}_{args.band}_tool/{iniguess_dir}','w')
     filew.write('night, bestguess, vsini')
     filew.write('\n')
 
