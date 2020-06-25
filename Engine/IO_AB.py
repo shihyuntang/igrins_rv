@@ -201,7 +201,7 @@ def setup_templates(logger, kind='synthetic', band='K', sptype='M'):
         if os.getcwd()[-1]=='v':
             spotdata = Table.read('./Engine/PhotoAtl_Solar_contadjusted.txt',format='ascii')
         else:
-            spotdata = Table.read('./Engine/PhotoAtl_Solar_contadjusted.txt',format='ascii')
+            spotdata = Table.read('../Engine/PhotoAtl_Solar_contadjusted.txt',format='ascii')
         mwave0 = np.array(spotdata['wave'])*10000.0
         mflux0 = np.array(spotdata['flux'])
         mwave0 = mwave0[(np.isfinite(mflux0))]
