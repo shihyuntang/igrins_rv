@@ -263,13 +263,13 @@ def rv_MPinst(args, inparam, i, orders, order):
 
 
 
-    wminibox[:n]         = w
-    sminibox[:]          = dataflat
-    flminibox_mod[:ln]   = modelflat
-    flminibox_tel[:n]    = tellflat
-    flminibox_ste[:nn]   = stellflat
-    contiminibox[:n]     = contmodel
-    residualbox[:l]      = residual
+    wminibox[:]        = w
+    sminibox[:]        = dataflat
+    flminibox_mod[:]   = modelflat
+    flminibox_tel[:]   = tellflat
+    flminibox_ste[:]   = stellflat
+    contiminibox[:]    = contmodel
+    residualbox[:]     = residual
 
     return wminibox,sminibox,flminibox_mod,flminibox_tel,flminibox_ste,contiminibox,residualbox
 
