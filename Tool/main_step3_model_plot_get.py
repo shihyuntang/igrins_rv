@@ -267,7 +267,7 @@ def rv_MPinst(args, inparam, i, orders, order):
     sminibox[:len(w)]        = dataflat
     flminibox_mod[:len(w)]   = modelflat
     flminibox_tel[:len(w)]   = tellflat
-    flminibox_ste[:v]   = stellflat
+    flminibox_ste[:len(w)]   = stellflat
     contiminibox[:len(w)]    = contmodel
     residualbox[:len(w)]     = residual
 
