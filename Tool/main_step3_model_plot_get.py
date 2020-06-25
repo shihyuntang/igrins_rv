@@ -535,13 +535,16 @@ for i in range(len(orders)):
     stebox    = outsbox[4]
     conti_fl  = outsbox[5]
 
+    print(wbox)
+    print(stbox)
+
     # Save results in fits file
-    c1 = fits.Column(name='wavelength',    array=wbox,         format=str(len(wbox))+'D')
-    c2 = fits.Column(name='s',             array=stbox,        format=str(len(wbox))+'D')
-    c3 = fits.Column(name='model_fl',      array=modbox,       format=str(len(wbox))+'D')
-    c4 = fits.Column(name='tel_fl',        array=telbox,       format=str(len(wbox))+'D')
-    c5 = fits.Column(name='ste_fl',        array=stebox,       format=str(len(wbox))+'D')
-    c6 = fits.Column(name='conti_fl',      array=conti_fl,     format=str(len(wbox))+'D')
+    c1 = fits.Column(name='wavelength',    array=wbox,         format='D')
+    c2 = fits.Column(name='s',             array=stbox,        format='D')
+    c3 = fits.Column(name='model_fl',      array=modbox,       format='D')
+    c4 = fits.Column(name='tel_fl',        array=telbox,       format='D')
+    c5 = fits.Column(name='ste_fl',        array=stebox,       format='D')
+    c6 = fits.Column(name='conti_fl',      array=conti_fl,     format='D')
 
 
     cols = fits.ColDefs([c1, c2, c3, c4, c5, c6])
