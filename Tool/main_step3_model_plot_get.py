@@ -536,18 +536,12 @@ for i in range(len(orders)):
     conti_fl  = outsbox[5]
 
     # Save results in fits file
-    c1 = fits.Column(name='wavelength',    array=wbox,         format=str(
-        len(wbox[0, :]))+'D', dim=(1, len(wbox[0, :])))
-    c2 = fits.Column(name='s',             array=stbox,        format=str(
-        len(wbox[0, :]))+'D', dim=(1, len(wbox[0, :])))
-    c3 = fits.Column(name='model_fl',      array=modbox,    format=str(
-        len(wbox[0, :]))+'D', dim=(1, len(wbox[0, :])))
-    c4 = fits.Column(name='tel_fl',        array=telbox,       format=str(
-        len(wbox[0, :]))+'D', dim=(1, len(wbox[0, :])))
-    c5 = fits.Column(name='ste_fl',        array=stebox,       format=str(
-        len(wbox[0, :]))+'D', dim=(1, len(wbox[0, :])))
-    c6 = fits.Column(name='conti_fl',      array=conti_fl,     format=str(
-        len(wbox[0, :]))+'D', dim=(1, len(wbox[0, :])))
+    c1 = fits.Column(name='wavelength',    array=wbox,         format=str(len(wbox))+'D')
+    c2 = fits.Column(name='s',             array=stbox,        format=str(len(wbox))+'D')
+    c3 = fits.Column(name='model_fl',      array=modbox,       format=str(len(wbox))+'D')
+    c4 = fits.Column(name='tel_fl',        array=telbox,       format=str(len(wbox))+'D')
+    c5 = fits.Column(name='ste_fl',        array=stebox,       format=str(len(wbox))+'D')
+    c6 = fits.Column(name='conti_fl',      array=conti_fl,     format=str(len(wbox))+'D')
 
 
     cols = fits.ColDefs([c1, c2, c3, c4, c5, c6])
