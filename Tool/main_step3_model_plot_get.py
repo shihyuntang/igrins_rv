@@ -260,18 +260,16 @@ def rv_MPinst(args, inparam, i, orders, order):
 
     w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
 
-    w_min = np.nanmin(w)
-    dw    = (np.nanmax(w) - np.nanmin(w)) / 8
-    for nn in range(8):
-        wrange = [ (w > (w_min + nn*dw) ) & ((w < (w_min + (nn+1)*dw))) ][0]
-        leng_w = sum(wrange)
-        wminibox[:leng_w, nn]         = w[wrange]
-        sminibox[:leng_w, nn]         = dataflat[wrange]
-        flminibox_mod[:leng_w, nn]    = modelflat[wrange]
-        flminibox_tel[:leng_w, nn]    = tellflat[wrange]
-        flminibox_ste[:leng_w, nn]    = stellflat[wrange]
-        contiminibox[:leng_w, nn]     = contmodel[wrange]
-        residualbox[:leng_w, nn]      = residual[wrange]
+
+
+
+    wminibox[:n]         = w
+    sminibox[:]          = dataflat
+    flminibox_mod[:ln]   = modelflat
+    flminibox_tel[:n]    = tellflat
+    flminibox_ste[:nn]   = stellflat
+    contiminibox[:n]     = contmodel
+    residualbox[:l]      = residual
 
     return wminibox,sminibox,flminibox_mod,flminibox_tel,flminibox_ste,contiminibox,residualbox
 
