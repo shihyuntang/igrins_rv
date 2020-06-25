@@ -269,9 +269,9 @@ def rv_MPinst(args, inparam, i, orders, order):
     flminibox_tel[:len(w)]   = tellflat
     flminibox_ste[:len(w)]   = stellflat
     contiminibox[:len(w)]    = contmodel
-    residualbox[:len(w)]     = residual
+    # residualbox[:len(w)]     = residual
 
-    return wminibox,sminibox,flminibox_mod,flminibox_tel,flminibox_ste,contiminibox,residualbox
+    return wminibox,sminibox,flminibox_mod,flminibox_tel,flminibox_ste,contiminibox
 
 
 def mp_run(Nthreads, args, inparam, nights, order0):
