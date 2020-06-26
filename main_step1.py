@@ -15,7 +15,7 @@ from Engine.outplotter import outplotter_tel
 
 def MPinst(args, inparam, jerp, orders, i):
     # Main function for A0 fitting that will be threaded over by multiprocessing
-    
+
     order = orders[jerp]            # current looped order
     night = str(inparam.nights[i])  # multiprocess assigned night
     firstorder = orders[0]          # First order that will be analyzed, related to file writing
@@ -27,22 +27,23 @@ def MPinst(args, inparam, jerp, orders, i):
                                                                                  len(inparam.nights),
                                                                                  night,
                                                                                  mp.current_process().pid) )
-    
-    #-------------------------------------------------------------------------------
-    
-    # Retrieve pixel bounds for where within each other significant telluric absorption is present. 
-    # If these bounds were not applied, analyzing some orders would give garbage fits.
-    if args.band=='K':
-        if int(order) in [11, 12, 13, 14]:
-            bound_cut = inparam.bound_cut_dic[args.band][order]
-        else:
-            bound_cut = [150, 150]
 
-    elif args.band=='H':
-        if int(order) in [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]:
-            bound_cut = inparam.bound_cut_dic[args.band][order]
-        else:
-            bound_cut = [150, 150]
+    #-------------------------------------------------------------------------------
+
+    # Retrieve pixel bounds for where within each other significant telluric absorption is present.
+    # If these bounds were not applied, analyzing some orders would give garbage fits.
+    # if args.band=='K':
+    #     if int(order) in [11, 12, 13, 14]:
+    #         bound_cut = inparam.bound_cut_dic[args.band][order]
+    #     else:
+    #         bound_cut = [150, 150]
+    #
+    # elif args.band=='H':
+    #     if int(order) in [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]:
+    #         bound_cut = inparam.bound_cut_dic[args.band][order]
+    #     else:
+    #         bound_cut = [150, 150]
+    bound_cut = [150, 150]
 
     ### Load relevant A0 spectrum
     x, a0wavelist, a0fluxlist, u = init_fitsread(inparam.inpath,
@@ -53,9 +54,9 @@ def MPinst(args, inparam, jerp, orders, i):
                                                  f'{int(inparam.tags[night]):04d}',
                                                  args.band,
                                                  bound_cut)
-    
+
     #-------------------------------------------------------------------------------
-    
+
     # Trim obvious outliers above the blaze (i.e. cosmic rays)
     nzones = 12
     a0wavelist = basicclip_above(a0wavelist,a0fluxlist,nzones);   a0x = basicclip_above(x,a0fluxlist,nzones);
@@ -130,9 +131,9 @@ def MPinst(args, inparam, jerp, orders, i):
     dpar      = np.array([0.0, 0.0, 5.0, 3.0, 0.0, 0.5, 0.0,   0.0,  0.0,        0,    1e4, 1, 1, 0,    0])
     dpar_st   = np.array([0.0, 0.0, 5.0, 3.0, 0.0, 0.0, 0.0,   0.0,  0.0,        0,    1e4, 1, 1, 0,    0])
     dpar_ip   = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0])
-    
+
     #-------------------------------------------------------------------------------
-    
+
     # Initialize an array that puts hard bounds on vsini and the instrumental resolution to make sure they do not diverge to unphysical values
     optimize = True
     par_in = parA0.copy()
@@ -143,7 +144,7 @@ def MPinst(args, inparam, jerp, orders, i):
     if hardbounds[3] < 0:
         hardbounds[3] = 1
 
-    # Begin optimization. 
+    # Begin optimization.
     # For every pre-Telfit spectral fit, first fit just template strength/rv/continuum, then just wavelength solution, then template/continuum again, then ip,
     # then finally wavelength. Normally would fit for all but wavelength at the end, but there's no need for the pre-Telfit fit, since all we want
     # is a nice wavelength solution to feed into Telfit.
@@ -154,7 +155,7 @@ def MPinst(args, inparam, jerp, orders, i):
     parfit = optimizer(parfit_4,   dpar_wave, hardbounds,fitobj,optimize)
 
     #-------------------------------------------------------------------------------
-    
+
     # Get best fit wavelength solution
     a0w_out_fit = parfit[6] + parfit[7]*x + parfit[8]*(x**2.) + parfit[9]*(x**3.)
 
@@ -163,20 +164,20 @@ def MPinst(args, inparam, jerp, orders, i):
 
     # Feed this new wavelength solution into Telfit. Returns high-res synthetic telluric template, parameters of that best fit, and blaze function best fit
     watm1, satm1, telfitparnames, telfitpars, a0contwave, continuum = telfitter(a0w_out_fit,a0fluxlist,a0u,inparam,night,order,args)
-    
+
     #-------------------------------------------------------------------------------
-    
+
     # If Telfit encountered error (details in Telfitter.py), skip night/order combo
-    if len(watm1) == 1: 
+    if len(watm1) == 1:
         logger.warning(f'TELFIT ENCOUNTERED CRITICAL ERROR IN ORDER: {order} NIGHT: {night}')
-        
+
         # Write out table to fits header with errorflag = 1
         c0    = fits.Column(name=f'ERRORFLAG{order}', array=np.array([1]), format='K')
         cols  = fits.ColDefs([c0])
         hdu_1 = fits.BinTableHDU.from_columns(cols)
-        
+
         # If first time writing fits file, make up filler primary hdu
-        if order == firstorder: 
+        if order == firstorder:
             bleh = np.ones((3,3))
             primary_hdu = fits.PrimaryHDU(bleh)
             hdul = fits.HDUList([primary_hdu,hdu_1])
@@ -185,9 +186,9 @@ def MPinst(args, inparam, jerp, orders, i):
             hh = fits.open('{}/{}A0_treated_{}.fits'.format(inparam.outpath, night, args.band))
             hh.append(hdu_1)
             hh.writeto('{}/{}A0_treated_{}.fits'.format(inparam.outpath, night, args.band), overwrite=True)
-            
+
     else: # If Telfit exited normally, proceed.
-        
+
         #  Save best blaze function fit
         a0contwave /= 1e4
         continuum = rebin_jv(a0contwave,continuum,a0wavelist,False)
@@ -228,10 +229,10 @@ def MPinst(args, inparam, jerp, orders, i):
         logger.debug(f'Post_parfit2:\n {parfit_2}')
         logger.debug(f'Post_parfit3:\n {parfit_3}')
         logger.debug(f'Post_parfit4:\n {parfit_4}')
-        
+
         #-------------------------------------------------------------------------------
-        
-        # Save slightly better wavelength and blaze function solution 
+
+        # Save slightly better wavelength and blaze function solution
         a0w_out  = parfit[6] + parfit[7]*x + parfit[8]*(x**2.) + parfit[9]*(x**3.)
         cont_adj = parfit[10] + parfit[11]*x + parfit[12]*(x**2.)
 
@@ -262,18 +263,18 @@ def MPinst(args, inparam, jerp, orders, i):
             hh = fits.open('{}/{}A0_treated_{}.fits'.format(inparam.outpath, night, args.band))
             hh.append(hdu_1)
             hh.writeto('{}/{}A0_treated_{}.fits'.format(inparam.outpath, night, args.band), overwrite=True)
-            
+
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 
-def mp_run(args, inparam, Nthreads, jerp, orders, nights): 
+def mp_run(args, inparam, Nthreads, jerp, orders, nights):
     # Multiprocessing convenience function
     pool = mp.Pool(processes = Nthreads)
     func = partial(MPinst, args, inparam, jerp, orders)
     outs = pool.map(func, np.arange(len(nights)))
     pool.close()
     pool.join()
-    
+
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 
@@ -328,10 +329,10 @@ if __name__ == '__main__':
                                      prog        = 'IGRINS Spectra Radial Velocity Pipeline - Step 1',
                                      description = '''
                                      This step 1) defines the wavelength regions to be analyzed based on user specification \n
-                                     2) generates a synthetic, high-resolution telluric 
+                                     2) generates a synthetic, high-resolution telluric
                                      template for use in later model fits on a night by night basis.  \n
                                      Note that only target star observations will have their fits limited to the wavelength regions specified. \n
-                                     For A0 observations, only the orders specified will be analyzed, but each order will be fit as far as there is significant telluric absoprtion. 
+                                     For A0 observations, only the orders specified will be analyzed, but each order will be fit as far as there is significant telluric absoprtion.
                                      ''',
                                      epilog = "Contact authors: asa.stahl@rice.edu; sytang@lowell.edu")
     parser.add_argument("targname",                          action="store",
@@ -390,9 +391,9 @@ if __name__ == '__main__':
 
     logger.addHandler(file_hander)
     logger.addHandler(stream_hander)
-    
+
     #-------------------------------------------------------------------------------
-    
+
     start_time = datetime.now()
     print('####################################################################################\n')
     print(f'Fetching Wavelength Regions to be Analyzed for {args.targname}...')
@@ -403,9 +404,9 @@ if __name__ == '__main__':
     print('Fetching Done!')
     print(f'File "XRegions_{args.WRegion}_{args.band}.csv" saved under "./Input/UseWv/"')
     time.sleep(5)
-    
+
     #-------------------------------------------------------------------------------
-    
+
     print('###############################################################\n')
     logger.info(f'Using TelFit to create high-resolution, synthetic telluric templates based off the telluric standards associated with {args.targname} on a night by night basis...')
     print('This will take a while..........')
@@ -446,17 +447,17 @@ if __name__ == '__main__':
 
     time.sleep(6)
     print('\n')
-    
+
     #-------------------------------------------------------------------------------
-    
+
     # Retrieve stellar and telluric templates
     watm, satm, mwave0, mflux0 = setup_templates_tel()
 
     inparam = inparamsA0(inpath,outpath,args.plotfigs,tags,nightsFinal,humids,
                          temps,zds,press,obs,watm,satm,mwave0,mflux0,cdbs_loc,xbounddict,None)
-    
+
     #-------------------------------------------------------------------------------
-    
+
     # Run order by order, multiprocessing over nights within an order
     for jerp in range(len(orders)):
         outs = mp_run(args, inparam, args.Nthreads, jerp, orders, nightsFinal)
