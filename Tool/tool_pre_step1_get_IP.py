@@ -521,7 +521,7 @@ if __name__ == '__main__':
     press  = {str(k):str(v) for k,v in zip(A0data[ind]['night'],A0data[ind]['press'])}
     nightsFinal = np.array(list(sorted(set(A0data[ind]['night']))))
 
-    nightsFinal = np.append( nightsFinal[1:10:2], nightsFinal[-10:-1:2])
+    nightsFinal = np.append( nightsFinal[3:17:2], nightsFinal[-10:-1:2])
 
 
     # Retrieve stellar and telluric templates
