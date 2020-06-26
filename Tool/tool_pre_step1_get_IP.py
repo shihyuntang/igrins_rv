@@ -428,14 +428,12 @@ def MPinst(args, chunk_ind, orders, i):
             hh.append(hdu_1)
             hh.writeto('{}/{}A0_treated_{}.fits'.format(inparam.outpath, night, args.band), overwrite=True)
 
-
 def mp_run(args, Nthreads, jerp, orders, nights):
     pool = mp.Pool(processes = Nthreads)
     func = partial(MPinst, args, jerp, orders )
     outs = pool.map(func, np.arange(len(nights)))
     pool.close()
     pool.join()
-
 
 #-------------------------------------------------------------------------------
 if __name__ == '__main__':
@@ -494,7 +492,6 @@ if __name__ == '__main__':
 
     logger.addHandler(file_hander)
     logger.addHandler(stream_hander)
-
     #-------------------------------------------------------------------------------
 
     start_time = datetime.now()
