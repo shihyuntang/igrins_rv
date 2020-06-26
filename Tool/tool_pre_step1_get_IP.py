@@ -230,33 +230,14 @@ def MPinst(args, chunk_ind, orders, i):
 
     ### Load relevant A0 spectrum
     if args.band=='K':
-        if order==11:
-            bound_cut = [200, 100]
-        elif order==12:
-            bound_cut = [900, 300]
-        elif order==13:
-            bound_cut = [200, 400]
-        elif order==14:
-            bound_cut = [150, 300]
+        if int(order) in [11, 12, 13, 14]:
+            bound_cut = inparam.bound_cut_dic[args.band][order]
         else:
             bound_cut = [150, 150]
+
     elif args.band=='H':
-        if order==10:
-            bound_cut = [250, 150]#ok
-        elif order==11:
-            bound_cut = [600, 150]
-        elif order==13:
-            bound_cut = [200, 600]#ok
-        elif order==14:
-            bound_cut = [700, 100]
-        elif order==16:
-            bound_cut = [400, 100]
-        elif order==17:
-            bound_cut = [1000, 100]
-        elif order==20:
-            bound_cut = [500, 150]
-        elif (order==7) or (order==8) or (order==9) or (order==12) or (order==15) or (order==18) or (order==19):
-            bound_cut = [500, 500]
+        if int(order) in [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]:
+            bound_cut = inparam.bound_cut_dic[args.band][order]
         else:
             bound_cut = [150, 150]
 
@@ -479,42 +460,60 @@ if __name__ == '__main__':
                         help="If sets, will generate files and plots under ./Temp/Debug for debug")
     parser.add_argument('--version',                         action='version',  version='%(prog)s 0.5')
     args = parser.parse_args()
-
-
+    inpath   = '../Input/{}/'.format(args.targname)
     cdbs_loc = '~/cdbs/'
-    inpath     = '../Input_Data/{}/'.format(args.targname)
+#-------------------------------------------------------------------------------
+    # Create output directories as needed
+    if not os.path.isdir('../Output'):
+        os.mkdir('../Output')
+
+    if not os.path.isdir(f'../Output/{args.targname}_{args.band}_tool'):
+        os.mkdir(f'../Output/{args.targname}_{args.band}_tool')
+
+    if not os.path.isdir(f'../Output/{args.targname}_{args.band}_tool/A0Fits_IP'):
+        os.mkdir(f'../Output/{args.targname}_{args.band}_tool/A0Fits_IP')
+
+    if not os.path.isdir(f'../Output/{args.targname}_{args.band}_tool/A0Fits_IP/figs_{args.band}'):
+        os.mkdir(f'../Output/{args.targname}_{args.band}_tool/A0Fits_IP/figs_{args.band}')
+
+    outpath = f'../Output/{args.targname}_{args.band}_tool/A0Fits_IP'
+#-------------------------------------------------------------------------------
+    # Handle logger
+    logger = logging.getLogger(__name__)
     if args.debug:
-        try:
-            os.listdir('../Temp/Debug/{}/'.format(args.targname))
-        except OSError:
-            os.mkdir('../Temp/Debug/{}/'.format(args.targname))
+        logger.setLevel(logging.DEBUG)
+    else:
+        logger.setLevel(logging.INFO)
+    formatter = logging.Formatter('%(asctime)s: %(module)s.py: %(levelname)s--> %(message)s')
 
-    targname   = args.targname
-    Nthreads   = args.Nthreads
+    file_hander  = logging.FileHandler(f'{outpath}/{args.targname}_{args.band}_A0Fits.log')
+    stream_hander= logging.StreamHandler()
 
-    #------------
+    # file_hander.setLevel()
+    file_hander.setFormatter(formatter)
+
+    logger.addHandler(file_hander)
+    logger.addHandler(stream_hander)
+
+    #-------------------------------------------------------------------------------
+
     start_time = datetime.now()
     print('\n')
     print('###############################################################')
-    print('Data Preparation for {} (1/3)...'.format(args.targname))
-    time.sleep(1)
-    DataPrep(args)
-
-    print('Data Preparation Done!')
-
-    print('\n')
-
-    #time.sleep(5)
     print('---------------------------------------------------------------')
+    print('WARNING!! ONLY FOR INTENAL DEVELOPMENT USE!!')
+    print('WARNING!! ONLY FOR INTENAL DEVELOPMENT USE!!')
     #------------
-    print('A0 Fitting using TelFit for {} (3/3)...'.format(args.targname))
+    print('A0 Fitting using TelFit for ...'.format(args.targname))
     print('This will take a while..........')
+    print('WARNING!! ONLY FOR INTENAL DEVELOPMENT USE!!')
+    print('WARNING!! ONLY FOR INTENAL DEVELOPMENT USE!!')
     print('\n')
     curdir = os.getcwd()
 
 
     ## Collect relevant file information from Predata files
-    A0data = Table.read('../Temp/Prepdata/Prepdata_A0_{}.txt'.format(args.targname), format='ascii')
+    A0data = Table.read(f'../Input/Prepdata/Prepdata_A0_{args.targname}.txt', format='ascii')
 
     ind    = [i != 'NA' for i in A0data['humid']]
     humids = {str(k):str(v) for k,v in zip(A0data[ind]['night'],A0data[ind]['humid'])}
@@ -527,24 +526,15 @@ if __name__ == '__main__':
 
     nightsFinal = np.append( nightsFinal[1:10:2], nightsFinal[-10:-1:2])
 
-    if not os.path.isdir(f'./A0_Fits/'):
-        os.mkdir(f'./A0_Fits/')
 
-    if not os.path.isdir(f'./A0_Fits/A0_Fits_{args.targname}_IP'):
-        os.mkdir(f'./A0_Fits/A0_Fits_{args.targname}_IP')
-
-    if not os.path.isdir(f'./A0_Fits/A0_Fits_{args.targname}_IP/figs_{args.band}'):
-        os.mkdir(f'./A0_Fits/A0_Fits_{args.targname}_IP/figs_{args.band}')
-
-    outpath = f'./A0_Fits/A0_Fits_{args.targname}_IP'
     # Retrieve stellar and telluric templates
-    watm, satm, mwave0, mflux0 = setup_templates()
+    watm, satm, mwave0, mflux0 = setup_templates_tel()
 
     if args.band == 'K':
-        orders = np.append(np.arange(2, 9), np.array([10, 11, 12, 13, 14, 16]))
+        orders = np.array([2, 3, 4, 5, 6,  7,  8, 10, 11, 12, 13, 14, 16])
         #orders = [3]
     elif args.band=='H':
-        orders = np.array([5, 6, 13, 14, 16, 21, 22])
+        orders = np.array([2, 3, 4, 5, 6, 10, 11, 13, 14, 16, 17, 20, 21, 22])
 
     inparam = inparamsA0(inpath,outpath,args.plotfigs,tags,nightsFinal,humids,
                          temps,zds,press,obs,watm,satm,mwave0,mflux0,cdbs_loc,None,None)

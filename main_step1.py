@@ -408,7 +408,7 @@ if __name__ == '__main__':
     #-------------------------------------------------------------------------------
 
     print('###############################################################\n')
-    logger.info(f'Using TelFit to create high-resolution, synthetic telluric templates based off the telluric standards associated with {args.targname} on a night by night basis...')
+    logger.info(f'Using TelFit to create high-resolution, synthetic telluric templates based off the telluric standards \nassociated with {args.targname} on a night by night basis...')
     print('This will take a while..........')
     print('\n')
 
