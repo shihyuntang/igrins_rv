@@ -2,11 +2,11 @@ from Engine.importmodule import *
 # -------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 def DataPrep(args):
-    
+
     # Collects and organizes all relevant information on target observations and associated telluric standard observations, for ease of use in later steps.
     # Requires that observation be listed in IGRINS_RV_MASTERLOG.csv that comes with this package in the /Engine folder.
     # If your target is not listed, you must construct your own PrepData files. See ReadMe for more details.
-    
+
    # Find all nights of observations of target in master log
     master_log    = pd.read_csv('./Engine/IGRINS_MASTERLOG.csv')
     star_files    = master_log[(master_log['OBJNAME'].str.contains(args.targname, regex=True, na=False)) &
@@ -35,11 +35,11 @@ def DataPrep(args):
         frame    = str(  np.array(star_files['FRAMETYPE'])[x] )
         tag0     = int(  np.array(star_files['FILENUMBER'])[x])
         airmass  = float(np.array(star_files['AM'])[x]        )
-        BVCfile  = float(np.array(star_files['BVC'])[x]       )
+        # BVCfile  = float(np.array(star_files['BVC'])[x]       )
         facility = str(  np.array(star_files['FACILITY'])[x]  )
         tag = '{:04d}'.format(tag0)
 
-        # If observation in MASTER_LOG not found in local filesystem, don't list 
+        # If observation in MASTER_LOG not found in local filesystem, don't list
         try:
             hdulist = fits.open('{}{}/{}/SDC{}_{}_{}.spec.fits'.format(inpath, night, frame, args.band, night, tag))
         except FileNotFoundError:
@@ -65,13 +65,24 @@ def DataPrep(args):
                 l0.append(t1.jd)
             time_midpoint = np.mean(l0)
 
+        # BVC calculation
+        if obs == 'McD':
+            observatoryN = EarthLocation.of_site('McDonald Observatory')
+            BVCfile  = float(np.array(star_files['BVC'])[x]       ) #BVC in the master log might be wrong, so, re-calculated below...
+
+        elif obs == 'DCT':
+            observatoryN = EarthLocation.of_site('DCT')
+            sc = SkyCoord(f'{head['TELRA']} {head['TELDEC']}', frame=head['RADECSYS'], unit=(unit.hourangle, unit.deg))
+            barycorr = sc.radial_velocity_correction(obstime=Time(jd, format='jd'), location=observatoryN)
+            BVCfile = barycorr.to(u.km/u.s).value
+
         # Write out collected info
         mjd = time_midpoint;
         fileT.write(night+' '+frame+' '+str(tag)+' '+str(mjd)+' '+str(facility)+' '+str(airmass)+' '+str(BVCfile))
         fileT.write('\n')
         nightsT.append(night)
     fileT.close()
-   
+
     #-------------------------------------------------------------------------------
     # Prepare PrepData file for A0 stars
     fileA0 = open('./Input/Prepdata/Prepdata_A0_{}.txt'.format(args.targname), 'w')
