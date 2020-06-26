@@ -465,16 +465,16 @@ if __name__ == '__main__':
     if not os.path.isdir('../Output'):
         os.mkdir('../Output')
 
-    if not os.path.isdir(f'../Output/{args.targname}_{args.band}_tool'):
-        os.mkdir(f'../Output/{args.targname}_{args.band}_tool')
+    if not os.path.isdir(f'../Output/{args.targname}_tool'):
+        os.mkdir(f'../Output/{args.targname}_tool')
 
-    if not os.path.isdir(f'../Output/{args.targname}_{args.band}_tool/A0Fits_IP'):
-        os.mkdir(f'../Output/{args.targname}_{args.band}_tool/A0Fits_IP')
+    if not os.path.isdir(f'../Output/{args.targname}_tool/A0Fits_IP'):
+        os.mkdir(f'../Output/{args.targname}_tool/A0Fits_IP')
 
-    if not os.path.isdir(f'../Output/{args.targname}_{args.band}_tool/A0Fits_IP/figs_{args.band}'):
-        os.mkdir(f'../Output/{args.targname}_{args.band}_tool/A0Fits_IP/figs_{args.band}')
+    if not os.path.isdir(f'../Output/{args.targname}_tool/A0Fits_IP/figs_{args.band}'):
+        os.mkdir(f'../Output/{args.targname}_tool/A0Fits_IP/figs_{args.band}')
 
-    outpath = f'../Output/{args.targname}_{args.band}_tool/A0Fits_IP'
+    outpath = f'../Output/{args.targname}_tool/A0Fits_IP'
 #-------------------------------------------------------------------------------
     # Handle logger
     logger = logging.getLogger(__name__)
@@ -484,7 +484,7 @@ if __name__ == '__main__':
         logger.setLevel(logging.INFO)
     formatter = logging.Formatter('%(asctime)s: %(module)s.py: %(levelname)s--> %(message)s')
 
-    file_hander  = logging.FileHandler(f'{outpath}/{args.targname}_{args.band}_A0Fits.log')
+    file_hander  = logging.FileHandler(f'{outpath}/{args.targname}_A0Fits.log')
     stream_hander= logging.StreamHandler()
 
     # file_hander.setLevel()
