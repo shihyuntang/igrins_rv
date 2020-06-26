@@ -74,7 +74,7 @@ def DataPrep(args):
             observatoryN = EarthLocation.of_site('DCT')
 
             framee = f"{head['RADECSYS'][:2].lower}{head['RADECSYS'][-1]}"
-            sc = SkyCoord(f"{head['TELRA']} {head['TELDEC']}", frame=, unit=(units.hourangle, units.deg))
+            sc = SkyCoord(f"{head['TELRA']} {head['TELDEC']}", frame=framee, unit=(units.hourangle, units.deg))
             barycorr = sc.radial_velocity_correction(obstime=Time(jd, format='jd'), location=observatoryN)
             BVCfile = barycorr.to(units.km/units.s).value
 
