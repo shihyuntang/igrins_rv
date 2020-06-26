@@ -448,6 +448,12 @@ if __name__ == '__main__':
     time.sleep(6)
     print('\n')
 
+    print('For paper plot!')
+    if args.band == 'K':
+        orders = np.array([2, 3, 4, 5, 6,  7,  8, 10, 11, 12, 13, 14, 16])
+        #orders = [3]
+    elif args.band=='H':
+        orders = np.array([2, 3, 4, 5, 6, 10, 11, 13, 14, 16, 17, 20, 21, 22])
     #-------------------------------------------------------------------------------
 
     # Retrieve stellar and telluric templates
