@@ -32,17 +32,18 @@ def MPinst(args, inparam, jerp, orders, i):
 
     # Retrieve pixel bounds for where within each other significant telluric absorption is present.
     # If these bounds were not applied, analyzing some orders would give garbage fits.
-    if args.band=='K':
-        if int(order) in [13, 14]:
-            bound_cut = inparam.bound_cut_dic[args.band][order]
-        else:
-            bound_cut = [200, 200]
-
-    elif args.band=='H':
-        if int(order) in [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]:
-            bound_cut = inparam.bound_cut_dic[args.band][order]
-        else:
-            bound_cut = [200, 200]
+    # if args.band=='K':
+    #     if int(order) in [13, 14]:
+    #         bound_cut = inparam.bound_cut_dic[args.band][order]
+    #     else:
+    #         bound_cut = [200, 200]
+    #
+    # elif args.band=='H':
+    #     if int(order) in [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]:
+    #         bound_cut = inparam.bound_cut_dic[args.band][order]
+    #     else:
+    #         bound_cut = [200, 200]
+    bound_cut = [150, 150]
 
 
     ### Load relevant A0 spectrum
@@ -147,11 +148,15 @@ def MPinst(args, inparam, jerp, orders, i):
     # For every pre-Telfit spectral fit, first fit just template strength/rv/continuum, then just wavelength solution, then template/continuum again, then ip,
     # then finally wavelength. Normally would fit for all but wavelength at the end, but there's no need for the pre-Telfit fit, since all we want
     # is a nice wavelength solution to feed into Telfit.
-    parfit_1 = optimizer(par_in,   dpar_st,   hardbounds,fitobj,optimize)
-    parfit_2 = optimizer(parfit_1, dpar_wave, hardbounds,fitobj,optimize)
-    parfit_3 = optimizer(parfit_2, dpar_st,   hardbounds,fitobj,optimize)
-    parfit_4 = optimizer(parfit_3, dpar,      hardbounds,fitobj,optimize)
-    parfit = optimizer(parfit_4,   dpar_wave, hardbounds,fitobj,optimize)
+    try:
+        parfit_1 = optimizer(par_in,   dpar_st,   hardbounds,fitobj,optimize)
+        parfit_2 = optimizer(parfit_1, dpar_wave, hardbounds,fitobj,optimize)
+        parfit_3 = optimizer(parfit_2, dpar_st,   hardbounds,fitobj,optimize)
+        parfit_4 = optimizer(parfit_3, dpar,      hardbounds,fitobj,optimize)
+        parfit = optimizer(parfit_4,   dpar_wave, hardbounds,fitobj,optimize)
+    except:
+        logger.info(f'  --> {night} HIT ERROR DURING PRE_OPT')
+        continue
 
     #-------------------------------------------------------------------------------
 
@@ -196,11 +201,15 @@ def MPinst(args, inparam, jerp, orders, i):
         # This allows for any tweaks to the blaze function fit that may be necessary.
         fitobj = fitobjs(s, x, u, continuum,watm1,satm1,mflux_in,mwave_in,[])
 
-        parfit_1 = optimizer(par_in,   dpar_st,   hardbounds, fitobj, optimize)
-        parfit_2 = optimizer(parfit_1, dpar_wave, hardbounds, fitobj, optimize)
-        parfit_3 = optimizer(parfit_2, dpar_st,   hardbounds, fitobj, optimize)
-        parfit_4 = optimizer(parfit_3, dpar_wave, hardbounds, fitobj, optimize)
-        parfit   = optimizer(parfit_4, dpar,      hardbounds, fitobj, optimize)
+        try:
+            parfit_1 = optimizer(par_in,   dpar_st,   hardbounds, fitobj, optimize)
+            parfit_2 = optimizer(parfit_1, dpar_wave, hardbounds, fitobj, optimize)
+            parfit_3 = optimizer(parfit_2, dpar_st,   hardbounds, fitobj, optimize)
+            parfit_4 = optimizer(parfit_3, dpar_wave, hardbounds, fitobj, optimize)
+            parfit   = optimizer(parfit_4, dpar,      hardbounds, fitobj, optimize)
+        except:
+            logger.info(f'  --> {night} HIT ERROR DURING POST_OPT')
+            continue
 
         if inparam.plotfigs: # Plot results
             outplotter_tel(parfit, fitobj, f'Post_parfit_{order}_{night}', inparam, args)
