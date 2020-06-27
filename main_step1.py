@@ -148,15 +148,12 @@ def MPinst(args, inparam, jerp, orders, i):
     # For every pre-Telfit spectral fit, first fit just template strength/rv/continuum, then just wavelength solution, then template/continuum again, then ip,
     # then finally wavelength. Normally would fit for all but wavelength at the end, but there's no need for the pre-Telfit fit, since all we want
     # is a nice wavelength solution to feed into Telfit.
-    try:
-        parfit_1 = optimizer(par_in,   dpar_st,   hardbounds,fitobj,optimize)
-        parfit_2 = optimizer(parfit_1, dpar_wave, hardbounds,fitobj,optimize)
-        parfit_3 = optimizer(parfit_2, dpar_st,   hardbounds,fitobj,optimize)
-        parfit_4 = optimizer(parfit_3, dpar,      hardbounds,fitobj,optimize)
-        parfit = optimizer(parfit_4,   dpar_wave, hardbounds,fitobj,optimize)
-    except:
-        logger.info(f'  --> {night} HIT ERROR DURING PRE_OPT')
-        pass
+
+    parfit_1 = optimizer(par_in,   dpar_st,   hardbounds,fitobj,optimize)
+    parfit_2 = optimizer(parfit_1, dpar_wave, hardbounds,fitobj,optimize)
+    parfit_3 = optimizer(parfit_2, dpar_st,   hardbounds,fitobj,optimize)
+    parfit_4 = optimizer(parfit_3, dpar,      hardbounds,fitobj,optimize)
+    parfit = optimizer(parfit_4,   dpar_wave, hardbounds,fitobj,optimize)
 
     #-------------------------------------------------------------------------------
 
@@ -201,15 +198,13 @@ def MPinst(args, inparam, jerp, orders, i):
         # This allows for any tweaks to the blaze function fit that may be necessary.
         fitobj = fitobjs(s, x, u, continuum,watm1,satm1,mflux_in,mwave_in,[])
 
-        try:
-            parfit_1 = optimizer(par_in,   dpar_st,   hardbounds, fitobj, optimize)
-            parfit_2 = optimizer(parfit_1, dpar_wave, hardbounds, fitobj, optimize)
-            parfit_3 = optimizer(parfit_2, dpar_st,   hardbounds, fitobj, optimize)
-            parfit_4 = optimizer(parfit_3, dpar_wave, hardbounds, fitobj, optimize)
-            parfit   = optimizer(parfit_4, dpar,      hardbounds, fitobj, optimize)
-        except:
-            logger.info(f'  --> {night} HIT ERROR DURING POST_OPT')
-            pass
+
+        parfit_1 = optimizer(par_in,   dpar_st,   hardbounds, fitobj, optimize)
+        parfit_2 = optimizer(parfit_1, dpar_wave, hardbounds, fitobj, optimize)
+        parfit_3 = optimizer(parfit_2, dpar_st,   hardbounds, fitobj, optimize)
+        parfit_4 = optimizer(parfit_3, dpar_wave, hardbounds, fitobj, optimize)
+        parfit   = optimizer(parfit_4, dpar,      hardbounds, fitobj, optimize)
+
 
         if inparam.plotfigs: # Plot results
             outplotter_tel(parfit, fitobj, f'Post_parfit_{order}_{night}', inparam, args)
@@ -458,8 +453,8 @@ if __name__ == '__main__':
 
     print('For paper plot!')
     if args.band == 'K':
-        orders = np.array([2, 3, 4, 5, 6,  7,  8, 10, 11, 12, 13, 14, 16])
-        #orders = [3]
+        # orders = np.array([2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 16])
+        orders = np.array([14, 16])
     elif args.band=='H':
         orders = np.array([2, 3, 4, 5, 6, 10, 11, 13, 14, 16, 17, 20, 21, 22])
     #-------------------------------------------------------------------------------
