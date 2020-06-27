@@ -30,20 +30,20 @@ def MPinst(args, inparam, jerp, orders, i):
 
     #-------------------------------------------------------------------------------
 
-    # Retrieve pixel bounds for where within each other significant telluric absorption is present.
-    # If these bounds were not applied, analyzing some orders would give garbage fits.
-    # if args.band=='K':
-    #     if int(order) in [11, 12, 13, 14]:
-    #         bound_cut = inparam.bound_cut_dic[args.band][order]
-    #     else:
-    #         bound_cut = [150, 150]
-    #
-    # elif args.band=='H':
-    #     if int(order) in [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]:
-    #         bound_cut = inparam.bound_cut_dic[args.band][order]
-    #     else:
-    #         bound_cut = [150, 150]
-    bound_cut = [150, 150]
+    Retrieve pixel bounds for where within each other significant telluric absorption is present.
+    If these bounds were not applied, analyzing some orders would give garbage fits.
+    if args.band=='K':
+        if int(order) in [13, 14]:
+            bound_cut = inparam.bound_cut_dic[args.band][order]
+        else:
+            bound_cut = [200, 200]
+
+    elif args.band=='H':
+        if int(order) in [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]:
+            bound_cut = inparam.bound_cut_dic[args.band][order]
+        else:
+            bound_cut = [200, 200]
+
 
     ### Load relevant A0 spectrum
     x, a0wavelist, a0fluxlist, u = init_fitsread(inparam.inpath,
