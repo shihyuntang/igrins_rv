@@ -30,8 +30,8 @@ def MPinst(args, inparam, jerp, orders, i):
 
     #-------------------------------------------------------------------------------
 
-    Retrieve pixel bounds for where within each other significant telluric absorption is present.
-    If these bounds were not applied, analyzing some orders would give garbage fits.
+    # Retrieve pixel bounds for where within each other significant telluric absorption is present.
+    # If these bounds were not applied, analyzing some orders would give garbage fits.
     if args.band=='K':
         if int(order) in [13, 14]:
             bound_cut = inparam.bound_cut_dic[args.band][order]
