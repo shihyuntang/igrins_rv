@@ -13,7 +13,7 @@ from Engine.opt      import optimizer
 # -------------------------------------------------------------------------------
 def DataPrep(args, tar_night, tar_num, tar_frame, file_night_num, std_name, std_num, std_night):
     star = args.targname.replace(' ', '')
-    inpath     = '../Input_Data/{}/'.format(star)
+    inpath     = '../Input/{}/'.format(star)
 
     # Find all nights of observations of target in master log
     master_log_fh = '../Engine/IGRINS_MASTERLOG.csv'
