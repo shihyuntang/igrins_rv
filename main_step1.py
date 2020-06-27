@@ -156,7 +156,7 @@ def MPinst(args, inparam, jerp, orders, i):
         parfit = optimizer(parfit_4,   dpar_wave, hardbounds,fitobj,optimize)
     except:
         logger.info(f'  --> {night} HIT ERROR DURING PRE_OPT')
-        continue
+        pass
 
     #-------------------------------------------------------------------------------
 
@@ -209,7 +209,7 @@ def MPinst(args, inparam, jerp, orders, i):
             parfit   = optimizer(parfit_4, dpar,      hardbounds, fitobj, optimize)
         except:
             logger.info(f'  --> {night} HIT ERROR DURING POST_OPT')
-            continue
+            pass
 
         if inparam.plotfigs: # Plot results
             outplotter_tel(parfit, fitobj, f'Post_parfit_{order}_{night}', inparam, args)
