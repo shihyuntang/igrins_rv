@@ -245,7 +245,7 @@ if __name__ == '__main__':
                 else:
                     IPval(i,'H')
                     IPval(i,'K')
-                print('DONE, saving under ../Temp/IP_X.txt')
+                print('DONE, saving under ./A0_Fits/IP_X.txt')
                 time.sleep(1)
         else:
             sys.exit(f'NO FILES FOUND UNDER ./A0_Fits/A0_Fits_{i}_IP/' )
