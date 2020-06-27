@@ -23,7 +23,7 @@ def IPval(tar,band):
 
     print(len(nightsL[0]), nightsL)
 
-    filew = open('../Temp/IP_{}.txt'.format(band),'w')
+    filew = open('./A0_Fits/IP_{}.txt'.format(band),'w')
     if len(nightsT[0]) != 0:
         dump1 = 0
         for a0 in Tdirs:
