@@ -54,7 +54,6 @@ def MPinst(args, inparam, jerp, orders, i):
                                                  f'{int(inparam.tags[night]):04d}',
                                                  args.band,
                                                  bound_cut)
-
     #-------------------------------------------------------------------------------
 
     # Trim obvious outliers above the blaze (i.e. cosmic rays)
