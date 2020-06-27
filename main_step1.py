@@ -158,7 +158,6 @@ def MPinst(args, inparam, jerp, orders, i):
         logger.info(f'  --> {night} HIT ERROR DURING PRE_OPT')
         pass
 
-
     #-------------------------------------------------------------------------------
 
     # Get best fit wavelength solution
