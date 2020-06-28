@@ -229,7 +229,7 @@ def MPinst(args, inparam, jerp, orders, i):
             parfit   = optimizer(parfit_4, dpar,      hardbounds, fitobj, optimize)
         except:
             pre_err = True
-            logger.warning(f'  --> NIGHT {night}, ORDER {order} HIT ERROR DURING PRE_OPT')
+            logger.warning(f'  --> NIGHT {night}, ORDER {order} HIT ERROR DURING POST_OPT')
             # Write out table to fits header with errorflag = 1
             c0    = fits.Column(name=f'ERRORFLAG{order}', array=np.array([1]), format='K')
             cols  = fits.ColDefs([c0])
