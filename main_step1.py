@@ -149,28 +149,52 @@ def MPinst(args, inparam, jerp, orders, i):
     # then finally wavelength. Normally would fit for all but wavelength at the end, but there's no need for the pre-Telfit fit, since all we want
     # is a nice wavelength solution to feed into Telfit.
 
-    parfit_1 = optimizer(par_in,   dpar_st,   hardbounds,fitobj,optimize)
-    parfit_2 = optimizer(parfit_1, dpar_wave, hardbounds,fitobj,optimize)
-    parfit_3 = optimizer(parfit_2, dpar_st,   hardbounds,fitobj,optimize)
-    parfit_4 = optimizer(parfit_3, dpar,      hardbounds,fitobj,optimize)
-    parfit = optimizer(parfit_4,   dpar_wave, hardbounds,fitobj,optimize)
+    pre_err = False
+    try:
+        parfit_1 = optimizer(par_in,   dpar_st,   hardbounds,fitobj,optimize)
+        parfit_2 = optimizer(parfit_1, dpar_wave, hardbounds,fitobj,optimize)
+        parfit_3 = optimizer(parfit_2, dpar_st,   hardbounds,fitobj,optimize)
+        parfit_4 = optimizer(parfit_3, dpar,      hardbounds,fitobj,optimize)
+        parfit = optimizer(parfit_4,   dpar_wave, hardbounds,fitobj,optimize)
+    except:
+        pre_err = True
+        logger.warning(f'  --> NIGHT {night}, ORDER {order} HIT ERROR DURING PRE_OPT')
+        # Write out table to fits header with errorflag = 1
+        c0    = fits.Column(name=f'ERRORFLAG{order}', array=np.array([1]), format='K')
+        cols  = fits.ColDefs([c0])
+        hdu_1 = fits.BinTableHDU.from_columns(cols)
+
+        # If first time writing fits file, make up filler primary hdu
+        if order == firstorder:
+            bleh = np.ones((3,3))
+            primary_hdu = fits.PrimaryHDU(bleh)
+            hdul = fits.HDUList([primary_hdu,hdu_1])
+            hdul.writeto('{}/{}A0_treated_{}.fits'.format(inparam.outpath, night, args.band))
+        else:
+            hh = fits.open('{}/{}A0_treated_{}.fits'.format(inparam.outpath, night, args.band))
+            hh.append(hdu_1)
+            hh.writeto('{}/{}A0_treated_{}.fits'.format(inparam.outpath, night, args.band), overwrite=True)
+
 
     #-------------------------------------------------------------------------------
+    if not pre_err:
+        # Get best fit wavelength solution
+        a0w_out_fit = parfit[6] + parfit[7]*x + parfit[8]*(x**2.) + parfit[9]*(x**3.)
 
-    # Get best fit wavelength solution
-    a0w_out_fit = parfit[6] + parfit[7]*x + parfit[8]*(x**2.) + parfit[9]*(x**3.)
+        # Trim stellar template to new relevant wavelength range
+        mwave_in,mflux_in = stellarmodel_setup(a0w_out_fit/1e4, inparam.mwave0, inparam.mflux0)
 
-    # Trim stellar template to new relevant wavelength range
-    mwave_in,mflux_in = stellarmodel_setup(a0w_out_fit/1e4, inparam.mwave0, inparam.mflux0)
-
-    # Feed this new wavelength solution into Telfit. Returns high-res synthetic telluric template, parameters of that best fit, and blaze function best fit
-    watm1, satm1, telfitparnames, telfitpars, a0contwave, continuum = telfitter(a0w_out_fit,a0fluxlist,a0u,inparam,night,order,args)
-
+        # Feed this new wavelength solution into Telfit. Returns high-res synthetic telluric template, parameters of that best fit, and blaze function best fit
+        watm1, satm1, telfitparnames, telfitpars, a0contwave, continuum = telfitter(a0w_out_fit,a0fluxlist,a0u,inparam,night,order,args)
+    else:
+        pass
     #-------------------------------------------------------------------------------
 
     # If Telfit encountered error (details in Telfitter.py), skip night/order combo
-    if len(watm1) == 1:
-        logger.warning(f'TELFIT ENCOUNTERED CRITICAL ERROR IN ORDER: {order} NIGHT: {night}')
+    if pre_err:
+        pass
+    elif len(watm1) == 1:
+        logger.warning(f'  --> TELFIT ENCOUNTERED CRITICAL ERROR IN ORDER: {order} NIGHT: {night}')
 
         # Write out table to fits header with errorflag = 1
         c0    = fits.Column(name=f'ERRORFLAG{order}', array=np.array([1]), format='K')
@@ -189,7 +213,6 @@ def MPinst(args, inparam, jerp, orders, i):
             hh.writeto('{}/{}A0_treated_{}.fits'.format(inparam.outpath, night, args.band), overwrite=True)
 
     else: # If Telfit exited normally, proceed.
-
         #  Save best blaze function fit
         a0contwave /= 1e4
         continuum = rebin_jv(a0contwave,continuum,a0wavelist,False)
