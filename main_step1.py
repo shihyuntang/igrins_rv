@@ -221,75 +221,94 @@ def MPinst(args, inparam, jerp, orders, i):
         # This allows for any tweaks to the blaze function fit that may be necessary.
         fitobj = fitobjs(s, x, u, continuum,watm1,satm1,mflux_in,mwave_in,[])
 
+        try:
+            parfit_1 = optimizer(par_in,   dpar_st,   hardbounds, fitobj, optimize)
+            parfit_2 = optimizer(parfit_1, dpar_wave, hardbounds, fitobj, optimize)
+            parfit_3 = optimizer(parfit_2, dpar_st,   hardbounds, fitobj, optimize)
+            parfit_4 = optimizer(parfit_3, dpar_wave, hardbounds, fitobj, optimize)
+            parfit   = optimizer(parfit_4, dpar,      hardbounds, fitobj, optimize)
+        except:
+            pre_err = True
+            logger.warning(f'  --> NIGHT {night}, ORDER {order} HIT ERROR DURING PRE_OPT')
+            # Write out table to fits header with errorflag = 1
+            c0    = fits.Column(name=f'ERRORFLAG{order}', array=np.array([1]), format='K')
+            cols  = fits.ColDefs([c0])
+            hdu_1 = fits.BinTableHDU.from_columns(cols)
 
-        parfit_1 = optimizer(par_in,   dpar_st,   hardbounds, fitobj, optimize)
-        parfit_2 = optimizer(parfit_1, dpar_wave, hardbounds, fitobj, optimize)
-        parfit_3 = optimizer(parfit_2, dpar_st,   hardbounds, fitobj, optimize)
-        parfit_4 = optimizer(parfit_3, dpar_wave, hardbounds, fitobj, optimize)
-        parfit   = optimizer(parfit_4, dpar,      hardbounds, fitobj, optimize)
+            # If first time writing fits file, make up filler primary hdu
+            if order == firstorder:
+                bleh = np.ones((3,3))
+                primary_hdu = fits.PrimaryHDU(bleh)
+                hdul = fits.HDUList([primary_hdu,hdu_1])
+                hdul.writeto('{}/{}A0_treated_{}.fits'.format(inparam.outpath, night, args.band))
+            else:
+                hh = fits.open('{}/{}A0_treated_{}.fits'.format(inparam.outpath, night, args.band))
+                hh.append(hdu_1)
+                hh.writeto('{}/{}A0_treated_{}.fits'.format(inparam.outpath, night, args.band), overwrite=True)
 
+        if not pre_err:
+            if inparam.plotfigs: # Plot results
+                outplotter_tel(parfit, fitobj, f'Post_parfit_{order}_{night}', inparam, args)
 
-        if inparam.plotfigs: # Plot results
-            outplotter_tel(parfit, fitobj, f'Post_parfit_{order}_{night}', inparam, args)
+            if args.debug: # Output debug stuff
+                fig, axes = plt.subplots(1, 1, figsize=(6,3), facecolor='white', dpi=300)
+                axes.plot(fitobj.x,
+                          parfit[5] + parfit[13]*(fitobj.x) + parfit[14]*(fitobj.x**2),
+                          '-k', lw=0.7, label='data', alpha=.6)
 
-        if args.debug: # Output debug stuff
-            fig, axes = plt.subplots(1, 1, figsize=(6,3), facecolor='white', dpi=300)
-            axes.plot(fitobj.x,
-                      parfit[5] + parfit[13]*(fitobj.x) + parfit[14]*(fitobj.x**2),
-                      '-k', lw=0.7, label='data', alpha=.6)
+                axes.tick_params(axis='both', labelsize=6, right=True, top=True, direction='in')
+                axes.set_ylabel('IP',           size=6, style='normal', family='sans-serif')
+                axes.set_xlabel('Pixel Number', size=6, style='normal', family='sans-serif')
+                axes.legend(fontsize=5, edgecolor='white')
+                fig.savefig(f'{inparam.outpath}/figs_{args.band}/IP_{order}_{night}.png',
+                            bbox_inches='tight', format='png', overwrite=True)
 
-            axes.tick_params(axis='both', labelsize=6, right=True, top=True, direction='in')
-            axes.set_ylabel('IP',           size=6, style='normal', family='sans-serif')
-            axes.set_xlabel('Pixel Number', size=6, style='normal', family='sans-serif')
-            axes.legend(fontsize=5, edgecolor='white')
-            fig.savefig(f'{inparam.outpath}/figs_{args.band}/IP_{order}_{night}.png',
-                        bbox_inches='tight', format='png', overwrite=True)
+                outplotter_tel(parfit_1,fitobj, f'Post_parfit1_{order}_{night}', inparam, args)
+                outplotter_tel(parfit_2,fitobj, f'Post_parfit2_{order}_{night}', inparam, args)
+                outplotter_tel(parfit_3,fitobj, f'Post_parfit3_{order}_{night}', inparam, args)
+                outplotter_tel(parfit_4,fitobj, f'Post_parfit4_{order}_{night}', inparam, args)
 
-            outplotter_tel(parfit_1,fitobj, f'Post_parfit1_{order}_{night}', inparam, args)
-            outplotter_tel(parfit_2,fitobj, f'Post_parfit2_{order}_{night}', inparam, args)
-            outplotter_tel(parfit_3,fitobj, f'Post_parfit3_{order}_{night}', inparam, args)
-            outplotter_tel(parfit_4,fitobj, f'Post_parfit4_{order}_{night}', inparam, args)
+            logger.debug(f'Post_par_in:\n {par_in}')
+            logger.debug(f'Post_parfit1:\n {parfit_1}')
+            logger.debug(f'Post_parfit2:\n {parfit_2}')
+            logger.debug(f'Post_parfit3:\n {parfit_3}')
+            logger.debug(f'Post_parfit4:\n {parfit_4}')
 
-        logger.debug(f'Post_par_in:\n {par_in}')
-        logger.debug(f'Post_parfit1:\n {parfit_1}')
-        logger.debug(f'Post_parfit2:\n {parfit_2}')
-        logger.debug(f'Post_parfit3:\n {parfit_3}')
-        logger.debug(f'Post_parfit4:\n {parfit_4}')
+            #-------------------------------------------------------------------------------
 
-        #-------------------------------------------------------------------------------
+            # Save slightly better wavelength and blaze function solution
+            a0w_out  = parfit[6] + parfit[7]*x + parfit[8]*(x**2.) + parfit[9]*(x**3.)
+            cont_adj = parfit[10] + parfit[11]*x + parfit[12]*(x**2.)
 
-        # Save slightly better wavelength and blaze function solution
-        a0w_out  = parfit[6] + parfit[7]*x + parfit[8]*(x**2.) + parfit[9]*(x**3.)
-        cont_adj = parfit[10] + parfit[11]*x + parfit[12]*(x**2.)
+            continuum /= np.median(continuum)
+            cont_save = continuum*cont_adj
 
-        continuum /= np.median(continuum)
-        cont_save = continuum*cont_adj
+            # Write out table to fits file with errorflag = 0
+            c0  = fits.Column(name='ERRORFLAG'+str(order),      array=np.array([0]),            format='K')
+            c1  = fits.Column(name='WAVE'+str(order),           array=a0w_out,                  format='D')
+            c2  = fits.Column(name='BLAZE'+str(order),          array=cont_save,                format='D')
+            c3  = fits.Column(name='X'+str(order),              array=a0x,                      format='D')
+            c4  = fits.Column(name='INTENS'+str(order),         array=a0fluxlist,               format='D')
+            c5  = fits.Column(name='SIGMA'+str(order),          array=a0u,                      format='D')
+            c6  = fits.Column(name='WATM'+str(order),           array=watm1,                    format='D')
+            c7  = fits.Column(name='SATM'+str(order),           array=satm1,                    format='D')
+            c8  = fits.Column(name='TELFITPARNAMES'+str(order), array=np.array(telfitparnames), format='8A')
+            c9  = fits.Column(name='TELFITPARS'+str(order),     array=telfitpars,               format='D')
+            c10 = fits.Column(name='PARFIT',                    array=parfit,                   format='D')
+            cols = fits.ColDefs([c0,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10])
+            hdu_1 = fits.BinTableHDU.from_columns(cols)
 
-        # Write out table to fits file with errorflag = 0
-        c0  = fits.Column(name='ERRORFLAG'+str(order),      array=np.array([0]),            format='K')
-        c1  = fits.Column(name='WAVE'+str(order),           array=a0w_out,                  format='D')
-        c2  = fits.Column(name='BLAZE'+str(order),          array=cont_save,                format='D')
-        c3  = fits.Column(name='X'+str(order),              array=a0x,                      format='D')
-        c4  = fits.Column(name='INTENS'+str(order),         array=a0fluxlist,               format='D')
-        c5  = fits.Column(name='SIGMA'+str(order),          array=a0u,                      format='D')
-        c6  = fits.Column(name='WATM'+str(order),           array=watm1,                    format='D')
-        c7  = fits.Column(name='SATM'+str(order),           array=satm1,                    format='D')
-        c8  = fits.Column(name='TELFITPARNAMES'+str(order), array=np.array(telfitparnames), format='8A')
-        c9  = fits.Column(name='TELFITPARS'+str(order),     array=telfitpars,               format='D')
-        c10 = fits.Column(name='PARFIT',                    array=parfit,                   format='D')
-        cols = fits.ColDefs([c0,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10])
-        hdu_1 = fits.BinTableHDU.from_columns(cols)
-
-        if order == firstorder: # If first time writing fits file, make up filler primary hdu
-            bleh = np.ones((3,3))
-            primary_hdu = fits.PrimaryHDU(bleh)
-            hdul = fits.HDUList([primary_hdu,hdu_1])
-            hdul.writeto('{}/{}A0_treated_{}.fits'.format(inparam.outpath, night, args.band), overwrite=True)
+            if order == firstorder: # If first time writing fits file, make up filler primary hdu
+                bleh = np.ones((3,3))
+                primary_hdu = fits.PrimaryHDU(bleh)
+                hdul = fits.HDUList([primary_hdu,hdu_1])
+                hdul.writeto('{}/{}A0_treated_{}.fits'.format(inparam.outpath, night, args.band), overwrite=True)
+            else:
+                hh = fits.open('{}/{}A0_treated_{}.fits'.format(inparam.outpath, night, args.band))
+                hh.append(hdu_1)
+                hh.writeto('{}/{}A0_treated_{}.fits'.format(inparam.outpath, night, args.band), overwrite=True)
         else:
-            hh = fits.open('{}/{}A0_treated_{}.fits'.format(inparam.outpath, night, args.band))
-            hh.append(hdu_1)
-            hh.writeto('{}/{}A0_treated_{}.fits'.format(inparam.outpath, night, args.band), overwrite=True)
-
+            pass
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 
