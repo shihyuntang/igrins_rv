@@ -480,7 +480,7 @@ if __name__ == '__main__':
         orders = np.array([14, 16])
     elif args.band=='H':
         # orders = np.array([2, 3, 4, 5, 6, 10, 11, 13, 14, 16, 17, 20, 21, 22])
-        orders = np.array([13, 14, 16, 17, 20, 21, 22])
+        orders = np.array([16, 17, 20, 21, 22])
     #-------------------------------------------------------------------------------
 
     # Retrieve stellar and telluric templates
