@@ -39,7 +39,7 @@ def MPinst(args, inparam, jerp, orders, i):
             bound_cut = [150, 150]
 
     elif args.band=='H':
-        if int(order) in [13, 14, 16, 17, 20]:
+        if int(order) in [13, 14, 16, 20]:
             bound_cut = inparam.bound_cut_dic[args.band][order]
         else:
             bound_cut = [150, 150]
@@ -497,8 +497,7 @@ if __name__ == '__main__':
     if args.band == 'K':
         orders = np.array([2, 3, 4, 5, 6, 7, 8, 10, 14, 16])
     elif args.band=='H':
-        # orders = np.array([2, 3, 4, 5, 6, 10, 11, 13, 14, 16, 17, 20, 21, 22])
-        orders = np.array([16, 17, 20, 21, 22])
+        orders = np.array([2, 3, 4, 6, 13, 14, 16, 20, 21, 22])
     #-------------------------------------------------------------------------------
 
     # Retrieve stellar and telluric templates
