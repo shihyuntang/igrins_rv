@@ -331,13 +331,13 @@ if __name__ == '__main__':
 
     # Takes 10 threads 42mins to deal with one order with 57 nights.
     # Thus, with 01 thread, one night for five orders is about 2135 sec.
-    print('For paper plot!')
-    if args.band == 'K':
-        orders = np.array([2, 3, 4, 5, 6, 7, 8, 10, 14, 16])
-    elif args.band=='H':
-        orders = np.array([2, 3, 4, 6, 13, 14, 16, 20, 21, 22])
-    print('Analyze {} orders with {} nights'.format(len(orders), len(nightsFinal)))
-    print('\n')
+    # print('For paper plot!')
+    # if args.band == 'K':
+    #     orders = np.array([2, 3, 4, 5, 6, 7, 8, 10, 14, 16])
+    # elif args.band=='H':
+    #     orders = np.array([2, 3, 4, 6, 13, 14, 16, 20, 21, 22])
+    # print('Analyze {} orders with {} nights'.format(len(orders), len(nightsFinal)))
+    # print('\n')
 
     #-------------------------------------------------------------------------------
 
