@@ -19,7 +19,8 @@ def rv_MPinst(args, inparam, i, orders, order):
     nights   = inparam.nights
     night = i[0]
 
-    xbounds = inparam.xbounddict[order]
+    # xbounds = inparam.xbounddict[order]
+    xbounds = None
     print('Working on order {:02d}/{:02d} ({}), night {} PID:{}...'.format(int(order)+1,
                                                                                len(orders),
                                                                                 order,
@@ -154,11 +155,16 @@ def rv_MPinst(args, inparam, i, orders, order):
         x = basicclip_above(x,s,nzones); wave = basicclip_above(wave,s,nzones); u = basicclip_above(u,s,nzones); s = basicclip_above(s,s,nzones);
         x = basicclip_above(x,s,nzones); wave = basicclip_above(wave,s,nzones); u = basicclip_above(u,s,nzones); s = basicclip_above(s,s,nzones);
 
-        s_piece    = s[    (x > xbounds[0]) & (x < xbounds[-1]) ]
-        u_piece    = u[    (x > xbounds[0]) & (x < xbounds[-1]) ]
-        wave_piece = wave[ (x > xbounds[0]) & (x < xbounds[-1]) ]
-        x_piece    = x[    (x > xbounds[0]) & (x < xbounds[-1]) ]
-
+        if not xbounds:
+            s_piece    = s[    (x > xbounds[0]) & (x < xbounds[-1]) ]
+            u_piece    = u[    (x > xbounds[0]) & (x < xbounds[-1]) ]
+            wave_piece = wave[ (x > xbounds[0]) & (x < xbounds[-1]) ]
+            x_piece    = x[    (x > xbounds[0]) & (x < xbounds[-1]) ]
+        else:
+            s_piece    = s
+            u_piece    = u
+            wave_piece = wave
+            x_piece    = x
         mwave_in,mflux_in = stellarmodel_setup(wave_piece,inparam.mwave0,inparam.mflux0)
 
         satm_in = satm[(watm > min(wave_piece)*1e4 - 11) & (watm < max(wave_piece)*1e4 + 11)]
@@ -475,7 +481,7 @@ Input Parameters:
         orders = np.array([2, 3, 4, 5, 6, 7, 8, 10, 14, 16])
     elif args.band=='H':
         orders = np.array([2, 3, 4, 6, 13, 14, 16, 20, 21, 22])
-    print('Analyze {} orders with {} nights'.format(len(orders), len(nightsFinal)))
+    print('Analyze {} orders'.format(len(orders)))
     print('\n')
 # ---------------------------------------
     if args.nights_use != '':
