@@ -26,17 +26,16 @@ def MPinst(args, inparam, i, order0, order):
     # Retrieve pixel bounds for where within each other significant telluric absorption is present.
     # If these bounds were not applied, analyzing some orders would give garbage fits.
     if args.band=='K':
-        if int(order) in [11, 12, 13, 14]:
+        if int(order) in [14]:
             bound_cut = inparam.bound_cut_dic[args.band][order]
         else:
             bound_cut = [150, 150]
 
     elif args.band=='H':
-        if int(order) in [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]:
+        if int(order) in [13, 14, 16, 20]:
             bound_cut = inparam.bound_cut_dic[args.band][order]
         else:
             bound_cut = [150, 150]
-
     ### Load relevant A0 spectrum
     x, a0wavelist, a0fluxlist, u = init_fitsread(inparam.inpath,
                                                  'A0',
@@ -332,15 +331,11 @@ if __name__ == '__main__':
 
     # Takes 10 threads 42mins to deal with one order with 57 nights.
     # Thus, with 01 thread, one night for five orders is about 2135 sec.
-# ---------------------------------------
-#     if args.band == 'K':
-#         order0 = np.append(np.arange(2, 9), np.array([10, 11, 12, 13, 14, 16]))
-#     elif args.band == 'H':
-# #        order0 = np.arange(5,11)
-#         # order0 = np.arange(2,23)
-#         order0 = np.array([2, 3, 4, 5, 6, 10, 11, 13, 14, 16, 17, 20, 21, 22])
-# #    order0 = np.array([16])
-# ---------------------------------------
+    print('For paper plot!')
+    if args.band == 'K':
+        orders = np.array([2, 3, 4, 5, 6, 7, 8, 10, 14, 16])
+    elif args.band=='H':
+        orders = np.array([2, 3, 4, 6, 13, 14, 16, 20, 21, 22])
     print('Analyze {} orders with {} nights'.format(len(orders), len(nightsFinal)))
     print('\n')
 
