@@ -248,7 +248,7 @@ def MPinst(args, inparam, jerp, orders, i):
 
         if not pre_err:
             if inparam.plotfigs: # Plot results
-                outplotter_tel(parfit, fitobj, f'Post_parfit_{order}_{night}', inparam, args)
+                outplotter_tel(parfit, fitobj, f'FinalFit_Order{order}_{night}', inparam, args)
 
             if args.debug: # Output debug stuff
                 fig, axes = plt.subplots(1, 1, figsize=(6,3), facecolor='white', dpi=300)
@@ -267,12 +267,14 @@ def MPinst(args, inparam, jerp, orders, i):
                 outplotter_tel(parfit_2,fitobj, f'Post_parfit2_{order}_{night}', inparam, args)
                 outplotter_tel(parfit_3,fitobj, f'Post_parfit3_{order}_{night}', inparam, args)
                 outplotter_tel(parfit_4,fitobj, f'Post_parfit4_{order}_{night}', inparam, args)
+                outplotter_tel(parfit, fitobj, f'Post_parfit_{order}_{night}', inparam, args)
 
             logger.debug(f'Post_par_in:\n {par_in}')
             logger.debug(f'Post_parfit1:\n {parfit_1}')
             logger.debug(f'Post_parfit2:\n {parfit_2}')
             logger.debug(f'Post_parfit3:\n {parfit_3}')
             logger.debug(f'Post_parfit4:\n {parfit_4}')
+            logger.debug(f'Post_parfit:\n {parfit}')
 
             #-------------------------------------------------------------------------------
 
@@ -493,11 +495,11 @@ if __name__ == '__main__':
     time.sleep(6)
     print('\n')
 
-    print('For paper plot!')
-    if args.band == 'K':
-        orders = np.array([2, 3, 4, 5, 6, 7, 8, 10, 14, 16])
-    elif args.band=='H':
-        orders = np.array([2, 3, 4, 6, 13, 14, 16, 20, 21, 22])
+    # print('For paper plot!')
+    # if args.band == 'K':
+    #     orders = np.array([2, 3, 4, 5, 6, 7, 8, 10, 14, 16])
+    # elif args.band=='H':
+    #     orders = np.array([2, 3, 4, 6, 13, 14, 16, 20, 21, 22])
     #-------------------------------------------------------------------------------
 
     # Retrieve stellar and telluric templates
