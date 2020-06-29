@@ -158,7 +158,7 @@ def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     # Execute S/N cut
     s2n = s/u
     if np.nanmedian(s2n) < float(args.SN_cut):
-        logger.warning('  --> Bad S/N {:1.3f} < {} for {}{} {}...'.format( np.nanmedian(s2n), args.SN_cut, night, beam, tag))
+        logger.warning('  --> Bad S/N {:1.3f} < {} for {}{} {}... '.format( np.nanmedian(s2n), args.SN_cut, night, beam, tag))
         pass
 
     # Trim obvious outliers above the blaze (i.e. cosmic rays)
@@ -260,19 +260,19 @@ def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
     # if best fit stellar template power is very low, throw out result
     if parfit[1] < 0.1:
-        logger.warning(f'  --> parfit[1] < 0.1, {night} parfit={parfit}')
-        continue
+        logger.warning(f'  --> parfit[1] < 0.1, {night} parfit={parfit}...')
+        pass
 
     # if best fit stellar or telluric template powers are exactly equal to their starting values, optimization failed, throw out result
     if parfit[1] == par_in[1] or parfit[3] == par_in[3]:
-        logger.warning(f'  --> parfit[1] == par_in[1] or parfit[3] == par_in[3], {night}')
-        continue
+        logger.warning(f'  --> parfit[1] == par_in[1] or parfit[3] == par_in[3], {night}...')
+        pass
 
     # if best fit model dips below zero at any point, we're too close to edge of blaze, fit may be comrpomised, throw out result
     smod,chisq = fmod(parfit,fitobj)
     if len(smod[(smod < 0)]) > 0:
-        logger.warning(f'  --> len(smod[(smod < 0)]) > 0, {night}')
-        continue
+        logger.warning(f'  --> len(smod[(smod < 0)]) > 0, {night}...')
+        pass
 
 #-------------------------------------------------------------------------------
     if args.plotfigs:
