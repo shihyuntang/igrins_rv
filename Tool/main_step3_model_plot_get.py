@@ -19,8 +19,7 @@ def rv_MPinst(args, inparam, i, orders, order):
     nights   = inparam.nights
     night = i[0]
 
-    # xbounds = inparam.xbounddict[order]
-    xbounds = None
+    xbounds = inparam.xbounddict[order]
     print('Working on order {:02d}/{:02d} ({}), night {} PID:{}...'.format(int(order)+1,
                                                                                len(orders),
                                                                                 order,
@@ -155,16 +154,10 @@ def rv_MPinst(args, inparam, i, orders, order):
         x = basicclip_above(x,s,nzones); wave = basicclip_above(wave,s,nzones); u = basicclip_above(u,s,nzones); s = basicclip_above(s,s,nzones);
         x = basicclip_above(x,s,nzones); wave = basicclip_above(wave,s,nzones); u = basicclip_above(u,s,nzones); s = basicclip_above(s,s,nzones);
 
-        if xbounds!= None:
-            s_piece    = s[    (x > xbounds[0]) & (x < xbounds[-1]) ]
-            u_piece    = u[    (x > xbounds[0]) & (x < xbounds[-1]) ]
-            wave_piece = wave[ (x > xbounds[0]) & (x < xbounds[-1]) ]
-            x_piece    = x[    (x > xbounds[0]) & (x < xbounds[-1]) ]
-        else:
-            s_piece    = s
-            u_piece    = u
-            wave_piece = wave
-            x_piece    = x
+        s_piece    = s[    (x > xbounds[0]) & (x < xbounds[-1]) ]
+        u_piece    = u[    (x > xbounds[0]) & (x < xbounds[-1]) ]
+        wave_piece = wave[ (x > xbounds[0]) & (x < xbounds[-1]) ]
+        x_piece    = x[    (x > xbounds[0]) & (x < xbounds[-1]) ]
 
         mwave_in,mflux_in = stellarmodel_setup(wave_piece,inparam.mwave0,inparam.mflux0)
 
