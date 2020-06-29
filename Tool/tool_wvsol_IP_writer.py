@@ -24,6 +24,7 @@ def IPval(tar,band):
     print(len(nightsL[0]), nightsL)
 
     filew = open('./A0_Fits/IP_{}.txt'.format(band),'w')
+
     if len(nightsT[0]) != 0:
         dump1 = 0
         for a0 in Tdirs:
@@ -36,7 +37,9 @@ def IPval(tar,band):
                     tt+=1
                 except:
                     break
-
+            if len(orders)!=10
+                print(f'    --> {a0} do not have 10 orders, skip')
+                continue
             dump2 = 0
             for o in np.arange(len(orders)):
                 try:
