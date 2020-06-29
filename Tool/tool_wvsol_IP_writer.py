@@ -38,16 +38,6 @@ def IPval(tar,band):
                 except:
                     break
 
-            flag = []
-            for orderr in orders:
-                try:
-                    flag.append( np.array(hdulist[f'ERRORFLAG{orderr}'])[0])
-                except:
-                    pass
-            if 1 in flag:
-                print(f' --> {a0} has Telfit flag 1')
-                continue
-
             dump2 = 0
             for o in np.arange(len(orders)):
                 try:
@@ -71,9 +61,13 @@ def IPval(tar,band):
                 IP5box  = IP5
                 dump1 += 1
             else:
-                IP14box = np.vstack((IP14box, IP14))
-                IP13box = np.vstack((IP13box, IP13))
-                IP5box  = np.vstack((IP5box,  IP5))
+                try:
+                    IP14box = np.vstack((IP14box, IP14))
+                    IP13box = np.vstack((IP13box, IP13))
+                    IP5box  = np.vstack((IP5box,  IP5))
+                except:
+                    print(f'{a0} do not have 10 orders')
+                    pass
 
         filew.write('Tight \n')
         for o in np.arange(len(orders)):
