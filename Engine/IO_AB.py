@@ -81,7 +81,7 @@ def init_fitsread(path,kind,beam,night,order,tag,band,Ncuts=None):
         try:
             wavelist = np.array([np.nanmean(wavestack[:,i]) for i in range(len(wavelist1))])
             fluxlist = np.array([np.nanmean(fluxstack[:,i]) for i in range(len(wavelist1))])
-            s2nlist = np.array([np.nansqrt(np.nansum(s2nstack[:,i]**2)) for i in range(len(wavelist1))])
+            s2nlist = np.array([np.sqrt(np.nansum(s2nstack[:,i]**2)) for i in range(len(wavelist1))])
             #ulist    = np.array([1/np.sqrt(np.nansum(1/(ustack[:,i]**2))) for i in range(len(wavelist1))])
         except UnboundLocalError:
             return 0,0,0,0
