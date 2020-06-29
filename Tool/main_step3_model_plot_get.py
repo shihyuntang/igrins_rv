@@ -125,13 +125,13 @@ def rv_MPinst(args, inparam, i, orders, order):
 
         ### Load relevant A0 spectrum
         if args.band=='K':
-            if int(order) in [11, 12, 13, 14]:
+            if int(order) in [14]:
                 bound_cut = inparam.bound_cut_dic[args.band][order]
             else:
                 bound_cut = [150, 150]
 
         elif args.band=='H':
-            if int(order) in [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]:
+            if int(order) in [13, 14, 16, 20]:
                 bound_cut = inparam.bound_cut_dic[args.band][order]
             else:
                 bound_cut = [150, 150]
@@ -470,13 +470,13 @@ Input Parameters:
     xbounddict, maskdict, tagsA, tagsB, mjds, bvcs, nightsFinal, orders = read_prepdata(args)
 
 # ---------------------------------------
-#     if args.band == 'K':
-#         orders = np.append(np.arange(2, 9), np.array([10, 11, 12, 13, 14, 16]))
-#     elif args.band == 'H':
-# #        order0 = np.arange(5,11)
-#         # order0 = np.arange(2,23)
-#         orders = np.array([2, 3, 4, 5, 6, 10, 11, 13, 14, 16, 17, 20, 21, 22])
-# #    order0 = np.array([16])
+    print('For paper plot!')
+    if args.band == 'K':
+        orders = np.array([2, 3, 4, 5, 6, 7, 8, 10, 14, 16])
+    elif args.band=='H':
+        orders = np.array([2, 3, 4, 6, 13, 14, 16, 20, 21, 22])
+    print('Analyze {} orders with {} nights'.format(len(orders), len(nightsFinal)))
+    print('\n')
 # ---------------------------------------
     if args.nights_use != '':
         nightstemp = np.array(ast.literal_eval(args.nights_use), dtype=str)
