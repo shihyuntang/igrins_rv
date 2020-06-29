@@ -122,173 +122,173 @@ def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                       IPpars[1],                                             #13: Instrumental resolution linear component
                       IPpars[0]])                                            #14: Instrumental resolution quadratic component
 
-    rvsmini = []; vsinismini = [];
+    # rvsmini = []; vsinismini = [];
 
-    # Iterate over all A/B exposures
-    for t in np.arange(len(tagsnight)):
-        tag = tagsnight[t]
-        beam = beamsnight[t]
+    # # Iterate over all A/B exposures
+    # for t in np.arange(len(tagsnight)):
+    tag = tagsnight[0]
+    beam = beamsnight[0]
 
-        # Retrieve pixel bounds for where within each other significant telluric absorption is present.
-        # If these bounds were not applied, analyzing some orders would give garbage fits.
-        if args.band=='K':
-            if int(order) in [11, 12, 13, 14]:
-                bound_cut = inparam.bound_cut_dic[args.band][order]
-            else:
-                bound_cut = [150, 150]
+    # Retrieve pixel bounds for where within each other significant telluric absorption is present.
+    # If these bounds were not applied, analyzing some orders would give garbage fits.
+    if args.band=='K':
+        if int(order) in [11, 12, 13, 14]:
+            bound_cut = inparam.bound_cut_dic[args.band][order]
+        else:
+            bound_cut = [150, 150]
 
-        elif args.band=='H':
-            if int(order) in [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]:
-                bound_cut = inparam.bound_cut_dic[args.band][order]
-            else:
-                bound_cut = [150, 150]
+    elif args.band=='H':
+        if int(order) in [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]:
+            bound_cut = inparam.bound_cut_dic[args.band][order]
+        else:
+            bound_cut = [150, 150]
 
-        # Load target spectrum
-        x,wave,s,u = init_fitsread(f'{inparam.inpath}{night}/{beam}/',
-                                    'target',
-                                    'separate',
-                                    night,
-                                    order,
-                                    tag,
-                                    args.band,
-                                    bound_cut)
-
-        #-------------------------------------------------------------------------------
-
-        # Execute S/N cut
-        s2n = s/u
-        if np.nanmedian(s2n) < float(args.SN_cut):
-            logger.warning('  --> Bad S/N {:1.3f} < {} for {}{} {}, SKIP'.format( np.nanmedian(s2n), args.SN_cut, night, beam, tag))
-            continue
-
-        # Trim obvious outliers above the blaze (i.e. cosmic rays)
-        nzones = 5
-        x = basicclip_above(x,s,nzones); wave = basicclip_above(wave,s,nzones);
-        u = basicclip_above(u,s,nzones); s = basicclip_above(s,s,nzones);
-        x = basicclip_above(x,s,nzones); wave = basicclip_above(wave,s,nzones);
-        u = basicclip_above(u,s,nzones); s = basicclip_above(s,s,nzones);
-
-        # Cut spectrum to within wavelength regions defined in input list
-        s_piece    = s[    (x > xbounds[0]) & (x < xbounds[-1]) ]
-        u_piece    = u[    (x > xbounds[0]) & (x < xbounds[-1]) ]
-        wave_piece = wave[ (x > xbounds[0]) & (x < xbounds[-1]) ]
-        x_piece    = x[    (x > xbounds[0]) & (x < xbounds[-1]) ]
-
-        # Trim stellar template to relevant wavelength range
-        mwave_in,mflux_in = stellarmodel_setup(wave_piece, inparam.mwave0, inparam.mflux0)
-
-        # Trim telluric template to relevant wavelength range
-        satm_in = satm[(watm > min(wave_piece)*1e4 - 11) & (watm < max(wave_piece)*1e4 + 11)]
-        watm_in = watm[(watm > min(wave_piece)*1e4 - 11) & (watm < max(wave_piece)*1e4 + 11)]
-
-        # Make sure data is within telluric template range (shouldn't do anything)
-        s_piece    = s_piece[   (wave_piece*1e4 > min(watm_in)+5) & (wave_piece*1e4 < max(watm_in)-5)]
-        u_piece    = u_piece[   (wave_piece*1e4 > min(watm_in)+5) & (wave_piece*1e4 < max(watm_in)-5)]
-        x_piece    = x_piece[   (wave_piece*1e4 > min(watm_in)+5) & (wave_piece*1e4 < max(watm_in)-5)]
-        wave_piece = wave_piece[(wave_piece*1e4 > min(watm_in)+5) & (wave_piece*1e4 < max(watm_in)-5)]
-
-        #-------------------------------------------------------------------------------
-
-        par = pars0.copy()
-
-        # Get initial guess for cubic wavelength solution from reduction pipeline
-        f = np.polyfit(x_piece,wave_piece,3)
-        par9in = f[0]*1e4; par8in = f[1]*1e4; par7in = f[2]*1e4; par6in = f[3]*1e4;
-        par[9] = par9in ;  par[8] = par8in ;  par[7] = par7in ;  par[6] = par6in
-
-        par[0] = initguesses-inparam.bvcs[night+tag] # Initial RV with barycentric correction
-
-        # Arrays defining parameter variations during optimization steps.
-        # Optimization will cycle twice. In the first cycle, the RVs can vary more than in the second.
-        dpars1 = {'cont' : np.array([ 0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0]),
-                  'wave' : np.array([ 0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 10.0,  10.0, 5.00000e-5, 0.,   0,   0, 0, 0,    0]),
-                  't'    : np.array([ 0.0, 0.0, 5.0, 1.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0]),
-                  'ip'   : np.array([ 0.0, 0.0, 0.0, 0.0, 0,                 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0]),
-                  's'    : np.array([20.0, 2.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0]),
-                  'v'    : np.array([ 0.0, 0.0, 0.0, 0.0, inparam.vsinivary, 0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0])}
-        dpars2 = {'cont' : np.array([ 0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0]),
-                  'wave' : np.array([ 0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 10.0,  10.0, 5.00000e-5, 0.,   0,   0, 0, 0,    0]),
-                  't'    : np.array([ 0.0, 0.0, 5.0, 1.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0]),
-                  'ip'   : np.array([ 0.0, 0.0, 0.0, 0.0, 0,                 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0]),
-                  's'    : np.array([ 5.0, 2.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0]),
-                  'v'    : np.array([ 0.0, 0.0, 0.0, 0.0, inparam.vsinivary, 0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0])}
-
-        continuum_in = rebin_jv(a0contx,continuum,x_piece,False)
-        s_piece /= np.median(s_piece)
-        fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]))
-
-        #-------------------------------------------------------------------------------
-        # Initialize an array that puts hard bounds on vsini and the instrumental resolution to make sure they do not diverge to unphysical values
-        optimize = True
-        par_in = par.copy()
-        hardbounds = [par_in[4]-dpars1['v'][4],  par_in[4]+dpars1['v'][4],
-                      par_in[5]-dpars1['ip'][5], par_in[5]+dpars1['ip'][5]]
-        if hardbounds[0] < 0:
-            hardbounds[0] = 0
-        if hardbounds[3] < 0:
-            hardbounds[3] = 1
-
-        # Begin optimization. Fit the blaze, the wavelength solution, the telluric template power and RV, the stellar template power and RV, the
-        # zero point for the instrumental resolution, and the vsini of the star separately, iterating and cycling between each set of parameter fits.
-        cycles = 2
-
-        optgroup = ['cont', 'wave', 't', 'cont', 's',
-                    'cont', 'wave', 't', 's', 'cont',
-                    'wave',
-                    'ip', 'v',
-                    'ip', 'v',
-                    't',  's',
-                    't',  's']
-
-        for nc, cycle in enumerate(np.arange(cycles), start=1):
-            if cycle == 0:
-                parstart = par_in.copy()
-                dpars = dpars1
-            else:
-                dpars = dpars2
-
-            for optkind in optgroup:
-                parfit_1 = optimizer( parstart, dpars[optkind], hardbounds, fitobj, optimize)
-                parstart = parfit_1.copy()
-                if args.debug:
-                    outplotter_23(parfit_1, fitobj, '{}_{}_{}_parfit_{}{}'.format(order,night,tag,nc,optkind), trk, inparam, args, step2or3)
-                    logger.debug(f'{order}_{tag}_{nc}_{optkind}:\n {parfit_1}')
-
-        parfit = parfit_1.copy()
-
-        #-------------------------------------------------------------------------------
-
-        # if best fit stellar template power is very low, throw out result
-        if parfit[1] < 0.1:
-            logger.warning(f'  --> parfit[1] < 0.1, {night} parfit={parfit}')
-            continue
-
-        # if best fit stellar or telluric template powers are exactly equal to their starting values, optimization failed, throw out result
-        if parfit[1] == par_in[1] or parfit[3] == par_in[3]:
-            logger.warning(f'  --> parfit[1] == par_in[1] or parfit[3] == par_in[3], {night}')
-            continue
-
-        # if best fit model dips below zero at any point, we're too close to edge of blaze, fit may be comrpomised, throw out result
-        smod,chisq = fmod(parfit,fitobj)
-        if len(smod[(smod < 0)]) > 0:
-            logger.warning(f'  --> len(smod[(smod < 0)]) > 0, {night}')
-            continue
+    # Load target spectrum
+    x,wave,s,u = init_fitsread(f'{inparam.inpath}{night}/{beam}/',
+                                'target',
+                                'combined',
+                                night,
+                                order,
+                                tag,
+                                args.band,
+                                bound_cut)
 
     #-------------------------------------------------------------------------------
-        if args.plotfigs:
-            parfitS = parfit.copy(); parfitS[3] = 0
-            parfitT = parfit.copy(); parfitT[1] = 0
-            outplotter_23(parfitS, fitobj, 'parfitS_{}_{}_{}'.format(order,night,tag), trk, inparam, args, step2or3)
-            outplotter_23(parfitT, fitobj, 'parfitT_{}_{}_{}'.format(order,night,tag), trk, inparam, args, step2or3)
-            outplotter_23(parfit, fitobj,  'parfit_{}_{}_{}'.format(order,night,tag), trk, inparam, args, step2or3)
 
-        rv0 = parfit[0] - parfit[2]  # Correct for RV of the atmosphere, since we're using that as the basis for the wavelength scale
+    # Execute S/N cut
+    s2n = s/u
+    if np.nanmedian(s2n) < float(args.SN_cut):
+        logger.warning('  --> Bad S/N {:1.3f} < {} for {}{} {}, SKIP'.format( np.nanmedian(s2n), args.SN_cut, night, beam, tag))
+        continue
 
-        rvsmini.append(rv0 + inparam.bvcs[night+tag] + rv0*inparam.bvcs[night+tag]/(3e5**2)) # Barycentric correction
-        vsinismini.append(parfit[4])
+    # Trim obvious outliers above the blaze (i.e. cosmic rays)
+    nzones = 5
+    x = basicclip_above(x,s,nzones); wave = basicclip_above(wave,s,nzones);
+    u = basicclip_above(u,s,nzones); s = basicclip_above(s,s,nzones);
+    x = basicclip_above(x,s,nzones); wave = basicclip_above(wave,s,nzones);
+    u = basicclip_above(u,s,nzones); s = basicclip_above(s,s,nzones);
 
-    bestguess = round(np.nanmean(rvsmini),5)
-    vsinimini = round(np.nanmean(vsinismini),5)
+    # Cut spectrum to within wavelength regions defined in input list
+    s_piece    = s[    (x > xbounds[0]) & (x < xbounds[-1]) ]
+    u_piece    = u[    (x > xbounds[0]) & (x < xbounds[-1]) ]
+    wave_piece = wave[ (x > xbounds[0]) & (x < xbounds[-1]) ]
+    x_piece    = x[    (x > xbounds[0]) & (x < xbounds[-1]) ]
+
+    # Trim stellar template to relevant wavelength range
+    mwave_in,mflux_in = stellarmodel_setup(wave_piece, inparam.mwave0, inparam.mflux0)
+
+    # Trim telluric template to relevant wavelength range
+    satm_in = satm[(watm > min(wave_piece)*1e4 - 11) & (watm < max(wave_piece)*1e4 + 11)]
+    watm_in = watm[(watm > min(wave_piece)*1e4 - 11) & (watm < max(wave_piece)*1e4 + 11)]
+
+    # Make sure data is within telluric template range (shouldn't do anything)
+    s_piece    = s_piece[   (wave_piece*1e4 > min(watm_in)+5) & (wave_piece*1e4 < max(watm_in)-5)]
+    u_piece    = u_piece[   (wave_piece*1e4 > min(watm_in)+5) & (wave_piece*1e4 < max(watm_in)-5)]
+    x_piece    = x_piece[   (wave_piece*1e4 > min(watm_in)+5) & (wave_piece*1e4 < max(watm_in)-5)]
+    wave_piece = wave_piece[(wave_piece*1e4 > min(watm_in)+5) & (wave_piece*1e4 < max(watm_in)-5)]
+
+    #-------------------------------------------------------------------------------
+
+    par = pars0.copy()
+
+    # Get initial guess for cubic wavelength solution from reduction pipeline
+    f = np.polyfit(x_piece,wave_piece,3)
+    par9in = f[0]*1e4; par8in = f[1]*1e4; par7in = f[2]*1e4; par6in = f[3]*1e4;
+    par[9] = par9in ;  par[8] = par8in ;  par[7] = par7in ;  par[6] = par6in
+
+    par[0] = initguesses-inparam.bvcs[night+tag] # Initial RV with barycentric correction
+
+    # Arrays defining parameter variations during optimization steps.
+    # Optimization will cycle twice. In the first cycle, the RVs can vary more than in the second.
+    dpars1 = {'cont' : np.array([ 0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0]),
+              'wave' : np.array([ 0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 10.0,  10.0, 5.00000e-5, 0.,   0,   0, 0, 0,    0]),
+              't'    : np.array([ 0.0, 0.0, 5.0, 1.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0]),
+              'ip'   : np.array([ 0.0, 0.0, 0.0, 0.0, 0,                 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0]),
+              's'    : np.array([20.0, 2.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0]),
+              'v'    : np.array([ 0.0, 0.0, 0.0, 0.0, inparam.vsinivary, 0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0])}
+    dpars2 = {'cont' : np.array([ 0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0]),
+              'wave' : np.array([ 0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 10.0,  10.0, 5.00000e-5, 0.,   0,   0, 0, 0,    0]),
+              't'    : np.array([ 0.0, 0.0, 5.0, 1.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0]),
+              'ip'   : np.array([ 0.0, 0.0, 0.0, 0.0, 0,                 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0]),
+              's'    : np.array([ 5.0, 2.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0]),
+              'v'    : np.array([ 0.0, 0.0, 0.0, 0.0, inparam.vsinivary, 0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0])}
+
+    continuum_in = rebin_jv(a0contx,continuum,x_piece,False)
+    s_piece /= np.median(s_piece)
+    fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]))
+
+    #-------------------------------------------------------------------------------
+    # Initialize an array that puts hard bounds on vsini and the instrumental resolution to make sure they do not diverge to unphysical values
+    optimize = True
+    par_in = par.copy()
+    hardbounds = [par_in[4]-dpars1['v'][4],  par_in[4]+dpars1['v'][4],
+                  par_in[5]-dpars1['ip'][5], par_in[5]+dpars1['ip'][5]]
+    if hardbounds[0] < 0:
+        hardbounds[0] = 0
+    if hardbounds[3] < 0:
+        hardbounds[3] = 1
+
+    # Begin optimization. Fit the blaze, the wavelength solution, the telluric template power and RV, the stellar template power and RV, the
+    # zero point for the instrumental resolution, and the vsini of the star separately, iterating and cycling between each set of parameter fits.
+    cycles = 2
+
+    optgroup = ['cont', 'wave', 't', 'cont', 's',
+                'cont', 'wave', 't', 's', 'cont',
+                'wave',
+                'ip', 'v',
+                'ip', 'v',
+                't',  's',
+                't',  's']
+
+    for nc, cycle in enumerate(np.arange(cycles), start=1):
+        if cycle == 0:
+            parstart = par_in.copy()
+            dpars = dpars1
+        else:
+            dpars = dpars2
+
+        for optkind in optgroup:
+            parfit_1 = optimizer( parstart, dpars[optkind], hardbounds, fitobj, optimize)
+            parstart = parfit_1.copy()
+            if args.debug:
+                outplotter_23(parfit_1, fitobj, '{}_{}_{}_parfit_{}{}'.format(order,night,tag,nc,optkind), trk, inparam, args, step2or3)
+                logger.debug(f'{order}_{tag}_{nc}_{optkind}:\n {parfit_1}')
+
+    parfit = parfit_1.copy()
+
+    #-------------------------------------------------------------------------------
+
+    # if best fit stellar template power is very low, throw out result
+    if parfit[1] < 0.1:
+        logger.warning(f'  --> parfit[1] < 0.1, {night} parfit={parfit}')
+        continue
+
+    # if best fit stellar or telluric template powers are exactly equal to their starting values, optimization failed, throw out result
+    if parfit[1] == par_in[1] or parfit[3] == par_in[3]:
+        logger.warning(f'  --> parfit[1] == par_in[1] or parfit[3] == par_in[3], {night}')
+        continue
+
+    # if best fit model dips below zero at any point, we're too close to edge of blaze, fit may be comrpomised, throw out result
+    smod,chisq = fmod(parfit,fitobj)
+    if len(smod[(smod < 0)]) > 0:
+        logger.warning(f'  --> len(smod[(smod < 0)]) > 0, {night}')
+        continue
+
+#-------------------------------------------------------------------------------
+    if args.plotfigs:
+        parfitS = parfit.copy(); parfitS[3] = 0
+        parfitT = parfit.copy(); parfitT[1] = 0
+        outplotter_23(parfitS, fitobj, 'parfitS_{}_{}_{}'.format(order,night,tag), trk, inparam, args, step2or3)
+        outplotter_23(parfitT, fitobj, 'parfitT_{}_{}_{}'.format(order,night,tag), trk, inparam, args, step2or3)
+        outplotter_23(parfit, fitobj,  'parfit_{}_{}_{}'.format(order,night,tag), trk, inparam, args, step2or3)
+
+    rv0 = parfit[0] - parfit[2]  # Correct for RV of the atmosphere, since we're using that as the basis for the wavelength scale
+
+    rvsmini    = rv0 + inparam.bvcs[night+tag] + rv0*inparam.bvcs[night+tag]/(3e5**2) # Barycentric correction
+    vsinismini = parfit[4]
+
+    bestguess = round(rvsmini,5)
+    vsinimini = round(vsinismini,5)
     return night, bestguess, vsinimini
 
 #-------------------------------------------------------------------------------
@@ -315,7 +315,7 @@ if __name__ == '__main__':
                         help="Which list of wavelength regions file (./Input/UseWv/WaveRegions_X) to use? Defaults to those chosen by IGRINS RV team, -Wr 1",
                         type=int,   default=int(1))
     parser.add_argument("-l_use",   dest="label_use",        action="store",
-                        help="Specify order used. Default is the first in WRegion list",
+                        help="Specify ORDER used. Default is the first in WRegion list",
                         type=int,   default=int(0))
     parser.add_argument("-SN",      dest="SN_cut",           action="store",
                         help="Spectrum S/N quality cut. Spectra with median S/N below this will not be analyzed. Default = 50 ",
@@ -404,6 +404,13 @@ if __name__ == '__main__':
         initguesses_show = f'Initguesser_results_{args.guessesX}.csv'
         for hrt in range(len(initnights)):
             initguesses[str(initnights[hrt])] = float(initrvs[hrt])
+
+    #------------------------------
+    # Read in the Prepdata under ./Input/Prpedata/
+    xbounddict, maskdict, tagsA, tagsB, mjds, bvcs, nightsFinal, orders = read_prepdata(args)
+
+    if int(args.label_use) not in orders:
+        sys.exit(f'Oops! -l_use INPUT "{args.label_use}" is not in "{orders}" from the given WRegion list!!')
 
 #-------------------------------------------------------------------------------
 
@@ -494,9 +501,6 @@ Input Parameters:
     filew.write('\n')
 
     #-------------------------------------------------------------------------------
-
-    # Read in the Prepdata under ./Input/Prpedata/
-    xbounddict, maskdict, tagsA, tagsB, mjds, bvcs, nightsFinal, orders = read_prepdata(args)
 
     # Use subset of nights if specified
     if args.nights_use != '':
