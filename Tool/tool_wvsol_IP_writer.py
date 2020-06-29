@@ -29,6 +29,10 @@ def IPval(tar,band):
         dump1 = 0
         for a0 in Tdirs:
             hdulist = fits.open(a0)
+            flag = np.array(hdulist[f'ERRORFLAG{ordertry}'])[0]
+            if flag==1:
+                print(f' --> {a0} has Telfit flag 1')
+                continue
 
             tt= 1 ; orders = []
             while 1==1:
@@ -37,9 +41,6 @@ def IPval(tar,band):
                     tt+=1
                 except:
                     break
-            if len(orders)!=10:
-                print(f'    --> {a0} do not have 10 orders, skip')
-                continue
             dump2 = 0
             for o in np.arange(len(orders)):
                 try:
