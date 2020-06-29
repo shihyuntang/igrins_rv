@@ -41,8 +41,8 @@ def init_fitsread(path,kind,beam,night,order,tag,band,Ncuts=None):
     # Initguesser takes combined AB versions of target spectra, of which there may be multiple, and combines /those/ together.
     if beam == 'combined':
         if kind != 'target':
-            print('IO_AB ERROR: KIND SHOULD BE TARGET, THIS ERROR SHOULD ONLY THROW FROM INITGUESSER')
-            print(breaker)
+            sys.exit('IO_AB ERROR: KIND SHOULD BE TARGET, THIS ERROR SHOULD ONLY THROW FROM INITGUESSER')
+
 
         subpath        = '{}{}/AB/'.format(path, night)
         fullpathprefix = '{}SDC{}_{}_'.format(subpath, band, night)
