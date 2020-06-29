@@ -37,7 +37,7 @@ def IPval(tar,band):
                     tt+=1
                 except:
                     break
-            if len(orders)!=10
+            if len(orders)!=10:
                 print(f'    --> {a0} do not have 10 orders, skip')
                 continue
             dump2 = 0
