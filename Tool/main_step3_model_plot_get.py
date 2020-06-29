@@ -470,13 +470,13 @@ Input Parameters:
     xbounddict, maskdict, tagsA, tagsB, mjds, bvcs, nightsFinal, orders = read_prepdata(args)
 
 # ---------------------------------------
-    print('For paper plot!')
-    if args.band == 'K':
-        orders = np.array([2, 3, 4, 5, 6, 7, 8, 10, 14, 16])
-    elif args.band=='H':
-        orders = np.array([2, 3, 4, 6, 13, 14, 16, 20, 21, 22])
-    print('Analyze {} orders'.format(len(orders)))
-    print('\n')
+    # print('For paper plot!')
+    # if args.band == 'K':
+    #     orders = np.array([2, 3, 4, 5, 6, 7, 8, 10, 14, 16])
+    # elif args.band=='H':
+    #     orders = np.array([2, 3, 4, 6, 13, 14, 16, 20, 21, 22])
+    # print('Analyze {} orders'.format(len(orders)))
+    # print('\n')
 # ---------------------------------------
     if args.nights_use != '':
         nightstemp = np.array(ast.literal_eval(args.nights_use), dtype=str)
