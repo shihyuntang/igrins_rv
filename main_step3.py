@@ -427,8 +427,9 @@ Input Parameters:
     RV initial guess    = \33[41m {} \033[0m
     Stellar template use= \33[41m {} \033[0m
     Target Spectral Type= \33[41m {} \033[0m             <-------  [late K, M] recommended 'synthetic', [F, G, early K] SpTy recommended 'livingston'
+    Threads use         = {}
     '''.format(args.targname, args.band, args.WRegion, args.SN_cut, args.nAB,
-               initvsini, vsinivary, initguesses_show, args.template, args.sptype))
+               initvsini, vsinivary, initguesses_show, args.template, args.sptype, args.Nthreads))
     if not args.skip:
         while True:
             inpp = input("Press [Y]es to continue, [N]o to quite...\n --> ")
