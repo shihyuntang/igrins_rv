@@ -38,7 +38,12 @@ def IPval(tar,band):
                 except:
                     break
 
-            flag = [ np.array(hdulist[f'ERRORFLAG{orderr}'])[0] for orderr in orders]
+            flag = []
+            for orderr in orders:
+                try:
+                    flag.append( np.array(hdulist[f'ERRORFLAG{orderr}'])[0])
+                except:
+                    pass
             if 1 in flag:
                 print(f' --> {a0} has Telfit flag 1')
                 continue
