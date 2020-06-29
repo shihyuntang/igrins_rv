@@ -158,8 +158,8 @@ def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     # Execute S/N cut
     s2n = s/u
     if np.nanmedian(s2n) < float(args.SN_cut):
-        logger.warning('  --> Bad S/N {:1.3f} < {} for {}{} {}, SKIP'.format( np.nanmedian(s2n), args.SN_cut, night, beam, tag))
-        continue
+        logger.warning('  --> Bad S/N {:1.3f} < {} for {}{} {}...'.format( np.nanmedian(s2n), args.SN_cut, night, beam, tag))
+        pass
 
     # Trim obvious outliers above the blaze (i.e. cosmic rays)
     nzones = 5
