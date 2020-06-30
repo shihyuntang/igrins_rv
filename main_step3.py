@@ -314,8 +314,8 @@ if __name__ == '__main__':
                         help="Spectrum S/N quality cut. Spectra with median S/N below this will not be analyzed. Default = 50 ",
                         type=str,   default='50')
     parser.add_argument("-nAB",      dest="nAB",           action="store",
-                        help="Minium number of separte A/B exposures within a set for a given observation (ensures accuracy of uncertainy estimates). Default = 1 for STD, 2 for TAR",
-                        type=str,   default='1')
+                        help="Minium number of separte A/B exposures within a set for a given observation (ensures accuracy of uncertainy estimates). Default = 2 for STD, 3 for TAR",
+                        type=str,   default='')
     parser.add_argument('-i',       dest="initvsini",        action="store",
                         help="Initial vsini (float, km/s). If no literature value known, use the value given by Step 2",
                         type=str,   default='' )
@@ -380,6 +380,15 @@ if __name__ == '__main__':
         sys.exit('ERROR: TAR CANNOT USE -g, PLEASE USE -gS')
 
     #------------------------------
+    
+    if args.nAB == '' and args.model.lower() == 'std':
+        nAB = 2
+    if args.nAB == '' and args.model.lower() == 'tar':
+        nAB = 3
+    else:
+        nAB = int(args.nAB)
+    
+    #------------------------------
 
     if args.mode.lower() == 'std': # Specify initial RV guesses as a single value applied to all nights
         initguesses = float(args.guesses)
@@ -421,7 +430,7 @@ Input Parameters:
     Filter              = \33[41m {} band \033[0m
     WaveLength file     = \33[41m WaveRegions_{} \033[0m
     S/N cut             > \33[41m {} \033[0m
-    Minium # of AB sets = \33[41m {} \033[0m             <------- If is TAR mode, this should be at lease 2
+    Minium # of AB sets = \33[41m {} \033[0m             <------- If TAR mode, this should be at least 3. If STD mode, at least 2.
     Initial vsini       = \33[41m {} km/s \033[0m
     vsini vary range    \u00B1 \33[41m {} km/s \033[0m
     RV initial guess    = \33[41m {} \033[0m
@@ -611,7 +620,7 @@ Input Parameters:
                 if T_L == 'T':
                     vsinisT[i,jerp] = np.nanmean(vsinitags)
 
-                    if (np.sum(~np.isnan(rvtags)) < int(args.nAB) ):
+                    if (np.sum(~np.isnan(rvtags)) < nAB ):
                         rvmasterboxT[i,jerp]  = np.nan
                         stdmasterboxT[i,jerp] = np.nan
                     else:
@@ -621,7 +630,7 @@ Input Parameters:
                 else:
                     vsinisL[i,jerp] = np.nanmean(vsinitags)
 
-                    if (np.sum(~np.isnan(rvtags)) < int(args.nAB) ):
+                    if (np.sum(~np.isnan(rvtags)) < nAB ):
                         rvmasterboxL[i,jerp]  = np.nan
                         stdmasterboxL[i,jerp] = np.nan
                     else:
