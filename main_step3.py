@@ -381,9 +381,9 @@ if __name__ == '__main__':
 
     #------------------------------
     
-    if args.nAB == '' and args.model.lower() == 'std':
+    if args.nAB == '' and args.mode.lower() == 'std':
         nAB = 2
-    if args.nAB == '' and args.model.lower() == 'tar':
+    elif args.nAB == '' and args.mode.lower() == 'tar':
         nAB = 3
     else:
         nAB = int(args.nAB)
