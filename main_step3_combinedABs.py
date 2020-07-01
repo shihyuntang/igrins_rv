@@ -154,7 +154,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     s2n = s/u
     if np.nanmedian(s2n) < float(args.SN_cut):
         logger.warning('  --> Bad S/N {:1.3f} < {} for {}{} {}, SKIP'.format( np.nanmedian(s2n), args.SN_cut, night, beam, tag))
-        continue
+        return nightsout, rvsminibox, parfitminibox, vsiniminibox
 
     # Trim obvious outliers above the blaze (i.e. cosmic rays)
     nzones = 5
@@ -247,18 +247,18 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     # if best fit stellar template power is very low, throw out result
     if parfit[1] < 0.1:
         logger.warning(f'  --> parfit[1] < 0.1, {night} parfit={parfit}')
-        continue
+        return nightsout, rvsminibox, parfitminibox, vsiniminibox
 
     # if best fit stellar or telluric template powers are exactly equal to their starting values, fit failed, throw out result
     if parfit[1] == par_in[1] or parfit[3] == par_in[3]:
         logger.warning(f'  --> parfit[1] == par_in[1] or parfit[3] == par_in[3], {night}')
-        continue
+        return nightsout, rvsminibox, parfitminibox, vsiniminibox
 
     # if best fit model dips below zero at any point, we're to close to edge of blaze, fit may be comrpomised, throw out result
     smod,chisq = fmod(parfit,fitobj)
     if len(smod[(smod < 0)]) > 0:
         logger.warning(f'  --> len(smod[(smod < 0)]) > 0, {night}')
-        continue
+        return nightsout, rvsminibox, parfitminibox, vsiniminibox
 
     #-------------------------------------------------------------------------------
 
@@ -374,9 +374,9 @@ if __name__ == '__main__':
 
     #------------------------------
     
-    if args.nAB == '' and args.model.lower() == 'std':
+    if args.nAB == '' and args.mode.lower() == 'std':
         nAB = 2
-    if args.nAB == '' and args.model.lower() == 'tar':
+    elif args.nAB == '' and args.mode.lower() == 'tar':
         nAB = 3
     else:
         nAB = int(args.nAB)
