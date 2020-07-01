@@ -50,11 +50,11 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         tagsnight.append(tag)
         beamsnight.append('B')
 
-    nightsout = night;
+    nightsout = np.array([night]);
     
-    rvsminibox    = np.nan
-    vsiniminibox  = np.nan
-    parfitminibox = np.nan
+    rvsminibox    = np.array([np.nan])
+    vsiniminibox  = np.array([np.nan])
+    parfitminibox = np.array([np.nan])
 
     # Load synthetic telluric template generated during Step 1
     # [:8] here is to ensure program works under Night_Split mode
@@ -139,7 +139,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
             bound_cut = [150, 150]
 
     # Load target spectrum
-    x,wave,s,u = init_fitsread(f'{inparam.inpath}{night}/{beam}/',
+    x,wave,s,u = init_fitsread(f'{inparam.inpath}/',
                                 'target',
                                 'combined',
                                 night,
@@ -271,9 +271,9 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
     rv0 = parfit[0] - parfit[2]   # Correct for RV of the atmosphere, since we're using that as the basis for the wavelength scale
 
-    rvsminibox   = rv0  + inparam.bvcs[night+tag] + rv0*inparam.bvcs[night+tag]/(3e5**2) # Barycentric correction
+    rvsminibox   = np.array([rv0  + inparam.bvcs[night+tag] + rv0*inparam.bvcs[night+tag]/(3e5**2)]) # Barycentric correction
     parfitminibox= parfit
-    vsiniminibox = parfit[4]
+    vsiniminibox = np.array([parfit[4]])
     
     return nightsout,rvsminibox,parfitminibox,vsiniminibox
 
@@ -566,13 +566,9 @@ Input Parameters:
             if i == 0:
                 nightsbox = outsbox[0]
                 rvbox     = outsbox[1]
-                parfitbox = outsbox[2]
-                vsinibox  = outsbox[3]
             else:
-                nightsbox = nightsbox + outsbox[0]
+                nightsbox = np.concatenate((nightsbox,outsbox[0]))
                 rvbox     = np.concatenate((rvbox,outsbox[1]))
-                parfitbox = np.vstack((parfitbox,outsbox[2]))
-                vsinibox  = np.concatenate((vsinibox,outsbox[3]))
 
         nightsbox = np.array(nightsbox)
         vsinitags = []
@@ -580,9 +576,7 @@ Input Parameters:
         # Save results to fits file
         c1    = fits.Column(name='NIGHT'+str(order),  array=nightsbox, format='{}A'.format(len(nights[0])) )
         c2    = fits.Column(name='RV'+str(order),     array=rvbox,     format='D')
-        c3    = fits.Column(name='PARFIT'+str(order), array=parfitbox, format=str(len(parfitbox[0,:]))+'D', dim=(1,len(parfitbox[0,:])))
-        c4    = fits.Column(name='VSINI'+str(order),  array=vsinibox,  format='D')
-        cols  = fits.ColDefs([c1,c2,c3,c4])
+        cols  = fits.ColDefs([c1,c2])
         hdu_1 = fits.BinTableHDU.from_columns(cols)
 
         if jerp == 0: # If first time writing fits file, make up filler primary hdu
