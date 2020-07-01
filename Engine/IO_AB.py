@@ -45,7 +45,7 @@ def init_fitsread(path,kind,beam,night,order,tag,band,Ncuts=None):
 
 
         subpath        = '{}{}/AB/'.format(path, night)
-        fullpathprefix = '{}SDC{}_{}_'.format(subpath, band, night)
+        fullpathprefix = '{}SDC{}_{}_'.format(subpath, band, night[:8])
 
         onlyfiles = [f for f in listdir(subpath) if isfile(join(subpath, f))]
         contmeds = []
