@@ -31,16 +31,6 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
     #-------------------------------------------------------------------------------
 
-    # Collect initial RV guesses
-    if type(inparam.initguesses) == dict:
-        initguesses = inparam.initguesses[night]
-    elif type(inparam.initguesses) == float:
-        initguesses = inparam.initguesses
-    else:
-        sys.exit('ERROR! EXPECING SINGAL NUMBER OR FILE FOR INITGUESSES! QUITTING!')
-
-    #-------------------------------------------------------------------------------
-
     # Collect relevant beam and filenum info
     tagsnight = []; beamsnight = [];
     for tag in inparam.tagsA[night]:
@@ -61,6 +51,20 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
     for t in tagsnight:
         nightsout.append(night)
+
+#-------------------------------------------------------------------------------
+    # Collect initial RV guesses
+    if type(inparam.initguesses) == dict:
+        initguesses = inparam.initguesses[night]
+        if np.isnan(inparam.initguesses[night]):
+            logger.warning('  --> Initial guess for {} is NaN , SKIP...'.format(night))
+            return nightsout, rvsminibox, parfitminibox, vsiniminibox
+
+    elif type(inparam.initguesses) == float:
+        initguesses = inparam.initguesses
+    else:
+        sys.exit('ERROR! EXPECING SINGAL NUMBER OR FILE FOR INITGUESSES! QUITTING!')
+
 
     # Load synthetic telluric template generated during Step 1
     # [:8] here is to ensure program works under Night_Split mode
@@ -89,6 +93,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     if flag == 1:
         logger.warning(f'  --> TELFIT ENCOUNTERED CRITICAL ERROR IN ORDER: {order} NIGHT: {night}, skipping...')
         return nightsout, rvsminibox, parfitminibox, vsiniminibox
+
 
     watm = tbdata['WATM'+str(order)]
     satm = tbdata['SATM'+str(order)]
@@ -380,14 +385,14 @@ if __name__ == '__main__':
         sys.exit('ERROR: TAR CANNOT USE -g, PLEASE USE -gS')
 
     #------------------------------
-    
+
     if args.nAB == '' and args.mode.lower() == 'std':
         nAB = 2
     elif args.nAB == '' and args.mode.lower() == 'tar':
         nAB = 3
     else:
         nAB = int(args.nAB)
-    
+
     #------------------------------
 
     if args.mode.lower() == 'std': # Specify initial RV guesses as a single value applied to all nights
