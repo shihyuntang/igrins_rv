@@ -47,9 +47,9 @@ def DataPrep(args):
 
         # Collect observatory
         head = hdulist[0].header
-        if head['OBSERVAT'] == 'Lowell Observatory':
+        if head['OBSERVAT'].lower() == 'lowell observatory':
             obs = 'DCT'
-        elif head['OBSERVAT'] == 'McDonald':
+        elif head['OBSERVAT'].lower() == 'mcdonald':
             obs = 'McD'
         else:
             print('EXPECTED LOWELL OR MCDONALD OBSERVATORY, GOT {}. CODE MUST BE EDITED TO INCLUDE THIS OPTION - CONTACT AUTHORS WITH EXAMPLE OBSERVATION FITS FILE AND THEY WILL UPDATE'.format( head['OBSERVAT'] ))
