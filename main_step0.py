@@ -49,10 +49,10 @@ def DataPrep(args):
         head = hdulist[0].header
         if head['OBSERVAT'].lower() == 'lowell observatory':
             obs = 'DCT'
-        elif head['OBSERVAT'].lower() == 'mcdonald':
+        elif (head['OBSERVAT'].lower() == 'mcdonald observatory') or (head['OBSERVAT'].lower()  == 'mcdonald'):
             obs = 'McD'
         else:
-            print('EXPECTED LOWELL OR MCDONALD OBSERVATORY, GOT {}. CODE MUST BE EDITED TO INCLUDE THIS OPTION - CONTACT AUTHORS WITH EXAMPLE OBSERVATION FITS FILE AND THEY WILL UPDATE'.format( head['OBSERVAT'] ))
+            print('EXPECTED LOWELL OR MCDONALD OBSERVATORY, GOT {}. CODE MUST BE EDITED TO INCLUDE THIS OPTION - CONTACT AUTHORS WITH EXAMPLE OBSERVATION FITS FILE AND THEY WILL UPDATE'.format( head['OBSERVAT'].lower() ))
 
         # Collect time of mid-exposure
         try:
