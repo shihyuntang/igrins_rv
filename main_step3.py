@@ -56,10 +56,6 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     # Collect initial RV guesses
     if type(inparam.initguesses) == dict:
         initguesses = inparam.initguesses[night]
-        if np.isnan(inparam.initguesses[night]):
-            logger.warning('  --> Initial guess for {} is NaN , SKIP...'.format(night))
-            return nightsout, rvsminibox, parfitminibox, vsiniminibox
-
     elif type(inparam.initguesses) == float:
         initguesses = inparam.initguesses
     else:
