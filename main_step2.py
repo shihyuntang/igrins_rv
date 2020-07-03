@@ -240,6 +240,7 @@ def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                 't',  's',
                 't',  's']
 
+    nk = 1
     for nc, cycle in enumerate(np.arange(cycles), start=1):
         if cycle == 0:
             parstart = par_in.copy()
@@ -251,8 +252,9 @@ def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
             parfit_1 = optimizer( parstart, dpars[optkind], hardbounds, fitobj, optimize)
             parstart = parfit_1.copy()
             if args.debug:
-                outplotter_23(parfit_1, fitobj, '{}_{}_{}_parfit_{}{}'.format(order,night,tag,nc,optkind), trk, inparam, args, step2or3)
-                logger.debug(f'{order}_{tag}_{nc}_{optkind}:\n {parfit_1}')
+                outplotter_23(parfit_1, fitobj, '{}_{}_{}_parfit_{}{}'.format(order,night,tag,nk,optkind), trk, inparam, args, step2or3)
+                logger.debug(f'{order}_{tag}_{nk}_{optkind}:\n {parfit_1}')
+            nk += 1
 
     parfit = parfit_1.copy()
 
