@@ -318,6 +318,7 @@ if __name__ == '__main__':
     if args.nights_use != '':
         nightstemp = np.array(ast.literal_eval(args.nights_use), dtype=int)
         nightstemp = [ nnight[:8] for nnight in nightstemp ]
+        print(nightstemp)
         for nnn in nightstemp:
             if nnn not in nightsFinal:
                 sys.exit(f'NIGHT {nnn} EITHER HAS NO CORRESPONDING A0 OR WAS NOT FOUND UNDER "./Input/{args.targname}"')
