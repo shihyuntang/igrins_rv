@@ -107,11 +107,10 @@ def init_fitsread(path,kind,beam,night,order,tag,band,Ncuts=None):
             xlist = np.arange(len(wavelist),dtype=float)
 
     MAD = np.nanmedian(abs(np.nanmedian(s2nlist)-s2nlist))
-    x3    = xlist[   (np.isnan(fluxlist) == False) & (np.isnan(s2nlist) == False)]
-    wave3 = wavelist[(np.isnan(fluxlist) == False) & (np.isnan(s2nlist) == False)]
-    s2n3    = s2nlist[   (np.isnan(fluxlist) == False) & (np.isnan(s2nlist) == False)]
-    s3    = fluxlist[(np.isnan(fluxlist) == False) & (np.isnan(s2nlist) == False)]
-    s3[(s3 < 0)] = 0.
+    x3    = xlist[   (np.isnan(fluxlist) == False) & (np.isnan(s2nlist) == False) & (fluxlist > 0)]
+    wave3 = wavelist[(np.isnan(fluxlist) == False) & (np.isnan(s2nlist) == False) & (fluxlist > 0)]
+    s2n3    = s2nlist[   (np.isnan(fluxlist) == False) & (np.isnan(s2nlist) == False) & (fluxlist > 0)]
+    s3    = fluxlist[(np.isnan(fluxlist) == False) & (np.isnan(s2nlist) == False) & (fluxlist > 0)]
 
     # Cut absurdities that will mess with fit
     #wave = wave3[(10 < s2n3) & (s2n3 < np.nanmedian(s2n3)+MAD*5)]
