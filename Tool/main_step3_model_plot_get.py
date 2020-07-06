@@ -374,7 +374,7 @@ if __name__ == '__main__':
         initguesses_show = initguesses
     else:
         if args.guesses_source == 'init':
-            guesses = '../Output/{}_{}/Initguesser_results_{}.csv'.format(args.targname,
+            guesses = '../Output/{}_{}_tool/Initguesser_results_{}.csv'.format(args.targname,
                                                                          args.band,
                                                                          int(args.guessesX))
             guessdata  = Table.read(guesses, format='csv')
@@ -386,7 +386,7 @@ if __name__ == '__main__':
                 initguesses[str(initnights[hrt])] = float(initrvs[hrt])
 
         elif args.guesses_source == 'rvre':
-            guesses = '../Output/{}_{}/RVresultsSummary_{}.csv'.format(args.targname,
+            guesses = '../Output/{}_{}_tool/RVresultsSummary_{}.csv'.format(args.targname,
                                                                       args.band,
                                                                       int(args.guessesX))
             guessdata  = Table.read(guesses, format='csv')
