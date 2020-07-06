@@ -480,6 +480,8 @@ Input Parameters:
 # ---------------------------------------
     if args.nights_use != '':
         nightstemp = np.array(ast.literal_eval(args.nights_use), dtype=str)
+        if len(nightstemp[0]) !=8:
+            nightstemp = [ f'{nnight[:8]}_{nnight[-4:]}' for nnight in nightstemp ]
         for nnn in nightstemp:
             if nnn not in nightsFinal:
                 sys.exit('NIGHT {} NOT FOUND UNDER ./Input_Data/{}'.format(nnn, args.targname))
