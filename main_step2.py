@@ -78,7 +78,9 @@ def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
             orderbad = ordertry
             ordertry = orders[nexto]
             logger.warning(f'  --> TELFIT ENCOUNTERED CRITICAL ERROR IN ORDER: {orderbad} NIGHT: {night}, TRYING ORDER {ordertry} INSTEAD...')
+
         else: # All good, continue
+            order = ordertry
             break
 
         nexto += 1
