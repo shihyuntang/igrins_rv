@@ -157,9 +157,9 @@ def setup_templates(logger, kind='synthetic', band='K', sptype='M'):
             sys.exit('Pipeline does not have a stellar template for early type stars in K band! Upload your own?')
         logger.info('Using synthetic stellar template...')
         if os.getcwd()[-1]=='v':
-            stelldata = Table.read('./Engine/syntheticstellar_kband_T3900_logg3.5.txt',format='ascii')
+            stelldata = Table.read('./Engine/syntheticstellar_kband_T4000_logg3.5.txt',format='ascii')
         else:
-            stelldata = Table.read('../Engine/syntheticstellar_kband_T3900_logg3.5.txt',format='ascii')
+            stelldata = Table.read('../Engine/syntheticstellar_kband_T4000_logg3.5.txt',format='ascii')
         mwave0 = np.array(stelldata['wave'])
         mflux0 = np.array(stelldata['flux'])
         mwave0 = mwave0[(np.isfinite(mflux0))]
