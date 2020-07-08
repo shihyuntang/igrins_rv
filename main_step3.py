@@ -43,10 +43,12 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     nightsout = [];
     rvsminibox     = np.ones(len(tagsnight));
     vsiniminibox   = np.ones(len(tagsnight));
+    tagsminibox    = np.ones(len(tagsnight));
     parfitminibox  = np.ones((len(tagsnight),15)); # need to match the dpar numbers
 
     rvsminibox[:]    = np.nan
     vsiniminibox[:]  = np.nan
+    tagsminibox[:]   = np.nan
     parfitminibox[:] = np.nan
 
     for t in tagsnight:
@@ -69,7 +71,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         hdulist = fits.open(A0loc)
     except IOError:
         logger.warning(f'  --> No A0-fitted template for night {night}, skipping...')
-        return nightsout, rvsminibox, parfitminibox, vsiniminibox
+        return nightsout, rvsminibox, parfitminibox, vsiniminibox, tagsminibox
 
     # Find corresponding table in fits file, given the tables do not go sequentially by order number due to multiprocessing in Step 1
     num_orders = 0
@@ -88,7 +90,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     # Check whether Telfit hit critical error in Step 1 for the chosen order with this night. If so, skip.
     if flag == 1:
         logger.warning(f'  --> TELFIT ENCOUNTERED CRITICAL ERROR IN ORDER: {order} NIGHT: {night}, skipping...')
-        return nightsout, rvsminibox, parfitminibox, vsiniminibox
+        return nightsout, rvsminibox, parfitminibox, vsiniminibox, tagsminibox
 
 
     watm = tbdata['WATM'+str(order)]
@@ -284,7 +286,8 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         rvsminibox[t]   = rv0  + inparam.bvcs[night+tag] + rv0*inparam.bvcs[night+tag]/(3e5**2) # Barycentric correction
         parfitminibox[t]= parfit
         vsiniminibox[t] = parfit[4]
-    return nightsout,rvsminibox,parfitminibox,vsiniminibox
+        tagsminibox[t]  = tag
+    return nightsout,rvsminibox,parfitminibox,vsiniminibox,tagsminibox
 
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
@@ -577,11 +580,13 @@ Input Parameters:
                 rvbox     = outsbox[1]
                 parfitbox = outsbox[2]
                 vsinibox  = outsbox[3]
+                tagbox    = outsbox[4]
             else:
                 nightsbox = nightsbox + outsbox[0]
                 rvbox     = np.concatenate((rvbox,outsbox[1]))
                 parfitbox = np.vstack((parfitbox,outsbox[2]))
                 vsinibox  = np.concatenate((vsinibox,outsbox[3]))
+                tagbox    = np.concatenate((tagbox,outsbox[4]))
 
         nightsbox = np.array(nightsbox)
         vsinitags = []
@@ -591,7 +596,8 @@ Input Parameters:
         c2    = fits.Column(name='RV'+str(order),     array=rvbox,     format='D')
         c3    = fits.Column(name='PARFIT'+str(order), array=parfitbox, format=str(len(parfitbox[0,:]))+'D', dim=(1,len(parfitbox[0,:])))
         c4    = fits.Column(name='VSINI'+str(order),  array=vsinibox,  format='D')
-        cols  = fits.ColDefs([c1,c2,c3,c4])
+        c5    = fits.Column(name='TAG'+str(order),    array=tagbox,    format='4A')
+        cols  = fits.ColDefs([c1,c2,c3,c4,c5])
         hdu_1 = fits.BinTableHDU.from_columns(cols)
 
         if jerp == 0: # If first time writing fits file, make up filler primary hdu
