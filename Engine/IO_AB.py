@@ -184,9 +184,9 @@ def setup_templates(logger, kind='synthetic', band='K', sptype='M'):
             sys.exit('Pipeline does not have a stellar template for late type stars in H band! Upload your own?')
         logger.info('Using synthetic stellar template...')
         if os.getcwd()[-1]=='v':
-            stelldata = Table.read('./Engine/syntheticstellar_hband_T6400_logg4.5.txt.txt',format='ascii')
+            stelldata = Table.read('./Engine/syntheticstellar_hband_T6400_logg4.5.txt',format='ascii')
         else:
-            stelldata = Table.read('../Engine/syntheticstellar_hband_T6400_logg4.5.txt.txt',format='ascii')
+            stelldata = Table.read('../Engine/syntheticstellar_hband_T6400_logg4.5.txt',format='ascii')
         mwave0 = np.array(stelldata['wave'])
         mflux0 = np.array(stelldata['flux'])
         mwave0 = mwave0[(np.isfinite(mflux0))]
