@@ -98,6 +98,7 @@ def DataPrep(args, tar_night, tar_num, tar_frame, file_night_num, std_name, std_
 
         # BVC calculation
         if args.coord != '':
+            print('Calculating BVC base on the input info. ...')
             ra_deg = np.array(ast.literal_eval(args.coord), dtype=float)[0]
             de_deg = np.array(ast.literal_eval(args.coord), dtype=float)[1]
 
@@ -130,6 +131,7 @@ def DataPrep(args, tar_night, tar_num, tar_frame, file_night_num, std_name, std_
                 BVCfile  = float(np.array(star_files['BVC'])[x]       ) #BVC in the master log might be wrong, so, re-calculated below...
 
             elif obs == 'DCT':
+                print('Calculating BVC base on the fits header info. ...')
                 observatoryN = EarthLocation.of_site('DCT')
 
                 framee = f"{head['RADECSYS'][:2].lower()}{head['RADECSYS'][-1]}"
