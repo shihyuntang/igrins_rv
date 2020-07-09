@@ -23,6 +23,8 @@ def DataPrep(args):
         if n == len(args.targname):
             sys.exit('TARGET NAME NOT FOUND IN CATALOG - CHECK INPUT!')
 
+    print(star_files['CIVIL'])
+
     #-------------------------------------------------------------------------------
     # Prepare PrepData file for target star
     fileT = open('./Input/Prepdata/Prepdata_targ_{}.txt'.format(args.targname), 'w')
