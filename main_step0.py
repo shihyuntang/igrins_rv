@@ -68,6 +68,8 @@ def DataPrep(args):
         # BVC calculation
         if args.coord != '':
             print('Calculating BVC base on the input info. ...')
+            print(args.coord)
+            print(ast.literal_eval(args.coord))
             ra_deg = np.array(ast.literal_eval(args.coord), dtype=float)[0]
             de_deg = np.array(ast.literal_eval(args.coord), dtype=float)[1]
 
