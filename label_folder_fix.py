@@ -6,6 +6,7 @@ print('Program Start..')
 
 list_input = os.listdir('./Input')
 list_input = [i for i in list_input if i[0] != '.']
+list_input = [i for i in list_input if i[0] != '@']
 list_input = [i for i in list_input if i != 'Prepdata']
 list_input = [i for i in list_input if i != 'UseWv']
 
