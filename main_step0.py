@@ -66,17 +66,47 @@ def DataPrep(args):
             time_midpoint = np.mean(l0)
 
         # BVC calculation
-        if obs == 'McD':
+        if args.coord != '':
+            print('Calculating BVC base on the input info. ...')
+            ra_deg = np.array(ast.literal_eval(args.coord), dtype=float)[0]
+            de_deg = np.array(ast.literal_eval(args.coord), dtype=float)[1]
+
+            pmra_deg = np.array(ast.literal_eval(args.pm), dtype=float)[0]
+            pmde_deg = np.array(ast.literal_eval(args.pm), dtype=float)[1]
+
+            targ_c = SkyCoord(ra  =  ra_deg                   *units.degree,
+                              dec =  de_deg                   *units.degree,
+                              pm_ra_cosdec = pmra_deg         *units.mas/units.yr,
+                              pm_dec       = pmde_deg         *units.mas/units.yr,
+                              distance = float(args.distance) *units.pc,
+                              frame='icrs',
+                              obstime="J2015.5")
+
+            new_coord = targ_c.apply_space_motion(new_obstime=Time(time_midpoint, format='jd'))
+
+
             observatoryN = EarthLocation.of_site('McDonald Observatory')
-            BVCfile  = float(np.array(star_files['BVC'])[x]       ) #BVC in the master log might be wrong, so, re-calculated below...
+            new_RA = new_coord.ra
+            new_DE = new_coord.dec
 
-        elif obs == 'DCT':
-            observatoryN = EarthLocation.of_site('DCT')
+            sc = SkyCoord(ra=new_RA, dec=new_DE, frame=ICRS)
 
-            framee = f"{head['RADECSYS'][:2].lower()}{head['RADECSYS'][-1]}"
-            sc = SkyCoord(f"{head['TELRA']} {head['TELDEC']}", frame=framee, unit=(units.hourangle, units.deg))
-            barycorr = sc.radial_velocity_correction(obstime=Time(time_midpoint, format='jd'), location=observatoryN)
-            BVCfile = barycorr.to(units.km/units.s).value
+            barycorr  = sc.radial_velocity_correction(obstime=Time(time_midpoint, format='jd'), location=observatoryN)
+            BVCfile   = barycorr.to(units.km/units.s).value
+
+        else:
+            if obs == 'McD':
+                observatoryN = EarthLocation.of_site('McDonald Observatory')
+                BVCfile  = float(np.array(star_files['BVC'])[x]       ) #BVC in the master log might be wrong, so, re-calculated below...
+
+            elif obs == 'DCT':
+                print('Calculating BVC base on the fits header info. ...')
+                observatoryN = EarthLocation.of_site('DCT')
+
+                framee = f"{head['RADECSYS'][:2].lower()}{head['RADECSYS'][-1]}"
+                sc = SkyCoord(f"{head['TELRA']} {head['TELDEC']}", frame=framee, unit=(units.hourangle, units.deg))
+                barycorr = sc.radial_velocity_correction(obstime=Time(time_midpoint, format='jd'), location=observatoryN)
+                BVCfile = barycorr.to(units.km/units.s).value
 
         # Write out collected info
         mjd = time_midpoint;
@@ -219,6 +249,17 @@ if __name__ == '__main__':
     parser.add_argument("-AM",      dest="AM_cut",           action="store",
                         help="AirMass difference allowed between TAR and STD (A0) stars. Default X = 0.25 ",
                         type=str,   default='0.25')
+
+    parser.add_argument("-coord",    dest="coord",            action="store",
+                        help="Optional [-XX.xx,-XX.xx] deg, GaiaDR2 coordinates at J2015.5. If give, will calculate BVC base on this info.",
+                        type=str,   default='')
+    parser.add_argument("-pm",       dest="pm",               action="store",
+                        help="Optional [-XX.xx,-XX.xx] [mas/yr], GaiaDR2 proper motion. If give, will calculate BVC base on this info.",
+                        type=str,   default='')
+    parser.add_argument("-dist",    dest="distance",          action="store",
+                        help="Optional (pc), can be from GaiaDR2 parallax [mas] (1/plx), or from Bailer-Jones et al. 2018. If give, will calculate BVC base on this info.",
+                        type=str,   default='')
+
     parser.add_argument('--version',                         action='version',  version='%(prog)s 0.85')
     args   = parser.parse_args()
     inpath = './Input/{}/'.format(args.targname)
