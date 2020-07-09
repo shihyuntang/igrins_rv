@@ -23,7 +23,6 @@ def DataPrep(args):
         if n == len(args.targname):
             sys.exit('TARGET NAME NOT FOUND IN CATALOG - CHECK INPUT!')
 
-    print(star_files['CIVIL'])
 
     #-------------------------------------------------------------------------------
     # Prepare PrepData file for target star
@@ -45,6 +44,7 @@ def DataPrep(args):
         try:
             hdulist = fits.open('{}{}/{}/SDC{}_{}_{}.spec.fits'.format(inpath, night, frame, args.band, night, tag))
         except FileNotFoundError:
+            print('     --> {}{}/{}/SDC{}_{}_{}.spec.fits NOT FOUND'.format(inpath, night, frame, args.band, night, tag))
             continue
 
         # Collect observatory
