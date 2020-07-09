@@ -39,7 +39,7 @@ def DataPrep(args, tar_night, tar_num, tar_frame, file_night_num, std_name, std_
                                  ( master_log['FILENUMBER']==int(tar_num[x]) )  ]
 
         airmass  = float(np.array(star_files['AM'])[0])
-        BVCfile  = float(np.array(star_files['BVC'])[0])
+        # BVCfile  = float(np.array(star_files['BVC'])[0])
         facility = str(np.array(star_files['FACILITY'])[0])
 
         tag = '{:04d}'.format(tag0)
@@ -76,23 +76,66 @@ def DataPrep(args, tar_night, tar_num, tar_frame, file_night_num, std_name, std_
         if save_yn == 0:
             tag_temp = tag
 
+        # Collect observatory
         head = hdulist[0].header
-        if head['OBSERVAT'] == 'Lowell Observatory':
+        if head['OBSERVAT'].lower() == 'lowell observatory':
             obs = 'DCT'
-        elif (head['OBSERVAT'] == 'McDonald Observatory') or (head['OBSERVAT'] == 'McDonald'):
+        elif (head['OBSERVAT'].lower() == 'mcdonald observatory') or (head['OBSERVAT'].lower()  == 'mcdonald'):
             obs = 'McD'
         else:
-            print('EXPECTED LOWELL OR MCDONALD OBSERVATORY, GOT {}, MUST EDIT CODE TO INCLUDE THIS OPTION'.format( head['OBSERVAT'] ))
+            print('EXPECTED LOWELL OR MCDONALD OBSERVATORY, GOT {}. CODE MUST BE EDITED TO INCLUDE THIS OPTION - CONTACT AUTHORS WITH EXAMPLE OBSERVATION FITS FILE AND THEY WILL UPDATE'.format( head['OBSERVAT'].lower() ))
 
+        # Collect time of mid-exposure
         try:
-            time_midpoint = np.mean([float(head['JD-OBS']), float(head['JD-END'])])
+            time_midpoint = np.mean([float(head['JD-OBS']),float(head['JD-END'])])
         except KeyError:
             l0 = []
-            for nm in ['DATE-OBS', 'DATE-END']:
+            for nm in ['DATE-OBS','DATE-END']:
                 tt1 = head[nm].split('-')
-                t1 = Time(tt1[0]+'-'+tt1[1]+'-'+tt1[2]+' '+tt1[3], format='iso')
+                t1 = Time(tt1[0]+'-'+tt1[1]+'-'+tt1[2]+' '+tt1[3],format='iso')
                 l0.append(t1.jd)
             time_midpoint = np.mean(l0)
+
+        # BVC calculation
+        if args.coord != '':
+            ra_deg = np.array(ast.literal_eval(args.coord), dtype=float)[0]
+            de_deg = np.array(ast.literal_eval(args.coord), dtype=float)[1]
+
+            pmra_deg = np.array(ast.literal_eval(args.pm), dtype=float)[0]
+            pmde_deg = np.array(ast.literal_eval(args.pm), dtype=float)[1]
+
+            targ_c = SkyCoord(ra  =  ra_deg                   *u.degree,
+                              dec =  de_deg                   *u.degree,
+                              pm_ra_cosdec = pmra_deg         *u.mas/u.yr,
+                              pm_dec       = pmde_deg         *u.mas/u.yr,
+                              distance = float(args.distance) *u.pc,
+                              frame='icrs',
+                              obstime="J2015.5")
+
+            new_coord = targ_c.apply_space_motion(new_obstime=Time(time_midpoint, format='jd'))
+
+
+            observatoryN = EarthLocation.of_site('McDonald Observatory')
+            new_RA = new_coord.ra
+            new_DE = new_coord.dec
+
+            sc = SkyCoord(ra=new_RA, dec=new_DE, frame=ICRS)
+
+            barycorr  = sc.radial_velocity_correction(obstime=Time(time_midpoint, format='jd'), location=observatoryN)
+            BVCfile   = barycorr.to(u.km/u.s).value
+
+        else:
+            if obs == 'McD':
+                observatoryN = EarthLocation.of_site('McDonald Observatory')
+                BVCfile  = float(np.array(star_files['BVC'])[x]       ) #BVC in the master log might be wrong, so, re-calculated below...
+
+            elif obs == 'DCT':
+                observatoryN = EarthLocation.of_site('DCT')
+
+                framee = f"{head['RADECSYS'][:2].lower()}{head['RADECSYS'][-1]}"
+                sc = SkyCoord(f"{head['TELRA']} {head['TELDEC']}", frame=framee, unit=(units.hourangle, units.deg))
+                barycorr = sc.radial_velocity_correction(obstime=Time(time_midpoint, format='jd'), location=observatoryN)
+                BVCfile = barycorr.to(units.km/units.s).value
 
         mjd = time_midpoint
         fileT.write(file_nn+' '+fram_ty+' '+str(tag)+' '+str(mjd)+' ' +
@@ -220,6 +263,17 @@ if __name__ == '__main__':
     parser.add_argument("-HorK",    dest="band",            action="store",
                         help="Which band to process? H or K?",
                         type=str,   default='K')
+
+    parser.add_argument("-coord",    dest="coord",            action="store",
+                        help="Optional [-XX.xx,-XX.xx] deg, GaiaDR2 coordinates at J2015.5. If give, will calculate BVC base on this info.",
+                        type=str,   default='')
+    parser.add_argument("-pm",       dest="pm",               action="store",
+                        help="Optional [-XX.xx,-XX.xx] [mas/yr], GaiaDR2 proper motion. If give, will calculate BVC base on this info.",
+                        type=str,   default='')
+    parser.add_argument("-dist",    dest="distance",          action="store",
+                        help="Optional (pc), can be from GaiaDR2 parallax [mas] (1/plx), or from Bailer-Jones et al. 2018. If give, will calculate BVC base on this info.",
+                        type=str,   default='')
+
     parser.add_argument('-c',       dest="Nthreads",         action="store",
                         help="Number of cpu (threads) to use, default is 1/2 of avalible ones (you have %i cpus (threads) avaliable)" % (
                             mp.cpu_count()),
