@@ -104,11 +104,11 @@ def DataPrep(args, tar_night, tar_num, tar_frame, file_night_num, std_name, std_
             pmra_deg = np.array(ast.literal_eval(args.pm), dtype=float)[0]
             pmde_deg = np.array(ast.literal_eval(args.pm), dtype=float)[1]
 
-            targ_c = SkyCoord(ra  =  ra_deg                   *u.degree,
-                              dec =  de_deg                   *u.degree,
-                              pm_ra_cosdec = pmra_deg         *u.mas/u.yr,
-                              pm_dec       = pmde_deg         *u.mas/u.yr,
-                              distance = float(args.distance) *u.pc,
+            targ_c = SkyCoord(ra  =  ra_deg                   *units.degree,
+                              dec =  de_deg                   *units.degree,
+                              pm_ra_cosdec = pmra_deg         *units.mas/units.yr,
+                              pm_dec       = pmde_deg         *units.mas/units.yr,
+                              distance = float(args.distance) *units.pc,
                               frame='icrs',
                               obstime="J2015.5")
 
@@ -122,7 +122,7 @@ def DataPrep(args, tar_night, tar_num, tar_frame, file_night_num, std_name, std_
             sc = SkyCoord(ra=new_RA, dec=new_DE, frame=ICRS)
 
             barycorr  = sc.radial_velocity_correction(obstime=Time(time_midpoint, format='jd'), location=observatoryN)
-            BVCfile   = barycorr.to(u.km/u.s).value
+            BVCfile   = barycorr.to(units.km/units.s).value
 
         else:
             if obs == 'McD':
