@@ -184,6 +184,7 @@ def setup_templates(logger, kind='synthetic', band='K', sptype='M'):
         if sptype not in ['F','G','K']:
             sys.exit('Pipeline does not have a stellar template for late type stars in H band! Upload your own?')
         logger.info('Using synthetic stellar template...')
+        logger.info('!!!!!!!! INTERNAL TEST!!!! T6400 logg4.5!!!!!')
         if os.getcwd()[-1]=='v':
             stelldata = Table.read('./Engine/syntheticstellar_hband_T6400_logg4.5.txt',format='ascii')
         else:
