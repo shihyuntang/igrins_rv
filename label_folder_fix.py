@@ -13,7 +13,7 @@ list_input = [i for i in list_input if i != 'UseWv']
 print(f'Process {list_input} folders')
 time.sleep(5)
 
-for target_folder in list_input[0]:
+for target_folder in list_input:
     print(f'Doing {target_folder}')
 
     master_log    = pd.read_csv('./Engine/IGRINS_MASTERLOG.csv')
