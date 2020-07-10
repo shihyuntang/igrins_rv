@@ -99,6 +99,7 @@ def DataPrep(args):
 
         else:
             if obs == 'McD':
+                print('BVC stright from master log ...')
                 observatoryN = EarthLocation.of_site('McDonald Observatory')
                 BVCfile  = float(np.array(star_files['BVC'])[x]       ) #BVC in the master log might be wrong, so, re-calculated below...
 
