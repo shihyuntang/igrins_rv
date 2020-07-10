@@ -15,9 +15,11 @@ for tarname in list_input:
         list_A = os.listdir(f'./Input/{tarname}/{night}/A')
         for Afits in list_A:
             if 'sepc' in list_A:
-                shutil.move(Afits, Afits[:18] + 'spec' + Afits[-5:])
+                shutil.move(f'./Input/{tarname}/{night}/A/{Afits}',
+                            f'./Input/{tarname}/{night}/A/{Afits[:18] + "spec" + Afits[-5:]}' )
 
         list_B = os.listdir(f'./Input/{tarname}/{night}/B')
         for Bfits in list_B:
             if 'sepc' in Bfits:
-                shutil.move(Bfits, Bfits[:18] + 'spec' + Bfits[-5:])
+                shutil.move(f'./Input/{tarname}/{night}/B/{Bfits}',
+                            f'./Input/{tarname}/{night}/B/{Bfits[:18] + "spec" + Bfits[-5:]}' )
