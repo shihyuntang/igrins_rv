@@ -9,6 +9,7 @@ list_input = [i for i in list_input if i[0] != '.']
 list_input = [i for i in list_input if i[0] != '@']
 list_input = [i for i in list_input if i != 'Prepdata']
 list_input = [i for i in list_input if i != 'UseWv']
+list_input = [i for i in list_input if i != 'TauBoo']
 
 print(f'Process {list_input} folders')
 time.sleep(5)
