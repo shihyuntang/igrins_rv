@@ -29,6 +29,7 @@ for target_folder in list_input:
         star_files = master_log[(master_log['OBJNAME'].str.contains(starnew, regex=True, na=False)) &
                                 (master_log['OBJTYPE'].str.contains('TAR',   regex=True, na=False)) ]
         n += 1
+        print(starnew)
         if n == len(target_folder):
             sys.exit('TARGET NAME NOT FOUND IN CATALOG - CHECK INPUT!')
 
