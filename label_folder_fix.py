@@ -25,11 +25,11 @@ for target_folder in list_input:
 
     n = 1
     while len(star_files['CIVIL']) == 0:
-        starnew = args.targname[:n]+' '+args.targname[n:]
+        starnew = target_folder[:n]+' '+target_folder[n:]
         star_files = master_log[(master_log['OBJNAME'].str.contains(starnew, regex=True, na=False)) &
                                 (master_log['OBJTYPE'].str.contains('TAR',   regex=True, na=False)) ]
         n += 1
-        if n == len(args.targname):
+        if n == len(target_folder):
             sys.exit('TARGET NAME NOT FOUND IN CATALOG - CHECK INPUT!')
 
 
