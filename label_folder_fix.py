@@ -23,6 +23,16 @@ for target_folder in list_input:
     star_files    = Table.from_pandas(star_files)
     allnights     = np.array(star_files['CIVIL'],dtype='str')
 
+    n = 1
+    while len(star_files['CIVIL']) == 0:
+        starnew = args.targname[:n]+' '+args.targname[n:]
+        star_files = master_log[(master_log['OBJNAME'].str.contains(starnew, regex=True, na=False)) &
+                                (master_log['OBJTYPE'].str.contains('TAR',   regex=True, na=False)) ]
+        n += 1
+        if n == len(args.targname):
+            sys.exit('TARGET NAME NOT FOUND IN CATALOG - CHECK INPUT!')
+
+
     for dateUT in allnights:
         print(f'Doing {dateUT}')
         date_star_files = star_files[ allnights == dateUT ]
@@ -45,7 +55,7 @@ for target_folder in list_input:
                         print(f'     --> NO FILE ./Input/{target_folder}/{dateUT}/B/SDCH_{dateUT}_{int(tag):04d}')
                 else:
                     pass
-            elif bean == 'B':
+            elif beam == 'B':
                 if not os.path.isdir(f'./Input/{target_folder}/{dateUT}/B/SDCH_{dateUT}_{int(tag):04d}.sn.fits'):
                     try:
                         shutil.move(f'./Input/{target_folder}/{dateUT}/A/SDCH_{dateUT}_{int(tag):04d}.sn.fits',
