@@ -21,7 +21,7 @@ for target_folder in list_input:
                                (master_log['OBJTYPE'].str.contains('TAR',         regex=True, na=False)) ]
 
     star_files    = Table.from_pandas(star_files)
-    allnights     = np.array(star_files['CIVIL'],dtype='str')
+
 
     n = 1
     while len(star_files['CIVIL']) == 0:
@@ -29,14 +29,14 @@ for target_folder in list_input:
         star_files = master_log[(master_log['OBJNAME'].str.contains(starnew, regex=True, na=False)) &
                                 (master_log['OBJTYPE'].str.contains('TAR',   regex=True, na=False)) ]
         n += 1
-        print(starnew)
         if n == len(target_folder):
             sys.exit('TARGET NAME NOT FOUND IN CATALOG - CHECK INPUT!')
 
+    print(f'We have {star_files["CIVIL"]}')
 
-    for dateUT in allnights:
+    for dateUT in star_files['CIVIL']:
         print(f'Doing {dateUT}')
-        date_star_files = star_files[ allnights == dateUT ]
+        date_star_files = star_files[ star_files['CIVIL'] == dateUT ]
 
         for beam, tag in zip(date_star_files['FRAMETYPE'], date_star_files['FILENUMBER']) :
             # Check A folder...
