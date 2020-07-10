@@ -51,7 +51,7 @@ for target_folder in list_input:
                                     f'./Input/{target_folder}/{dateUT}/A/SDCK_{dateUT}_{int(tag):04d}.sn.fits')
                         shutil.move(f'./Input/{target_folder}/{dateUT}/B/SDCK_{dateUT}_{int(tag):04d}.spec.fits',
                                     f'./Input/{target_folder}/{dateUT}/A/SDCK_{dateUT}_{int(tag):04d}.sepc.fits')
-                        print('Move B/SDCK_{dateUT}_{int(tag):04d} to A/SDCK_{dateUT}_{int(tag):04d}')
+                        print(f'Move B/SDCK_{dateUT}_{int(tag):04d} to A/SDCK_{dateUT}_{int(tag):04d}')
                     except:
                         print(f'     --> NO FILE ./Input/{target_folder}/{dateUT}/B/SDCH_{dateUT}_{int(tag):04d}')
                 else:
@@ -67,7 +67,7 @@ for target_folder in list_input:
                                     f'./Input/{target_folder}/{dateUT}/B/SDCK_{dateUT}_{int(tag):04d}.sn.fits')
                         shutil.move(f'./Input/{target_folder}/{dateUT}/A/SDCK_{dateUT}_{int(tag):04d}.spec.fits',
                                     f'./Input/{target_folder}/{dateUT}/B/SDCK_{dateUT}_{int(tag):04d}.sepc.fits')
-                        print('Move A/SDCK_{dateUT}_{int(tag):04d} to B/SDCK_{dateUT}_{int(tag):04d}')
+                        print(f'Move A/SDCK_{dateUT}_{int(tag):04d} to B/SDCK_{dateUT}_{int(tag):04d}')
                     except:
                         print(f'     --> NO FILE ./Input/{target_folder}/{dateUT}/A/SDCH_{dateUT}_{int(tag):04d}')
                 else:
