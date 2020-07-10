@@ -11,6 +11,7 @@ for tarname in list_input:
     nights = os.listdir(f'./Input/{tarname}')
     nights = [i for i in nights if i[0] != '.']
     nights = [i for i in nights if i[0] != '@']
+    nights = [i for i in nights if i != 'std']
     for night in nights:
         list_A = os.listdir(f'./Input/{tarname}/{night}/A')
         for Afits in list_A:
