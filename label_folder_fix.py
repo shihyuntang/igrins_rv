@@ -24,12 +24,12 @@ for target_folder in list_input:
     allnights     = np.array(star_files['CIVIL'],dtype='str')
 
     n = 1
-    print(f'{target_folder} nights {star_files["CIVIL"]}' )
     while len(star_files['CIVIL']) == 0:
         starnew = target_folder[:n]+' '+target_folder[n:]
         star_files = master_log[(master_log['OBJNAME'].str.contains(starnew, regex=True, na=False)) &
                                 (master_log['OBJTYPE'].str.contains('TAR',   regex=True, na=False)) ]
         n += 1
+        print(starnew)
         if n == len(target_folder):
             sys.exit('TARGET NAME NOT FOUND IN CATALOG - CHECK INPUT!')
 
