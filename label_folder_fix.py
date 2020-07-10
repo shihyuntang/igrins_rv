@@ -30,7 +30,7 @@ for target_folder in list_input:
                                 (master_log['OBJTYPE'].str.contains('TAR',   regex=True, na=False)) ]
         n += 1
         print(starnew)
-        if n == len(target_folder):
+        if n == len(target_folder)+1:
             sys.exit('TARGET NAME NOT FOUND IN CATALOG - CHECK INPUT!')
 
     print(f'We have {star_files["CIVIL"]}')
