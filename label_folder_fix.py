@@ -34,7 +34,7 @@ for target_folder in list_input:
 
     print(f'We have {star_files["CIVIL"]}')
 
-    for dateUT in star_files['CIVIL']:
+    for dateUT in np.unique(star_files['CIVIL']):
         print(f'Doing {dateUT}')
         date_star_files = star_files[ star_files['CIVIL'] == dateUT ]
 
