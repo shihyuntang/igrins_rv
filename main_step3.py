@@ -8,7 +8,8 @@ from Engine.classes    import fitobjs,inparams
 from Engine.macbro     import macbro
 from Engine.rebin_jv   import rebin_jv
 from Engine.rotint     import rotint
-from Engine.opt        import optimizer, fmod, fmod_conti
+# from Engine.opt        import optimizer, fmod, fmod_conti
+from Engine.opt_intense import optimizer, fmod, fmod_conti
 from Engine.outplotter import outplotter_23
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
