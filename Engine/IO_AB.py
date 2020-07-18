@@ -168,7 +168,7 @@ def setup_templates(logger, kind='synthetic', band='K', sptype='M'):
         mwave0 = mwave0[(np.isfinite(mflux0))]
         mflux0 = mflux0[(np.isfinite(mflux0))]
         mflux0[(mflux0 < 0)] = 0
-        mwave0 = airtovac(mwave0)
+        # mwave0 = airtovac(mwave0)
     elif kind == 'livingston' and band == 'K':
         if sptype not in ['K','M']:
             sys.exit('Pipeline does not have a stellar template for early type stars in K band! Upload your own?')
