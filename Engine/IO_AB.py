@@ -163,7 +163,7 @@ def setup_templates(logger, kind='synthetic', band='K', sptype='M'):
         else:
             stelldata = Table.read('../Engine/PHOENIX-lte03700-4.50-0.0_contadj.txt',format='ascii')
             # stelldata = Table.read('../Engine/syntheticstellar_kband_T4000_logg3.5.txt',format='ascii')
-        mwave0 = np.array(stelldata['wave'])
+        mwave0 = np.array(stelldata['wave'])*10000.0
         mflux0 = np.array(stelldata['flux'])
         mwave0 = mwave0[(np.isfinite(mflux0))]
         mflux0 = mflux0[(np.isfinite(mflux0))]
