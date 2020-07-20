@@ -156,7 +156,7 @@ def setup_templates(logger, kind='synthetic', band='K', sptype='M'):
         if sptype not in ['K','M']:
             sys.exit('Pipeline does not have a stellar template for early type stars in K band! Upload your own?')
         logger.info('Using synthetic stellar template...')
-        logger.info('!!!!!!!! INTERNAL TEST!!!! PHOENIX T3700 logg4.5!!!!!')
+        logger.info('!!!!!!!! INTERNAL TEST!!!! T3600 logg4.5!!!!!')
         if os.getcwd()[-1]=='v':
             stelldata = Table.read('./Engine/syntheticstellar_kband_T3600_logg4.5.txt',format='ascii')
             # stelldata = Table.read('./Engine/PHOENIX-lte03700-4.50-0.0_contadj.txt',format='ascii')
