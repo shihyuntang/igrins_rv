@@ -45,7 +45,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     rvsminibox     = np.ones(len(tagsnight));
     vsiniminibox   = np.ones(len(tagsnight));
     tagsminibox    = np.ones(len(tagsnight));
-    parfitminibox  = np.ones((len(tagsnight),15)); # need to match the dpar numbers
+    parfitminibox  = np.ones((len(tagsnight),20)); # need to match the dpar numbers
 
     rvsminibox[:]    = np.nan
     vsiniminibox[:]  = np.nan
