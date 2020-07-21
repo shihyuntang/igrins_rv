@@ -7,7 +7,7 @@ from Engine.IO_AB     import setup_templates_tel, init_fitsread, stellarmodel_se
 from Engine.clips     import basicclip_above
 from Engine.contfit   import A0cont
 from Engine.classes   import fitobjs,inparamsA0
-from Engine.macbro_dynamic    import macbro_dyn
+from Engine.macbro_double    import macbro_doublr
 from Engine.rebin_jv  import rebin_jv
 from Engine.rotint    import rotint
 from Engine.Telfitter import telfitter
@@ -292,7 +292,13 @@ def MPinst(args, chunk_ind, orders, i):
                       0.,            #11: Continuum linear component
                       0.,            #12: Continuum quadratic component
                       IPpars[1],     #13: IP linear component
-                      IPpars[0]])    #14: IP quadratic component
+                      IPpars[0],                                            #14: Instrumental resolution quadratic component
+                      2.0,                                                   #15: 2nd IP 0th component
+                      0.0,                                                   #16: 2nd IP linear component
+                      0.0,                                                   #17: 2nd IP quadratic component
+                      0.5,                                                   #18: 2nd IP relative position
+                      0.15)                                                  #19: 2nd IP relative normalization
+
 
     # Cut target spectrum to be within telluric template wavelengths (should be unncessary)
     a0fluxlist = a0fluxlist[(a0wavelist*1e4 > min(watm_in)+5) & (a0wavelist*1e4 < max(watm_in)-5)]
@@ -308,11 +314,12 @@ def MPinst(args, chunk_ind, orders, i):
     fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in,[])
 
     # Arrays defining parameter variations during optimization steps
-    dpar_cont = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,   0.0, 0.0,  0,    1e7, 1, 1, 0,    0])
-    dpar_wave = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 10.0, 10.0, 5e-5, 1e-7, 0,   0, 0, 0,    0])
-    dpar      = np.array([0.0, 0.0, 5.0, 3.0, 0.0, 0.5, 0.0,   0.0, 0.0,  0,    1e4, 1, 1, 1e-2, 1e-5])
-    dpar_st   = np.array([0.0, 0.0, 5.0, 3.0, 0.0, 0.0, 0.0,   0.0, 0.0,  0,    1e4, 1, 1, 0,    0])
-    dpar_ip   = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0,   0.0, 0.0,  0,    1e4, 1, 1, 1e-2, 1e-5])
+    dpar_cont = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,   0.0, 0.0,  0,    1e7, 1, 1, 0,    0, 0, 0, 0, 0, 0])
+    dpar_wave = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 10.0, 10.0, 5e-5, 1e-7, 0,   0, 0, 0,    0, 0, 0, 0, 0, 0])
+    dpar      = np.array([0.0, 0.0, 5.0, 3.0, 0.0, 0.5, 0.0,   0.0, 0.0,  0,    1e4, 1, 1, 1e-2, 1e-5, 2.0, 1e-3, 1e-6, 7.0, 0.15])
+    dpar_st   = np.array([0.0, 0.0, 5.0, 3.0, 0.0, 0.0, 0.0,   0.0, 0.0,  0,    1e4, 1, 1, 0,    0, 0, 0, 0, 0, 0])
+    dpar_ip   = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0,   0.0, 0.0,  0,    1e4, 1, 1, 1e-2, 1e-5, 2.0, 1e-3, 1e-6, 7.0, 0.15])
+                      
     # For every pre-Telfit spectral fit, first fit just template strength/rv/continuum, then just wavelength soln, then template/continuum again, then ip,
     # then finally wavelength. Normally would fit for all but wavelength at the end, but there's no need for the pre-Telfit fit, since all we want
     # is the wavelength solution.
