@@ -158,7 +158,7 @@ def setup_templates(logger, kind='synthetic', band='K', sptype='M'):
         logger.info('Using synthetic stellar template...')
         logger.info('!!!!!!!! INTERNAL TEST!!!! T4000 logg3.5!!!!!')
         if os.getcwd()[-1]=='v':
-            stelldata = Table.read('./Engine/syntheticstellar_kband_T4000_logg43.5.txt',format='ascii')
+            stelldata = Table.read('./Engine/syntheticstellar_kband_T4000_logg3.5.txt',format='ascii')
             # stelldata = Table.read('./Engine/PHOENIX-lte03700-4.50-0.0_contadj.txt',format='ascii')
         else:
             # stelldata = Table.read('../Engine/PHOENIX-lte03700-4.50-0.0_contadj.txt',format='ascii')
