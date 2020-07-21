@@ -31,6 +31,11 @@ def fmodel_chi(par,grad):
           12: Continuum quadratic component
           13: IP linear component
           14: IP quadratic component
+          15: 2nd IP 0th component
+          16: 2nd IP linear component
+          17: 2nd IP quadratic component
+          18: 2nd IP relative position
+          19: 2nd IP relative normalization
 
      OUTPUTS:
        The model spectrum on the observed wavelength scale.
@@ -97,21 +102,20 @@ def fmodel_chi(par,grad):
     if min(fwhm) < 1 or max(fwhm) > 7:
         return 1e7
     
-    fwhmraw = par[15] 
+    fwhmraw2 = par[15] + par[16]*(fitobj_cp.x) + par[17]*(fitobj_cp.x**2)
     try:
-        spl = splrep(w,fwhmraw)
+        spl2 = splrep(w,fwhmraw2)
     except TypeError:
         return 1e7
-    fwhm = splev(watm,spl)
-    if min(fwhm) < 1 or max(fwhm) > 7:
+    fwhm2 = splev(watm,spl2)
+    if min(fwhm2) < 0 or max(fwhm2) > 10:
         return 1e7
 
     #Handle instrumental broadening
     vhwhm = dw*abs(fwhm)/mnw*c/2.
+    vhwhm2 = dw*abs(fwhm2)/mnw*c/2.
     #print(min(fwhm),dw*abs(min(fwhm))/mnw*c/2.,max(fwhm),dw*abs(max(fwhm))/mnw*c/2.)
-    nsmod = macbro_double(vel,smod,vhwhm)
-
-def macbro_double(w,s,hwhmlist,hwhmlist2,plist,mulist):
+    nsmod = macbro_double(vel,smod,vhwhm,vhwhm2,par[18],par[19])
     
     c2 = fitobj_cp.continuum
 
@@ -195,8 +199,20 @@ def fmod(par,fitobj):
         return 1e7
     fwhm = splev(watm,spl)
 
+    fwhmraw2 = par[15] + par[16]*(fitobj_cp.x) + par[17]*(fitobj_cp.x**2)
+    try:
+        spl2 = splrep(w,fwhmraw2)
+    except TypeError:
+        return 1e7
+    fwhm2 = splev(watm,spl2)
+    if min(fwhm2) < 0 or max(fwhm2) > 10:
+        return 1e7
+
+    #Handle instrumental broadening
     vhwhm = dw*abs(fwhm)/mnw*c/2.
-    nsmod = macbro_dyn(vel,smod,vhwhm)
+    vhwhm2 = dw*abs(fwhm2)/mnw*c/2.
+    #print(min(fwhm),dw*abs(min(fwhm))/mnw*c/2.,max(fwhm),dw*abs(max(fwhm))/mnw*c/2.)
+    nsmod = macbro_double(vel,smod,vhwhm,vhwhm2,par[18],par[19])
 
     c2 = fitobj.continuum
     spl = splrep(watm,nsmod)
@@ -211,71 +227,6 @@ def fmod(par,fitobj):
 
     return smod,chisq
 
-def fmod_conti(par,fitobj):
-
-    watm = fitobj.watm_in;
-    satm = fitobj.satm_in;
-    mwave = fitobj.mwave_in;
-    mflux = fitobj.mflux_in;
-
-    w = par[6] + par[7]*fitobj.x + par[8]*(fitobj.x**2.) + par[9]*(fitobj.x**3.)
-
-    if w[-1] < w[0]:
-        sys.exit('WAVE ERROR 1 {}'.format(par[6:10]))
-        return 1e7
-
-    c = 2.99792e5
-    npts = len(w)
-
-    wspot = mwave*(1.+par[0]/c)
-    sspot = mflux**par[1]
-    watm = watm*(1.+par[2]/c)
-    satm = satm**par[3]
-
-    if (w[0] < watm[0]) or (w[-1] > watm[-1]):
-        sys.exit('WAVE ERROR 2 {} {} {} {} {}'.format(par[6:10],watm[0],watm[-1],w[0],w[-1]))
-        return 1e7
-
-    interpfunc = interp1d(wspot,sspot, kind='linear',bounds_error=False,fill_value='extrapolate')
-    sspot2 = interpfunc(watm)
-
-    vsini = abs(par[4])
-    if vsini != 0:
-        rspot = rotint(watm,sspot2,vsini,eps=.4,nr=5,ntheta=25)
-    else:
-        rspot = sspot2
-
-    smod = rspot*satm
-
-    mnw = np.mean(w)
-    dw = (w[-1] - w[0])/(npts-1.)
-    vel = (watm-mnw)/mnw*c
-
-    fwhmraw = par[5] + par[13]*(fitobj.x) + par[14]*(fitobj.x**2)
-    if min(fwhmraw) < 1 or max(fwhmraw) > 7:
-        sys.exit('IP ERROR 1 {} {} {} {} {}'.format(par[5],par[13],par[14],min(fwhmraw),max(fwhmraw) ))
-        return 1e7
-    try:
-        spl = splrep(w,fwhmraw)
-    except ValueError:
-        sys.exit('IP ERROR 2 {} {} {}'.format(par[5],par[13],par[14]))
-        return 1e7
-    fwhm = splev(watm,spl)
-
-    vhwhm = dw*abs(fwhm)/mnw*c/2.
-    nsmod = macbro_dyn(vel,smod,vhwhm)
-
-    c2 = fitobj.continuum
-    spl = splrep(watm,nsmod)
-    smod = splev(w,spl)
-    smod *= c2/np.median(c2)
-    cont = par[10] + par[11]*fitobj.x+ par[12]*(fitobj.x**2)
-    smod *= cont
-
-    mask = np.ones_like(smod,dtype=bool)
-    mask[(fitobj.s < .05)] = False
-
-    return w, smod, cont, c2
 
 
 def optimizer(par0,dpar0, hardbounds_v_ip, fitobj, optimize):
