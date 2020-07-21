@@ -4,7 +4,7 @@ import numpy as np
 from scipy.interpolate import interp1d, splrep,splev
 from Engine.classes import fitobjs,inparams
 from Engine.rotint import rotint
-from Engine.macbro_dynamic    import macbro_dyn
+from Engine.macbro_double    import macbro_double
 from Engine.rebin_jv import rebin_jv
 import time
 import sys
@@ -96,12 +96,23 @@ def fmodel_chi(par,grad):
     fwhm = splev(watm,spl)
     if min(fwhm) < 1 or max(fwhm) > 7:
         return 1e7
+    
+    fwhmraw = par[15] 
+    try:
+        spl = splrep(w,fwhmraw)
+    except TypeError:
+        return 1e7
+    fwhm = splev(watm,spl)
+    if min(fwhm) < 1 or max(fwhm) > 7:
+        return 1e7
 
     #Handle instrumental broadening
     vhwhm = dw*abs(fwhm)/mnw*c/2.
     #print(min(fwhm),dw*abs(min(fwhm))/mnw*c/2.,max(fwhm),dw*abs(max(fwhm))/mnw*c/2.)
-    nsmod = macbro_dyn(vel,smod,vhwhm)
+    nsmod = macbro_double(vel,smod,vhwhm)
 
+def macbro_double(w,s,hwhmlist,hwhmlist2,plist,mulist):
+    
     c2 = fitobj_cp.continuum
 
     #Rebin model to observed wavelength scale
