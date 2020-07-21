@@ -128,7 +128,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                       0.,                                                    #11: Continuum linear component
                       0.,                                                    #12: Continuum quadratic component
                       IPpars[1],                                             #13: Instrumental resolution linear component
-                      IPpars[0]],                                            #14: Instrumental resolution quadratic component
+                      IPpars[0],                                            #14: Instrumental resolution quadratic component
                       2.0,                                                   #15: 2nd IP 0th component
                       0.0,                                                   #16: 2nd IP linear component
                       0.0,                                                   #17: 2nd IP quadratic component
