@@ -128,7 +128,13 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                       0.,                                                    #11: Continuum linear component
                       0.,                                                    #12: Continuum quadratic component
                       IPpars[1],                                             #13: Instrumental resolution linear component
-                      IPpars[0]])                                            #14: Instrumental resolution quadratic component
+                      IPpars[0]],                                            #14: Instrumental resolution quadratic component
+                      2.0,                                                   #15: 2nd IP 0th component
+                      0.0,                                                   #16: 2nd IP linear component
+                      0.0,                                                   #17: 2nd IP quadratic component
+                      0.5,                                                   #18: 2nd IP relative position
+                      0.15)                                                  #19: 2nd IP relative normalization
+
 
 
     # Iterate over all A/B exposures
@@ -204,12 +210,12 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         par[0] = initguesses-inparam.bvcs[night+tag] # Initial RV with barycentric correction
 
         # Arrays defining parameter variations during optimization steps
-        dpars = {'cont' : np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0]),
-                 'wave' : np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 10.0,  10.0, 5.00000e-5, 1e-7, 0,   0, 0, 0,    0]),
-                 't'    : np.array([0.0, 0.0, 5.0, 1.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0]),
-                 'ip'   : np.array([0.0, 0.0, 0.0, 0.0, 0,                 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0]),
-                 's'    : np.array([5.0, 1.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0]),
-                 'v'    : np.array([0.0, 0.0, 0.0, 0.0, inparam.vsinivary, 0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0])}
+        dpars = {'cont' : np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0, 0, 0, 0, 0, 0]),
+                 'wave' : np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 10.0,  10.0, 5.00000e-5, 1e-7, 0,   0, 0, 0,    0, 0, 0, 0, 0, 0]),
+                 't'    : np.array([0.0, 0.0, 5.0, 1.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0, 0, 0, 0, 0]),
+                 'ip'   : np.array([0.0, 0.0, 0.0, 0.0, 0,                 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 2.0, 1e-3, 1e-6, 7.0, 0.15]),
+                 's'    : np.array([5.0, 1.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0, 0, 0, 0, 0]),
+                 'v'    : np.array([0.0, 0.0, 0.0, 0.0, inparam.vsinivary, 0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0, 0, 0, 0, 0])}
 
         continuum_in = rebin_jv(a0contx,continuum,x_piece,False)
         s_piece /= np.median(s_piece)
