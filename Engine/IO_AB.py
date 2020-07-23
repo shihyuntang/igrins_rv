@@ -186,11 +186,11 @@ def setup_templates(logger, kind='synthetic', band='K', sptype='M'):
         if sptype not in ['F','G','K']:
             sys.exit('Pipeline does not have a stellar template for late type stars in H band! Upload your own?')
         logger.info('Using synthetic stellar template...')
-        logger.info('!!!!!!!! INTERNAL TEST!!!! T4000 logg4.5!!!!!')
+        logger.info('!!!!!!!! INTERNAL TEST!!!! T5000 logg4.5!!!!!')
         if os.getcwd()[-1]=='v':
-            stelldata = Table.read('./Engine/syntheticstellar_hband_T4000_logg4.5.txt',format='ascii')
+            stelldata = Table.read('./Engine/syntheticstellar_hband_T5000_logg4.5.txt',format='ascii')
         else:
-            stelldata = Table.read('../Engine/syntheticstellar_hband_T4000_logg4.5.txt',format='ascii')
+            stelldata = Table.read('../Engine/syntheticstellar_hband_T5000_logg4.5.txt',format='ascii')
         mwave0 = np.array(stelldata['wave'])
         mflux0 = np.array(stelldata['flux'])
         mwave0 = mwave0[(np.isfinite(mflux0))]
