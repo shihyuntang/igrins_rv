@@ -284,8 +284,8 @@ def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         outplotter_23(parfitT, fitobj, 'parfitT_{}_{}_{}'.format(order,night,tag), trk, inparam, args, step2or3)
         outplotter_23(parfit, fitobj,  'parfit_{}_{}_{}'.format(order,night,tag), trk, inparam, args, step2or3)
 
-    rv0 = parfit[0] - parfit[2]  # Correct for RV of the atmosphere, since we're using that as the basis for the wavelength scale
-
+    rv0 = parfit[0] 
+    
     rvsmini    = rv0 + inparam.bvcs[night+tag] + rv0*inparam.bvcs[night+tag]/(3e5**2) # Barycentric correction
     vsinismini = parfit[4]
 
