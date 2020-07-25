@@ -529,7 +529,7 @@ Input Parameters:
     #-------------------------------------------------------------------------------
 
     # Retrieve stellar and telluric templates
-    watm,satm, mwave0, mflux0 = setup_templates(logger, args.template, args.band, flot(args.temperature), flot(args.logg))
+    watm,satm, mwave0, mflux0 = setup_templates(logger, args.template, args.band, float(args.temperature), float(args.logg))
 
     # Save pars in class for future use
     inparam = inparams(inpath,outpath,initvsini,vsinivary,args.plotfigs,
