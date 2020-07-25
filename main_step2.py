@@ -339,9 +339,15 @@ if __name__ == '__main__':
     parser.add_argument('-t',       dest="template",         action="store",
                         help="Stellar template. Pick from 'synthetic', 'livingston', or 'user_defined'. Default = 'synthetic'",
                         type=str,   default='synthetic' )
-    parser.add_argument('-sp',      dest="sptype",           action="store",
-                        help="The spectral type of the *target. (Letter only)",
+    parser.add_argument('-Temp',      dest="temperature",           action="store",
+                        help="The synthetic template temperature used, e.g., 5000",
                         type=str,   default='' )
+    parser.add_argument('-logg',      dest="logg",           action="store",
+                        help="The synthetic template logg used, e.g., 4.5",
+                        type=str,   default='' )
+    # parser.add_argument('-sp',      dest="sptype",           action="store",
+    #                     help="The spectral type of the *target. (Letter only)",
+    #                     type=str,   default='' )
     parser.add_argument('-c',       dest="Nthreads",         action="store",
                         help="Number of cpu (threads) to use, default is 1/2 of avalible ones (you have %i cpus (threads) avaliable)"%(mp.cpu_count()),
                         type=int,   default=int(mp.cpu_count()//2) )
@@ -373,9 +379,9 @@ if __name__ == '__main__':
 
     #------------------------------
 
-    if args.template.lower() in ['synthetic', 'livingston']:
-        if args.sptype not in ['F','G','K','M']:
-            sys.exit('ERROR: DEFAULT TEMPLATES ONLY COVER F G K M STARS!')
+    # if args.template.lower() in ['synthetic', 'livingston']:
+    #     if args.sptype not in ['F','G','K','M']:
+    #         sys.exit('ERROR: DEFAULT TEMPLATES ONLY COVER F G K M STARS!')
 
     #------------------------------
 
@@ -432,11 +438,13 @@ Input Parameters:
     vsini vary range    \u00B1 \33[41m {} km/s \033[0m
     RV initial guess    = \33[41m {} \033[0m
     Stellar template use= \33[41m {} \033[0m
-    Target Spectral Type= \33[41m {} \033[0m             <-------  [late K, M] recommended 'synthetic', [F, G, early K] SpTy recommended 'livingston'
+    syn template temp   = \33[41m {} \033[0m
+    syn template logg   = \33[41m {} \033[0m
     Threads use         =  {}
     '''.format(args.targname, args.band, args.WRegion, args.SN_cut, args.label_use,
-               initvsini, vsinivary, initguesses_show, args.template, args.sptype, args.Nthreads))
+               initvsini, vsinivary, initguesses_show, args.template, args.temperature, args.logg, args.Nthreads))
 
+# Target Spectral Type= \33[41m {} \033[0m             <-------  [late K, M] recommended 'synthetic', [F, G, early K] SpTy recommended 'livingston'
     if not args.skip:
         while True:
             inpp = input("Press [Y]es to continue, [N]o to quit...\n --> ")
@@ -521,7 +529,7 @@ Input Parameters:
     #-------------------------------------------------------------------------------
 
     # Retrieve stellar and telluric templates
-    watm,satm, mwave0, mflux0 = setup_templates(logger, args.template, args.band, args.sptype)
+    watm,satm, mwave0, mflux0 = setup_templates(logger, args.template, args.band, flot(args.temperature), flot(args.logg))
 
     # Save pars in class for future use
     inparam = inparams(inpath,outpath,initvsini,vsinivary,args.plotfigs,
