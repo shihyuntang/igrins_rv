@@ -339,7 +339,7 @@ if __name__ == '__main__':
     parser.add_argument('-t',       dest="template",         action="store",
                         help="Stellar template. Pick from 'synthetic', 'livingston', or 'user_defined'. Default = 'synthetic'",
                         type=str,   default='synthetic' )
-    parser.add_argument('-Temp',      dest="temperature",           action="store",
+    parser.add_argument('-temp',      dest="temperature",           action="store",
                         help="The synthetic template temperature used, e.g., 5000",
                         type=str,   default='' )
     parser.add_argument('-logg',      dest="logg",           action="store",
