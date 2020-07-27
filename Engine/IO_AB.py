@@ -168,7 +168,14 @@ def setup_templates(logger, kind='synthetic', band='K', temperature=5000, logg=4
         mwave0 = mwave0[(np.isfinite(mflux0))]
         mflux0 = mflux0[(np.isfinite(mflux0))]
         mflux0[(mflux0 < 0)] = 0
-        mwave0 = airtovac(mwave0)
+        if (band == 'H') & (temperature == 5800) & (logg==4.5):
+            print('not doing: airtovac(mwave0)')
+        elif (band == 'H') & (temperature == 6600) & (logg==4.5):
+            print('not doing: airtovac(mwave0)')
+        elif (band == 'H') & (temperature == 6200) & (logg==3.5):
+            print('not doing: airtovac(mwave0)')
+        else:
+            mwave0 = airtovac(mwave0)
     elif kind == 'livingston' and band == 'K':
         if sptype not in ['K','M']:
             sys.exit('Pipeline does not have a stellar template for early type stars in K band! Upload your own?')
