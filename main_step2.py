@@ -203,14 +203,12 @@ def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     # Arrays defining parameter variations during optimization steps.
     # Optimization will cycle twice. In the first cycle, the RVs can vary more than in the second.
     dpars1 = {'cont' : np.array([ 0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0]),
-              'wave' : np.array([ 0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 10.0,  10.0, 5.00000e-5, 1e-7, 0,   0, 0, 0,    0]),
-              't'    : np.array([ 0.0, 0.0, 5.0, 1.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0]),
+              'twave' : np.array([ 0.0, 0.0, 0.0, 1.0, 0.0,               0.0, 10.0,  10.0, 5.00000e-5, 1e-7, 0,   0, 0, 0,    0]),
               'ip'   : np.array([ 0.0, 0.0, 0.0, 0.0, 0,                 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0]),
               's'    : np.array([20.0, 2.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0]),
               'v'    : np.array([ 0.0, 0.0, 0.0, 0.0, inparam.vsinivary, 0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0])}
     dpars2 = {'cont' : np.array([ 0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0]),
-              'wave' : np.array([ 0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 10.0,  10.0, 5.00000e-5, 1e-7, 0,   0, 0, 0,    0]),
-              't'    : np.array([ 0.0, 0.0, 5.0, 1.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0]),
+              'twave' : np.array([ 0.0, 0.0, 0.0, 1.0, 0.0,               0.0, 10.0,  10.0, 5.00000e-5, 1e-7, 0,   0, 0, 0,    0]),
               'ip'   : np.array([ 0.0, 0.0, 0.0, 0.0, 0,                 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0]),
               's'    : np.array([ 5.0, 2.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0]),
               'v'    : np.array([ 0.0, 0.0, 0.0, 0.0, inparam.vsinivary, 0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0])}
@@ -234,13 +232,13 @@ def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     # zero point for the instrumental resolution, and the vsini of the star separately, iterating and cycling between each set of parameter fits.
     cycles = 2
 
-    optgroup = ['cont', 'wave', 't', 'cont', 's',
-                'cont', 'wave', 't', 's', 'cont',
-                'wave',
+    optgroup = ['cont', 'twave', 'cont', 's',
+                'cont', 'twave', 's', 'cont',
+                'twave',
                 'ip', 'v',
                 'ip', 'v',
-                't',  's',
-                't',  's']
+                'twave',  's',
+                'twave',  's']
 
     nk = 1
     for nc, cycle in enumerate(np.arange(cycles), start=1):
@@ -286,8 +284,8 @@ def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         outplotter_23(parfitT, fitobj, 'parfitT_{}_{}_{}'.format(order,night,tag), trk, inparam, args, step2or3)
         outplotter_23(parfit, fitobj,  'parfit_{}_{}_{}'.format(order,night,tag), trk, inparam, args, step2or3)
 
-    rv0 = parfit[0] - parfit[2]  # Correct for RV of the atmosphere, since we're using that as the basis for the wavelength scale
-
+    rv0 = parfit[0]
+    
     rvsmini    = rv0 + inparam.bvcs[night+tag] + rv0*inparam.bvcs[night+tag]/(3e5**2) # Barycentric correction
     vsinismini = parfit[4]
 
