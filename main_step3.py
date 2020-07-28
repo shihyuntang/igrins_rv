@@ -281,8 +281,8 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
             outplotter_23(parfitT, fitobj, 'parfitT_{}_{}_{}'.format(order,night,tag), trk, inparam, args, step2or3)
             outplotter_23(parfit, fitobj,  'parfit_{}_{}_{}'.format(order,night,tag), trk, inparam, args, step2or3)
 
-        rv0 = parfit[0] 
-        
+        rv0 = parfit[0]
+
         rvsminibox[t]   = rv0  + inparam.bvcs[night+tag] + rv0*inparam.bvcs[night+tag]/(3e5**2) # Barycentric correction
         parfitminibox[t]= parfit
         vsiniminibox[t] = parfit[4]
@@ -360,7 +360,7 @@ if __name__ == '__main__':
                         help="If set, DeBug logging will be output, as well as (lots of) extra plots under ./Temp/Debug/*target_*band/main_step3")
     parser.add_argument('-sk_check', dest="skip",           action="store_true",
                         help="If set, will skip the input parameters check. Handy when running mutiple targets line by line")
-    parser.add_argument('--version',                          action='version',  version='%(prog)s 0.85')
+    parser.add_argument('--version',                          action='version',  version='%(prog)s 0.9')
     args = parser.parse_args()
     inpath   = './Input/{}/'.format(args.targname)
     cdbs_loc = '~/cdbs/'
@@ -379,9 +379,17 @@ if __name__ == '__main__':
 
     #------------------------------
 
-    # if args.template.lower() in ['synthetic', 'livingston']:
-    #     if args.sptype not in ['F','G','K','M']:
-    #         sys.exit('ERROR: DEFAULT TEMPLATES ONLY COVER F G K M STARS!')
+    syntemp = os.listdir(f'./Engine/syn_template')
+    syntemp = [i for i in syntemp if i[:3] == 'syn'] #list of all syntheticstellar
+
+    synT    = [ i.split('_')[2][1:]  for i in syntemp ]
+    synlogg = [ i.split('_')[3][4:7] for i in syntemp ]
+
+    if args.temperature not in synT:
+        sys.exit(f'ERROR: UNEXPECTED STELLAR TEMPERATURE FOR "-temp" INPUT! {syntemp} AVALIABLE UNDER ./Engine/syn_template/')
+
+    if args.logg not in synlogg:
+        sys.exit(f'ERROR: UNEXPECTED STELLAR LOGG FOR "-logg" INPUT! {syntemp} AVALIABLE UNDER ./Engine/syn_template/')
 
     #------------------------------
 

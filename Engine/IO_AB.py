@@ -158,11 +158,11 @@ def setup_templates(logger, kind='synthetic', band='K', temperature=5000, logg=4
         logger.info(f'Using {band}-band synthetic stellar template...')
         logger.info(f'synthetic stellar template with T{temperature} logg{logg}!!!!!')
         if os.getcwd()[-1]=='v':
-            stelldata = Table.read(f'./Engine/syntheticstellar_{band.lower()}band_T{temperature}_logg{logg}.txt',format='ascii')
+            stelldata = Table.read(f'./Engine/syn_template/syntheticstellar_{band.lower()}band_T{temperature}_logg{logg}.txt',format='ascii')
             # stelldata = Table.read('./Engine/PHOENIX-lte06200-4.50-0.0_contadjH.txt',format='ascii')
         else:
             # stelldata = Table.read('../Engine/PHOENIX-lte06200-4.50-0.0_contadjH.txt',format='ascii')
-            stelldata = Table.read(f'../Engine/syntheticstellar_{band.lower()}band_T{temperature}_logg{logg}.txt',format='ascii')
+            stelldata = Table.read(f'../Engine/syn_template/syntheticstellar_{band.lower()}band_T{temperature}_logg{logg}.txt',format='ascii')
         mwave0 = np.array(stelldata['wave'])#*10000.0
         mflux0 = np.array(stelldata['flux'])
         mwave0 = mwave0[(np.isfinite(mflux0))]
@@ -189,21 +189,7 @@ def setup_templates(logger, kind='synthetic', band='K', temperature=5000, logg=4
         mwave0 = mwave0[(np.isfinite(mflux0))]
         mflux0 = mflux0[(np.isfinite(mflux0))]
         mflux0[(mflux0 < 0)] = 0
-    # elif kind == 'synthetic' and band == 'H':
-    #     if sptype not in ['F','G','K']:
-    #         sys.exit('Pipeline does not have a stellar template for late type stars in H band! Upload your own?')
-    #     logger.info('Using synthetic stellar template...')
-    #     logger.info('!!!!!!!! INTERNAL TEST!!!! T6200 logg4.5!!!!!')
-    #     if os.getcwd()[-1]=='v':
-    #         stelldata = Table.read('./Engine/syntheticstellar_hband_T6200_logg4.5.txt',format='ascii')
-    #     else:
-    #         stelldata = Table.read('../Engine/syntheticstellar_hband_T6200_logg4.5.txt',format='ascii')
-    #     mwave0 = np.array(stelldata['wave'])
-    #     mflux0 = np.array(stelldata['flux'])
-    #     mwave0 = mwave0[(np.isfinite(mflux0))]
-    #     mflux0 = mflux0[(np.isfinite(mflux0))]
-    #     mflux0[(mflux0 < 0)] = 0
-    #     mwave0 = airtovac(mwave0)
+
     elif kind == 'livingston' and band == 'H':
         if sptype not in ['F','G','K']:
             sys.exit('Pipeline does not have a stellar template for late type stars in H band! Upload your own?')
