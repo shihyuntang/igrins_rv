@@ -281,7 +281,7 @@ if __name__ == '__main__':
                             mp.cpu_count()),
                         type=int,   default=int(mp.cpu_count()//2))
     parser.add_argument('--version',
-                        action='version',  version='%(prog)s 0.85')
+                        action='version',  version='%(prog)s 0.9')
     args = parser.parse_args()
     cdbs_loc = '~/cdbs/'
     inpath     = '../Input/{}/'.format(args.targname)
