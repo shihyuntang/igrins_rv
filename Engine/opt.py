@@ -40,7 +40,7 @@ def fmodel_chi(par,grad):
     # Can't call these directly in function, as NLopt doesn't allow anything to be in the model function call besides par and grad.
 
     #global fitobj, optimize
-    global fitobj_cp, optimize_cp, dpar0_cp
+    global fitobj_cp, optimize_cp, dpar0_cp, optkind
 
     watm = fitobj_cp.watm_in;
     satm = fitobj_cp.satm_in;
@@ -51,7 +51,7 @@ def fmodel_chi(par,grad):
     w = par[6] + par[7]*fitobj_cp.x + par[8]*(fitobj_cp.x**2.) + par[9]*(fitobj_cp.x**3.)
 
     if w[-1] < w[0]:
-        print('Hitting negative wavelength solution for some reason !')
+        print(f'{optkind}: Hitting negative wavelength solution for some reason !')
         return 1e12
 
     # Define the speed of light in km/s and other useful quantities
@@ -66,7 +66,7 @@ def fmodel_chi(par,grad):
 
     #Verify that new wavelength scale is a subset of old wavelength scale.
     if (w[0] < watm[0]) or (w[-1] > watm[-1]):
-        print('w not subset of watm, w goes from '+str(w[0])+' to '+str(w[-1])+' and watm goes from '+str(watm[0])+' to '+str(watm[-1]))
+        print(f'{optkind}: w not subset of watm, w goes from '+str(w[0])+' to '+str(w[-1])+' and watm goes from '+str(watm[0])+' to '+str(watm[-1]))
         return 1e12
 
     #Now interpolate the spot spectrum onto the telluric wavelength scale
@@ -267,9 +267,9 @@ def fmod_conti(par,fitobj):
     return w, smod, cont, c2
 
 
-def optimizer(par0,dpar0, hardbounds_v_ip, fitobj, optimize, logger, night, order, tag):
+def optimizer(par0,dpar0, hardbounds_v_ip, fitobj, optimize, logger, night, order, tag, optkind):
     # NLopt convenience function.
-    global fitobj_cp, optimize_cp, dpar0_cp
+    global fitobj_cp, optimize_cp, dpar0_cp, optkind
     fitobj_cp   = fitobj
     optimize_cp = optimize
     dpar0_cp = dpar0
