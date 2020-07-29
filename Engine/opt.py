@@ -267,7 +267,7 @@ def fmod_conti(par,fitobj):
     return w, smod, cont, c2
 
 
-def optimizer(par0,dpar0, hardbounds_v_ip, fitobj, optimize):
+def optimizer(par0,dpar0, hardbounds_v_ip, fitobj, optimize, logger, night, order, tag):
     # NLopt convenience function.
     global fitobj_cp, optimize_cp, dpar0_cp
     fitobj_cp   = fitobj
@@ -294,7 +294,11 @@ def optimizer(par0,dpar0, hardbounds_v_ip, fitobj, optimize):
             par0[5] = par0[5] + 1e-4
     opt.set_lower_bounds(lows)
     opt.set_upper_bounds(highs)
-    opt.set_maxtime(1200) #seconds
+
+    maxruntime = 1200 #seconds
+    opt.set_maxtime(maxruntime) #seconds
+    if int(opt.get_maxtime()) == maxruntime:
+        logger.warning(f'  --> opt fit timeout, {night}_order{order}_{tag}')
     # Quit optimization based on relative change in output fit parameters between iterations.
     # Choosing smaller change tolerance than 1e-6 has demonstrated no improvement in precision.
     opt.set_xtol_rel(1e-8)
