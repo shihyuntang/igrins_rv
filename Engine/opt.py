@@ -51,7 +51,7 @@ def fmodel_chi(par,grad):
     w = par[6] + par[7]*fitobj_cp.x + par[8]*(fitobj_cp.x**2.) + par[9]*(fitobj_cp.x**3.)
 
     if w[-1] < w[0]:
-        #print('Hitting negative wavelength solution for some reason !')
+        print('Hitting negative wavelength solution for some reason !')
         return 1e7
 
     # Define the speed of light in km/s and other useful quantities
@@ -66,7 +66,7 @@ def fmodel_chi(par,grad):
 
     #Verify that new wavelength scale is a subset of old wavelength scale.
     if (w[0] < watm[0]) or (w[-1] > watm[-1]):
-        # print('w not subset of watm, w goes from '+str(w[0])+' to '+str(w[-1])+' and watm goes from '+str(watm[0])+' to '+str(watm[-1]))
+        print('w not subset of watm, w goes from '+str(w[0])+' to '+str(w[-1])+' and watm goes from '+str(watm[0])+' to '+str(watm[-1]))
         return 1e7
 
     #Now interpolate the spot spectrum onto the telluric wavelength scale
@@ -296,7 +296,7 @@ def optimizer(par0,dpar0, hardbounds_v_ip, fitobj, optimize, logger, night, orde
     opt.set_upper_bounds(highs)
 
     maxruntime = 1200 #seconds
-    opt.set_maxtime(maxruntime) #seconds
+    opt.set_maxtime(1200) #seconds
     # if int(opt.get_maxtime()) == maxruntime:
     #     logger.warning(f'  --> opt fit timeout, {night}_order{order}_{tag}')
     # Quit optimization based on relative change in output fit parameters between iterations.
