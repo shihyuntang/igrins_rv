@@ -64,7 +64,10 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     else:
         sys.exit('ERROR! EXPECING SINGAL NUMBER OR FILE FOR INITGUESSES! QUITTING!')
 
-
+    if np.isnan(initguesses) == True:
+        logger.warning(f'  --> Previous run of {night} found it inadequate, skipping...')
+        return nightsout, rvsminibox, parfitminibox, vsiniminibox, tagsminibox
+    
     # Load synthetic telluric template generated during Step 1
     # [:8] here is to ensure program works under Night_Split mode
     A0loc = f'./Output/{args.targname}_{args.band}/A0Fits/{night[:8]}A0_treated_{args.band}.fits'
