@@ -529,7 +529,7 @@ Input Parameters:
     #-------------------------------------------------------------------------------
 
     # Read in the Prepdata under ./Input/Prpedata/
-    xbounddict, maskdict, tagsA, tagsB, mjds, bvcs, nightsFinal, orders = read_prepdata(args)
+    xbounddict, maskdict, tagsA, tagsB, mjds, bvcs, nightsFinal, orders, obs = read_prepdata(args)
 
     # Use subset of nights if specified
     if args.nights_use != '':
