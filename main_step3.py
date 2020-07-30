@@ -67,7 +67,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     if np.isnan(initguesses) == True:
         logger.warning(f'  --> Previous run of {night} found it inadequate, skipping...')
         return nightsout, rvsminibox, parfitminibox, vsiniminibox, tagsminibox
-    
+
     # Load synthetic telluric template generated during Step 1
     # [:8] here is to ensure program works under Night_Split mode
     A0loc = f'./Output/{args.targname}_{args.band}/A0Fits/{night[:8]}A0_treated_{args.band}.fits'
@@ -247,7 +247,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                 parstart = par_in.copy()
 
             for optkind in optgroup:
-                print(f'{optkind}, nc={nc}, tag={tag}')
+                # print(f'{optkind}, nc={nc}, tag={tag}')
                 parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize, logger, night, order, tag, optkind, nc, nk)
                 parstart = parfit_1.copy()
                 if args.debug == True:
@@ -723,14 +723,14 @@ Input Parameters:
         Nnights = len(rvmasterbox[:,0])
 
         for ll in range(len(orders)):
-            
+
             # Mean-subtract each order's RVs within an observatory epoch
             for rvin in rvmasterbox[(obsbox == 'NA'),ll]:
                 if np.isnan(rvin) == False:
                     sys.exit('File listed as NA for A0 presence output a RV! Your Prepdata files are not the same version as your A0Fit files!')
-            for obs_name in np.unique(obsbox): 
+            for obs_name in np.unique(obsbox):
                 rvmasterbox[(obsbox == obs_name),ll] -= np.nanmean(rvmasterbox[(obsbox == obs_name),ll])
-                
+
             # Calculate the uncertainty in each night/order RV as the sum of the uncertainty in method and the uncertainty in that night's As and Bs RVs
             for night in range(Nnights):
                 sigma_ON2[night,ll] = sigma_method2[ll] + stdmasterbox[night,ll]**2
