@@ -718,10 +718,13 @@ Input Parameters:
         Nnights = len(rvmasterbox[:,0])
 
         for ll in range(len(orders)):
-            # Mean-subtract each order's RVs
-            rvmasterbox[:,ll] -= np.nanmean(rvmasterbox[:,ll])
+            
+            # Mean-subtract each order's RVs within an observatory epoch
+            for obs_name in np.unique(obs): 
+                rvmasterbox[(obs == obs_name),ll] -= np.nanmean(rvmasterbox[(obs == obs_name),ll])
+                
+            # Calculate the uncertainty in each night/order RV as the sum of the uncertainty in method and the uncertainty in that night's As and Bs RVs
             for night in range(Nnights):
-                # Calculate the uncertainty in each night/order RV as the sum of the uncertainty in method and the uncertainty in that night's As and Bs RVs
                 sigma_ON2[night,ll] = sigma_method2[ll] + stdmasterbox[night,ll]**2
 
         rvfinal    = np.ones(Nnights, dtype=np.float64)
