@@ -78,8 +78,8 @@ def read_prepdata(args):
             A0data   = Table.read('../Input/Prepdata/Prepdata_A0_{}.txt'.format(args.targname), format='ascii')
         A0nights = np.array(A0data['night'],dtype='str')
         ams0     = np.array(A0data['airmass'])
-        ind    = [i != 'NA' for i in A0data['humid']]
-        obs    = {str(k):str(v) for k,v in zip(A0data[ind]['night'],A0data[ind]['obs'])}
+        ind      = [i != 'NA' for i in A0data['humid']]
+        obs0     = {str(k):str(v) for k,v in zip(A0data[ind]['night'],A0data[ind]['obs'])}
 
         if os.getcwd()[-1]=='v':
             targdata = Table.read('./Input/Prepdata/Prepdata_targ_{}.txt'.format(args.targname), format='ascii')
@@ -132,5 +132,7 @@ def read_prepdata(args):
         tagsB[Tnights[-1]] = tagsB0
 
         nightsFinal = np.array(list(sorted(set(Tnights))))
+        
+        obs = np.array([obs0[n] for n in nightsFinal])
 
         return xbounddict, maskdict, tagsA, tagsB, mjds, bvcs, nightsFinal, orders, obs
