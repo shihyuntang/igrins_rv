@@ -725,7 +725,10 @@ Input Parameters:
         for ll in range(len(orders)):
             
             # Mean-subtract each order's RVs within an observatory epoch
-            for obs_name in np.unique(obs): 
+            for rvin in rvmasterbox[(obsbox == 'NA'),ll]:
+                if np.isnan(rvin) == False:
+                    sys.exit('File listed as NA for A0 presence output a RV! Your Prepdata files are not the same version as your A0Fit files!')
+            for obs_name in np.unique(obsbox): 
                 rvmasterbox[(obsbox == obs_name),ll] -= np.nanmean(rvmasterbox[(obsbox == obs_name),ll])
                 
             # Calculate the uncertainty in each night/order RV as the sum of the uncertainty in method and the uncertainty in that night's As and Bs RVs
