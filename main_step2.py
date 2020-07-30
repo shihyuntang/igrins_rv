@@ -37,7 +37,11 @@ def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         initguesses = inparam.initguesses
     else:
         sys.exit('ERROR! EXPECING SINGAL NUMBER OR FILE FOR INITGUESSES! QUITTING!')
-
+        
+    if np.isnan(initguesses) == True:
+        logger.warning(f'  --> Previous run of {night} found it inadequate, skipping...')
+        return nightsout, rvsminibox, parfitminibox, vsiniminibox, tagsminibox
+    
     # Collect relevant beam and filenum info
     tagsnight = []; beamsnight = [];
     for tag in inparam.tagsA[night]:
