@@ -130,6 +130,7 @@ def init_fitsread(path,kind,beam,night,order,tag,band,Ncuts=None):
 
     u = s/s2n
     u[(s2n < 10)] = 1e3*max(u)
+    s[(s < 1e-6)] = 1e-6 # Provide absolute floor to flux values of spectra
 
     return x,wave,s,u
 
