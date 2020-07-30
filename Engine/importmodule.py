@@ -132,6 +132,6 @@ def read_prepdata(args):
 
         nightsFinal = np.array(list(sorted(set(Tnights))))
         
-        obs = np.array([obs0[n] for n in nightsFinal])
+        obs = np.array([obs0[n[:8]] for n in nightsFinal])
 
         return xbounddict, maskdict, tagsA, tagsB, mjds, bvcs, nightsFinal, orders, obs
