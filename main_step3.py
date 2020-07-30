@@ -563,6 +563,8 @@ Input Parameters:
 
     nightsT = nights[indT]
     nightsL = nights[indL]
+    obsT    = obs[indT]
+    obsL    = obs[indL]
     rvmasterboxT  = np.ones((len(nightsT),len(orders)))
     stdmasterboxT = np.ones((len(nightsT),len(orders)))
     rvmasterboxL  = np.ones((len(nightsL),len(orders)))
@@ -675,10 +677,12 @@ Input Parameters:
         rvboxcomblist  = [rvmasterboxT,rvmasterboxL]
         stdboxcomblist = [stdmasterboxT,stdmasterboxL]
         vsinicomblist  = [vsinisT,vsinisL]
+        obscomblist    = [obsT,obsL]
     else:
         rvboxcomblist  = [rvmasterboxT]
         stdboxcomblist = [stdmasterboxT]
         vsinicomblist  = [vsinisT]
+        obscomblist    = [obsT]
 
     # Iterate over tight and loose mounting data sets...
     for boxind in range(len(rvboxcomblist)):
@@ -686,6 +690,7 @@ Input Parameters:
         rvmasterbox  = rvboxcomblist[boxind]
         stdmasterbox = stdboxcomblist[boxind]
         vsinibox     = vsinicomblist[boxind]
+        obsbox       = obscomblist[boxind]
 
         #-------------------------------------------------------------------------------
 
@@ -721,7 +726,7 @@ Input Parameters:
             
             # Mean-subtract each order's RVs within an observatory epoch
             for obs_name in np.unique(obs): 
-                rvmasterbox[(obs == obs_name),ll] -= np.nanmean(rvmasterbox[(obs == obs_name),ll])
+                rvmasterbox[(obsbox == obs_name),ll] -= np.nanmean(rvmasterbox[(obsbox == obs_name),ll])
                 
             # Calculate the uncertainty in each night/order RV as the sum of the uncertainty in method and the uncertainty in that night's As and Bs RVs
             for night in range(Nnights):
