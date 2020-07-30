@@ -214,7 +214,6 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                  'v'    : np.array([0.0, 0.0, 0.0, 0.0, inparam.vsinivary, 0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0])}
 
         continuum_in = rebin_jv(a0contx,continuum,x_piece,False)
-        s_piece /= np.median(s_piece)
         fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]))
 
         #-------------------------------------------------------------------------------
