@@ -245,6 +245,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                 parstart = par_in.copy()
 
             for optkind in optgroup:
+                print(f'{optkind}, nc={nc}, tag={tag}')
                 parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize, logger, night, order, tag, optkind, nc, nk)
                 parstart = parfit_1.copy()
                 if args.debug == True:
