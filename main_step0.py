@@ -99,12 +99,12 @@ def DataPrep(args):
 
         else:
             if obs == 'McD':
-                print('BVC stright from master log ...')
+                print('WARNING!! BVC taken stright from the master log ...')
                 observatoryN = EarthLocation.of_site('McDonald Observatory')
                 BVCfile  = float(np.array(star_files['BVC'])[x]       ) #BVC in the master log might be wrong, so, re-calculated below...
 
             elif obs == 'DCT':
-                print('Calculating BVC base on the fits header info. ...')
+                print('WARNING!! BVC calculated base on the fits header information ...')
                 observatoryN = EarthLocation.of_site('DCT')
 
                 framee = f"{head['RADECSYS'][:2].lower()}{head['RADECSYS'][-1]}"

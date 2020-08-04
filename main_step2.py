@@ -37,11 +37,11 @@ def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         initguesses = inparam.initguesses
     else:
         sys.exit('ERROR! EXPECING SINGAL NUMBER OR FILE FOR INITGUESSES! QUITTING!')
-        
+
     if np.isnan(initguesses) == True:
         logger.warning(f'  --> Previous run of {night} found it inadequate, skipping...')
         return nightsout, rvsminibox, parfitminibox, vsiniminibox, tagsminibox
-    
+
     # Collect relevant beam and filenum info
     tagsnight = []; beamsnight = [];
     for tag in inparam.tagsA[night]:
@@ -338,7 +338,7 @@ if __name__ == '__main__':
                         help="The number, X, that refers to the ./*targname/Initguesser_results_X file you wish to use for initial RV guesses",
                         type=str,   default='')
     parser.add_argument('-t',       dest="template",         action="store",
-                        help="Stellar template. Pick from 'synthetic', 'livingston', or 'user_defined'. Default = 'synthetic'",
+                        help="Stellar template. Pick from 'synthetic' or 'livingston'. Default = 'synthetic'",
                         type=str,   default='synthetic' )
     parser.add_argument('-temp',      dest="temperature",           action="store",
                         help="The synthetic template temperature used, e.g., 5000",
@@ -375,7 +375,7 @@ if __name__ == '__main__':
 
     #------------------------------
 
-    if args.template.lower() not in ['synthetic', 'livingston', 'user_defined']:
+    if args.template.lower() not in ['synthetic', 'livingston']:
         sys.exit('ERROR: UNEXPECTED STELLAR TEMPLATE FOR "-t" INPUT!')
 
     #------------------------------

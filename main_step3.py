@@ -340,7 +340,7 @@ if __name__ == '__main__':
                         help="For TAR star. The number, X, under ./*targname/Initguesser_results_X or ./*targname/RV_results_X, that you wish to use. Prefix determined by -gS",
                         type=str, default='')
     parser.add_argument('-t',       dest="template",         action="store",
-                        help="Stellar template. Pick from 'synthetic', 'livingston', or 'user_defined'. Default = 'synthetic'",
+                        help="Stellar template. Pick from 'synthetic' or 'livingston'. Default = 'synthetic'",
                         type=str,   default='synthetic' )
     parser.add_argument('-temp',      dest="temperature",           action="store",
                         help="The synthetic template temperature used, e.g., 5000",
@@ -348,6 +348,9 @@ if __name__ == '__main__':
     parser.add_argument('-logg',      dest="logg",           action="store",
                         help="The synthetic template logg used, e.g., 4.5",
                         type=str,   default='' )
+    parser.add_argument('-abs_out',   dest="abs",            action="store",
+                        help="Take REL and ABS. REL for relative RVs as output, ABS for absolute RVs. Default = REL. Note that ABS mode will have worser precision.",
+                        type=str,   default='REL' )
     # parser.add_argument('-sp',      dest="sptype",           action="store",
     #                     help="The spectral type of the *target. (Letter only)",
     #                     type=str,   default='' )
@@ -377,7 +380,7 @@ if __name__ == '__main__':
 
     #------------------------------
 
-    if args.template.lower() not in ['synthetic', 'livingston', 'user_defined']:
+    if args.template.lower() not in ['synthetic', 'livingston']:
         sys.exit('ERROR: UNEXPECTED STELLAR TEMPLATE FOR "-t" INPUT!')
 
     #------------------------------
@@ -409,6 +412,16 @@ if __name__ == '__main__':
         nAB = 3
     else:
         nAB = int(args.nAB)
+
+    #------------------------------
+
+    if args.abs.lower() not in ['rel', 'abs']:
+        sys.exit('ERROR: UNEXPECTED INPUT FOR -abs_out')
+    if args.abs.lower() == 'rel':
+        print_abs = 'Relative RV'
+    else:
+        print_abs = 'Absolute RV'
+
 
     #------------------------------
 
@@ -459,9 +472,10 @@ Input Parameters:
     Stellar template use= \33[41m {} \033[0m
     syn template temp   = \33[41m {} \033[0m
     syn template logg   = \33[41m {} \033[0m
+    RV Output format    = \33[41m {} \033[0m
     Threads use         = {}
     '''.format(args.targname, args.band, args.WRegion, args.SN_cut, nAB,
-               initvsini, vsinivary, initguesses_show, args.template, args.temperature, args.logg, args.Nthreads))
+               initvsini, vsinivary, initguesses_show, args.template, args.temperature, args.logg, print_abs, args.Nthreads))
     if not args.skip:
         while True:
             inpp = input("Press [Y]es to continue, [N]o to quite...\n --> ")
@@ -728,8 +742,12 @@ Input Parameters:
             for rvin in rvmasterbox[(obsbox == 'NA'),ll]:
                 if np.isnan(rvin) == False:
                     sys.exit('File listed as NA for A0 presence output a RV! Your Prepdata files are not the same version as your A0Fit files!')
-            for obs_name in np.unique(obsbox):
-                rvmasterbox[(obsbox == obs_name),ll] -= np.nanmean(rvmasterbox[(obsbox == obs_name),ll])
+
+            if args.abs.lower() == 'rel':
+                for obs_name in np.unique(obsbox):
+                    rvmasterbox[(obsbox == obs_name),ll] -= np.nanmean(rvmasterbox[(obsbox == obs_name),ll])
+            else:
+                pass
 
             # Calculate the uncertainty in each night/order RV as the sum of the uncertainty in method and the uncertainty in that night's As and Bs RVs
             for night in range(Nnights):
