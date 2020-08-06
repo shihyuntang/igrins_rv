@@ -10,6 +10,6 @@ News:\
 
 ***
 
-**IGRINS RV**'s core technique use a modified forward modeling technique that utilize the telluric absorption lines as the common-path wavelength calibrator. With RV precision at K band around 30 m/s and H band 50 m/s, **IGRINS RV** had successfully retrieval of planet-induced RV signals for both HD 189733 and &tau; Boo A.\
+**IGRINS RV**'s core technique use a modified forward modeling technique that utilize the telluric absorption lines as the common-path wavelength calibrator. With RV precision at K band around 30 m/s and H band 50 m/s, **IGRINS RV** had successfully retrieval of planet-induced RV signals for both HD 189733 and &tau; Boo A.
 
-**IGRINS RV** is now under intense development. 
+**IGRINS RV** is now under intense development. If you wish to join the internal review and testing, please contact us.
