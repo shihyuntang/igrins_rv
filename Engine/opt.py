@@ -40,7 +40,7 @@ def fmodel_chi(par,grad):
     # Can't call these directly in function, as NLopt doesn't allow anything to be in the model function call besides par and grad.
 
     #global fitobj, optimize
-    global fitobj_cp, optimize_cp, dpar0_cp, optkind_cp, nk_cp, nc_cp
+    global fitobj_cp, optimize_cp#, dpar0_cp, optkind_cp, nk_cp, nc_cp
 
     watm = fitobj_cp.watm_in;
     satm = fitobj_cp.satm_in;
@@ -267,15 +267,16 @@ def fmod_conti(par,fitobj):
     return w, smod, cont, c2
 
 
-def optimizer(par0,dpar0, hardbounds_v_ip, fitobj, optimize, logger, night, order, tag, optkind, nc, nk):
+# def optimizer(par0,dpar0, hardbounds_v_ip, fitobj, optimize, logger, night, order, tag, optkind, nc, nk):
+def optimizer(par0,dpar0, hardbounds_v_ip, fitobj, optimize, logger, night, order, tag):
     # NLopt convenience function.
-    global fitobj_cp, optimize_cp, dpar0_cp, optkind_cp, nk_cp, nc_cp
+    global fitobj_cp, optimize_cp#, dpar0_cp, optkind_cp, nk_cp, nc_cp
     fitobj_cp   = fitobj
     optimize_cp = optimize
-    dpar0_cp = dpar0
-    optkind_cp = optkind
-    nk_cp = nk
-    nc_cp = nc
+    # dpar0_cp = dpar0
+    # optkind_cp = optkind
+    # nk_cp = nk
+    # nc_cp = nc
     opt = nlopt.opt(nlopt.LN_NELDERMEAD, 15)
     opt.set_min_objective(fmodel_chi)
     lows  = par0-dpar0
