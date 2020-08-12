@@ -248,7 +248,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
             for optkind in optgroup:
                 # print(f'{optkind}, nc={nc}, tag={tag}')
-                parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize, logger, night, order, tag)
+                parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize)
                 parstart = parfit_1.copy()
                 if args.debug == True:
                     outplotter_23(parfit_1,fitobj,'{}_{}_{}_parfit_{}{}'.format(order,night,tag,nk,optkind), trk, inparam, args, step2or3)
