@@ -748,12 +748,14 @@ Input Parameters:
             if args.abs.lower() == 'rel':
                 for obs_name in np.unique(obsbox):
                     rvmasterbox[(obsbox == obs_name),ll] -= np.nanmean(rvmasterbox[(obsbox == obs_name),ll])
-            else:
-                pass
 
             # Calculate the uncertainty in each night/order RV as the sum of the uncertainty in method and the uncertainty in that night's As and Bs RVs
             for night in range(Nnights):
                 sigma_ON2[night,ll] = sigma_method2[ll] + stdmasterbox[night,ll]**2
+                
+        # If taking absolute RVs, add in uncertainty characterized by scatter between mean RVs of different orders
+        if args.abs.lower() == 'abs':
+            sigma_order_to_order = np.nanstd([np.nanmean(rvmasterbox[:,ll]) for ll in range(len(orders))])/np.sqrt(len(orders))
 
         rvfinal    = np.ones(Nnights, dtype=np.float64)
         stdfinal   = np.ones(Nnights, dtype=np.float64)
@@ -791,6 +793,9 @@ Input Parameters:
 
         #-------------------------------------------------------------------------------
 
+        if args.abs.lower() == 'abs':
+            stdfinal = np.sqrt(stdfinal**2 + sigma_order_to_order**2)
+            
         # Plot results
         f, axes = plt.subplots(1, 1, figsize=(5,3), facecolor='white', dpi=300)
 
