@@ -417,6 +417,8 @@ if __name__ == '__main__':
 
     if args.abs.lower() not in ['rel', 'abs']:
         sys.exit('ERROR: UNEXPECTED INPUT FOR -abs_out')
+    if args.abs.lower() == 'rel' and vsinivary != 0:
+        sys.exit('ERROR: -abs_out must be set to "abs" until -v is set to 0!')
     if args.abs.lower() == 'rel':
         print_abs = 'Relative RV'
     else:
