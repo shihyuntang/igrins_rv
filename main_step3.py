@@ -166,8 +166,6 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         #-------------------------------------------------------------------------------
 
         # Execute S/N cut
-        if (u==0).any():
-            u+=1E-5
         s2n = s/u
         if np.nanmedian(s2n) < float(args.SN_cut):
             logger.warning('  --> Bad S/N {:1.3f} < {} for {}{} {}, SKIP'.format( np.nanmedian(s2n), args.SN_cut, night, beam, tag))
