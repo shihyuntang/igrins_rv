@@ -426,7 +426,7 @@ if __name__ == '__main__':
 
     #------------------------------
     # Read in the Prepdata under ./Input/Prpedata/
-    xbounddict, maskdict, tagsA, tagsB, mjds, bvcs, nightsFinal, orders = read_prepdata(args)
+    xbounddict, maskdict, tagsA, tagsB, mjds, bvcs, nightsFinal, orders, obs = read_prepdata(args)
 
     if int(args.label_use) not in orders:
         sys.exit(f'Oops! -l_use INPUT "{args.label_use}" is not in "{orders}" from the given WRegion list!!')
