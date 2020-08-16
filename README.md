@@ -12,9 +12,9 @@ News:\
 2020/06/23: igrins_rv v0.85 is under internal review.. will come to public soon!!
 
 ***
-Please visit the [GitHub wiki page](https://github.com/shihyuntang/igrins_rv/wiki) for detailed documentation and tutorials.
+Visit the [GitHub wiki page](https://github.com/shihyuntang/igrins_rv/wiki) for detailed documentation and tutorials.
 
 Please Cite these papers if you use ``IGRINS RV``:
-> the `` igrins plp v2.2`` paper https://zenodo.org/record/845059#.Xzlp5C0wJQI \
-> the ``Telfit`` paper https://ui.adsabs.harvard.edu/abs/2014AJ....148...53G/abstract \
-> the ``IGRINS RV paper (coming soon!)``
+* `` igrins plp v2.2`` paper https://zenodo.org/record/845059#.Xzlp5C0wJQI
+* ``Telfit`` paper https://ui.adsabs.harvard.edu/abs/2014AJ....148...53G/abstract
+* ``IGRINS RV paper (coming soon!)``
