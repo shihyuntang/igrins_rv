@@ -85,12 +85,15 @@ and cd to Telluric-Fitter-master, then run:
 (igrins_rv) --> python setup.py install
 ```
 
-## Running igrins_rv
+## Running ``IGRINS RV``
 
-For a detailed understanding of how ``IGRINS RV`` works and how it should be run, it is HIGHLY recommended that the user reads the associated [paper]().\
-``IGRINS RV`` is divided into four main steps: Setup, Telluric Modelling, Initial Convergence, and Analysis.\
-Each is provided in the package as a separate file and # can be run from the command line with keywords specifying\
-all relevant information.
+For a detailed understanding of how ``IGRINS RV`` works and how it should be run, it is HIGHLY recommended that the user reads the associated [paper]().
+``IGRINS RV`` is divided into four main steps: 
+[Setup](https://github.com/shihyuntang/igrins_rv#step-0---setup-), 
+[Telluric Modelling](https://github.com/shihyuntang/igrins_rv#step-1---telluric-modelling-), 
+[Initial Convergence](https://github.com/shihyuntang/igrins_rv#step-2---initial-convergence-), and 
+[Analysis](https://github.com/shihyuntang/igrins_rv#step-3---analysis-).
+Each is provided in the package as a separate file and # can be run from the command line with keywords specifying all relevant information.
 
 **All steps are run as**
 ```
@@ -102,7 +105,9 @@ where X is the step number (0-4) and information on the keywords for the step ca
 ```
 (The -h command here means --help.)
 
-### Step 0 - Setup: Collects and organizes the available data for the target spectra and their associated telluric (A0) standards. 
+
+### Step 0 - Setup: 
+Collects and organizes the available data for the target spectra and their associated telluric (A0) standards. 
 
 **If the user have** a copy of the IGRINS Observation MASTERLOG, Step 0 will automatically consult a master observing log file\
 to retrieve the relevant information on filenames, coordinates, observing times, and conditions.
@@ -112,18 +117,18 @@ to retrieve the relevant information on filenames, coordinates, observing times,
 **If the user do not have** a copy of the IGRINS Observation MASTERLOG, the output files it generates must be compiled by the user themselves. 
 
 
-### Step 1 - Telluric Modelling: \
+### Step 1 - Telluric Modelling: 
 Defines the wavelength regions to be analyzed; generates a synthetic, high-resolution telluric template for use in later model fits on a night by night basis. 
 
-### Step 2 - Initial Convergence: \
-Required if the average RV of the target star is unknown to $>$ 5 \kms precision. Performs an abbreviated analysis of the target star observations in order to converge to coarsely accurate RVs, which will be used as starting points for the more precise analysis in the next step; simultaneously does the same for target star's \vsini. Only the single most precise echelle region is used, and all separate exposures for a given observation are combined into one higher S/N spectrum before fitting occurs. 
+### Step 2 - Initial Convergence: 
+Required if the average RV of the target star is unknown to $>$ 5 km/s precision. Performs an abbreviated analysis of the target star observations in order to converge to coarsely accurate RVs, which will be used as starting points for the more precise analysis in the next step; simultaneously does the same for target star's vsini. Only the single most precise echelle region is used, and all separate exposures for a given observation are combined into one higher S/N spectrum before fitting occurs. 
 
-### Step 3 - Analysis: \
-Performs a full analysis of each target star observation to produce accurate and precise RVs. All the wavelength regions defined in Step 1 are used, and the code analyzes each exposure that is part of a given observation separately (this allows estimates of the RV uncertainties - see Section \ref{ssec:err}). In other words, if a star is observed with the ABBA beam pattern, Step 2 analyzes one spectrum made from the combination of the four exposures, while Step 3 analyzes each A and B separately. 
+### Step 3 - Analysis: 
+Performs a full analysis of each target star observation to produce accurate and precise RVs. All the wavelength regions defined in Step 1 are used, and the code analyzes each exposure that is part of a given observation separately (this allows estimates of the RV uncertainties. In other words, if a star is observed with the ABBA beam pattern, Step 2 analyzes one spectrum made from the combination of the four exposures, while Step 3 analyzes each A and B separately. 
 
-Unless the target \vsini is already known to high accuracy, an initial run of Step 3 in which \vsini is allowed to vary is required. This will provide an estimate of \vsini, which will then be plugged in as a fixed value in the second run of Step 3. 
+Unless the target vsini is already known to high accuracy, an initial run of Step 3 in which vsini is allowed to vary is required. This will provide an estimate of vsini, which will then be plugged in as a fixed value in the second run of Step 3. 
 
-Even if \vsini is already known, it is recommended to run Step 3 twice, as it allows the user to confirm that RVs between consecutive runs have converged within the calculated uncertainties. Additional runs may be necessary depending on the quality of the observed spectra and the \vsini of the target star. 
+Even if vsini is already known, it is recommended to run Step 3 twice, as it allows the user to confirm that RVs between consecutive runs have converged within the calculated uncertainties. Additional runs may be necessary depending on the quality of the observed spectra and the vsini of the target star. 
 
 All above three steps can be ran by:
 ```
