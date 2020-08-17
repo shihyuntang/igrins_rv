@@ -718,7 +718,7 @@ Input Parameters:
 
             # Calculate uncertainty in method as difference between variance within an order and mean variance within a night's different exposure RVs
             for ll in range(len(orders)):
-                sigma_ABbar2[ll] = np.nanmean(stdmasterbox[:,ll]**2)
+                sigma_ABbar2[ll] = np.nanmedian(stdmasterbox[:,ll]**2)
             sigma_method2 = sigma_O2 - sigma_ABbar2
 
         else: # If target star, load the uncertainty in method calculated from our RV STD star runs
