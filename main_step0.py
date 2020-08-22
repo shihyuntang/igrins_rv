@@ -251,8 +251,8 @@ if __name__ == '__main__':
                         help="Which band to process? H or K?. Default = K",
                         type=str,   default='K')
     parser.add_argument("-AM",      dest="AM_cut",           action="store",
-                        help="AirMass difference allowed between TAR and STD (A0) stars. Default X = 0.25 ",
-                        type=str,   default='0.25')
+                        help="AirMass difference allowed between TAR and STD (A0) stars. Default X = 0.3 ",
+                        type=str,   default='0.3')
 
     parser.add_argument("-coord",    dest="coord",            action="store",
                         help="Optional [-XX.xx,-XX.xx] deg, GaiaDR2 coordinates at J2015.5. If give, will calculate BVC base on this info.",
