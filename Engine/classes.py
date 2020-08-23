@@ -88,9 +88,9 @@ class inparams:
                                       'K': np.array([0.00403419, 0.00227922, 0.0035236 , 0.00150486])
                                     }
         self.methodvariance_loose = { 'H': np.array([np.nan    , np.nan    , np.nan    , np.nan    ]),
-                                      'K': np.array([0.01980407, 0.02014976, 0.00789618, 0.00024278])}
+                                      'K': np.array([0.01980407, 0.02014976, 0.00789618, 0.00024278])
                                     }
-            
+
         self.bound_cut_dic = { 'H':{
                                     10: [250, 150],
                                     11: [600, 150],
