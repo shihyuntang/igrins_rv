@@ -306,12 +306,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
                                      prog        = 'IGRINS Spectra Radial Velocity Pipeline - Step 2',
                                      description = '''
-                                     Only required if the average RV of the target star is unknown to $>$ 5 \kms precision. \n
-                                     Performs an abbreviated analysis of the target star observations in order to converge to coarsely accurate RVs,
-                                     which will be used as starting points for the more precise analysis in the next step;
-                                     simultaneously does the same for target star's \vsini.  \n
-                                     Only a single order is used - by default, the first one in the list of wavelength regions, but the user can specify otherwise.  \n
-                                     All separate exposures for a given observation are combined into one higher S/N spectrum before fitting occurs.
+                                     Required if the average RV of the target star is unknown to > 5 km/s precision. \n
+                                     Performs an abbreviated analysis of the target star observations in order to converge to coarsely accurate RVs, which will be used as starting points for the more precise analysis in the next step; \n
+                                     simultaneously does the same for target star's vsini. \n
+                                     Only the single most precise wavelength region is used, and all separate observations for a given exposure are combined into one higher S/N spectrum before being fit. 
                                      ''',
                                      epilog = "Contact authors: asa.stahl@rice.edu; sytang@lowell.edu")
     parser.add_argument("targname",                          action="store",
