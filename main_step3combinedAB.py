@@ -282,25 +282,24 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     # Generate telluric model and divide out
     parfitT = parfit.copy(); parfitT[1] = 0
     tellmod,chisq = fmod(parfitT,fitobj)
-    stell_corr = s / tellmod
-    
+    stell_corr    = s / tellmod
+    w_corr        = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
+
     # Save tell corrected results to fits file
-    c1    = fits.Column(name='NIGHT'+str(order),  array=nightsbox, format='{}A'.format(len(nights[0])) )
-    c2    = fits.Column(name='RV'+str(order),     array=rvbox,     format='D')
-    c3    = fits.Column(name='PARFIT'+str(order), array=parfitbox, format=str(len(parfitbox[0,:]))+'D', dim=(1,len(parfitbox[0,:])))
-    c4    = fits.Column(name='VSINI'+str(order),  array=vsinibox,  format='D')
-    cols  = fits.ColDefs([c1,c2,c3,c4,c5])
+    c1    = fits.Column(name='WAVE'+str(order),   array=w_corr,         format='D')
+    c2    = fits.Column(name='FLUX'+str(order),   array=stell_corr,     format='D')
+    cols  = fits.ColDefs([c1,c2])
     hdu_1 = fits.BinTableHDU.from_columns(cols)
 
-    if jerp == 0: # If first time writing fits file, make up filler primary hdu
+    if order_use == 0: # If first time writing fits file, make up filler primary hdu
         bleh = np.ones((3,3))
         primary_hdu = fits.PrimaryHDU(bleh)
         hdul = fits.HDUList([primary_hdu,hdu_1])
-        hdul.writeto('{}/{}/RVresultsRawBox.fits'.format(inparam.outpath, name))
+        hdul.writeto('{}/{}/{}_tellcorr.fits'.format(inparam.outpath, name, night))
     else:
-        hh = fits.open('{}/{}/RVresultsRawBox.fits'.format(inparam.outpath, name))
+        hh = fits.open('{}/{}/{}_tellcorr.fits'.format(inparam.outpath, name, night))
         hh.append(hdu_1)
-        hh.writeto('{}/{}/RVresultsRawBox.fits'.format(inparam.outpath, name),overwrite=True)
+        hh.writeto('{}/{}/{}_tellcorr.fits'.format(inparam.outpath, name, night),overwrite=True)
 
 
     return nightsout,rvsminibox,parfitminibox,vsiniminibox
@@ -312,12 +311,13 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
                                      prog        = 'IGRINS Spectra Radial Velocity Pipeline - Step 3',
                                      description = '''
-                                     Performs a full analysis of each target star observation to produce accurate and precise RVs.\n
-                                     All the wavelength regions defined in Step 1 are used, and the code combines each observation that is part of a given exposure. \n \n
-                                     Unless the target vsini is already known to high accuracy, an initial run of Step 3 is required. \n
-                                     This  will provide an estimate of the \vsini, which will then be plugged in as a fixed value in the second run of Step 3. \n \n
-                                     Even if vsini is already known, it is recommended to run Step 3 twice, as it allows the user to confirm that RVs between consecutive runs have converged within the calculated uncertainties. \n \n
-                                     Additional runs may be necessary depending on the quality of the observed spectra and the \vsini of the target star.
+                                     Performs a full analysis of each target star observation to produce accurate and precise RVs. \n
+                                     All the wavelength regions defined in Step 1 are used, and all separate observations for a given exposure are combined into one higher S/N spectrum before being fit. \n
+                                     Unless the target vsini is already known to high accuracy, an initial run of Step 3 in which \vsini is allowed to vary is required. \n
+                                     This provides an estimate of vsini that can then be plugged into the code as a fixed value in the second run of Step 3. \n
+                                     If the user seeks the best possible RV uncertainty estimates, or if their target star has a relatively high \vsini ($>$ 10 \kms), they must run Step 3 once with \vsini held fixed at its estimated value and once with \vsini held fixed at this value plus or minus one sigma. \n
+                                     The minor differences in the RVs of the two runs (as low as $<$1 \ms and as high as 7 \ms) can then be incorporated into the final uncertainties. \n
+                                     If \vsini is already well-known, it is not necessary to run Step 3 more than once, as the code fully converges to the final RVs (within uncertainty) through just one run.  
                                      ''',
                                      epilog = "Contact authors: asa.stahl@rice.edu; sytang@lowell.edu")
     parser.add_argument("targname",                          action="store",
