@@ -158,7 +158,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     s2n = s/u
     if np.nanmedian(s2n) < float(args.SN_cut):
         logger.warning('  --> Bad S/N {:1.3f} < {} for {}{} {}, SKIP'.format( np.nanmedian(s2n), args.SN_cut, night, beam, tag))
-        continue
+        return nightsout, rvsminibox, parfitminibox, vsiniminibox
 
     # Trim obvious outliers above the blaze (i.e. cosmic rays)
     nzones = 5
@@ -251,18 +251,18 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     # if best fit stellar template power is very low, throw out result
     if parfit[1] < 0.1:
         logger.warning(f'  --> parfit[1] < 0.1, {night} parfit={parfit}')
-        continue
+        return nightsout, rvsminibox, parfitminibox, vsiniminibox
 
     # if best fit stellar or telluric template powers are exactly equal to their starting values, fit failed, throw out result
     if parfit[1] == par_in[1] or parfit[3] == par_in[3]:
         logger.warning(f'  --> parfit[1] == par_in[1] or parfit[3] == par_in[3], {night}')
-        continue
+        return nightsout, rvsminibox, parfitminibox, vsiniminibox
 
     # if best fit model dips below zero at any point, we're to close to edge of blaze, fit may be comrpomised, throw out result
     smod,chisq = fmod(parfit,fitobj)
     if len(smod[(smod < 0)]) > 0:
         logger.warning(f'  --> len(smod[(smod < 0)]) > 0, {night}')
-        continue
+        return nightsout, rvsminibox, parfitminibox, vsiniminibox
 
     #-------------------------------------------------------------------------------
 
@@ -275,11 +275,35 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
     rv0 = parfit[0]
 
-    rvsminibox[t]   = rv0  + inparam.bvcs[night+tag] + rv0*inparam.bvcs[night+tag]/(3e5**2) # Barycentric correction
-    parfitminibox[t]= parfit
-    vsiniminibox[t] = parfit[4]
-    tagsminibox[t]  = tag
-    return nightsout,rvsminibox,parfitminibox,vsiniminibox,tagsminibox
+    rvsminibox   = rv0  + inparam.bvcs[night+tag] + rv0*inparam.bvcs[night+tag]/(3e5**2) # Barycentric correction
+    parfitminibox = parfit
+    vsiniminibox = np.array(parfit[4])
+    
+    # Generate telluric model and divide out
+    parfitT = parfit.copy(); parfitT[1] = 0
+    tellmod,chisq = fmod(parfitT,fitobj)
+    stell_corr = s / tellmod
+    
+    # Save tell corrected results to fits file
+    c1    = fits.Column(name='NIGHT'+str(order),  array=nightsbox, format='{}A'.format(len(nights[0])) )
+    c2    = fits.Column(name='RV'+str(order),     array=rvbox,     format='D')
+    c3    = fits.Column(name='PARFIT'+str(order), array=parfitbox, format=str(len(parfitbox[0,:]))+'D', dim=(1,len(parfitbox[0,:])))
+    c4    = fits.Column(name='VSINI'+str(order),  array=vsinibox,  format='D')
+    cols  = fits.ColDefs([c1,c2,c3,c4,c5])
+    hdu_1 = fits.BinTableHDU.from_columns(cols)
+
+    if jerp == 0: # If first time writing fits file, make up filler primary hdu
+        bleh = np.ones((3,3))
+        primary_hdu = fits.PrimaryHDU(bleh)
+        hdul = fits.HDUList([primary_hdu,hdu_1])
+        hdul.writeto('{}/{}/RVresultsRawBox.fits'.format(inparam.outpath, name))
+    else:
+        hh = fits.open('{}/{}/RVresultsRawBox.fits'.format(inparam.outpath, name))
+        hh.append(hdu_1)
+        hh.writeto('{}/{}/RVresultsRawBox.fits'.format(inparam.outpath, name),overwrite=True)
+
+
+    return nightsout,rvsminibox,parfitminibox,vsiniminibox
 
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
@@ -289,7 +313,7 @@ if __name__ == '__main__':
                                      prog        = 'IGRINS Spectra Radial Velocity Pipeline - Step 3',
                                      description = '''
                                      Performs a full analysis of each target star observation to produce accurate and precise RVs.\n
-                                     All the wavelength regions defined in Step 1 are used, and the code analyzes each exposure that is part of a given observation separately (this allows estimates of the RV uncertainties). \n \n
+                                     All the wavelength regions defined in Step 1 are used, and the code combines each observation that is part of a given exposure. \n \n
                                      Unless the target vsini is already known to high accuracy, an initial run of Step 3 is required. \n
                                      This  will provide an estimate of the \vsini, which will then be plugged in as a fixed value in the second run of Step 3. \n \n
                                      Even if vsini is already known, it is recommended to run Step 3 twice, as it allows the user to confirm that RVs between consecutive runs have converged within the calculated uncertainties. \n \n
@@ -310,9 +334,6 @@ if __name__ == '__main__':
     parser.add_argument("-SN",      dest="SN_cut",           action="store",
                         help="Spectrum S/N quality cut. Spectra with median S/N below this will not be analyzed. Default = 50 ",
                         type=str,   default='50')
-    parser.add_argument("-nAB",      dest="nAB",           action="store",
-                        help="Minium number of separte A/B exposures within a set for a given observation (ensures accuracy of uncertainy estimates). Default = 2 for STD, 3 for TAR",
-                        type=str,   default='')
     parser.add_argument('-i',       dest="initvsini",        action="store",
                         help="Initial vsini (float, km/s). If no literature value known, use the value given by Step 2",
                         type=str,   default='' )
@@ -395,15 +416,6 @@ if __name__ == '__main__':
 
     #------------------------------
 
-    if args.nAB == '' and args.mode.lower() == 'std':
-        nAB = 2
-    elif args.nAB == '' and args.mode.lower() == 'tar':
-        nAB = 3
-    else:
-        nAB = int(args.nAB)
-
-    #------------------------------
-
     if args.abs.lower() not in ['rel', 'abs']:
         sys.exit('ERROR: UNEXPECTED INPUT FOR -abs_out')
     if args.abs.lower() == 'rel' and vsinivary != 0:
@@ -456,7 +468,6 @@ Input Parameters:
     Filter              = \33[41m {} band \033[0m
     WaveLength file     = \33[41m WaveRegions_{} \033[0m
     S/N cut             > \33[41m {} \033[0m
-    Minium # of AB sets = \33[41m {} \033[0m             <------- If TAR mode, this should be at least 3. If STD mode, at least 2.
     Initial vsini       = \33[41m {} km/s \033[0m
     vsini vary range    \u00B1 \33[41m {} km/s \033[0m
     RV initial guess    = \33[41m {} \033[0m
@@ -465,7 +476,7 @@ Input Parameters:
     syn template logg   = \33[41m {} \033[0m
     RV Output format    = \33[41m {} \033[0m
     Threads use         = {}
-    '''.format(args.targname, args.band, args.WRegion, args.SN_cut, nAB,
+    '''.format(args.targname, args.band, args.WRegion, args.SN_cut, 
                initvsini, vsinivary, initguesses_show, args.template, args.temperature, args.logg, print_abs, args.Nthreads))
     if not args.skip:
         while True:
@@ -605,13 +616,11 @@ Input Parameters:
                 rvbox     = outsbox[1]
                 parfitbox = outsbox[2]
                 vsinibox  = outsbox[3]
-                tagbox    = outsbox[4]
             else:
                 nightsbox = nightsbox + outsbox[0]
                 rvbox     = np.concatenate((rvbox,outsbox[1]))
                 parfitbox = np.vstack((parfitbox,outsbox[2]))
                 vsinibox  = np.concatenate((vsinibox,outsbox[3]))
-                tagbox    = np.concatenate((tagbox,outsbox[4]))
 
         nightsbox = np.array(nightsbox)
         vsinitags = []
@@ -621,7 +630,6 @@ Input Parameters:
         c2    = fits.Column(name='RV'+str(order),     array=rvbox,     format='D')
         c3    = fits.Column(name='PARFIT'+str(order), array=parfitbox, format=str(len(parfitbox[0,:]))+'D', dim=(1,len(parfitbox[0,:])))
         c4    = fits.Column(name='VSINI'+str(order),  array=vsinibox,  format='D')
-        c5    = fits.Column(name='TAG'+str(order),    array=tagbox,    format='4A')
         cols  = fits.ColDefs([c1,c2,c3,c4,c5])
         hdu_1 = fits.BinTableHDU.from_columns(cols)
 
