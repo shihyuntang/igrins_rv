@@ -158,7 +158,7 @@ def setup_templates(logger, kind='synthetic', band='K', temperature=5000, logg=4
         #     sys.exit('Pipeline does not have a stellar template for early type stars in K band! Upload your own?')
         logger.info(f'Using {band}-band synthetic stellar template...')
         logger.info(f'synthetic stellar template with T{temperature} logg{logg}!!!!!')
-        if os.getcwd()[-1]=='v':
+        if os.getcwd()[-1]=='r':
             stelldata = Table.read(f'./Engine/syn_template/syntheticstellar_{band.lower()}band_T{temperature}_logg{logg}.txt',format='ascii')
             # stelldata = Table.read('./Engine/PHOENIX-lte06200-4.50-0.0_contadjH.txt',format='ascii')
         else:
@@ -181,7 +181,7 @@ def setup_templates(logger, kind='synthetic', band='K', temperature=5000, logg=4
         if sptype not in ['K','M']:
             sys.exit('Pipeline does not have a stellar template for early type stars in K band! Upload your own?')
         logger.info('Using sunspot for stellar template...')
-        if os.getcwd()[-1]=='v':
+        if os.getcwd()[-1]=='r':
             stelldata = Table.read('./Engine/SpotAtl_contadjusted.txt',format='ascii')
         else:
             stelldata = Table.read('../Engine/SpotAtl_contadjusted.txt',format='ascii')
@@ -195,7 +195,7 @@ def setup_templates(logger, kind='synthetic', band='K', temperature=5000, logg=4
         if sptype not in ['F','G','K']:
             sys.exit('Pipeline does not have a stellar template for late type stars in H band! Upload your own?')
         logger.info('Using quiet sun for stellar template...')
-        if os.getcwd()[-1]=='v':
+        if os.getcwd()[-1]=='r':
             spotdata = Table.read('./Engine/PhotoAtl_Solar_contadjusted.txt',format='ascii')
         else:
             spotdata = Table.read('../Engine/PhotoAtl_Solar_contadjusted.txt',format='ascii')
@@ -205,7 +205,7 @@ def setup_templates(logger, kind='synthetic', band='K', temperature=5000, logg=4
         mflux0 = mflux0[(np.isfinite(mflux0))]
         mflux0[(mflux0 < 0)] = 0
 
-    if os.getcwd()[-1]=='v':
+    if os.getcwd()[-1]=='r':
         telluricdata = Table.read('./Engine/PhotoAtl Organized.txt',format='ascii')
     else:
         telluricdata = Table.read('../Engine/PhotoAtl Organized.txt',format='ascii')
@@ -219,7 +219,7 @@ def setup_templates(logger, kind='synthetic', band='K', temperature=5000, logg=4
 
 def setup_templates_tel():
 
-    if os.getcwd()[-1]=='v':
+    if os.getcwd()[-1]=='r':
         spotdata = Table.read('./Engine/SpotAtl Organized.txt',format='ascii')
     else:
         spotdata = Table.read('../Engine/SpotAtl Organized.txt',format='ascii')
@@ -230,7 +230,7 @@ def setup_templates_tel():
     mflux0 = mflux0[(np.isfinite(mflux0))]
     mflux0[(mflux0 < 0)] = 0
 
-    if os.getcwd()[-1]=='v':
+    if os.getcwd()[-1]=='r':
         telluricdata = Table.read('./Engine/PhotoAtl Organized.txt',format='ascii')
     else:
         telluricdata = Table.read('../Engine/PhotoAtl Organized.txt',format='ascii')
