@@ -702,6 +702,10 @@ Input Parameters:
         vsinicomblist  = [vsinisT]
         obscomblist    = [obsT]
 
+    # Avg zero-point offset of the different observatory and mounting epoch RVs, to add back in later
+    if args.abs.lower() == 'rel':
+        rvZeroBase = np.nanmean([rvboxcomblist[0][(np.unique(obscomblist[0])[0] == obs_name),ll] for ll in range(len(orders))])
+
     # Iterate over tight and loose mounting data sets...
     for boxind in range(len(rvboxcomblist)):
 
@@ -740,16 +744,21 @@ Input Parameters:
         # Note rvmasterbox indexed as [nights,orders]
         Nnights = len(rvmasterbox[:,0])
 
+        if args.abs.lower() == 'rel':
+            rvBase = {}
+            for obs_name in np.unique(obsbox):
+                rvBase[obs_name] = np.nanmean([rvmasterbox[(obsbox == obs_name),ll] for ll in range(len(orders))])
+        
         for ll in range(len(orders)):
 
+            if args.abs.lower() == 'rel':
+                for obs_name in np.unique(obsbox):
+                    rvmasterbox[(obsbox == obs_name),ll] -= np.nanmean(rvmasterbox[(obsbox == obs_name),ll]) - (rvZeroBase - rvBase[obs_name])
+                    
             # Mean-subtract each order's RVs within an observatory epoch
             for rvin in rvmasterbox[(obsbox == 'NA'),ll]:
                 if np.isnan(rvin) == False:
                     sys.exit('File listed as NA for A0 presence output a RV! Your Prepdata files are not the same version as your A0Fit files!')
-
-            if args.abs.lower() == 'rel':
-                for obs_name in np.unique(obsbox):
-                    rvmasterbox[(obsbox == obs_name),ll] -= np.nanmean(rvmasterbox[(obsbox == obs_name),ll])
 
             # Calculate the uncertainty in each night/order RV as the sum of the uncertainty in method and the uncertainty in that night's As and Bs RVs
             for night in range(Nnights):
