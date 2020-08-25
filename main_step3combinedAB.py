@@ -44,8 +44,12 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     nightsout = np.array([night]);
     rvsminibox    = np.array([np.nan])
     vsiniminibox  = np.array([np.nan])
-    parfitminibox = np.array([np.nan])
+    parfitminibox = np.ones(15)
+    parfitminibox[:] = np.nan
 
+    c0    = fits.Column(name=f'ERRORFLAG{order}', array=np.array([1]), format='K')
+    cols  = fits.ColDefs([c0])
+    hdu_fail = fits.BinTableHDU.from_columns(cols)
 #-------------------------------------------------------------------------------
     # Collect initial RV guesses
     if type(inparam.initguesses) == dict:
@@ -57,6 +61,15 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
     if np.isnan(initguesses) == True:
         logger.warning(f'  --> Previous run of {night} found it inadequate, skipping...')
+        if order_use == 0:
+            bleh = np.ones((3,3))
+            primary_hdu = fits.PrimaryHDU(bleh)
+            hdul = fits.HDUList([primary_hdu,hdu_fail])
+            hdul.writeto('{}/{}/{}_tellcorr.fits'.format(inparam.outpath, name, night))
+        else:
+            hh = fits.open('{}/{}/{}_tellcorr.fits'.format(inparam.outpath, name, night))
+            hh.append(hdu_fail)
+            hh.writeto('{}/{}/{}_tellcorr.fits'.format(inparam.outpath, name, night),overwrite=True)
         return nightsout, rvsminibox, parfitminibox, vsiniminibox
 
     # Load synthetic telluric template generated during Step 1
@@ -66,6 +79,15 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         hdulist = fits.open(A0loc)
     except IOError:
         logger.warning(f'  --> No A0-fitted template for night {night}, skipping...')
+        if order_use == 0:
+            bleh = np.ones((3,3))
+            primary_hdu = fits.PrimaryHDU(bleh)
+            hdul = fits.HDUList([primary_hdu,hdu_fail])
+            hdul.writeto('{}/{}/{}_tellcorr.fits'.format(inparam.outpath, name, night))
+        else:
+            hh = fits.open('{}/{}/{}_tellcorr.fits'.format(inparam.outpath, name, night))
+            hh.append(hdu_fail)
+            hh.writeto('{}/{}/{}_tellcorr.fits'.format(inparam.outpath, name, night),overwrite=True)
         return nightsout, rvsminibox, parfitminibox, vsiniminibox
 
     # Find corresponding table in fits file, given the tables do not go sequentially by order number due to multiprocessing in Step 1
@@ -85,6 +107,15 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     # Check whether Telfit hit critical error in Step 1 for the chosen order with this night. If so, skip.
     if flag == 1:
         logger.warning(f'  --> TELFIT ENCOUNTERED CRITICAL ERROR IN ORDER: {order} NIGHT: {night}, skipping...')
+        if order_use == 0:
+            bleh = np.ones((3,3))
+            primary_hdu = fits.PrimaryHDU(bleh)
+            hdul = fits.HDUList([primary_hdu,hdu_fail])
+            hdul.writeto('{}/{}/{}_tellcorr.fits'.format(inparam.outpath, name, night))
+        else:
+            hh = fits.open('{}/{}/{}_tellcorr.fits'.format(inparam.outpath, name, night))
+            hh.append(hdu_fail)
+            hh.writeto('{}/{}/{}_tellcorr.fits'.format(inparam.outpath, name, night),overwrite=True)
         return nightsout, rvsminibox, parfitminibox, vsiniminibox
 
 
@@ -158,6 +189,15 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     s2n = s/u
     if np.nanmedian(s2n) < float(args.SN_cut):
         logger.warning('  --> Bad S/N {:1.3f} < {} for {}{} {}, SKIP'.format( np.nanmedian(s2n), args.SN_cut, night, beam, tag))
+        if order_use == 0:
+            bleh = np.ones((3,3))
+            primary_hdu = fits.PrimaryHDU(bleh)
+            hdul = fits.HDUList([primary_hdu,hdu_fail])
+            hdul.writeto('{}/{}/{}_tellcorr.fits'.format(inparam.outpath, name, night))
+        else:
+            hh = fits.open('{}/{}/{}_tellcorr.fits'.format(inparam.outpath, name, night))
+            hh.append(hdu_fail)
+            hh.writeto('{}/{}/{}_tellcorr.fits'.format(inparam.outpath, name, night),overwrite=True)
         return nightsout, rvsminibox, parfitminibox, vsiniminibox
 
     # Trim obvious outliers above the blaze (i.e. cosmic rays)
@@ -251,17 +291,44 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     # if best fit stellar template power is very low, throw out result
     if parfit[1] < 0.1:
         logger.warning(f'  --> parfit[1] < 0.1, {night} parfit={parfit}')
+        if order_use == 0:
+            bleh = np.ones((3,3))
+            primary_hdu = fits.PrimaryHDU(bleh)
+            hdul = fits.HDUList([primary_hdu,hdu_fail])
+            hdul.writeto('{}/{}/{}_tellcorr.fits'.format(inparam.outpath, name, night))
+        else:
+            hh = fits.open('{}/{}/{}_tellcorr.fits'.format(inparam.outpath, name, night))
+            hh.append(hdu_fail)
+            hh.writeto('{}/{}/{}_tellcorr.fits'.format(inparam.outpath, name, night),overwrite=True)
         return nightsout, rvsminibox, parfitminibox, vsiniminibox
 
     # if best fit stellar or telluric template powers are exactly equal to their starting values, fit failed, throw out result
     if parfit[1] == par_in[1] or parfit[3] == par_in[3]:
         logger.warning(f'  --> parfit[1] == par_in[1] or parfit[3] == par_in[3], {night}')
+        if order_use == 0:
+            bleh = np.ones((3,3))
+            primary_hdu = fits.PrimaryHDU(bleh)
+            hdul = fits.HDUList([primary_hdu,hdu_fail])
+            hdul.writeto('{}/{}/{}_tellcorr.fits'.format(inparam.outpath, name, night))
+        else:
+            hh = fits.open('{}/{}/{}_tellcorr.fits'.format(inparam.outpath, name, night))
+            hh.append(hdu_fail)
+            hh.writeto('{}/{}/{}_tellcorr.fits'.format(inparam.outpath, name, night),overwrite=True)
         return nightsout, rvsminibox, parfitminibox, vsiniminibox
 
     # if best fit model dips below zero at any point, we're to close to edge of blaze, fit may be comrpomised, throw out result
     smod,chisq = fmod(parfit,fitobj)
     if len(smod[(smod < 0)]) > 0:
         logger.warning(f'  --> len(smod[(smod < 0)]) > 0, {night}')
+        if order_use == 0:
+            bleh = np.ones((3,3))
+            primary_hdu = fits.PrimaryHDU(bleh)
+            hdul = fits.HDUList([primary_hdu,hdu_fail])
+            hdul.writeto('{}/{}/{}_tellcorr.fits'.format(inparam.outpath, name, night))
+        else:
+            hh = fits.open('{}/{}/{}_tellcorr.fits'.format(inparam.outpath, name, night))
+            hh.append(hdu_fail)
+            hh.writeto('{}/{}/{}_tellcorr.fits'.format(inparam.outpath, name, night),overwrite=True)
         return nightsout, rvsminibox, parfitminibox, vsiniminibox
 
     #-------------------------------------------------------------------------------
@@ -275,17 +342,21 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
     rv0 = parfit[0]
 
-    rvsminibox   = rv0  + inparam.bvcs[night+tag] + rv0*inparam.bvcs[night+tag]/(3e5**2) # Barycentric correction
+    rvsminibox   = np.array([rv0  + inparam.bvcs[night+tag] + rv0*inparam.bvcs[night+tag]/(3e5**2) ]) # Barycentric correction
     parfitminibox = parfit
-    vsiniminibox = np.array(parfit[4])
+    vsiniminibox = np.array([parfit[4]])
     
     # Generate telluric model and divide out
     parfitT = parfit.copy(); parfitT[1] = 0
     tellmod,chisq = fmod(parfitT,fitobj)
-    stell_corr    = s / tellmod
+    stell_corr    = fitobj.s / tellmod
     w_corr        = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
 
+    w_corr      =     w_corr[(stell_corr < 1.05)]
+    stell_corr  = stell_corr[(stell_corr < 1.05)]
+
     # Save tell corrected results to fits file
+    c0    = fits.Column(name='ERRORFLAG'+str(order),      array=np.array([0]),            format='K')
     c1    = fits.Column(name='WAVE'+str(order),   array=w_corr,         format='D')
     c2    = fits.Column(name='FLUX'+str(order),   array=stell_corr,     format='D')
     cols  = fits.ColDefs([c1,c2])
@@ -383,7 +454,13 @@ if __name__ == '__main__':
 
     #-------------------------------------------------------------------------------
 
+    print('WARNING! WITHOUT SEPARATE ANALYSIS OF THE A AND B OBSERVATIONS THAT MAKE UP YOUR EXPOSURES, THE PRECISION IGRINS_RV IS NOT GUARANTEED! WILL LIKELY UNDERESTIMATE RV UNCERTAINTIES!')
+
     # Check user input
+
+    if args.mode.lower =='std': # If RV STD star, calculate uncertainty in method
+
+        sys.exit('CombinedAB version of code not meant to be run in STD mode!')
 
     initvsini = float(args.initvsini)
     vsinivary = float(args.vsinivary)
@@ -617,7 +694,7 @@ Input Parameters:
                 parfitbox = outsbox[2]
                 vsinibox  = outsbox[3]
             else:
-                nightsbox = nightsbox + outsbox[0]
+                nightsbox = np.concatenate((nightsbox,outsbox[0]))
                 rvbox     = np.concatenate((rvbox,outsbox[1]))
                 parfitbox = np.vstack((parfitbox,outsbox[2]))
                 vsinibox  = np.concatenate((vsinibox,outsbox[3]))
@@ -630,7 +707,7 @@ Input Parameters:
         c2    = fits.Column(name='RV'+str(order),     array=rvbox,     format='D')
         c3    = fits.Column(name='PARFIT'+str(order), array=parfitbox, format=str(len(parfitbox[0,:]))+'D', dim=(1,len(parfitbox[0,:])))
         c4    = fits.Column(name='VSINI'+str(order),  array=vsinibox,  format='D')
-        cols  = fits.ColDefs([c1,c2,c3,c4,c5])
+        cols  = fits.ColDefs([c1,c2,c3,c4])
         hdu_1 = fits.BinTableHDU.from_columns(cols)
 
         if jerp == 0: # If first time writing fits file, make up filler primary hdu
@@ -660,23 +737,12 @@ Input Parameters:
                 # If the number of different successfully fitted A/B exposures is less than required, pass NaN instead.
                 if T_L == 'T':
                     vsinisT[i,jerp] = np.nanmean(vsinitags)
-
-                    if (np.sum(~np.isnan(rvtags)) < nAB ):
-                        rvmasterboxT[i,jerp]  = np.nan
-                        stdmasterboxT[i,jerp] = np.nan
-                    else:
-                        rvmasterboxT[i,jerp]  = np.nanmean(rvtags)
-                        stdmasterboxT[i,jerp] = np.nanstd(rvtags)/np.sqrt(len(rvtags))
+                    rvmasterboxT[i,jerp]  = np.nanmean(rvtags)
 
                 else:
                     vsinisL[i,jerp] = np.nanmean(vsinitags)
+                    rvmasterboxL[i,jerp]  = np.nanmean(rvtags)
 
-                    if (np.sum(~np.isnan(rvtags)) < nAB ):
-                        rvmasterboxL[i,jerp]  = np.nan
-                        stdmasterboxL[i,jerp] = np.nan
-                    else:
-                        rvmasterboxL[i,jerp]  = np.nanmean(rvtags)
-                        stdmasterboxL[i,jerp] = np.nanstd(rvtags)/np.sqrt(len(rvtags))
             T_L = 'L'
 
 
@@ -688,12 +754,10 @@ Input Parameters:
 
     if len(nightsL) > 0:
         rvboxcomblist  = [rvmasterboxT,rvmasterboxL]
-        stdboxcomblist = [stdmasterboxT,stdmasterboxL]
         vsinicomblist  = [vsinisT,vsinisL]
         obscomblist    = [obsT,obsL]
     else:
         rvboxcomblist  = [rvmasterboxT]
-        stdboxcomblist = [stdmasterboxT]
         vsinicomblist  = [vsinisT]
         obscomblist    = [obsT]
 
@@ -701,7 +765,6 @@ Input Parameters:
     for boxind in range(len(rvboxcomblist)):
 
         rvmasterbox  = rvboxcomblist[boxind]
-        stdmasterbox = stdboxcomblist[boxind]
         vsinibox     = vsinicomblist[boxind]
         obsbox       = obscomblist[boxind]
 
@@ -709,14 +772,7 @@ Input Parameters:
 
         if args.mode=='STD': # If RV STD star, calculate uncertainty in method
 
-            # Calculate the precision within an order across nights
-            sigma_O2     = np.array([np.nanstd(rvmasterbox[:,ll])**2 for ll in range(len(orders))])
-            sigma_ABbar2 = np.ones_like(sigma_O2)
-
-            # Calculate uncertainty in method as difference between variance within an order and mean variance within a night's different exposure RVs
-            for ll in range(len(orders)):
-                sigma_ABbar2[ll] = np.nanmedian(stdmasterbox[:,ll]**2)
-            sigma_method2 = sigma_O2 - sigma_ABbar2
+            sys.exit('CombinedAB version of code not meant to be run in STD mode!')
 
         else: # If target star, load the uncertainty in method calculated from our RV STD star runs
             if boxind == 0:
@@ -748,7 +804,7 @@ Input Parameters:
 
             # Calculate the uncertainty in each night/order RV as the sum of the uncertainty in method and the uncertainty in that night's As and Bs RVs
             for night in range(Nnights):
-                sigma_ON2[night,ll] = sigma_method2[ll] + stdmasterbox[night,ll]**2
+                sigma_ON2[night,ll] = sigma_method2[ll]
                 
         # If taking absolute RVs, add in uncertainty characterized by scatter between mean RVs of different orders
         if args.abs.lower() == 'abs':
