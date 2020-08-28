@@ -704,7 +704,7 @@ Input Parameters:
 
     # Avg zero-point offset of the different observatory and mounting epoch RVs, to add back in later
     if args.abs.lower() == 'rel':
-        rvZeroBase = np.nanmean([rvboxcomblist[0][(np.unique(obscomblist[0])[0] == obs_name),ll] for ll in range(len(orders))])
+        rvZeroBase = np.nanmean([rvboxcomblist[0][(obscomblist[0] == np.unique(obscomblist[0])[0]),ll] for ll in range(len(orders))])
 
     # Iterate over tight and loose mounting data sets...
     for boxind in range(len(rvboxcomblist)):
