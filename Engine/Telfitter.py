@@ -267,11 +267,11 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args):
         bleh = np.ones((3,3))
         primary_hdu = fits.PrimaryHDU(bleh)
         hdul = fits.HDUList([primary_hdu,hdu_1])
-        hdul.writeto('{}/{}A0_treatedTelfit.fits'.format(inparam.outpath, night))
+        hdul.writeto('{}/{}A0_treatedTelfit_model.fits'.format(inparam.outpath, night))
     except:
-        hh = fits.open('{}/{}A0_treatedTelfit.fits'.format(inparam.outpath, night))
+        hh = fits.open('{}/{}A0_treatedTelfit_model.fits'.format(inparam.outpath, night))
         hh.append(hdu_1)
-        hh.writeto('{}/{}A0_treatedTelfit.fits'.format(inparam.outpath, night), overwrite=True)
+        hh.writeto('{}/{}A0_treatedTelfit_model.fits'.format(inparam.outpath, night), overwrite=True)
 
     '''
       resolution_fit_mode = SVD ought to give faster, more accurate fits for the deep telluric lines we mostly see in K band
@@ -370,6 +370,24 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args):
 
     watm_save = watm_in.copy(); satm_save = satm_in.copy();
     newwave1 = newwave[(newwave > watm_in[0]-10) & (newwave < watm_in[-1]+10)]
+
+
+    c0  = fits.Column(name='x'+str(order),      array=model2.x,            format='D')
+    c1  = fits.Column(name='y'+str(order),           array=model2.y,                  format='D')
+    cols = fits.ColDefs([c0,c1])
+    hdu_1 = fits.BinTableHDU.from_columns(cols)
+
+
+
+    try:
+        bleh = np.ones((3,3))
+        primary_hdu = fits.PrimaryHDU(bleh)
+        hdul = fits.HDUList([primary_hdu,hdu_1])
+        hdul.writeto('{}/{}A0_treatedTelfit_model2.fits'.format(inparam.outpath, night))
+    except:
+        hh = fits.open('{}/{}A0_treatedTelfit_model2.fits'.format(inparam.outpath, night))
+        hh.append(hdu_1)
+        hh.writeto('{}/{}A0_treatedTelfit_model2.fits'.format(inparam.outpath, night), overwrite=True)
 
     # Parameters for reproducing Livingston template with Telfit
     if args.band == 'K':
@@ -590,6 +608,25 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args):
     fitterL.ImportData(data2)
 
     modelL = fitterL.GenerateModel(parfittedL,nofit=True)
+
+
+    c0  = fits.Column(name='x'+str(order),      array=modelL.x,            format='D')
+    c1  = fits.Column(name='y'+str(order),           array=modelL.y,                  format='D')
+    cols = fits.ColDefs([c0,c1])
+    hdu_1 = fits.BinTableHDU.from_columns(cols)
+
+
+
+    try:
+        bleh = np.ones((3,3))
+        primary_hdu = fits.PrimaryHDU(bleh)
+        hdul = fits.HDUList([primary_hdu,hdu_1])
+        hdul.writeto('{}/{}A0_treatedTelfit_modelL.fits'.format(inparam.outpath, night))
+    except:
+        hh = fits.open('{}/{}A0_treatedTelfit_modelL.fits'.format(inparam.outpath, night))
+        hh.append(hdu_1)
+        hh.writeto('{}/{}A0_treatedTelfit_modelL.fits'.format(inparam.outpath, night), overwrite=True)
+
 
     global x, satmLivGen, watm_Liv,satm_Liv;
 
