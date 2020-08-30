@@ -164,6 +164,7 @@ def MPinst(args, inparam, jerp, orders, i):
         cols  = fits.ColDefs([c0])
         hdu_1 = fits.BinTableHDU.from_columns(cols)
 
+
         # If first time writing fits file, make up filler primary hdu
         if order == firstorder:
             bleh = np.ones((3,3))
@@ -179,7 +180,24 @@ def MPinst(args, inparam, jerp, orders, i):
     #-------------------------------------------------------------------------------
     if not pre_err:
         # Get best fit wavelength solution
+
         a0w_out_fit = parfit[6] + parfit[7]*x + parfit[8]*(x**2.) + parfit[9]*(x**3.)
+        fit,chi = fmod(parfit, fitobj)
+        c0  = fits.Column(name='ERRORFLAG'+str(order),      array=np.array([0]),            format='K')
+        c1  = fits.Column(name='WAVE'+str(order),           array=a0w_out_fit,                  format='D')
+        c3  = fits.Column(name='X'+str(order),              array=x,                      format='D')
+        c4  = fits.Column(name='INTENS'+str(order),         array=s,               format='D')
+        c5  = fits.Column(name='SIGMA'+str(order),          array=u,                      format='D')
+        c6  = fits.Column(name='SMOD'+str(order),           array=fit,                    format='D')
+        c10 = fits.Column(name='PARFIT',                    array=parfit,                   format='D')
+        cols = fits.ColDefs([c0,c1,c3,c4,c5,c6,c10])
+        hdu_1 = fits.BinTableHDU.from_columns(cols)
+        bleh = np.ones((3,3))
+        primary_hdu = fits.PrimaryHDU(bleh)
+        hdul = fits.HDUList([primary_hdu,hdu_1])
+        hdul.writeto('{}/{}A0_treatedprefit_{}.fits'.format(inparam.outpath, night, args.band))
+
+
 
         # Trim stellar template to new relevant wavelength range
         mwave_in,mflux_in = stellarmodel_setup(a0w_out_fit/1e4, inparam.mwave0, inparam.mflux0)
