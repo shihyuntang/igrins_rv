@@ -156,6 +156,15 @@ def MPinst(args, inparam, jerp, orders, i):
         parfit_3 = optimizer(parfit_2, dpar_st,   hardbounds, fitobj, optimize)
         parfit_4 = optimizer(parfit_3, dpar,      hardbounds, fitobj, optimize)
         parfit = optimizer(parfit_4,   dpar_wave, hardbounds, fitobj, optimize)
+
+        outplotter_tel(parfit, fitobj, f'InitialFit_Order{order}_{night}', inparam, args)
+        outplotter_tel(parfit_1,fitobj, f'Pre_parfit1_{order}_{night}', inparam, args)
+        outplotter_tel(parfit_2,fitobj, f'Pre_parfit2_{order}_{night}', inparam, args)
+        outplotter_tel(parfit_3,fitobj, f'Pre_parfit3_{order}_{night}', inparam, args)
+        outplotter_tel(parfit_4,fitobj, f'Pre_parfit4_{order}_{night}', inparam, args)
+        outplotter_tel(parfit, fitobj, f'Pre_parfit_{order}_{night}', inparam, args)
+
+
     except:
         pre_err = True
         logger.warning(f'  --> NIGHT {night}, ORDER {order} HIT ERROR DURING PRE_OPT')
