@@ -523,6 +523,7 @@ if __name__ == '__main__':
     #     orders = np.array([2, 3, 4, 5, 6, 7, 8, 10, 14, 16])
     # elif args.band=='H':
     #     orders = np.array([2, 3, 4, 6, 13, 14, 16, 20, 21, 22])
+    orders = np.array([22])
     #-------------------------------------------------------------------------------
 
     # Retrieve stellar and telluric templates
