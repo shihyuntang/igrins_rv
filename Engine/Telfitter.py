@@ -269,9 +269,9 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args):
         hdul = fits.HDUList([primary_hdu,hdu_1])
         hdul.writeto('{}/{}A0_treatedTelfit.fits'.format(inparam.outpath, night))
     except:
-        hh = fits.open('{}/{}A0_treatedTelfit{}.fits'.format(inparam.outpath, night, args.band))
+        hh = fits.open('{}/{}A0_treatedTelfit.fits'.format(inparam.outpath, night))
         hh.append(hdu_1)
-        hh.writeto('{}/{}A0_treatedTelfit{}.fits'.format(inparam.outpath, night, args.band), overwrite=True)
+        hh.writeto('{}/{}A0_treatedTelfit.fits'.format(inparam.outpath, night), overwrite=True)
 
     '''
       resolution_fit_mode = SVD ought to give faster, more accurate fits for the deep telluric lines we mostly see in K band
