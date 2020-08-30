@@ -192,11 +192,16 @@ def MPinst(args, inparam, jerp, orders, i):
         c10 = fits.Column(name='PARFIT',                    array=parfit,                   format='D')
         cols = fits.ColDefs([c0,c1,c3,c4,c5,c6,c10])
         hdu_1 = fits.BinTableHDU.from_columns(cols)
-        bleh = np.ones((3,3))
-        primary_hdu = fits.PrimaryHDU(bleh)
-        hdul = fits.HDUList([primary_hdu,hdu_1])
-        hdul.writeto('{}/{}A0_treatedprefit_{}.fits'.format(inparam.outpath, night, args.band))
 
+        if order == firstorder:
+            bleh = np.ones((3,3))
+            primary_hdu = fits.PrimaryHDU(bleh)
+            hdul = fits.HDUList([primary_hdu,hdu_1])
+            hdul.writeto('{}/{}A0_treatedprefit_{}.fits'.format(inparam.outpath, night, args.band))
+        else:
+            hh = fits.open('{}/{}A0_treatedprefit_{}.fits'.format(inparam.outpath, night, args.band))
+            hh.append(hdu_1)
+            hh.writeto('{}/{}A0_treatedprefit_{}.fits'.format(inparam.outpath, night, args.band), overwrite=True)
 
 
         # Trim stellar template to new relevant wavelength range
