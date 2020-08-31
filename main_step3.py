@@ -285,7 +285,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
             outplotter_23(parfitT, fitobj, 'parfitT_{}_{}_{}'.format(order,night,tag), trk, inparam, args, step2or3)
             outplotter_23(parfit, fitobj,  'parfit_{}_{}_{}'.format(order,night,tag), trk, inparam, args, step2or3)
 
-        rv0 = parfit[0]
+        rv0 = parfit[0] - parfit[2]
 
         rvsminibox[t]   = rv0  + inparam.bvcs[night+tag] + rv0*inparam.bvcs[night+tag]/(3e5**2) # Barycentric correction
         parfitminibox[t]= parfit
@@ -596,7 +596,7 @@ Input Parameters:
     else:
         nightscomblist = [nightsT]
 
-    orders = np.array([21])
+    orders = np.array([21, 22])
     #-------------------------------------------------------------------------------
 
     # Run order by order, multiprocessing over nights within an order
