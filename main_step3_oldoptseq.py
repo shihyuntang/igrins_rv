@@ -596,7 +596,7 @@ Input Parameters:
     else:
         nightscomblist = [nightsT]
 
-
+    orders = np.array([21, 22])
     #-------------------------------------------------------------------------------
 
     # Run order by order, multiprocessing over nights within an order
