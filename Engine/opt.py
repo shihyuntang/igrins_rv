@@ -277,7 +277,7 @@ def optimizer(par0,dpar0, hardbounds_v_ip, fitobj, optimize):
     # optkind_cp = optkind
     # nk_cp = nk
     # nc_cp = nc
-    opt = nlopt.opt(nlopt.LN_NELDERMEAD, 15)
+    opt = nlopt.opt(nlopt.NLOPT_LN_SBPLX, 15)
     opt.set_min_objective(fmodel_chi)
     lows  = par0-dpar0
     highs = par0+dpar0
