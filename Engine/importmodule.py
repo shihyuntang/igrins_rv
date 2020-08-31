@@ -87,7 +87,7 @@ def read_prepdata(args):
         Tnights = np.array(targdata['night'],dtype='str')
         tags0   = np.array(targdata['tag'], dtype='int')
         beams0  = np.array(targdata['beam'],dtype='str')
-        mjds0   = np.array(targdata['mjd'])
+        mjds0   = np.array(targdata['mjd'],dtype=float)
         bvcs0   = np.array(targdata['bvc'])
         ams     = np.array(targdata['airmass'])
 
@@ -106,10 +106,14 @@ def read_prepdata(args):
         tagsA = {}; tagsB = {}; mjds = {}; bvcs = {};
         night_orig = Tnights[0]; tagsA0 = []; tagsB0 = [];
 
+        nights_unique = np.unique(Tnights)
+        for hrt in range(len(nights_unique)):
+            jdset = mjds0[(Tnights == nights_unique[hrt])]
+            mjds[nights_unique[hrt]] = np.nanmean(jdset)
+
         for hrt in range(len(Tnights)):
             tag1 = '{:04d}'.format(tags0[hrt])
 
-            mjds[Tnights[hrt]]                = float(mjds0[hrt])
             bvcs[str(Tnights[hrt])+str(tag1)] = float(bvcs0[hrt])
 
             if Tnights[hrt] == night_orig:
