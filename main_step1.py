@@ -156,20 +156,6 @@ def MPinst(args, inparam, jerp, orders, i):
         parfit_3 = optimizer(parfit_2, dpar_st,   hardbounds, fitobj, optimize)
         parfit_4 = optimizer(parfit_3, dpar,      hardbounds, fitobj, optimize)
         parfit = optimizer(parfit_4,   dpar_wave, hardbounds, fitobj, optimize)
-
-        print('1',parfit_1)
-        print('2',parfit_2)
-        print('3',parfit_3)
-        print('4',parfit_4)
-
-        outplotter_tel(parfit, fitobj, f'InitialFit_Order{order}_{night}', inparam, args)
-        outplotter_tel(parfit_1,fitobj, f'Pre_parfit1_{order}_{night}', inparam, args)
-        outplotter_tel(parfit_2,fitobj, f'Pre_parfit2_{order}_{night}', inparam, args)
-        outplotter_tel(parfit_3,fitobj, f'Pre_parfit3_{order}_{night}', inparam, args)
-        outplotter_tel(parfit_4,fitobj, f'Pre_parfit4_{order}_{night}', inparam, args)
-        outplotter_tel(parfit, fitobj, f'Pre_parfit_{order}_{night}', inparam, args)
-
-
     except:
         pre_err = True
         logger.warning(f'  --> NIGHT {night}, ORDER {order} HIT ERROR DURING PRE_OPT')
@@ -177,7 +163,6 @@ def MPinst(args, inparam, jerp, orders, i):
         c0    = fits.Column(name=f'ERRORFLAG{order}', array=np.array([1]), format='K')
         cols  = fits.ColDefs([c0])
         hdu_1 = fits.BinTableHDU.from_columns(cols)
-
 
         # If first time writing fits file, make up filler primary hdu
         if order == firstorder:
@@ -194,29 +179,7 @@ def MPinst(args, inparam, jerp, orders, i):
     #-------------------------------------------------------------------------------
     if not pre_err:
         # Get best fit wavelength solution
-
         a0w_out_fit = parfit[6] + parfit[7]*x + parfit[8]*(x**2.) + parfit[9]*(x**3.)
-        fit,chi = fmod(parfit, fitobj)
-        c0  = fits.Column(name='ERRORFLAG'+str(order),      array=np.array([0]),            format='K')
-        c1  = fits.Column(name='WAVE'+str(order),           array=a0w_out_fit,                  format='D')
-        c3  = fits.Column(name='X'+str(order),              array=x,                      format='D')
-        c4  = fits.Column(name='INTENS'+str(order),         array=s,               format='D')
-        c5  = fits.Column(name='SIGMA'+str(order),          array=u,                      format='D')
-        c6  = fits.Column(name='SMOD'+str(order),           array=fit,                    format='D')
-        c10 = fits.Column(name='PARFIT',                    array=parfit,                   format='D')
-        cols = fits.ColDefs([c0,c1,c3,c4,c5,c6,c10])
-        hdu_1 = fits.BinTableHDU.from_columns(cols)
-
-        if order == firstorder:
-            bleh = np.ones((3,3))
-            primary_hdu = fits.PrimaryHDU(bleh)
-            hdul = fits.HDUList([primary_hdu,hdu_1])
-            hdul.writeto('{}/{}A0_treatedprefit_{}.fits'.format(inparam.outpath, night, args.band))
-        else:
-            hh = fits.open('{}/{}A0_treatedprefit_{}.fits'.format(inparam.outpath, night, args.band))
-            hh.append(hdu_1)
-            hh.writeto('{}/{}A0_treatedprefit_{}.fits'.format(inparam.outpath, night, args.band), overwrite=True)
-
 
         # Trim stellar template to new relevant wavelength range
         mwave_in,mflux_in = stellarmodel_setup(a0w_out_fit/1e4, inparam.mwave0, inparam.mflux0)
@@ -400,10 +363,11 @@ def use_w(args):
                 pixs = pixs + pix
 
             pixsS = list(sorted(pixs))
+            q = pixsS[1:-1]
             if len(pixsS) == 2:
                 filew.write('{}, {}, {},[]\n'.format(m_orders_unique[o],pixsS[0],pixsS[-1]))
             else:
-                filew.write('{}, {}, {},"{}"\n'.format(m_orders_unique[o],pixsS[0],pixsS[-1],[pixsS[n:n+2] for n in range(1,len(pixs)-2)]))
+                filew.write('{}, {}, {},"{}"\n'.format(m_orders_unique[o],pixsS[0],pixsS[-1],[[first,second] for first,second in  zip(q[0::2], q[1::2])]))
 
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
@@ -537,7 +501,6 @@ if __name__ == '__main__':
     #     orders = np.array([2, 3, 4, 5, 6, 7, 8, 10, 14, 16])
     # elif args.band=='H':
     #     orders = np.array([2, 3, 4, 6, 13, 14, 16, 20, 21, 22])
-    orders = np.array([22])
     #-------------------------------------------------------------------------------
 
     # Retrieve stellar and telluric templates
