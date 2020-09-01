@@ -361,12 +361,13 @@ def use_w(args):
                 pixO = wavesols['x'+str(m_orders_unique[o])];
                 pix  = [pixO[(np.argmin(abs(wO-wavebounds[k])))] for k in [0,1]]
                 pixs = pixs + pix
-
+                
             pixsS = list(sorted(pixs))
+            q = pixsS[1:-1]
             if len(pixsS) == 2:
                 filew.write('{}, {}, {},[]\n'.format(m_orders_unique[o],pixsS[0],pixsS[-1]))
             else:
-                filew.write('{}, {}, {},"{}"\n'.format(m_orders_unique[o],pixsS[0],pixsS[-1],[pixsS[n:n+2] for n in range(1,len(pixs)-2)]))
+                filew.write('{}, {}, {},"{}"\n'.format(m_orders_unique[o],pixsS[0],pixsS[-1],[[first,second] for first,second in  zip(q[0::2], q[1::2])]))
 
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
