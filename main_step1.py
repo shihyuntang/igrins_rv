@@ -156,6 +156,13 @@ def MPinst(args, inparam, jerp, orders, i):
         parfit_3 = optimizer(parfit_2, dpar_st,   hardbounds, fitobj, optimize)
         parfit_4 = optimizer(parfit_3, dpar,      hardbounds, fitobj, optimize)
         parfit = optimizer(parfit_4,   dpar_wave, hardbounds, fitobj, optimize)
+
+        print('1',parfit_1)
+        print('2',parfit_2)
+        print('3',parfit_3)
+        print('4',parfit_4)
+        time.sleep(2)
+
     except:
         pre_err = True
         logger.warning(f'  --> NIGHT {night}, ORDER {order} HIT ERROR DURING PRE_OPT')
@@ -361,7 +368,7 @@ def use_w(args):
                 pixO = wavesols['x'+str(m_orders_unique[o])];
                 pix  = [pixO[(np.argmin(abs(wO-wavebounds[k])))] for k in [0,1]]
                 pixs = pixs + pix
-                
+
             pixsS = list(sorted(pixs))
             q = pixsS[1:-1]
             if len(pixsS) == 2:
@@ -502,7 +509,7 @@ if __name__ == '__main__':
     # elif args.band=='H':
     #     orders = np.array([2, 3, 4, 6, 13, 14, 16, 20, 21, 22])
     #-------------------------------------------------------------------------------
-
+    orders = np.array([22])
     # Retrieve stellar and telluric templates
     watm, satm, mwave0, mflux0 = setup_templates_tel()
 
