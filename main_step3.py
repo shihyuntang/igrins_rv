@@ -299,14 +299,14 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
                                      prog        = 'IGRINS Spectra Radial Velocity Pipeline - Step 3',
                                      description = '''
-                                     
+
                                      Performs a full analysis of each target star observation to produce accurate and precise RVs. \n
                                      All the wavelength regions defined in Step 1 are used, and the code analyzes each observation that is part of a given exposure separately. \n
                                      Unless the target vsini is already known to high accuracy, an initial run of Step 3 in which \vsini is allowed to vary is required. \n
                                      This provides an estimate of vsini that can then be plugged into the code as a fixed value in the second run of Step 3. \n
                                      If the user seeks the best possible RV uncertainty estimates, or if their target star has a relatively high \vsini ($>$ 10 \kms), they must run Step 3 once with \vsini held fixed at its estimated value and once with \vsini held fixed at this value plus or minus one sigma. \n
                                      The minor differences in the RVs of the two runs (as low as $<$1 \ms and as high as 7 \ms) can then be incorporated into the final uncertainties. \n
-                                     If \vsini is already well-known, it is not necessary to run Step 3 more than once, as the code fully converges to the final RVs (within uncertainty) through just one run.  
+                                     If \vsini is already well-known, it is not necessary to run Step 3 more than once, as the code fully converges to the final RVs (within uncertainty) through just one run.
                                      ''',
                                      epilog = "Contact authors: asa.stahl@rice.edu; sytang@lowell.edu")
     parser.add_argument("targname",                          action="store",
@@ -595,7 +595,8 @@ Input Parameters:
     else:
         nightscomblist = [nightsT]
 
-
+    print('!!! ONLY RUN ORDER 22')
+    orders = np.array([22])
     #-------------------------------------------------------------------------------
 
     # Run order by order, multiprocessing over nights within an order
@@ -748,13 +749,13 @@ Input Parameters:
             rvBase = {}
             for obs_name in np.unique(obsbox):
                 rvBase[obs_name] = np.nanmean([np.nanmean(rvmasterbox[(obsbox == obs_name),ll]) for ll in range(len(orders))])
-        
+
         for ll in range(len(orders)):
 
             if args.abs.lower() == 'rel':
                 for obs_name in np.unique(obsbox):
                     rvmasterbox[(obsbox == obs_name),ll] -= np.nanmean(rvmasterbox[(obsbox == obs_name),ll]) - (rvZeroBase - rvBase[obs_name])
-                    
+
             # Mean-subtract each order's RVs within an observatory epoch
             for rvin in rvmasterbox[(obsbox == 'NA'),ll]:
                 if np.isnan(rvin) == False:
@@ -763,7 +764,7 @@ Input Parameters:
             # Calculate the uncertainty in each night/order RV as the sum of the uncertainty in method and the uncertainty in that night's As and Bs RVs
             for night in range(Nnights):
                 sigma_ON2[night,ll] = sigma_method2[ll] + stdmasterbox[night,ll]**2
-                
+
         # If taking absolute RVs, add in uncertainty characterized by scatter between mean RVs of different orders
         if args.abs.lower() == 'abs':
             sigma_order_to_order = np.nanstd([np.nanmean(rvmasterbox[:,ll]) for ll in range(len(orders))])/np.sqrt(len(orders))
@@ -806,7 +807,7 @@ Input Parameters:
 
         if args.abs.lower() == 'abs':
             stdfinal = np.sqrt(stdfinal**2 + sigma_order_to_order**2)
-            
+
         # Plot results
         f, axes = plt.subplots(1, 1, figsize=(5,3), facecolor='white', dpi=300)
 
