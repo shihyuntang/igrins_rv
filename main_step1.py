@@ -161,7 +161,7 @@ def MPinst(args, inparam, jerp, orders, i):
         print('2',parfit_2)
         print('3',parfit_3)
         print('4',parfit_4)
-        time.sleep(2)
+        time.sleep(10)
 
     except:
         pre_err = True
