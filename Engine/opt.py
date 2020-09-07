@@ -303,6 +303,6 @@ def optimizer(par0,dpar0, hardbounds_v_ip, fitobj, optimize):
     opt.set_maxtime(1200) #seconds
     # Quit optimization based on relative change in output fit parameters between iterations.
     # Choosing smaller change tolerance than 1e-6 has demonstrated no improvement in precision.
-    opt.set_ftol_rel(1e-16)
+    opt.set_ftol_rel(1e-24)
     parfit = opt.optimize(par0)
     return parfit
