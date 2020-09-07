@@ -509,7 +509,7 @@ if __name__ == '__main__':
     # elif args.band=='H':
     #     orders = np.array([2, 3, 4, 6, 13, 14, 16, 20, 21, 22])
     #-------------------------------------------------------------------------------
-    orders = np.array([22])
+
     # Retrieve stellar and telluric templates
     watm, satm, mwave0, mflux0 = setup_templates_tel()
 
