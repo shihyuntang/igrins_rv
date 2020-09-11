@@ -52,10 +52,11 @@ def fmodel_chi(par,grad):
 
     if w[-1] < w[0]:
         # print(f'{nc_cp}, {nk_cp}, {optkind_cp}: Hitting negative wavelength solution for some reason !')
-        return 1e12
+        return 1e16
 
     # Define the speed of light in km/s and other useful quantities
-    c = 2.99792e5
+    # c = 2.99792e5
+    c = 2.99792458e5
     npts = len(w)
 
     # Apply velocity shifts and scale
@@ -67,7 +68,7 @@ def fmodel_chi(par,grad):
     #Verify that new wavelength scale is a subset of old wavelength scale.
     if (w[0] < watm[0]) or (w[-1] > watm[-1]):
         # print(f'{nc_cp}, {nk_cp}, {optkind_cp}: w not subset of watm, w goes from '+str(w[0])+' to '+str(w[-1])+' and watm goes from '+str(watm[0])+' to '+str(watm[-1]))
-        return 1e12
+        return 1e16
 
     #Now interpolate the spot spectrum onto the telluric wavelength scale
     interpfunc = interp1d(wspot,sspot, kind='linear',bounds_error=False,fill_value='extrapolate')
@@ -92,10 +93,10 @@ def fmodel_chi(par,grad):
     try:
         spl = splrep(w,fwhmraw)
     except TypeError:
-        return 1e7
+        return 1e16
     fwhm = splev(watm,spl)
     if min(fwhm) < 1 or max(fwhm) > 7:
-        return 1e7
+        return 1e16
 
     #Handle instrumental broadening
     vhwhm = dw*abs(fwhm)/mnw*c/2.
@@ -144,9 +145,10 @@ def fmod(par,fitobj):
 
     if w[-1] < w[0]:
         sys.exit('WAVE ERROR 1 {}'.format(par[6:10]))
-        return 1e7
+        return 1e16
 
-    c = 2.99792e5
+    # c = 2.99792e5
+    c = 2.99792458e5
     npts = len(w)
 
     wspot = mwave*(1.+par[0]/c)
@@ -156,7 +158,7 @@ def fmod(par,fitobj):
 
     if (w[0] < watm[0]) or (w[-1] > watm[-1]):
         sys.exit('WAVE ERROR 2 {} {} {} {} {}'.format(par[6:10],watm[0],watm[-1],w[0],w[-1]))
-        return 1e7
+        return 1e16
 
     interpfunc = interp1d(wspot,sspot, kind='linear',bounds_error=False,fill_value='extrapolate')
     sspot2 = interpfunc(watm)
@@ -176,12 +178,12 @@ def fmod(par,fitobj):
     fwhmraw = par[5] + par[13]*(fitobj.x) + par[14]*(fitobj.x**2)
     if min(fwhmraw) < 1 or max(fwhmraw) > 7:
         sys.exit('IP ERROR 1 {} {} {} {} {}'.format(par[5],par[13],par[14],min(fwhmraw),max(fwhmraw) ))
-        return 1e7
+        return 1e16
     try:
         spl = splrep(w,fwhmraw)
     except ValueError:
         sys.exit('IP ERROR 2 {} {} {}'.format(par[5],par[13],par[14]))
-        return 1e7
+        return 1e16
     fwhm = splev(watm,spl)
 
     vhwhm = dw*abs(fwhm)/mnw*c/2.
@@ -211,9 +213,10 @@ def fmod_conti(par,fitobj):
 
     if w[-1] < w[0]:
         sys.exit('WAVE ERROR 1 {}'.format(par[6:10]))
-        return 1e7
+        return 1e16
 
-    c = 2.99792e5
+    # c = 2.99792e5
+    c = 2.99792458e5
     npts = len(w)
 
     wspot = mwave*(1.+par[0]/c)
@@ -223,7 +226,7 @@ def fmod_conti(par,fitobj):
 
     if (w[0] < watm[0]) or (w[-1] > watm[-1]):
         sys.exit('WAVE ERROR 2 {} {} {} {} {}'.format(par[6:10],watm[0],watm[-1],w[0],w[-1]))
-        return 1e7
+        return 1e16
 
     interpfunc = interp1d(wspot,sspot, kind='linear',bounds_error=False,fill_value='extrapolate')
     sspot2 = interpfunc(watm)
@@ -243,12 +246,12 @@ def fmod_conti(par,fitobj):
     fwhmraw = par[5] + par[13]*(fitobj.x) + par[14]*(fitobj.x**2)
     if min(fwhmraw) < 1 or max(fwhmraw) > 7:
         sys.exit('IP ERROR 1 {} {} {} {} {}'.format(par[5],par[13],par[14],min(fwhmraw),max(fwhmraw) ))
-        return 1e7
+        return 1e16
     try:
         spl = splrep(w,fwhmraw)
     except ValueError:
         sys.exit('IP ERROR 2 {} {} {}'.format(par[5],par[13],par[14]))
-        return 1e7
+        return 1e16
     fwhm = splev(watm,spl)
 
     vhwhm = dw*abs(fwhm)/mnw*c/2.
