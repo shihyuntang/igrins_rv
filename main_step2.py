@@ -255,11 +255,28 @@ def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
             dpars = dpars2
 
         for optkind in optgroup:
-            parfit_1 = optimizer( parstart, dpars[optkind], hardbounds, fitobj, optimize)
+
+            # sy chi2 test-----------
+            filesndirs = os.listdir(outpath)
+
+            trksy = 1; go = True;
+            while go == True:
+                name = f'{outpath}/20160225_0105_opt{trksy}.txt'
+                if name not in filesndirs:
+                    break
+                trksy += 1
+
+            filechi2 = open(f'20160225_0105_opt{trksy}.csv', 'w')
+            filechi2.write('par0, chi2\n')
+            # sy chi2 test-----------
+
+            parfit_1 = optimizer( parstart, dpars[optkind], hardbounds, fitobj, optimize, trksy)
             parstart = parfit_1.copy()
             if args.debug:
                 outplotter_23(parfit_1, fitobj, '{}_{}_{}_parfit_{}{}'.format(order,night,tag,nk,optkind), trk, inparam, args, step2or3)
                 logger.debug(f'{order}_{tag}_{nk}_{optkind}:\n {parfit_1}')
+
+            filechi2.close() # sy chi2 test-----------
             nk += 1
 
     parfit = parfit_1.copy()
@@ -496,19 +513,6 @@ Input Parameters:
 
     outpath = f'./Output/{args.targname}_{args.band}'
 
-
-# sy chi2 test-----------
-    filesndirs = os.listdir(outpath)
-
-    trksy = 1; go = True;
-    while go == True:
-        name = f'{outpath}/night1_opt{trk}.txt'
-        if name not in filesndirs:
-            break
-        trksy += 1
-
-    filechi2 = open(f'night1_opt{trksy}.csv', 'w')
-    filechi2.write('par0, chi2\n')
     #-------------------------------------------------------------------------------
 
     # Set up logger
