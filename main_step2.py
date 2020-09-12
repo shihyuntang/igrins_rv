@@ -243,7 +243,8 @@ def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                     'twave',
                     'ip', 'v',
                     'ip', 'v',
-                    'twave',  's']
+                    'twave',  's',
+                    'cont'  's']
 
     nk = 1
     for nc, cycle in enumerate(np.arange(cycles), start=1):
