@@ -309,7 +309,7 @@ if __name__ == '__main__':
                                      Required if the average RV of the target star is unknown to > 5 km/s precision. \n
                                      Performs an abbreviated analysis of the target star observations in order to converge to coarsely accurate RVs, which will be used as starting points for the more precise analysis in the next step; \n
                                      simultaneously does the same for target star's vsini. \n
-                                     Only the single most precise wavelength region is used, and all separate observations for a given exposure are combined into one higher S/N spectrum before being fit. 
+                                     Only the single most precise wavelength region is used, and all separate observations for a given exposure are combined into one higher S/N spectrum before being fit.
                                      ''',
                                      epilog = "Contact authors: asa.stahl@rice.edu; sytang@lowell.edu")
     parser.add_argument("targname",                          action="store",
@@ -496,6 +496,19 @@ Input Parameters:
 
     outpath = f'./Output/{args.targname}_{args.band}'
 
+
+# sy chi2 test-----------
+    filesndirs = os.listdir(outpath)
+
+    trksy = 1; go = True;
+    while go == True:
+        name = f'{outpath}/night1_opt{trk}.txt'
+        if name not in filesndirs:
+            break
+        trksy += 1
+
+    filechi2 = open(f'night1_opt{trksy}.csv', 'w')
+    filechi2.write('par0, chi2\n')
     #-------------------------------------------------------------------------------
 
     # Set up logger

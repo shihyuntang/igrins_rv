@@ -123,6 +123,11 @@ def fmodel_chi(par,grad):
 
     # Compute chisq
     chisq = np.sum((fitobj_cp.s[mask] - smod[mask])**2. / fitobj_cp.u[mask]**2.)
+
+#------- sy test chi2
+
+    filechi2 = open(f'night1_opt{trksy}.csv', 'a')
+    filechi2.write(f'{par[0]}, {chisq}\n')
     # if (dpar0_cp[0] == 0) & (dpar0_cp[11] != 0):
     #     chisq = np.sum((fitobj_cp.s[mask] - smod[mask])**2. / fitobj_cp.u[mask]**2.)
     # else:
@@ -280,7 +285,7 @@ def optimizer(par0,dpar0, hardbounds_v_ip, fitobj, optimize):
     # optkind_cp = optkind
     # nk_cp = nk
     # nc_cp = nc
-    opt = nlopt.opt(nlopt.LN_COBYLA, 15)
+    opt = nlopt.opt(nlopt.LN_NELDERMEAD, 15)
     opt.set_min_objective(fmodel_chi)
     lows  = par0-dpar0
     highs = par0+dpar0
