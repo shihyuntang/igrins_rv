@@ -257,18 +257,18 @@ def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         for optkind in optgroup:
 
             # sy chi2 test-----------
-            if optkind == 's':
-                filesndirs = os.listdir('./Output/TauBoo_H')
 
-                trksy = 1; go = True;
-                while go == True:
-                    name = f'20160225_0105_opt{trksy}.csv'
-                    if name not in filesndirs:
-                        break
-                    trksy += 1
+            filesndirs = os.listdir('./Output/TauBoo_H')
 
-                filechi2 = open(f'./Output/TauBoo_H/20160225_0105_opt{trksy}.csv', 'w')
-                filechi2.write('par0, chi2\n')
+            trksy = 1; go = True;
+            while go == True:
+                name = f'20160225_0105_opt{trksy}.csv'
+                if name not in filesndirs:
+                    break
+                trksy += 1
+
+            filechi2 = open(f'./Output/TauBoo_H/20160225_0105_opt{trksy}.csv', 'w')
+            filechi2.write('par0, chi2\n')
             # sy chi2 test-----------
 
             parfit_1 = optimizer( parstart, dpars[optkind], hardbounds, fitobj, optimize, trksy)
