@@ -126,7 +126,7 @@ def fmodel_chi(par,grad):
 
 #------- sy test chi2
 
-    filechi2 = open(f'./Output/TauBoo_H/20160225_0105_opt{trksy_cp}.csv', 'a')
+    filechi2 = open(f'./Output/TauBoo_H/20160225_0109_opt{trksy_cp}.csv', 'a')
     filechi2.write(f'{par[0]}, {chisq}\n')
     # if (dpar0_cp[0] == 0) & (dpar0_cp[11] != 0):
     #     chisq = np.sum((fitobj_cp.s[mask] - smod[mask])**2. / fitobj_cp.u[mask]**2.)

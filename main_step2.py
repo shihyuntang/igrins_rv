@@ -262,12 +262,12 @@ def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
             trksy = 1; go = True;
             while go == True:
-                name = f'20160225_0105_opt{trksy}.csv'
+                name = f'20160225_0109_opt{trksy}.csv'
                 if name not in filesndirs:
                     break
                 trksy += 1
 
-            filechi2 = open(f'./Output/TauBoo_H/20160225_0105_opt{trksy}.csv', 'w')
+            filechi2 = open(f'./Output/TauBoo_H/20160225_0109_opt{trksy}.csv', 'w')
             filechi2.write('par0, chi2\n')
             # sy chi2 test-----------
 
