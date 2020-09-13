@@ -542,19 +542,16 @@ Input Parameters:
 
     #-------------------------------------------------------------------------------
 
+    
     # Use subset of nights if specified
     if args.nights_use != '':
-        nightstemp0 = np.array(ast.literal_eval(args.nights_use), dtype=str)
-        nightstemp = np.ones(len(nightstemp0), dtype=object)
-        for nn in range(len(nightstemp0)):
-            nnn = nightstemp0[nn]
-            if len(nnn) > 8:
-                nnn = nnn[:8]+'_'+nnn[8:]
-            nightstemp[nn] = nnn
+        nightstemp = np.array(ast.literal_eval(args.nights_use), dtype=str)
+        for nnn in nightstemp:
             if nnn not in nightsFinal:
                 sys.exit('NIGHT {} NOT FOUND UNDER ./Input_Data/{}'.format(nnn, args.targname))
-        nightsFinal = nightstemp.copy()
+        nightsFinal = nightstemp
         print('Only processing nights: {}'.format(nightsFinal))
+
 
     logger.info('Analyze with {} nights'.format(len(nightsFinal)))
 
