@@ -238,12 +238,12 @@ def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     # zero point for the instrumental resolution, and the vsini of the star separately, iterating and cycling between each set of parameter fits.
     cycles = 2
 
-    optgroup = [‘cont’, ‘twave’, ‘cont’, ‘s’,
-                ‘cont’, ‘twave’, ‘s’, ‘cont’,
-                ‘twave’,
-                ‘ip’, ‘v’,
-                ‘ip’, ‘v’,
-                ‘twave’, ‘s’]
+    optgroup = ['cont', 'twave', 'cont', 's',
+                'cont', 'twave', 's', 'cont',
+                'twave',
+                'ip', 'v',
+                'ip', 'v',
+                'twave', 's']
 
     nk = 1
     for nc, cycle in enumerate(np.arange(cycles), start=1):

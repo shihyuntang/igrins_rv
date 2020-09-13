@@ -123,7 +123,7 @@ def fmodel_chi(par,grad):
 
     # Compute chisq
     chisq = np.sum((fitobj_cp.s[mask] - smod[mask])**2. / fitobj_cp.u[mask]**2.)
-
+    chisq = chisq / (len(smod[mask]) - 15)
 #------- sy test chi2
 
     # filechi2 = open(f'./Output/TauBoo_H/20160225_0109_opt{trksy_cp}.csv', 'a')
@@ -204,6 +204,7 @@ def fmod(par,fitobj):
     mask = np.ones_like(smod,dtype=bool)
     mask[(fitobj.s < .0)] = False
     chisq = np.sum((fitobj.s[mask] - smod[mask])**2. / fitobj.u[mask]**2.)
+    chisq = chisq / (len(smod[mask]) - 15)
 
     return smod,chisq
 
