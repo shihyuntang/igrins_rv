@@ -285,7 +285,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
             outplotter_23(parfit, fitobj,  'parfit_{}_{}_{}'.format(order,night,tag), trk, inparam, args, step2or3)
 
         rv0 = parfit[0]
-        
+
         smod,chi = fmod(parfit,fitobj)
 
         rvsminibox[t]   = rv0  + inparam.bvcs[night+tag] + rv0*inparam.bvcs[night+tag]/(3e5**2) # Barycentric correction
@@ -301,14 +301,14 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
                                      prog        = 'IGRINS Spectra Radial Velocity Pipeline - Step 3',
                                      description = '''
-                                     
+
                                      Performs a full analysis of each target star observation to produce accurate and precise RVs. \n
                                      All the wavelength regions defined in Step 1 are used, and the code analyzes each observation that is part of a given exposure separately. \n
                                      Unless the target vsini is already known to high accuracy, an initial run of Step 3 in which \vsini is allowed to vary is required. \n
                                      This provides an estimate of vsini that can then be plugged into the code as a fixed value in the second run of Step 3. \n
                                      If the user seeks the best possible RV uncertainty estimates, or if their target star has a relatively high \vsini ($>$ 10 \kms), they must run Step 3 once with \vsini held fixed at its estimated value and once with \vsini held fixed at this value plus or minus one sigma. \n
                                      The minor differences in the RVs of the two runs (as low as $<$1 \ms and as high as 7 \ms) can then be incorporated into the final uncertainties. \n
-                                     If \vsini is already well-known, it is not necessary to run Step 3 more than once, as the code fully converges to the final RVs (within uncertainty) through just one run.  
+                                     If \vsini is already well-known, it is not necessary to run Step 3 more than once, as the code fully converges to the final RVs (within uncertainty) through just one run.
                                      ''',
                                      epilog = "Contact authors: asa.stahl@rice.edu; sytang@lowell.edu")
     parser.add_argument("targname",                          action="store",
@@ -597,7 +597,8 @@ Input Parameters:
     else:
         nightscomblist = [nightsT]
 
-
+    print('!!! ONLY RUN ORDER 21')
+    orders = np.array([21])
     #-------------------------------------------------------------------------------
 
     # Run order by order, multiprocessing over nights within an order
