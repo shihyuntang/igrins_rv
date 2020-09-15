@@ -74,10 +74,10 @@ def fmodel_chi(par,grad):
     else:
         wspot2 = wspot
         rspot2 = sspot
-        
+
     #Now interpolate the spot spectrum onto the telluric wavelength scale
     sspot2 = rebin_jv(wspot2,rspot2,watm,False)
-    
+
     #Mutliply rotationally broadened spot by telluric to create total spectrum
     smod = sspot2*satm
 
@@ -168,9 +168,9 @@ def fmod(par,fitobj):
     else:
         wspot2 = wspot
         rspot2 = sspot
-        
+
     sspot2 = rebin_jv(wspot2,rspot2,watm,False)
-    
+
     smod = sspot2*satm
 
     #Find mean observed wavelength and create a telluric velocity scale
@@ -237,9 +237,9 @@ def fmod_conti(par,fitobj):
     else:
         wspot2 = wspot
         rspot2 = sspot
-        
+
     sspot2 = rebin_jv(wspot2,rspot2,watm,False)
-    
+
     smod = sspot2*satm
 
     #Find mean observed wavelength and create a telluric velocity scale
