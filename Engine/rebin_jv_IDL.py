@@ -1,7 +1,7 @@
 def IDLspline (x,y,t,sigma):
 
     n = len(x)
-    
+
     xx = x
     yy = y
     tt = t
@@ -53,7 +53,7 @@ def IDLspline (x,y,t,sigma):
     spdiag = sinhin*(sinhs-dels)
 
     #; Need to do an iterative loop for this part.
-    for i in range(1,nm1): 
+    for i in range(1,nm1):
         diagin = 1./(diag2[i] - spdiag[i-1]*yp[i+n-1])
         yp[i] = diagin*(dx2[i] - spdiag[i-1]*yp[i-1])
         yp[i+n] = diagin*spdiag[i]
@@ -70,7 +70,7 @@ def IDLspline (x,y,t,sigma):
     sigmap = sigma*nm1/s
 
     j = 0; done = False;
-    
+
     for i in range(1,nm1+1):#;find subscript where xx[subs] > t(j) > xx[subs-1]
         while tt[j] < xx[i]:
             subs[j]=i
@@ -99,8 +99,8 @@ def IDLspline (x,y,t,sigma):
         return spl[0]
     else:
         return spl
-    
-    
+
+
 
 
 import numpy as np
@@ -179,23 +179,23 @@ def rebin_jv(Wold,Sold,Wnew,verbose):
         #    the old wavelength scale (Wold), but with the additional constraint that
         #    every XFac pixels in W will exactly fill a pixel in the new wavelength
         #   scale (Wnew). Optimized for XFac < Nnew.
-        
+
         dW = 0.5 * (Wnew[2:Nnew] - Wnew[0:Nnew-2]) #local pixel scale
         dW = np.concatenate((dW,[2*dW[Nnew-3] - dW[Nnew-4]])) #add trailing endpoint first
         dW = np.concatenate(([2*dW[0] - dW[1]],dW)) #add leading endpoint last
-        
+
         W = np.empty((XFac,Nnew)) #initialize W as array
         for i in range(XFac): #loop thru subpixels
             W[i,:] = Wnew + dW*(float(2*i+1)/(2.0*XFac) - 0.5) #pixel centers in W
-            
+
         W = np.transpose(W) #transpose W before Merging
         nIG = Nnew * XFac #elements in interpolation grid
         W = W.flatten() #make W into 1-dim vector
         #;  Interpolate old spectrum (Sold) onto wavelength scale W to make S. Then
         #;    sum every XFac pixels in S to make a single pixel in the new spectrum
         #;    (Snew). Equivalent to integrating under cubic spline through Sold.
-         
-        S = IDLspline(Wold,Sold,W,0.01)     
+
+        S = IDLspline(Wold,Sold,W,0.01)
         S /= XFac #take average in each pixel
         Snew = S.reshape(Nnew,XFac).sum(1)
 
