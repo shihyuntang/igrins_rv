@@ -69,7 +69,7 @@ def fmodel_chi(par,grad):
         return 1e10
 
     vsini = par[4]
-    
+
     # Rotationally broaden stellar template
     if vsini != 0:
         wspot2,rspot2 = rotint_fast(wspot,sspot,vsini)
@@ -123,8 +123,8 @@ def fmodel_chi(par,grad):
     chisq = np.sum((fitobj_cp.s[mask] - smod[mask])**2. / fitobj_cp.u[mask]**2.)
     chisq = chisq / (len(smod[mask]) - 15)
 #------- sy test chi2
-    filechi2 = open(f'./Output/TauBoo_H/20160225_0109_opt{trksy_cp}.csv', 'a')
-    filechi2.write(f'{par[0]}, {chisq}\n')
+    # filechi2 = open(f'./Output/TauBoo_H/20160225_0109_opt{trksy_cp}.csv', 'a')
+    # filechi2.write(f'{par[0]}, {chisq}\n')
 #------- sy test chi2
 
     # if (dpar0_cp[0] == 0) & (dpar0_cp[11] != 0):
@@ -165,7 +165,7 @@ def fmod(par,fitobj):
         return 1e10
 
     vsini = par[4]
-    
+
     # Rotationally broaden stellar template
     if vsini != 0:
         wspot2,rspot2 = rotint_fast(wspot,sspot,vsini)
@@ -236,7 +236,7 @@ def fmod_conti(par,fitobj):
         return 1e10
 
     vsini = par[4]
-    
+
     # Rotationally broaden stellar template
     if vsini != 0:
         wspot2,rspot2 = rotint_fast(wspot,sspot,vsini)
