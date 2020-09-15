@@ -7,7 +7,7 @@ from Engine.contfit      import A0cont
 from Engine.classes      import fitobjs,inparams
 from Engine.macbro       import macbro
 from Engine.rebin_jv_IDL     import rebin_jv
-from Engine.rotint_fast       import rotint
+#from Engine.rotint_fast       import rotint_fast
 from Engine.opt_fast  import optimizer, fmod, fmod_conti
 # from Engine.opt_intense import optimizer, fmod, fmod_conti
 from Engine.outplotter import outplotter_23

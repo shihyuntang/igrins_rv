@@ -1,6 +1,6 @@
 from scipy.signal import fftconvolve
 
-def rotint(wave_spec,flux_spec,vrot):
+def rotint_fast(wave_spec,flux_spec,vrot):
 
     epsilon = 0.6
 
