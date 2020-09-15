@@ -68,6 +68,8 @@ def fmodel_chi(par,grad):
         # print(f'{nc_cp}, {nk_cp}, {optkind_cp}: w not subset of watm, w goes from '+str(w[0])+' to '+str(w[-1])+' and watm goes from '+str(watm[0])+' to '+str(watm[-1]))
         return 1e10
 
+    vsini = par[4]
+    
     # Rotationally broaden stellar template
     if vsini != 0:
         wspot2,rspot2 = rotint_fast(wspot,sspot,vsini)
@@ -162,6 +164,8 @@ def fmod(par,fitobj):
         sys.exit('WAVE ERROR 2 {} {} {} {} {}'.format(par[6:10],watm[0],watm[-1],w[0],w[-1]))
         return 1e10
 
+    vsini = par[4]
+    
     # Rotationally broaden stellar template
     if vsini != 0:
         wspot2,rspot2 = rotint_fast(wspot,sspot,vsini)
@@ -231,6 +235,8 @@ def fmod_conti(par,fitobj):
     if (w[0] < watm[0]) or (w[-1] > watm[-1]):
         return 1e10
 
+    vsini = par[4]
+    
     # Rotationally broaden stellar template
     if vsini != 0:
         wspot2,rspot2 = rotint_fast(wspot,sspot,vsini)
