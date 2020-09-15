@@ -1,4 +1,5 @@
 from scipy.signal import fftconvolve
+from Engine.importmodule import *
 
 def rotint_fast(wave_spec,flux_spec,vrot):
 
