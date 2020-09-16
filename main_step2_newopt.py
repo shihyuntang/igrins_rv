@@ -261,7 +261,6 @@ def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                 outplotter_23(parfit_1, fitobj, '{}_{}_{}_parfit_{}{}'.format(order,night,tag,nk,optkind), trk, inparam, args, step2or3)
                 logger.debug(f'{order}_{tag}_{nk}_{optkind}:\n {parfit_1}')
             #
-            filechi2.close() # sy chi2 test-----------
             nk += 1
 
     parfit = parfit_1.copy()
