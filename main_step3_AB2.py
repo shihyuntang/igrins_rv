@@ -1,7 +1,7 @@
 from Engine.importmodule import *
 from Engine.importmodule import read_prepdata
 
-from Engine.IO_AB_combined1       import setup_templates, init_fitsread,stellarmodel_setup, setup_outdir
+from Engine.IO_AB        import setup_templates, init_fitsread,stellarmodel_setup, setup_outdir
 from Engine.clips        import basicclip_above
 from Engine.contfit      import A0cont
 from Engine.classes      import fitobjs,inparams
@@ -154,7 +154,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                 bound_cut = [150, 150]
 
         # Load target spectrum
-        x,wave,s,u = init_fitsread(f'{inparam.inpath}{night}/{beam}/',
+        x,wave,s,u = init_fitsread(f'{inparam.inpath}{night}/AB/',
                                     'target',
                                     'combined1',
                                     night,
