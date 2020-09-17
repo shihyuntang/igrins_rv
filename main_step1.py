@@ -157,12 +157,6 @@ def MPinst(args, inparam, jerp, orders, i):
         parfit_4 = optimizer(parfit_3, dpar,      hardbounds, fitobj, optimize)
         parfit = optimizer(parfit_4,   dpar_wave, hardbounds, fitobj, optimize)
 
-        print('1',parfit_1)
-        print('2',parfit_2)
-        print('3',parfit_3)
-        print('4',parfit_4)
-        time.sleep(10)
-
     except:
         pre_err = True
         logger.warning(f'  --> NIGHT {night}, ORDER {order} HIT ERROR DURING PRE_OPT')
