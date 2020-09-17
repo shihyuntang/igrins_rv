@@ -4,7 +4,7 @@ from Engine.IO_AB     import setup_templates_tel, init_fitsread, stellarmodel_se
 from Engine.clips     import basicclip_above
 from Engine.contfit   import A0cont
 from Engine.classes   import fitobjs,inparamsA0,orderdict_cla
-from Engine.macbro    import macbro
+#from Engine.macbro    import macbro
 from Engine.rebin_jv  import rebin_jv
 from Engine.rotint    import rotint
 from Engine.Telfitter import telfitter
