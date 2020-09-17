@@ -2,7 +2,7 @@ import nlopt
 import numpy as np
 from scipy.interpolate import interp1d, splrep,splev
 from Engine.classes import fitobjs,inparams
-from Engine.rotint_fast import rotint_fast
+from Engine.rotint import rotint
 from Engine.macbro_dynamic    import macbro_dyn
 from Engine.rebin_jv import rebin_jv
 import time
@@ -38,7 +38,7 @@ def fmodel_chi(par,grad):
     # Can't call these directly in function, as NLopt doesn't allow anything to be in the model function call besides par and grad.
 
     #global fitobj, optimize
-    global fitobj_cp, optimize_cp#, trksy_cp#, dpar0_cp, optkind_cp, nk_cp, nc_cp
+    global fitobj_cp, optimize_cp
 
     watm = fitobj_cp.watm_in;
     satm = fitobj_cp.satm_in;
@@ -53,7 +53,6 @@ def fmodel_chi(par,grad):
         return 1e10
 
     # Define the speed of light in km/s and other useful quantities
-    # c = 2.99792e5
     c = 2.99792458e5
     npts = len(w)
 
@@ -72,12 +71,12 @@ def fmodel_chi(par,grad):
 
     # Rotationally broaden stellar template
     if vsini != 0:
-        wspot2,rspot2 = rotint_fast(wspot,sspot,vsini)
+        wspot2,rspot2 = rotint(wspot,sspot,vsini)
     else:
         wspot2 = wspot
         rspot2 = sspot
 
-    #Now interpolate the spot spectrum onto the telluric wavelength scale
+    #Now rebin the spot spectrum onto the telluric wavelength scale
     sspot2 = rebin_jv(wspot2,rspot2,watm,False)
 
     #Mutliply rotationally broadened spot by telluric to create total spectrum
@@ -99,13 +98,13 @@ def fmodel_chi(par,grad):
 
     #Handle instrumental broadening
     vhwhm = dw*abs(fwhm)/mnw*c/2.
-    #print(min(fwhm),dw*abs(min(fwhm))/mnw*c/2.,max(fwhm),dw*abs(max(fwhm))/mnw*c/2.)
     nsmod = macbro_dyn(vel,smod,vhwhm)
-
-    c2 = fitobj_cp.continuum
 
     #Rebin model to observed wavelength scale
     smod = rebin_jv(watm,nsmod,w,False)
+    
+    # Load saved continuum
+    c2 = fitobj_cp.continuum
     smod *= c2/np.median(c2)
 
     # Apply continuum adjustment
@@ -122,16 +121,7 @@ def fmodel_chi(par,grad):
     # Compute chisq
     chisq = np.sum((fitobj_cp.s[mask] - smod[mask])**2. / fitobj_cp.u[mask]**2.)
     chisq = chisq / (len(smod[mask]) - 15)
-#------- sy test chi2
-    # filechi2 = open(f'./Output/TauBoo_H/20160225_0109_opt{trksy_cp}.csv', 'a')
-    # filechi2.write(f'{par[0]}, {chisq}\n')
-#------- sy test chi2
-
-    # if (dpar0_cp[0] == 0) & (dpar0_cp[11] != 0):
-    #     chisq = np.sum((fitobj_cp.s[mask] - smod[mask])**2. / fitobj_cp.u[mask]**2.)
-    # else:
-    #     chisq = np.sum( ( fitobj_cp.s[mask]/cont[mask]/c2[mask] - smod[mask]/cont[mask]/c2[mask] )**2. / fitobj_cp.u[mask]**2.)
-
+    
     if optimize_cp == True:
         return chisq
     else:
@@ -168,7 +158,7 @@ def fmod(par,fitobj):
 
     # Rotationally broaden stellar template
     if vsini != 0:
-        wspot2,rspot2 = rotint_fast(wspot,sspot,vsini)
+        wspot2,rspot2 = rotint(wspot,sspot,vsini)
     else:
         wspot2 = wspot
         rspot2 = sspot
@@ -195,12 +185,16 @@ def fmod(par,fitobj):
 
     vhwhm = dw*abs(fwhm)/mnw*c/2.
     nsmod = macbro_dyn(vel,smod,vhwhm)
-
-    c2 = fitobj.continuum
-    spl = splrep(watm,nsmod)
-    smod = splev(w,spl)
+    
+    #Rebin model to observed wavelength scale
+    smod = rebin_jv(watm,nsmod,w,False)
+    
+    # Load saved continuum
+    c2 = fitobj_cp.continuum
     smod *= c2/np.median(c2)
-    cont = par[10] + par[11]*fitobj.x+ par[12]*(fitobj.x**2)
+
+    # Apply continuum adjustment
+    cont = par[10] + par[11]*fitobj_cp.x+ par[12]*(fitobj_cp.x**2)
     smod *= cont
 
     mask = np.ones_like(smod,dtype=bool)
@@ -239,7 +233,7 @@ def fmod_conti(par,fitobj):
 
     # Rotationally broaden stellar template
     if vsini != 0:
-        wspot2,rspot2 = rotint_fast(wspot,sspot,vsini)
+        wspot2,rspot2 = rotint(wspot,sspot,vsini)
     else:
         wspot2 = wspot
         rspot2 = sspot
@@ -267,11 +261,15 @@ def fmod_conti(par,fitobj):
     vhwhm = dw*abs(fwhm)/mnw*c/2.
     nsmod = macbro_dyn(vel,smod,vhwhm)
 
-    c2 = fitobj.continuum
-    spl = splrep(watm,nsmod)
-    smod = splev(w,spl)
+    #Rebin model to observed wavelength scale
+    smod = rebin_jv(watm,nsmod,w,False)
+    
+    # Load saved continuum
+    c2 = fitobj_cp.continuum
     smod *= c2/np.median(c2)
-    cont = par[10] + par[11]*fitobj.x+ par[12]*(fitobj.x**2)
+
+    # Apply continuum adjustment
+    cont = par[10] + par[11]*fitobj_cp.x+ par[12]*(fitobj_cp.x**2)
     smod *= cont
 
     mask = np.ones_like(smod,dtype=bool)
@@ -283,14 +281,9 @@ def fmod_conti(par,fitobj):
 # def optimizer(par0,dpar0, hardbounds_v_ip, fitobj, optimize, logger, night, order, tag, optkind, nc, nk):
 def optimizer(par0,dpar0, hardbounds_v_ip, fitobj, optimize):
     # NLopt convenience function.
-    global fitobj_cp, optimize_cp#, trksy_cp#, dpar0_cp, optkind_cp, nk_cp, nc_cp
+    global fitobj_cp, optimize_cp
     fitobj_cp   = fitobj
     optimize_cp = optimize
-    #trksy_cp = trksy
-    # dpar0_cp = dpar0
-    # optkind_cp = optkind
-    # nk_cp = nk
-    # nc_cp = nc
     opt = nlopt.opt(nlopt.LN_NELDERMEAD, 15)
     opt.set_min_objective(fmodel_chi)
     lows  = par0-dpar0
