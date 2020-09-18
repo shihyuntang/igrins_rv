@@ -241,13 +241,6 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                     'twave',  's',
                     'twave',  's']
 
-        # optgroup = ['cont', 'twave', 'cont', 's',
-        #             'cont', 'twave', 's', 'cont',
-        #             'twave',
-        #             'ip', 'v',
-        #             'ip', 'v',
-        #             'twave', 's']
-
         nk = 1
         for nc, cycle in enumerate(np.arange(cycles), start=1):
             if cycle == 0:
@@ -602,8 +595,8 @@ Input Parameters:
     else:
         nightscomblist = [nightsT]
 
-    print('!!! ONLY RUN ORDER 21')
-    orders = np.array([21])
+    # print('!!! ONLY RUN ORDER 21')
+    # orders = np.array([21])
     #-------------------------------------------------------------------------------
 
     # Run order by order, multiprocessing over nights within an order
