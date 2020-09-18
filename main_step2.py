@@ -256,27 +256,26 @@ def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         for optkind in optgroup:
 
             # sy chi2 test-----------
-
-            filesndirs = os.listdir('./Output/TauBoo_H')
-
-            trksy = 1; go = True;
-            while go == True:
-                name = f'20160225_0109_opt{trksy}.csv'
-                if name not in filesndirs:
-                    break
-                trksy += 1
-
-            filechi2 = open(f'./Output/TauBoo_H/20160225_0109_opt{trksy}.csv', 'w')
-            filechi2.write('par0, chi2\n')
+            # filesndirs = os.listdir('./Output/TauBoo_H')
+            #
+            # trksy = 1; go = True;
+            # while go == True:
+            #     name = f'20160225_0109_opt{trksy}.csv'
+            #     if name not in filesndirs:
+            #         break
+            #     trksy += 1
+            #
+            # filechi2 = open(f'./Output/TauBoo_H/20160225_0109_opt{trksy}.csv', 'w')
+            # filechi2.write('par0, chi2\n')
             # # sy chi2 test-----------
             trksy = 0
-            parfit_1 = optimizer( parstart, dpars[optkind], hardbounds, fitobj, optimize, trksy)
+            parfit_1 = optimizer( parstart, dpars[optkind], hardbounds, fitobj, optimize)
             parstart = parfit_1.copy()
             if args.debug:
                 outplotter_23(parfit_1, fitobj, '{}_{}_{}_parfit_{}{}'.format(order,night,tag,nk,optkind), trk, inparam, args, step2or3)
                 logger.debug(f'{order}_{tag}_{nk}_{optkind}:\n {parfit_1}')
             #
-            filechi2.close() # sy chi2 test-----------
+            # filechi2.close() # sy chi2 test-----------
             nk += 1
 
     parfit = parfit_1.copy()

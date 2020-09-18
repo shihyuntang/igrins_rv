@@ -102,7 +102,7 @@ def fmodel_chi(par,grad):
 
     #Rebin model to observed wavelength scale
     smod = rebin_jv(watm,nsmod,w,False)
-    
+
     # Load saved continuum
     c2 = fitobj_cp.continuum
     smod *= c2/np.median(c2)
@@ -121,7 +121,7 @@ def fmodel_chi(par,grad):
     # Compute chisq
     chisq = np.sum((fitobj_cp.s[mask] - smod[mask])**2. / fitobj_cp.u[mask]**2.)
     chisq = chisq / (len(smod[mask]) - 15)
-    
+
     if optimize_cp == True:
         return chisq
     else:
@@ -185,10 +185,10 @@ def fmod(par,fitobj):
 
     vhwhm = dw*abs(fwhm)/mnw*c/2.
     nsmod = macbro_dyn(vel,smod,vhwhm)
-    
+
     #Rebin model to observed wavelength scale
     smod = rebin_jv(watm,nsmod,w,False)
-    
+
     # Load saved continuum
     c2 = fitobj_cp.continuum
     smod *= c2/np.median(c2)
@@ -263,7 +263,7 @@ def fmod_conti(par,fitobj):
 
     #Rebin model to observed wavelength scale
     smod = rebin_jv(watm,nsmod,w,False)
-    
+
     # Load saved continuum
     c2 = fitobj_cp.continuum
     smod *= c2/np.median(c2)
