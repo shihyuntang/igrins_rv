@@ -5,7 +5,7 @@ from Engine.IO_AB      import setup_templates, init_fitsread, stellarmodel_setup
 from Engine.clips      import basicclip_above
 from Engine.contfit    import A0cont
 from Engine.classes    import fitobjs, inparams
-from Engine.macbro     import macbro
+# from Engine.macbro     import macbro
 from Engine.rebin_jv   import rebin_jv
 from Engine.rotint     import rotint
 from Engine.opt        import optimizer, fmod
@@ -542,7 +542,7 @@ Input Parameters:
 
     #-------------------------------------------------------------------------------
 
-    
+
     # Use subset of nights if specified
     if args.nights_use != '':
         nightstemp = np.array(ast.literal_eval(args.nights_use), dtype=str)
