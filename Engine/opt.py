@@ -2,8 +2,8 @@ import nlopt
 import numpy as np
 from scipy.interpolate import interp1d, splrep,splev
 from Engine.classes import fitobjs,inparams
-#from Engine.rotint import rotint
-from Engine.rotint_old import rotint_old
+from Engine.rotint import rotint
+# from Engine.rotint_old import rotint_old
 from Engine.macbro_dynamic    import macbro_dyn
 from Engine.rebin_jv import rebin_jv
 import time
@@ -70,7 +70,7 @@ def fmodel_chi(par,grad):
 
     vsini = par[4]
 
-    '''
+
     # Rotationally broaden stellar template
     if vsini != 0:
         wspot2,rspot2 = rotint(wspot,sspot,vsini)
@@ -84,7 +84,7 @@ def fmodel_chi(par,grad):
     else:
         rspot2 = sspot
     wspot2 = wspot
-
+    '''
     #Now rebin the spot spectrum onto the telluric wavelength scale
     sspot2 = rebin_jv(wspot2,rspot2,watm,False)
 
@@ -165,8 +165,8 @@ def fmod(par,fitobj):
 
     vsini = par[4]
 
-    
-    '''
+
+
     # Rotationally broaden stellar template
     if vsini != 0:
         wspot2,rspot2 = rotint(wspot,sspot,vsini)
@@ -180,7 +180,7 @@ def fmod(par,fitobj):
     else:
         rspot2 = sspot
     wspot2 = wspot
-    
+    '''
     sspot2 = rebin_jv(wspot2,rspot2,watm,False)
 
     smod = sspot2*satm
