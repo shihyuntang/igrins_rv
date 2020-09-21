@@ -223,8 +223,8 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         par_in = par.copy()
         hardbounds = [par_in[4]-dpars['v'][4],  par_in[4]+dpars['v'][4],
                       par_in[5]-dpars['ip'][5], par_in[5]+dpars['ip'][5]]
-        if hardbounds[0] < 0:
-            hardbounds[0] = 0
+        if hardbounds[0] < 0.5:
+            hardbounds[0] = 0.5
         if hardbounds[3] < 0:
             hardbounds[3] = 1
 
@@ -248,13 +248,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
             for optkind in optgroup:
                 # print(f'{optkind}, nc={nc}, tag={tag}')
-                skip_temp = False
-                try:
-                    parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize)
-                except:
-                    skip_temp = True
-                    logger.warning(f'    --> opt fit error, {night}')
-                    continue
+                parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize)
                 parstart = parfit_1.copy()
                 if args.debug == True:
                     outplotter_23(parfit_1,fitobj,'{}_{}_{}_parfit_{}{}'.format(order,night,tag,nk,optkind), trk, inparam, args, step2or3)
