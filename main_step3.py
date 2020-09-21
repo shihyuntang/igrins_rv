@@ -186,14 +186,14 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         mwave_in,mflux_in = stellarmodel_setup(wave_piece,inparam.mwave0,inparam.mflux0)
 
         # Trim telluric template to relevant wavelength range
-        satm_in = satm[(watm > min(wave_piece)*1e4 - 11) & (watm < max(wave_piece)*1e4 + 11)]
-        watm_in = watm[(watm > min(wave_piece)*1e4 - 11) & (watm < max(wave_piece)*1e4 + 11)]
+        satm_in = satm[(watm > np.min(wave_piece)*1e4 - 11) & (watm < np.max(wave_piece)*1e4 + 11)]
+        watm_in = watm[(watm > np.min(wave_piece)*1e4 - 11) & (watm < np.max(wave_piece)*1e4 + 11)]
 
         # Make sure data is within telluric template range (shouldn't do anything)
-        s_piece    = s_piece[   (wave_piece*1e4 > min(watm_in)+5) & (wave_piece*1e4 < max(watm_in)-5)]
-        u_piece    = u_piece[   (wave_piece*1e4 > min(watm_in)+5) & (wave_piece*1e4 < max(watm_in)-5)]
-        x_piece    = x_piece[   (wave_piece*1e4 > min(watm_in)+5) & (wave_piece*1e4 < max(watm_in)-5)]
-        wave_piece = wave_piece[(wave_piece*1e4 > min(watm_in)+5) & (wave_piece*1e4 < max(watm_in)-5)]
+        s_piece    = s_piece[   (wave_piece*1e4 > np.min(watm_in)+5) & (wave_piece*1e4 < np.max(watm_in)-5)]
+        u_piece    = u_piece[   (wave_piece*1e4 > np.min(watm_in)+5) & (wave_piece*1e4 < np.max(watm_in)-5)]
+        x_piece    = x_piece[   (wave_piece*1e4 > np.min(watm_in)+5) & (wave_piece*1e4 < np.max(watm_in)-5)]
+        wave_piece = wave_piece[(wave_piece*1e4 > np.min(watm_in)+5) & (wave_piece*1e4 < np.max(watm_in)-5)]
 
         # --------------------------------------------------------------
 
@@ -248,13 +248,21 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
             for optkind in optgroup:
                 # print(f'{optkind}, nc={nc}, tag={tag}')
-                parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize)
+                skip_temp = False
+                try:
+                    parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize)
+                except:
+                    skip_temp = True
+                    logger.warning(f'    --> opt fit error, {night}')
+                    continue
                 parstart = parfit_1.copy()
                 if args.debug == True:
                     outplotter_23(parfit_1,fitobj,'{}_{}_{}_parfit_{}{}'.format(order,night,tag,nk,optkind), trk, inparam, args, step2or3)
                     logger.debug(f'{order}_{tag}_{nk}_{optkind}:\n {parfit_1}')
                 nk += 1
-
+        if skip_temp:
+            continue
+            
         parfit = parfit_1.copy()
 
         #-------------------------------------------------------------------------------
