@@ -254,9 +254,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                     outplotter_23(parfit_1,fitobj,'{}_{}_{}_parfit_{}{}'.format(order,night,tag,nk,optkind), trk, inparam, args, step2or3)
                     logger.debug(f'{order}_{tag}_{nk}_{optkind}:\n {parfit_1}')
                 nk += 1
-        if skip_temp:
-            continue
-            
+
         parfit = parfit_1.copy()
 
         #-------------------------------------------------------------------------------
