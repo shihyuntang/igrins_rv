@@ -68,47 +68,6 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         logger.warning(f'  --> Previous run of {night} found it inadequate, skipping...')
         return nightsout, rvsminibox, parfitminibox, vsiniminibox, tagsminibox
 
-    # Load synthetic telluric template generated during Step 1
-    # [:8] here is to ensure program works under Night_Split mode
-    A0loc = f'./Output/{args.targname}_{args.band}/A0Fits/{night[:8]}A0_treated_{args.band}.fits'
-    try:
-        hdulist = fits.open(A0loc)
-    except IOError:
-        logger.warning(f'  --> No A0-fitted template for night {night}, skipping...')
-        return nightsout, rvsminibox, parfitminibox, vsiniminibox, tagsminibox
-
-    # Find corresponding table in fits file, given the tables do not go sequentially by order number due to multiprocessing in Step 1
-    num_orders = 0
-    for i in range(25):
-        try:
-            hdulist[i].columns[0].name[9:]
-            num_orders += 1
-        except:
-            continue
-
-    fits_layer = [ i for i in np.arange(num_orders)+1 if int(hdulist[i].columns[0].name[9:]) == order ][0]
-
-    tbdata = hdulist[ fits_layer ].data
-    flag = np.array(tbdata[f'ERRORFLAG{order}'])[0]
-
-    # Check whether Telfit hit critical error in Step 1 for the chosen order with this night. If so, skip.
-    if flag == 1:
-        logger.warning(f'  --> TELFIT ENCOUNTERED CRITICAL ERROR IN ORDER: {order} NIGHT: {night}, skipping...')
-        return nightsout, rvsminibox, parfitminibox, vsiniminibox, tagsminibox
-
-
-    watm = tbdata['WATM'+str(order)]
-    satm = tbdata['SATM'+str(order)]
-    a0contx    = tbdata['X'+str(order)]
-    continuum  = tbdata['BLAZE'+str(order)]
-
-    # Remove extra rows leftover from having columns of unequal length
-    satm = satm[(watm != 0)]
-    watm = watm[(watm != 0)]
-    satm[(satm < 1e-4)] = 0. # set very low points to zero so that they don't go to NaN when taken to an exponent by template power in fmodel_chi
-    a0contx = a0contx[(continuum != 0)]
-    continuum = continuum[(continuum != 0)]
-
     # Use instrumental profile dictionary corresponding to whether IGRINS mounting was loose or not
     if int(night[:8]) < 20180401 or int(night[:8]) > 20190531:
         IPpars = inparam.ips_tightmount_pars[args.band][order]
@@ -138,6 +97,47 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     for t in np.arange(len(tagsnight)):
         tag = tagsnight[t]
         beam = beamsnight[t]
+        
+        # Load synthetic telluric template generated during Step 1
+        # [:8] here is to ensure program works under Night_Split mode
+        A0loc = f'./Output/{args.targname}_{args.band}/A0Fits/{night[:8]}A0_{beam}treated_{args.band}.fits'
+        try:
+            hdulist = fits.open(A0loc)
+        except IOError:
+            logger.warning(f'  --> No A0-fitted template for night {night}, skipping...')
+            return nightsout, rvsminibox, parfitminibox, vsiniminibox, tagsminibox
+
+        # Find corresponding table in fits file, given the tables do not go sequentially by order number due to multiprocessing in Step 1
+        num_orders = 0
+        for i in range(25):
+            try:
+                hdulist[i].columns[0].name[9:]
+                num_orders += 1
+            except:
+                continue
+
+        fits_layer = [ i for i in np.arange(num_orders)+1 if int(hdulist[i].columns[0].name[9:]) == order ][0]
+
+        tbdata = hdulist[ fits_layer ].data
+        flag = np.array(tbdata[f'ERRORFLAG{order}'])[0]
+
+        # Check whether Telfit hit critical error in Step 1 for the chosen order with this night. If so, skip.
+        if flag == 1:
+            logger.warning(f'  --> TELFIT ENCOUNTERED CRITICAL ERROR IN ORDER: {order} NIGHT: {night}, skipping...')
+            return nightsout, rvsminibox, parfitminibox, vsiniminibox, tagsminibox
+
+
+        watm = tbdata['WATM'+str(order)]
+        satm = tbdata['SATM'+str(order)]
+        a0contx    = tbdata['X'+str(order)]
+        continuum  = tbdata['BLAZE'+str(order)]
+
+        # Remove extra rows leftover from having columns of unequal length
+        satm = satm[(watm != 0)]
+        watm = watm[(watm != 0)]
+        satm[(satm < 1e-4)] = 0. # set very low points to zero so that they don't go to NaN when taken to an exponent by template power in fmodel_chi
+        a0contx = a0contx[(continuum != 0)]
+        continuum = continuum[(continuum != 0)]
 
         # Retrieve pixel bounds for where within each other significant telluric absorption is present.
         # If these bounds were not applied, analyzing some orders would give garbage fits.
