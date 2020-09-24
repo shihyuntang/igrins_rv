@@ -250,7 +250,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
 
         if not pre_err:
             if inparam.plotfigs: # Plot results
-                outplotter_tel(parfit, fitobj, f'FinalFit_Order{order}_{night}', inparam, args)
+                outplotter_tel(parfit, fitobj, f'FinalFit_Order{order}_{night}_{masterbeam}', inparam, args)
 
             if args.debug: # Output debug stuff
                 fig, axes = plt.subplots(1, 1, figsize=(6,3), facecolor='white', dpi=300)
