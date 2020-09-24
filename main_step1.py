@@ -13,7 +13,7 @@ from Engine.outplotter import outplotter_tel
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 
-def MPinst(args, inparam, jerp, orders, i):
+def MPinst(args, inparam, jerp, orders, masterbeam, i):
     # Main function for A0 fitting that will be threaded over by multiprocessing
 
     order = orders[jerp]            # current looped order
@@ -49,7 +49,7 @@ def MPinst(args, inparam, jerp, orders, i):
     ### Load relevant A0 spectrum
     x, a0wavelist, a0fluxlist, u = init_fitsread(inparam.inpath,
                                                  'A0',
-                                                 'separate',
+                                                 'combined'+str(masterbeam),
                                                  night,
                                                  order,
                                                  f'{int(inparam.tags[night]):04d}',
@@ -170,11 +170,11 @@ def MPinst(args, inparam, jerp, orders, i):
             bleh = np.ones((3,3))
             primary_hdu = fits.PrimaryHDU(bleh)
             hdul = fits.HDUList([primary_hdu,hdu_1])
-            hdul.writeto('{}/{}A0_treated_{}.fits'.format(inparam.outpath, night, args.band))
+            hdul.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band))
         else:
-            hh = fits.open('{}/{}A0_treated_{}.fits'.format(inparam.outpath, night, args.band))
+            hh = fits.open('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band))
             hh.append(hdu_1)
-            hh.writeto('{}/{}A0_treated_{}.fits'.format(inparam.outpath, night, args.band), overwrite=True)
+            hh.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band), overwrite=True)
 
 
     #-------------------------------------------------------------------------------
@@ -207,11 +207,12 @@ def MPinst(args, inparam, jerp, orders, i):
             bleh = np.ones((3,3))
             primary_hdu = fits.PrimaryHDU(bleh)
             hdul = fits.HDUList([primary_hdu,hdu_1])
-            hdul.writeto('{}/{}A0_treated_{}.fits'.format(inparam.outpath, night, args.band))
+            
+            hdul.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band))
         else:
-            hh = fits.open('{}/{}A0_treated_{}.fits'.format(inparam.outpath, night, args.band))
+            hh = fits.open('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band))
             hh.append(hdu_1)
-            hh.writeto('{}/{}A0_treated_{}.fits'.format(inparam.outpath, night, args.band), overwrite=True)
+            hh.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band), overwrite=True)
 
     else: # If Telfit exited normally, proceed.
         #  Save best blaze function fit
@@ -241,11 +242,11 @@ def MPinst(args, inparam, jerp, orders, i):
                 bleh = np.ones((3,3))
                 primary_hdu = fits.PrimaryHDU(bleh)
                 hdul = fits.HDUList([primary_hdu,hdu_1])
-                hdul.writeto('{}/{}A0_treated_{}.fits'.format(inparam.outpath, night, args.band))
+                hdul.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band))
             else:
-                hh = fits.open('{}/{}A0_treated_{}.fits'.format(inparam.outpath, night, args.band))
+                hh = fits.open('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band))
                 hh.append(hdu_1)
-                hh.writeto('{}/{}A0_treated_{}.fits'.format(inparam.outpath, night, args.band), overwrite=True)
+                hh.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band), overwrite=True)
 
         if not pre_err:
             if inparam.plotfigs: # Plot results
@@ -305,20 +306,20 @@ def MPinst(args, inparam, jerp, orders, i):
                 bleh = np.ones((3,3))
                 primary_hdu = fits.PrimaryHDU(bleh)
                 hdul = fits.HDUList([primary_hdu,hdu_1])
-                hdul.writeto('{}/{}A0_treated_{}.fits'.format(inparam.outpath, night, args.band), overwrite=True)
+                hdul.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band))
             else:
-                hh = fits.open('{}/{}A0_treated_{}.fits'.format(inparam.outpath, night, args.band))
+                hh = fits.open('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band))
                 hh.append(hdu_1)
-                hh.writeto('{}/{}A0_treated_{}.fits'.format(inparam.outpath, night, args.band), overwrite=True)
+                hh.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band), overwrite=True)
         else:
             pass
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 
-def mp_run(args, inparam, Nthreads, jerp, orders, nights):
+def mp_run(args, inparam, Nthreads, jerp, orders, nights, masterbeam):
     # Multiprocessing convenience function
     pool = mp.Pool(processes = Nthreads)
-    func = partial(MPinst, args, inparam, jerp, orders)
+    func = partial(MPinst, args, inparam, jerp, orders,masterbeam)
     outs = pool.map(func, np.arange(len(nights)))
     pool.close()
     pool.join()
@@ -513,8 +514,13 @@ if __name__ == '__main__':
     #-------------------------------------------------------------------------------
 
     # Run order by order, multiprocessing over nights within an order
+    print('Processing the A nods first...')
     for jerp in range(len(orders)):
-        outs = mp_run(args, inparam, args.Nthreads, jerp, orders, nightsFinal)
+        outs = mp_run(args, inparam, args.Nthreads, jerp, orders, nightsFinal,'A')
+        
+    print('A nods done! Halfway there! \n Now processing the B nods...')
+    for jerp in range(len(orders)):
+        outs = mp_run(args, inparam, args.Nthreads, jerp, orders, nightsFinal,'B')
 
     print('\n')
     logger.info('A0 Fitting Done!')
