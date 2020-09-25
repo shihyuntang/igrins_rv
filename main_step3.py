@@ -100,7 +100,14 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         
         # Load synthetic telluric template generated during Step 1
         # [:8] here is to ensure program works under Night_Split mode
-        A0loc = f'./Output/{args.targname}_{args.band}/A0Fits/{night[:8]}A0_{beam}treated_{args.band}.fits'
+        if beam == 'A':
+            antibeam = 'B'
+        elif beam == 'B':
+            antibeam = 'A'
+        else:
+            sys.exit('uhoh')
+            
+        A0loc = f'./Output/{args.targname}_{args.band}/A0Fits/{night[:8]}A0_{antibeam}treated_{args.band}.fits'
         try:
             hdulist = fits.open(A0loc)
         except IOError:
