@@ -330,11 +330,11 @@ def mp_run(args, inparam, Nthreads, jerp, orders, nights, masterbeam):
 def use_w(args):
     # Load wavelength regions list file
     try:
-        bounddata = Table.read(f'./Input/UseWv/WaveRegions_{args.WRegion}_{args.band}.csv', format='csv')
+        bounddata = Table.read(f'../Input/UseWv/WaveRegions_{args.WRegion}_{args.band}.csv', format='csv')
     except IOError:
-        sys.exit(f'WaveRegions FILE "./Input/UseWv/WaveRegions_{args.WRegion}_{args.band}.csv" NOT FOUND!')
+        sys.exit(f'WaveRegions FILE "../Input/UseWv/WaveRegions_{args.WRegion}_{args.band}.csv" NOT FOUND!')
 
-    wavesols = pd.read_csv(f'./Input/UseWv/WaveSolns_{args.band}.csv')
+    wavesols = pd.read_csv(f'../Input/UseWv/WaveSolns_{args.band}.csv')
 #-------------------------------------------------------------------------------
     with open(f'./Input/UseWv/XRegions_{args.WRegion}_{args.band}.csv','w') as filew:
         filew.write('order, start,  end, masks\n')
