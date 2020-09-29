@@ -208,7 +208,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
         # Arrays defining parameter variations during optimization steps
         dpars = {'cont1' : np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 0, 0, 0,    0]),
-                 'cont2' : np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0]),
+                 'cont2' : np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 2, 2, 0,    0]),
                  'twave': np.array([0.0, 0.0, 0.0, 1.0, 0.0,               0.0, 10.0,  10.0, 5.00000e-5, 1e-7, 0,   0, 0, 0,    0]),
                  'ip'   : np.array([0.0, 0.0, 0.0, 0.0, 0,                 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0]),
                  's'    : np.array([5.0, 1.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0]),
@@ -254,8 +254,8 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                     'cont2', 'twave', 's', 'cont2',
                     'twave',
                     'ip', 'v',
-                    'ip', 'v',
-                    'twave',  's',
+                    'ip', 'v', 'cont2',
+                    'twave',  's', 'cont2',
                     'twave',  's']
 
         nk = 1
