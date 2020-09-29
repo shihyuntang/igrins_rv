@@ -465,14 +465,14 @@ if __name__ == '__main__':
     # Read in newly created pixel regions file to get list of orders to analyze.
     # Note that only target star observations will have their fits limited to the wavelength regions specified.
     # For A0 observations, only the orders specified will be analyzed, but each order will be fit as far as there is significant telluric absoprtion.
-    bounddata = Table.read(f'./Input/UseWv/XRegions_{args.WRegion}_{args.band}.csv', format='csv')
+    bounddata = Table.read(f'../Input/UseWv/XRegions_{args.WRegion}_{args.band}.csv', format='csv')
     starts  = np.array(bounddata['start'])
     ends    = np.array(bounddata['end'])
     orders  = np.array(bounddata['order'], dtype=int)
     xbounddict = {orders[i]:np.array([starts[i],ends[i]]) for i in range(len(starts))}
 
     ## Collect relevant file information from Predata files
-    A0data = Table.read(f'./Input/Prepdata/Prepdata_A0_{args.targname}.txt', format='ascii')
+    A0data = Table.read(f'../Input/Prepdata/Prepdata_A0_{args.targname}.txt', format='ascii')
 
     ind    = [i != 'NA' for i in A0data['humid']]
     humids = {str(k):str(v) for k,v in zip(A0data[ind]['night'],A0data[ind]['humid'])}
