@@ -1,3 +1,5 @@
+import sys
+sys.path.append("..") # Adds higher directory to python modules path.
 from Engine.importmodule import *
 
 from Engine.IO_AB     import setup_templates_tel, init_fitsread, stellarmodel_setup, setup_outdir
@@ -203,7 +205,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
             bleh = np.ones((3,3))
             primary_hdu = fits.PrimaryHDU(bleh)
             hdul = fits.HDUList([primary_hdu,hdu_1])
-            
+
             hdul.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band))
         else:
             hh = fits.open('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band))
@@ -219,7 +221,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
         # This allows for any tweaks to the blaze function fit that may be necessary.
         fitobj = fitobjs(s, x, u, continuum,watm1,satm1,mflux_in,mwave_in,[])
 
-        try:          
+        try:
             parfit_1 = optimizer(par_in,   dpar_st,   hardbounds,fitobj, optimize)
             parfit_2 = optimizer(parfit_1, dpar_wave, hardbounds,fitobj, optimize)
             parfit_3 = optimizer(parfit_2, dpar_st,   hardbounds,fitobj, optimize)
@@ -515,7 +517,7 @@ if __name__ == '__main__':
     print('Processing the A nods first...')
     for jerp in range(len(orders)):
         outs = mp_run(args, inparam, args.Nthreads, jerp, orders, nightsFinal,'A')
-        
+
     print('A nods done! Halfway there! \n Now processing the B nods...')
     for jerp in range(len(orders)):
         outs = mp_run(args, inparam, args.Nthreads, jerp, orders, nightsFinal,'B')
