@@ -207,8 +207,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         par[0] = initguesses-inparam.bvcs[night+tag] # Initial RV with barycentric correction
 
         # Arrays defining parameter variations during optimization steps
-        dpars = {'cont1' : np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 0, 0, 0,    0]),
-                 'cont2' : np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0]),
+        dpars = {'cont' : np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0]),
                  'twave': np.array([0.0, 0.0, 0.0, 1.0, 0.0,               0.0, 10.0,  10.0, 5.00000e-5, 1e-7, 0,   0, 0, 0,    0]),
                  'ip'   : np.array([0.0, 0.0, 0.0, 0.0, 0,                 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0]),
                  's'    : np.array([5.0, 1.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0]),
@@ -232,7 +231,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         # Begin optimization. Fit the blaze, the wavelength solution, the telluric template power and RV, the stellar template power and RV, the
         # zero point for the instrumental resolution, and the vsini of the star separately, iterating and cycling between each set of parameter fits.
 
-        cycles = 8
+        cycles = 4
 
         # optgroup = ['cont', 'twave', 'cont', 's',
         #             'cont', 'twave', 's', 'cont',
@@ -242,33 +241,18 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         #             'twave',  's',
         #             'twave',  's']
 
-        optgroup1 = ['cont1', 'twave', 'cont1', 's',
-                    'cont1', 'twave', 's', 'cont1',
+        optgroup = ['cont', 'twave', 'cont', 's',
+                    'cont', 'twave', 's', 'cont',
                     'twave',
                     'ip', 'v',
-                    'ip', 'v', 'cont1',
-                    'twave',  's', 'cont1',
-                    'twave',  's']
-
-        optgroup2 = ['cont2', 'twave', 'cont2', 's',
-                    'cont2', 'twave', 's', 'cont2',
-                    'twave',
-                    'ip', 'v',
-                    'ip', 'v', 'cont2',
-                    'twave',  's', 'cont2',
+                    'ip', 'v', 'cont',
+                    'twave',  's', 'cont',
                     'twave',  's']
 
         nk = 1
         for nc, cycle in enumerate(np.arange(cycles), start=1):
             if cycle == 0:
                 parstart = par_in.copy()
-
-            if (cycle == 0) | (cycle==4):
-                optgroup = optgroup1
-                print('using optgroup1')
-            else:
-                optgroup = optgroup2
-                print('using optgroup2')
 
             for optkind in optgroup:
                 # print(f'{optkind}, nc={nc}, tag={tag}')
