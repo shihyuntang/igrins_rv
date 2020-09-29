@@ -207,7 +207,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         par[0] = initguesses-inparam.bvcs[night+tag] # Initial RV with barycentric correction
 
         # Arrays defining parameter variations during optimization steps
-        dpars = {'cont1' : np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e8, 0, 0, 0,    0]),
+        dpars = {'cont1' : np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 0, 0, 0,    0]),
                  'cont2' : np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0]),
                  'twave': np.array([0.0, 0.0, 0.0, 1.0, 0.0,               0.0, 10.0,  10.0, 5.00000e-5, 1e-7, 0,   0, 0, 0,    0]),
                  'ip'   : np.array([0.0, 0.0, 0.0, 0.0, 0,                 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0]),
@@ -232,7 +232,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         # Begin optimization. Fit the blaze, the wavelength solution, the telluric template power and RV, the stellar template power and RV, the
         # zero point for the instrumental resolution, and the vsini of the star separately, iterating and cycling between each set of parameter fits.
 
-        cycles = 4
+        cycles = 8
 
         # optgroup = ['cont', 'twave', 'cont', 's',
         #             'cont', 'twave', 's', 'cont',
@@ -246,8 +246,8 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                     'cont1', 'twave', 's', 'cont1',
                     'twave',
                     'ip', 'v',
-                    'ip', 'v',
-                    'twave',  's',
+                    'ip', 'v', 'cont1',
+                    'twave',  's', 'cont1',
                     'twave',  's']
 
         optgroup2 = ['cont2', 'twave', 'cont2', 's',
@@ -262,6 +262,8 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         for nc, cycle in enumerate(np.arange(cycles), start=1):
             if cycle == 0:
                 parstart = par_in.copy()
+
+            if (cycle == 0) | (cycle==4):
                 optgroup = optgroup1
                 print('using optgroup1')
             else:
