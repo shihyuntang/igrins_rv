@@ -141,7 +141,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
     optimize = True
     par_in = parA0.copy()
     hardbounds = [par_in[4] -0,               par_in[4]+0,
-                  par_in[5] -dpar['ip'][5],   par_in[5]+dpar['ip'][5]]
+                  par_in[5] -dpars['ip'][5],   par_in[5]+dpars['ip'][5]]
     if hardbounds[0] < 0:
         hardbounds[0] = 0
     if hardbounds[3] < 0:
