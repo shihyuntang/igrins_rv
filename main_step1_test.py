@@ -320,12 +320,12 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                 outplotter_tel(parfit_4,fitobj, f'Post_parfit4_{order}_{night}', inparam, args)
                 outplotter_tel(parfit, fitobj, f'Post_parfit_{order}_{night}', inparam, args)
 
-            logger.debug(f'Post_par_in:\n {par_in}')
-            logger.debug(f'Post_parfit1:\n {parfit_1}')
-            logger.debug(f'Post_parfit2:\n {parfit_2}')
-            logger.debug(f'Post_parfit3:\n {parfit_3}')
-            logger.debug(f'Post_parfit4:\n {parfit_4}')
-            logger.debug(f'Post_parfit:\n {parfit}')
+            # logger.debug(f'Post_par_in:\n {par_in}')
+            # logger.debug(f'Post_parfit1:\n {parfit_1}')
+            # logger.debug(f'Post_parfit2:\n {parfit_2}')
+            # logger.debug(f'Post_parfit3:\n {parfit_3}')
+            # logger.debug(f'Post_parfit4:\n {parfit_4}')
+            # logger.debug(f'Post_parfit:\n {parfit}')
 
             #-------------------------------------------------------------------------------
 
