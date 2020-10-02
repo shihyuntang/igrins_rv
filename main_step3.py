@@ -97,7 +97,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     for t in np.arange(len(tagsnight)):
         tag = tagsnight[t]
         beam = beamsnight[t]
-        
+
         # Load synthetic telluric template generated during Step 1
         # [:8] here is to ensure program works under Night_Split mode
         if beam == 'A':
@@ -106,7 +106,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
             antibeam = 'A'
         else:
             sys.exit('uhoh')
-            
+
         A0loc = f'./Output/{args.targname}_{args.band}/A0Fits/{night[:8]}A0_{antibeam}treated_{args.band}.fits'
         try:
             hdulist = fits.open(A0loc)
@@ -602,8 +602,8 @@ Input Parameters:
     else:
         nightscomblist = [nightsT]
 
-    # print('!!! ONLY RUN ORDER 21')
-    # orders = np.array([21])
+    print('!!! ONLY RUN ORDER 14, 16, 21')
+    orders = np.array([14, 16, 21])
     #-------------------------------------------------------------------------------
 
     # Run order by order, multiprocessing over nights within an order
