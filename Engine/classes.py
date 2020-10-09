@@ -6,7 +6,7 @@ import numpy as np
 class fitobjs:
 
 
-    def __init__(self,s, x, u,continuum,watm_in,satm_in,mflux_in,mwave_in,mask):
+    def __init__(self,s, x, u,continuum,watm_in,satm_in,mflux_in,mwave_in,mask,masterbeam=None):
         self.s = s
         self.x = x
         self.u = u
@@ -16,6 +16,7 @@ class fitobjs:
         self.mflux_in = mflux_in
         self.mwave_in = mwave_in
         self.mask = mask
+        self.masterbeam = masterbeam
 
 class inparams:
 
