@@ -53,7 +53,8 @@ def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
     # Load synthetic telluric template generated during Step 1
     # [:8] here is to ensure program works under Night_Split mode
-    A0loc = f'./Output/{args.targname}_{args.band}/A0Fits/{night[:8]}A0_treated_{args.band}.fits'
+    # Just use A nodded template, only trying to get rough initial guess
+    A0loc = f'./Output/{args.targname}_{args.band}/A0Fits/{night[:8]}A0_Atreated_{args.band}.fits'
     try:
         hdulist = fits.open(A0loc)
     except IOError:
@@ -152,7 +153,7 @@ def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     # Load target spectrum
     x,wave,s,u = init_fitsread(f'{inparam.inpath}/',
                                 'target',
-                                'combined',
+                                'combinedAB',
                                 night,
                                 order,
                                 tag,
@@ -231,8 +232,8 @@ def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                   par_in[5]-dpars1['ip'][5], par_in[5]+dpars1['ip'][5]]
     if hardbounds[0] < 0.5:
         hardbounds[0] = 0.5
-    if hardbounds[2] < 0:
-        hardbounds[2] = 1
+    if hardbounds[3] < 0:
+        hardbounds[3] = 1
 
     # Begin optimization. Fit the blaze, the wavelength solution, the telluric template power and RV, the stellar template power and RV, the
     # zero point for the instrumental resolution, and the vsini of the star separately, iterating and cycling between each set of parameter fits.
