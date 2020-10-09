@@ -98,4 +98,3 @@ def rebin_jv(Wold,Sold,Wnew,verbose):
 
     return Snew
 
-
