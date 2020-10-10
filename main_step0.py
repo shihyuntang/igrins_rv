@@ -141,7 +141,7 @@ def DataPrep(args):
         else:
             # Then check whether any A0s files for that night are present in local filesystem.
             anyK = False
-            subpath        = '{}std/{}/AB/'.format(inpath, night)
+            subpath        = '{}std/{}/A/'.format(inpath, night)
             fullpathprefix = '{}SDC{}_{}_'.format(subpath, args.band, night)
 
             onlyfiles = [f for f in listdir(subpath) if isfile(join(subpath, f))]
@@ -179,7 +179,7 @@ def DataPrep(args):
                     sys.exit('WARNING, STD (A0) AIRMASS FOR NIGHT {} HAS A DIFFERENCE LARGER THAN {} FROM TARGET!'.format(night, args.AM_cut))
 
                 tagA = '{:04d}'.format(tagA0)
-                subpath = '{}std/{}/AB/SDC{}_{}_{}.spec.fits'.format(inpath, night, args.band, night, tagA)
+                subpath = '{}std/{}/A/SDC{}_{}_{}.spec.fits'.format(inpath, night, args.band, night, tagA)
 
                 # Open the chosen STD observation
                 try:
@@ -188,7 +188,7 @@ def DataPrep(args):
 
                 # If it is not found locally, use whatever A0 is present locally, in case user selected their STD observations differently
                 except FileNotFoundError:
-                    subpath        = '{}std/{}/AB/'.format(inpath, night)
+                    subpath        = '{}std/{}/A/'.format(inpath, night)
                     fullpathprefix = '{}SDC{}_{}_'.format(subpath, args.band, night)
 
                     onlyfiles = [f for f in listdir(subpath) if isfile(join(subpath, f))]
