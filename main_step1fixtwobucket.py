@@ -218,11 +218,11 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
         hdu_1 = fits.BinTableHDU.from_columns(cols)
 
         # If first time writing fits file, make up filler primary hdu
-        try:
+        if order == firstorder: # If first time writing fits file, make up filler primary hdu
             hh = fits.open('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band))
             hh.append(hdu_1)
             hh.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band), overwrite=True)
-        except:
+        else:
             bleh = np.ones((3,3))
             primary_hdu = fits.PrimaryHDU(bleh)
             hdul = fits.HDUList([primary_hdu,hdu_1])
@@ -259,11 +259,11 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
         hdu_1 = fits.BinTableHDU.from_columns(cols)
 
         # If first time writing fits file, make up filler primary hdu
-        try:
+        if order == firstorder: # If first time writing fits file, make up filler primary hdu
             hh = fits.open('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band))
             hh.append(hdu_1)
             hh.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band), overwrite=True)
-        except:
+        else:
             bleh = np.ones((3,3))
             primary_hdu = fits.PrimaryHDU(bleh)
             hdul = fits.HDUList([primary_hdu,hdu_1])
@@ -316,11 +316,11 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
             hdu_1 = fits.BinTableHDU.from_columns(cols)
 
             # If first time writing fits file, make up filler primary hdu
-            try:
+            if order == firstorder: # If first time writing fits file, make up filler primary hdu
                 hh = fits.open('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band))
                 hh.append(hdu_1)
                 hh.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band), overwrite=True)
-            except:
+            else:
                 bleh = np.ones((3,3))
                 primary_hdu = fits.PrimaryHDU(bleh)
                 hdul = fits.HDUList([primary_hdu,hdu_1])
@@ -381,11 +381,11 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
             hdu_1 = fits.BinTableHDU.from_columns(cols)
 
             
-            try:
+            if order == firstorder: # If first time writing fits file, make up filler primary hdu
                 hh = fits.open('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band))
                 hh.append(hdu_1)
                 hh.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band), overwrite=True)
-            except: # If first time writing fits file, make up filler primary hdu
+            else: # If first time writing fits file, make up filler primary hdu
                 bleh = np.ones((3,3))
                 primary_hdu = fits.PrimaryHDU(bleh)
                 hdul = fits.HDUList([primary_hdu,hdu_1])
@@ -609,4 +609,3 @@ if __name__ == '__main__':
     logger.info(f'A0 Fitting using TelFit finished, Duration: {end_time - start_time}')
     print('You can start to run main_step2.py for RV initial guess')
     print('####################################################################################')
-
