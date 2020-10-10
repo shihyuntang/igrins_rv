@@ -219,14 +219,14 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
 
         # If first time writing fits file, make up filler primary hdu
         if order == firstorder: # If first time writing fits file, make up filler primary hdu
-            hh = fits.open('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band))
-            hh.append(hdu_1)
-            hh.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band), overwrite=True)
-        else:
             bleh = np.ones((3,3))
             primary_hdu = fits.PrimaryHDU(bleh)
             hdul = fits.HDUList([primary_hdu,hdu_1])
             hdul.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band))
+        else:
+            hh = fits.open('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band))
+            hh.append(hdu_1)
+            hh.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band), overwrite=True)
 
 
     #-------------------------------------------------------------------------------
@@ -260,15 +260,14 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
 
         # If first time writing fits file, make up filler primary hdu
         if order == firstorder: # If first time writing fits file, make up filler primary hdu
-            hh = fits.open('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band))
-            hh.append(hdu_1)
-            hh.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band), overwrite=True)
-        else:
             bleh = np.ones((3,3))
             primary_hdu = fits.PrimaryHDU(bleh)
             hdul = fits.HDUList([primary_hdu,hdu_1])
-
             hdul.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band))
+        else:
+            hh = fits.open('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band))
+            hh.append(hdu_1)
+            hh.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band), overwrite=True)
 
     else: # If Telfit exited normally, proceed.
         #  Save best blaze function fit
@@ -317,14 +316,14 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
 
             # If first time writing fits file, make up filler primary hdu
             if order == firstorder: # If first time writing fits file, make up filler primary hdu
-                hh = fits.open('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band))
-                hh.append(hdu_1)
-                hh.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band), overwrite=True)
-            else:
                 bleh = np.ones((3,3))
                 primary_hdu = fits.PrimaryHDU(bleh)
                 hdul = fits.HDUList([primary_hdu,hdu_1])
                 hdul.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band))
+            else:
+                hh = fits.open('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band))
+                hh.append(hdu_1)
+                hh.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band), overwrite=True)
 
         if not pre_err:
             if inparam.plotfigs: # Plot results
@@ -382,14 +381,14 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
 
             
             if order == firstorder: # If first time writing fits file, make up filler primary hdu
-                hh = fits.open('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band))
-                hh.append(hdu_1)
-                hh.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band), overwrite=True)
-            else: # If first time writing fits file, make up filler primary hdu
                 bleh = np.ones((3,3))
                 primary_hdu = fits.PrimaryHDU(bleh)
                 hdul = fits.HDUList([primary_hdu,hdu_1])
                 hdul.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band))
+            else:
+                hh = fits.open('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band))
+                hh.append(hdu_1)
+                hh.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band), overwrite=True)
         else:
             pass
 #-------------------------------------------------------------------------------
