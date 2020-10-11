@@ -60,7 +60,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
     s2n = a0fluxlist/u
     if np.nanmedian(s2n) < float(args.SN_cut):
         logger.warning('  --> Bad S/N {:1.3f} < {} for {}{}, SKIP'.format( np.nanmedian(s2n), args.SN_cut, night, masterbeam))
-        
+
         pre_err = True
         logger.warning(f'  --> NIGHT {night}, ORDER {order} HIT ERROR DURING PRE_OPT')
         # Write out table to fits header with errorflag = 1
@@ -80,7 +80,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
             hh.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band), overwrite=True)
 
         return
-    
+
     # Trim obvious outliers above the blaze (i.e. cosmic rays)
     nzones = 12
     a0wavelist = basicclip_above(a0wavelist,a0fluxlist,nzones);   a0x = basicclip_above(x,a0fluxlist,nzones);
@@ -246,7 +246,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
             bleh = np.ones((3,3))
             primary_hdu = fits.PrimaryHDU(bleh)
             hdul = fits.HDUList([primary_hdu,hdu_1])
-            hdul.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band))
+            hdul.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band), overwrite=True)
         else:
             hh = fits.open('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band))
             hh.append(hdu_1)
@@ -287,7 +287,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
             bleh = np.ones((3,3))
             primary_hdu = fits.PrimaryHDU(bleh)
             hdul = fits.HDUList([primary_hdu,hdu_1])
-            hdul.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band))
+            hdul.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band), overwrite=True)
         else:
             hh = fits.open('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band))
             hh.append(hdu_1)
@@ -343,7 +343,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                 bleh = np.ones((3,3))
                 primary_hdu = fits.PrimaryHDU(bleh)
                 hdul = fits.HDUList([primary_hdu,hdu_1])
-                hdul.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band))
+                hdul.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band), overwrite=True)
             else:
                 hh = fits.open('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band))
                 hh.append(hdu_1)
@@ -403,12 +403,12 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
             cols = fits.ColDefs([c0,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10])
             hdu_1 = fits.BinTableHDU.from_columns(cols)
 
-            
+
             if order == firstorder: # If first time writing fits file, make up filler primary hdu
                 bleh = np.ones((3,3))
                 primary_hdu = fits.PrimaryHDU(bleh)
                 hdul = fits.HDUList([primary_hdu,hdu_1])
-                hdul.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band))
+                hdul.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band), overwrite=True)
             else:
                 hh = fits.open('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band))
                 hh.append(hdu_1)
@@ -500,7 +500,7 @@ if __name__ == '__main__':
     parser.add_argument("-SN",      dest="SN_cut",           action="store",
                         help="Spectrum S/N quality cut. Spectra with median S/N below this will not be analyzed. Default = 50 ",
                         type=str,   default='50')
-    
+
     parser.add_argument('-c',       dest="Nthreads",         action="store",
                         help="Number of cpu (threads) to use, default is 1/2 of avalible ones (you have %i cpus (threads) avaliable)"%(mp.cpu_count()),
                         type=int,   default=int(mp.cpu_count()//2) )
