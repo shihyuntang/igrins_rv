@@ -168,11 +168,11 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
     # dpar_st   = np.array([0.0, 0.0, 0.0, 3.0, 0.0, 0.0, 0.0,   0.0,  0.0,        0,    1e4, 1, 1, 0,    0])
     # dpar_ip   = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0])
 
-    dpars = {'cont' : np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0, 30., 80., 0.2,25,0.2]),
-             'twave': np.array([0.0, 0.0, 0.0, 1.0, 0.0,               0.0, 10.0,  10.0, 5.00000e-5, 1e-7, 0,   0, 0, 0,    0, 0., 0., 0.,0.,0.]),
-             'ip'   : np.array([0.0, 0.0, 0.0, 0.0, 0,                 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0., 0., 0.,0.,0.])}
+    dpars = {'cont' :   np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0, 30., 120., 0.2, 50, 0.2]),
+             'twave':   np.array([0.0, 0.0, 0.0, 1.0, 0.0,               0.0, 10.0,  10.0, 5.00000e-5, 1e-7, 0,   0, 0, 0,    0, 0. , 0.,  0.,  0., 0.]),
+             'ip'   :   np.array([0.0, 0.0, 0.0, 0.0, 0,                 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0. , 0.,  0.,  0., 0.])}
     if masterbeam == 'B':
-        dpars['cont'] = np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0, 0., 0., 0.,0.,0.])
+        dpars['cont'] = np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0, 0. , 0.,  0.,  0., 0.])
     #-------------------------------------------------------------------------------
 
     # Initialize an array that puts hard bounds on vsini and the instrumental resolution to make sure they do not diverge to unphysical values
@@ -182,13 +182,13 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
         hardbounds = [par_in[4] -0,               par_in[4]+0,
                       par_in[5] -dpars['ip'][5],   par_in[5]+dpars['ip'][5]]
     else:
-        hardbounds = [par_in[4] -0,               par_in[4]+0,
-                      par_in[5] -dpars['ip'][5],   par_in[5]+dpars['ip'][5],
-                      par_in[15] -dpars['cont'][15], par_in[15]+dpars['cont'][15],
-                      par_in[16] -dpars['cont'][16], par_in[16]+dpars['cont'][16],
-                      0., par_in[17]+dpars['cont'][17],
-                      par_in[18] -dpars['cont'][18], par_in[18]+dpars['cont'][18],
-                      0., par_in[19]+dpars['cont'][19]]
+        hardbounds = [par_in[4]  - 0,                 par_in[4]  + 0,
+                      par_in[5]  - dpars['ip'][5],    par_in[5]  + dpars['ip'][5],
+                      par_in[15] - dpars['cont'][15], par_in[15] + dpars['cont'][15],
+                      par_in[16] - dpars['cont'][16], par_in[16] + dpars['cont'][16],
+                      0.,                             par_in[17] + dpars['cont'][17],
+                      par_in[18] - dpars['cont'][18], par_in[18] + dpars['cont'][18],
+                      0.,                             par_in[19] + dpars['cont'][19] ]
 
     if hardbounds[0] < 0:
         hardbounds[0] = 0
