@@ -142,9 +142,9 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                       IPpars[1],     #13: Insrumental resolution linear component
                       IPpars[0],     #14: Instrumental resolution quadratic component
                       centerloc,     #15: Blaze dip center location
-                      315,           #16: Blaze dip full width
+                      330,           #16: Blaze dip full width
                       0.05,           #17: Blaze dip depth
-                      70,            #18: Secondary blaze dip full width
+                      90,            #18: Secondary blaze dip full width
                       0.05])           #19: Blaze dip depth
 
 
@@ -168,7 +168,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
     # dpar_st   = np.array([0.0, 0.0, 0.0, 3.0, 0.0, 0.0, 0.0,   0.0,  0.0,        0,    1e4, 1, 1, 0,    0])
     # dpar_ip   = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0])
 
-    dpars = {'cont' :   np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0, 30., 160., 0.2, 50, 0.2]),
+    dpars = {'cont' :   np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0, 20., 20., 0.2, 50, 0.2]),
              'twave':   np.array([0.0, 0.0, 0.0, 1.0, 0.0,               0.0, 10.0,  10.0, 5.00000e-5, 1e-7, 0,   0, 0, 0,    0, 0. , 0.,   0.,  0., 0.]),
              'ip'   :   np.array([0.0, 0.0, 0.0, 0.0, 0,                 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0. , 0.,   0.,  0., 0.])}
     if masterbeam == 'B':
