@@ -152,8 +152,8 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
     # Initialize an array that puts hard bounds on vsini and the instrumental resolution to make sure they do not diverge to unphysical values
     optimize = True
     par_in = parA0.copy()
-    hardbounds = [par_in[4] -dpar[4],   par_in[4]+dpar[4],
-                  par_in[5] -dpar[5],   par_in[5]+dpar[5],
+    hardbounds = [par_in[4] -dpars['ip'][4],   par_in[4]+dpars['ip'][4],
+                  par_in[5] -dpars['ip'][5],   par_in[5]+dpars['ip'][5],
                       par_in[15] -dpars['cont'][15], par_in[15]+dpars['cont'][15],
                       par_in[16] -dpars['cont'][16], par_in[16]+dpars['cont'][16],
                       0., par_in[17]+dpars['cont'][17],
