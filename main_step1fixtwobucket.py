@@ -173,6 +173,10 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
              'ip'   :   np.array([0.0, 0.0, 0.0, 0.0, 0,                 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0. , 0.,   0.,  0., 0.])}
     if masterbeam == 'B':
         dpars['cont'] = np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0, 0. , 0.,   0.,  0., 0.])
+    else:
+        if args.band == 'K' and order == 3:
+            parA0[19] = 0.
+            dpars['cont'] = np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0, 10., 20., 0.2, 50, 0.])
     #-------------------------------------------------------------------------------
 
     # Initialize an array that puts hard bounds on vsini and the instrumental resolution to make sure they do not diverge to unphysical values
