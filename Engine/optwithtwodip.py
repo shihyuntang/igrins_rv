@@ -31,7 +31,7 @@ def fmodel_chi(par,grad):
           12: Continuum quadratic component
           13: IP linear component
           14: IP quadratic component
-        
+
           If beam is A:
 
               15: Blaze dip center location
@@ -129,7 +129,7 @@ def fmodel_chi(par,grad):
     cont = par[10] + par[11]*fitobj_cp.x+ par[12]*(fitobj_cp.x**2)
     if fitobj_cp.masterbeam == 'A':
         bucket = np.zeros_like(cont)
-        bucket[(fitobj_cp.x >= (par[15]-par[16]/2)) & (fitobj_cp.x <= (par[15]+par[16]/2))] = par[17]
+        bucket[(fitobj_cp.x >= (par[15]-par[16]/2))         & (fitobj_cp.x <= (par[15]+par[16]/2))] = par[17]
         bucket[(fitobj_cp.x >= (par[15]+par[16]/2-par[18])) & (fitobj_cp.x <= (par[15]+par[16]/2))] += par[19]
         cont -= bucket
     smod *= cont
@@ -143,7 +143,7 @@ def fmodel_chi(par,grad):
 
     # Compute chisq
     chisq = np.sum((fitobj_cp.s[mask] - smod[mask])**2. / fitobj_cp.u[mask]**2.)
-    chisq = chisq / (len(smod[mask]) - 15)
+    chisq = chisq / (len(smod[mask]) - len(par))
 
     if optimize_cp == True:
         return chisq
@@ -376,14 +376,14 @@ def optimizer(par0,dpar0, hardbounds_v_ip, fitobj, optimize):
             if highs[18]-par0[18] < 1e-4:
                 par0[18] = par0[18] - 1e-4
             if par0[18] -lows[18] < 1e-4:
-                par0[18] = par0[18] + 1e-4  
+                par0[18] = par0[18] + 1e-4
 
-        if dpar0[19] != 0:  
+        if dpar0[19] != 0:
             lows[19] = hardbounds_v_ip[12]; highs[19] = hardbounds_v_ip[13];
             if highs[19]-par0[19] < 1e-4:
                 par0[19] = par0[19] - 1e-4
             if par0[19] -lows[19] < 1e-4:
-                par0[19] = par0[19] + 1e-4  
+                par0[19] = par0[19] + 1e-4
 
     opt.set_lower_bounds(lows)
     opt.set_upper_bounds(highs)
