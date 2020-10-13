@@ -138,11 +138,11 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
     # Arrays defining parameter variations during optimization steps
     dpars = {'cont' : np.array([ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,   0.0,  0.0,    0,    1e7, 1, 1,    0,    0, 10., 20., 0.2, 50, 0.2]),
              'twave' : np.array([0.0, 0.0, 0.0, 3.0, 0.0, 0.0, 10.0, 10.0, 5e-5, 1e-7,      0, 0, 0,    0,    0,  0.,  0.,  0., 0., 0.]),
-             'ip'   : np.array([ 0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0,   0.0,  0.0,    0,    1e4, 1, 1, 1e-2, 1e-5, 30., 80., 0.2, 25, 0.2])}
+             'ip'   : np.array([ 0.0, 0.0, 0.0, 0.0, 0.0, 4.0, 0.0,   0.0,  0.0,    0,    1e4, 1, 1, 1e-2, 1e-5, 30., 80., 0.2, 25, 0.2])}
     if masterbeam == 'B':
         dpars = {'cont' : np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,   0.0, 0.0,  0,    1e7, 1, 1, 0,    0, 0., 0., 0.,0.,0.]),
                  'twave' : np.array([0.0, 0.0, 0.0, 3.0, 0.0, 0.0, 10.0, 10.0, 5e-5, 1e-7, 0,   0, 0, 0,    0, 0., 0., 0.,0.,0.]),
-                 'ip'   : np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0,   0.0, 0.0,  0,    1e4, 1, 1, 1e-2, 1e-5, 0., 0., 0.,0.,0.])}
+                 'ip'   : np.array([0.0, 0.0, 0.0, 0.0, 0.0, 4.0, 0.0,   0.0, 0.0,  0,    1e4, 1, 1, 1e-2, 1e-5, 0., 0., 0.,0.,0.])}
     else:
         if args.band == 'K' and order == 3:
             parA0[19] = 0.
@@ -161,7 +161,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                   0.,                            par_in[19]+dpars['cont'][19] ]
     if hardbounds[0] < 0:
         hardbounds[0] = 0
-    if hardbounds[3] < 0:
+    if hardbounds[3] < 1:
         hardbounds[3] = 1
 
     # Begin optimization.
