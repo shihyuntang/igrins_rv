@@ -133,12 +133,12 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
     s = a0fluxlist.copy(); x = a0x.copy(); u = a0u.copy();
 
     # Collect all fit variables into one class
-    fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [])
+    fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam)
 
     # Arrays defining parameter variations during optimization steps
-    dpars = {'cont' : np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,   0.0, 0.0,  0,    1e7, 1, 1, 0,    0, 10., 20., 0.2, 50, 0.2]),
-             'twave' : np.array([0.0, 0.0, 0.0, 3.0, 0.0, 0.0, 10.0, 10.0, 5e-5, 1e-7, 0,   0, 0, 0,    0, 0., 0., 0.,0.,0.]),
-             'ip'   : np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0,   0.0, 0.0,  0,    1e4, 1, 1, 1e-2, 1e-5, 30., 80., 0.2,25,0.2])}
+    dpars = {'cont' : np.array([ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,   0.0,  0.0,    0,    1e7, 1, 1,    0,    0, 10., 20., 0.2, 50, 0.2]),
+             'twave' : np.array([0.0, 0.0, 0.0, 3.0, 0.0, 0.0, 10.0, 10.0, 5e-5, 1e-7,      0, 0, 0,    0,    0,  0.,  0.,  0., 0., 0.]),
+             'ip'   : np.array([ 0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0,   0.0,  0.0,    0,    1e4, 1, 1, 1e-2, 1e-5, 30., 80., 0.2, 25, 0.2])}
     if masterbeam == 'B':
         dpars = {'cont' : np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,   0.0, 0.0,  0,    1e7, 1, 1, 0,    0, 0., 0., 0.,0.,0.]),
                  'twave' : np.array([0.0, 0.0, 0.0, 3.0, 0.0, 0.0, 10.0, 10.0, 5e-5, 1e-7, 0,   0, 0, 0,    0, 0., 0., 0.,0.,0.]),
