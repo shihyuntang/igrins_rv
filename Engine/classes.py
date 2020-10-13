@@ -6,7 +6,7 @@ import numpy as np
 class fitobjs:
 
 
-    def __init__(self,s, x, u,continuum,watm_in,satm_in,mflux_in,mwave_in,mask,masterbeam=None):
+    def __init__(self,s, x, u,continuum,watm_in,satm_in,mflux_in,mwave_in,mask,masterbeam):
         self.s = s
         self.x = x
         self.u = u
@@ -83,7 +83,7 @@ class inparams:
                                     }
 
 
-# old H tight~ 0.0149323 , 0.02518648, 0.00716132, 0.00592511, 0.04312596, 0.0075384 
+# old H tight~ 0.0149323 , 0.02518648, 0.00716132, 0.00592511, 0.04312596, 0.0075384
         #                                                6           13          14          16         21          22
         self.methodvariance_tight = { 'H': np.array([0.02356771, 0.02582711, 0.00694575, 0.00571171, 0.0675675, 0.00698738]),
         #                                                 3          4           5           6
