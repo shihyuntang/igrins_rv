@@ -25,7 +25,7 @@ def outplotter_tel(parfit, fitobj, title, inparam, args):
     axes.set_xlabel(r'Wavelength [$\AA$]', size=6, style='normal', family='sans-serif')
     axes.xaxis.set_minor_locator(AutoMinorLocator(5))
     axes.yaxis.set_minor_locator(AutoMinorLocator(2))
-    axes.tick_params(axis='both', labelsize=6, right=True, top=True, direction='in')
+    axes.tick_params(axis='both', which='both', labelsize=6, right=True, top=True, direction='in')
     axes.legend(fontsize=5, edgecolor='white')
     fig.savefig('{}/figs_{}/{}.png'.format(inparam.outpath, args.band, title),
                 bbox_inches='tight', format='png', overwrite=True)
@@ -40,7 +40,7 @@ def outplotter_tel(parfit, fitobj, title, inparam, args):
     axes.set_xlabel(r'Wavelength [$\AA$]', size=6, style='normal', family='sans-serif')
     axes.xaxis.set_minor_locator(AutoMinorLocator(5))
     axes.yaxis.set_minor_locator(AutoMinorLocator(2))
-    axes.tick_params(axis='both', labelsize=6, right=True, top=True, direction='in')
+    axes.tick_params(axis='both', which='both', labelsize=6, right=True, top=True, direction='in')
     axes.legend(fontsize=5, edgecolor='white')
     fig.savefig('{}/figs_{}/{}.png'.format(inparam.outpath, args.band, title+str('_X')),
                 bbox_inches='tight', format='png', overwrite=True)
@@ -189,7 +189,7 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3):
 
     fig.savefig(f'{inparam.outpath}/figs_twobucket/main_step{step2or3}_{args.band}_{trk}/{title}_X.png', bbox_inches='tight', format='png', overwrite=True)
 
-    
+
 
 #     print('''
 # ************************************************************************************
