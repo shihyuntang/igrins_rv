@@ -7,7 +7,7 @@ from Engine.rebin_jv import rebin_jv
 
 def IPval(tar,band):
 
-    filesndirs = os.listdir('../Output/{i}_tool/A0_Fits_IP'.format(tar))
+    filesndirs = os.listdir('../Output/{i}_tool/A0Fits_IP'.format(tar))
 
     filesndirs_A = [j for j in filesndirs if j[-15:] == f'Atreated_{band}.fits']
     filesndirs_B = [j for j in filesndirs if j[-15:] == f'Btreated_{band}.fits']
@@ -16,11 +16,11 @@ def IPval(tar,band):
     nightsT = np.where((nights < 20180401)  | (nights > 20190531))
     nightsL = np.where((nights >= 20180401) & (nights < 20190531))
 
-    TdirsA = [ '../Output/{i}_tool/A0_Fits_IP/{}A0_Atreated_{}.fits'.format(tar, nn, band) for nn in nights[nightsT] ]
-    TdirsB = [ '../Output/{i}_tool/A0_Fits_IP/{}A0_Btreated_{}.fits'.format(tar, nn, band) for nn in nights[nightsT] ]
+    TdirsA = [ '../Output/{i}_tool/A0Fits_IP/{}A0_Atreated_{}.fits'.format(tar, nn, band) for nn in nights[nightsT] ]
+    TdirsB = [ '../Output/{i}_tool/A0Fits_IP/{}A0_Btreated_{}.fits'.format(tar, nn, band) for nn in nights[nightsT] ]
 
-    LdirsA = [ '../Output/{i}_tool/A0_Fits_IP/{}A0_Atreated_{}.fits'.format(tar, nn, band) for nn in nights[nightsL] ]
-    LdirsB = [ '../Output/{i}_tool/A0_Fits_IP/{}A0_Btreated_{}.fits'.format(tar, nn, band) for nn in nights[nightsL] ]
+    LdirsA = [ '../Output/{i}_tool/A0Fits_IP/{}A0_Atreated_{}.fits'.format(tar, nn, band) for nn in nights[nightsL] ]
+    LdirsB = [ '../Output/{i}_tool/A0Fits_IP/{}A0_Btreated_{}.fits'.format(tar, nn, band) for nn in nights[nightsL] ]
 
     print(f'We have Tight nights: {nights[nightsT]}')
     print(f'We have Loose nights: {nights[nightsL]}')
@@ -242,15 +242,15 @@ if __name__ == '__main__':
         sys.exit('NO SPACE IS ALLOWED BETWEEN NAMES!' )
 #-------------------------------------------------------------------------------
     for i in tars:
-        if os.path.isdir( f'../Output/{i}_tool/A0_Fits_IP' ):
-            filesndirs = os.listdir(f'../Output/{i}_tool/A0_Fits_IP')
+        if os.path.isdir( f'../Output/{i}_tool/A0Fits_IP' ):
+            filesndirs = os.listdir(f'../Output/{i}_tool/A0Fits_IP')
             filesndirs_AH = [j for j in filesndirs if j[-15:] == 'Atreated_H.fits']
             filesndirs_BH = [j for j in filesndirs if j[-15:] == 'Btreated_H.fits']
             filesndirs_AK = [j for j in filesndirs if j[-15:] == 'Atreated_K.fits']
             filesndirs_BK = [j for j in filesndirs if j[-15:] == 'Btreated_K.fits']
 
             print('CONFIRMING... ')
-            print('{} of H band & {} of K band under ../Output/{i}_tool/A0_Fits_IP'.format(len(filesndirs_H), len(filesndirs_K), i))
+            print('{} of H band & {} of K band under ../Output/{i}_tool/A0Fits_IP'.format(len(filesndirs_H), len(filesndirs_K), i))
             time.sleep(2)
 #-------------------------------------------------------------------------------
             if (args.mode == 1) or (args.mode == 2): #get IP & WaveSol
@@ -265,14 +265,14 @@ if __name__ == '__main__':
                 print('DONE, saving under ./Tool_output/IP_X.txt')
                 time.sleep(1)
         else:
-            sys.exit(f'NO FILES FOUND UNDER ../Output/{i}_tool/A0_Fits_IP' )
+            sys.exit(f'NO FILES FOUND UNDER ../Output/{i}_tool/A0Fits_IP' )
 #-------------------------------------------------------------------------------
 
     for i in tars:
-        if os.path.isdir( f'./A0_Fits/A0_Fits_{i}_IP' ):
+        if os.path.isdir( f'./A0_Fits/A0Fits_{i}_IP' ):
             continue
         else:
-            sys.exit(f'NO FILES FOUND UNDER ./A0_Fits/A0_Fits_{i}_IP/' )
+            sys.exit(f'NO FILES FOUND UNDER ./A0_Fits/A0Fits_{i}_IP/' )
 
     if (args.mode == 1) or (args.mode == 3):
         print('-------------------------------------------------------------')
