@@ -112,9 +112,9 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
 
     # Determine whether IGRINS mounting was loose or night for the night in question
     if (int(night) < 20180401) or (int(night) > 20190531):
-        IPpars = inparam.ips_tightmount_pars[args.band][order]
+        IPpars = inparam.ips_tightmount_pars[args.band][masterbeam][order]
     else:
-        IPpars = inparam.ips_loosemount_pars[args.band][order]
+        IPpars = inparam.ips_loosemount_pars[args.band][masterbeam][order]
 
     # start at bucket loc = 1250 +- 100, width = 250 +- 100, depth = 100 +- 5000 but floor at 0
     if args.band == 'H':
@@ -196,7 +196,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
 
     if hardbounds[0] < 0:
         hardbounds[0] = 0
-    if hardbounds[2] < 0:
+    if hardbounds[2] < 1:
         hardbounds[2] = 1
 
     # Begin optimization.
