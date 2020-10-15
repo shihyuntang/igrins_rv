@@ -89,7 +89,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
     a0u        = basicclip_above(a0u,a0fluxlist,nzones);   a0fluxlist = basicclip_above(a0fluxlist,a0fluxlist,nzones);
 
     # Normalize
-    # a0fluxlist /= np.median(a0fluxlist)
+    a0fluxlist /= np.median(a0fluxlist)
 
     # Compute rough blaze function estimate. Better fit will be provided by Telfit later.
     continuum    = A0cont(a0wavelist,a0fluxlist,night,order)
@@ -196,8 +196,8 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
 
     if hardbounds[0] < 0:
         hardbounds[0] = 0
-    if hardbounds[3] < 0:
-        hardbounds[3] = 1
+    if hardbounds[2] < 0:
+        hardbounds[2] = 1
 
     # Begin optimization.
     # For every pre-Telfit spectral fit, first fit just template strength/rv/continuum, then just wavelength solution, then template/continuum again, then ip,
