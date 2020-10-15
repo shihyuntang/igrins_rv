@@ -5,117 +5,123 @@ from Engine.importmodule import *
 from Engine.rebin_jv import rebin_jv
 #-------------------------------------------------------------------------------
 
-
 def IPval(tar,band):
 
-    filesndirs = os.listdir('./A0_Fits/A0_Fits_{}_IP/'.format(tar))
-    filesndirs = [j for j in filesndirs if j[-6:] == '{}.fits'.format(band)]
+    filesndirs = os.listdir('../Output/{i}_tool/A0_Fits_IP'.format(tar))
 
-    nights  = np.array([int(j[:8]) for j in filesndirs ])
+    filesndirs_A = [j for j in filesndirs if j[-15:] == f'Atreated_{band}.fits']
+    filesndirs_B = [j for j in filesndirs if j[-15:] == f'Btreated_{band}.fits']
+
+    nights  = np.array([int(j[:8]) for j in filesndirs_A ])
     nightsT = np.where((nights < 20180401)  | (nights > 20190531))
     nightsL = np.where((nights >= 20180401) & (nights < 20190531))
 
-    Tdirs = [ './A0_Fits/A0_Fits_{}_IP/{}A0_treated_{}.fits'.format(tar, nn, band) for nn in nights[nightsT] ]
-    Ldirs = [ './A0_Fits/A0_Fits_{}_IP/{}A0_treated_{}.fits'.format(tar, nn, band) for nn in nights[nightsL] ]
+    TdirsA = [ '../Output/{i}_tool/A0_Fits_IP/{}A0_Atreated_{}.fits'.format(tar, nn, band) for nn in nights[nightsT] ]
+    TdirsB = [ '../Output/{i}_tool/A0_Fits_IP/{}A0_Btreated_{}.fits'.format(tar, nn, band) for nn in nights[nightsT] ]
+
+    LdirsA = [ '../Output/{i}_tool/A0_Fits_IP/{}A0_Atreated_{}.fits'.format(tar, nn, band) for nn in nights[nightsL] ]
+    LdirsB = [ '../Output/{i}_tool/A0_Fits_IP/{}A0_Btreated_{}.fits'.format(tar, nn, band) for nn in nights[nightsL] ]
 
     print(f'We have Tight nights: {nights[nightsT]}')
     print(f'We have Loose nights: {nights[nightsL]}')
 
     print(len(nightsL[0]), nightsL)
 
-    filew = open('./A0_Fits/IP_{}.txt'.format(band),'w')
+    filew = open('./Tool_output/IP_{}.txt'.format(band),'w')
 
     if len(nightsT[0]) != 0:
-        dump1 = 0
-        for a0 in Tdirs:
-            hdulist = fits.open(a0)
+        for Tdirs, nodd in zip([TdirsA, TdirsB], ['A', 'B']): # loop throught A B nodding
+            dump1 = 0
+            for a0 in Tdirs:
+                hdulist = fits.open(a0)
 
-            tt= 1 ; orders = []
-            while 1==1:
-                try:
-                    orders.append( int(hdulist[tt].columns[0].name[9:]) )
-                    tt+=1
-                except:
-                    break
+                tt= 1 ; orders = []
+                while 1==1:
+                    try:
+                        orders.append( int(hdulist[tt].columns[0].name[9:]) )
+                        tt+=1
+                    except:
+                        break
 
-            dump2 = 0
+                dump2 = 0
+                for o in np.arange(len(orders)):
+                    try:
+                        tbdata = hdulist[o+1].data
+                        if dump2 == 0:
+                            IP14 = tbdata['PARFIT'][14]
+                            IP13 = tbdata['PARFIT'][13]
+                            IP5  = tbdata['PARFIT'][5]
+                            dump2 += 1
+                        else:
+                            IP14 = np.append(IP14, tbdata['PARFIT'][14])
+                            IP13 = np.append(IP13, tbdata['PARFIT'][13])
+                            IP5  = np.append(IP5,  tbdata['PARFIT'][5])
+                    except:
+                            IP14 = np.append(IP14, np.nan)
+                            IP13 = np.append(IP13, np.nan)
+                            IP5  = np.append(IP5,  np.nan)
+                if dump1 == 0:
+                    IP14box = IP14
+                    IP13box = IP13
+                    IP5box  = IP5
+                    dump1 += 1
+                else:
+                    try:
+                        IP14box = np.vstack((IP14box, IP14))
+                        IP13box = np.vstack((IP13box, IP13))
+                        IP5box  = np.vstack((IP5box,  IP5))
+                    except:
+                        print(f'{a0} do not have 10 orders')
+                        pass
+
+            filew.write(f'Tight {nodd}\n')
             for o in np.arange(len(orders)):
-                try:
-                    tbdata = hdulist[o+1].data
-                    if dump2 == 0:
-                        IP14 = tbdata['PARFIT'][14]
-                        IP13 = tbdata['PARFIT'][13]
-                        IP5  = tbdata['PARFIT'][5]
-                        dump2 += 1
-                    else:
-                        IP14 = np.append(IP14, tbdata['PARFIT'][14])
-                        IP13 = np.append(IP13, tbdata['PARFIT'][13])
-                        IP5  = np.append(IP5,  tbdata['PARFIT'][5])
-                except:
-                        IP14 = np.append(IP14, np.nan)
-                        IP13 = np.append(IP13, np.nan)
-                        IP5  = np.append(IP5,  np.nan)
-            if dump1 == 0:
-                IP14box = IP14
-                IP13box = IP13
-                IP5box  = IP5
-                dump1 += 1
-            else:
-                try:
+                filew.write('{}: np.array([{:+1.8f}, {:+1.8f}, {:1.8}]),\n'.format(orders[o], np.nanmedian(IP14box[:, o]), np.nanmedian(IP13box[:, o]), np.nanmedian(IP5box[:, o]) ))
+
+    if len(nightsL[0]) != 0:
+        for Ldirs, nodd in zip([LdirsA, LdirsB], ['A', 'B']): # loop throught A B nodding
+            dump1 = 0
+            for a0 in Ldirs:
+                hdulist = fits.open(a0)
+
+                tt= 1 ; orders = []
+                while 1==1:
+                    try:
+                        orders.append( int(hdulist[tt].columns[0].name[9:]) )
+                        tt+=1
+                    except:
+                        break
+
+                dump2 = 0
+                for o in np.arange(len(orders)):
+                    try:
+                        tbdata = hdulist[o+1].data
+                        if dump2 == 0:
+                            IP14 = tbdata['PARFIT'][14]
+                            IP13 = tbdata['PARFIT'][13]
+                            IP5  = tbdata['PARFIT'][5]
+                            dump2 += 1
+                        else:
+                            IP14 = np.append(IP14, tbdata['PARFIT'][14])
+                            IP13 = np.append(IP13, tbdata['PARFIT'][13])
+                            IP5  = np.append(IP5,  tbdata['PARFIT'][5])
+                    except:
+                            IP14 = np.append(IP14, np.nan)
+                            IP13 = np.append(IP13, np.nan)
+                            IP5  = np.append(IP5,  np.nan)
+                if dump1 == 0:
+                    IP14box = IP14
+                    IP13box = IP13
+                    IP5box  = IP5
+                    dump1 += 1
+                else:
                     IP14box = np.vstack((IP14box, IP14))
                     IP13box = np.vstack((IP13box, IP13))
                     IP5box  = np.vstack((IP5box,  IP5))
-                except:
-                    print(f'{a0} do not have 10 orders')
-                    pass
 
-        filew.write('Tight \n')
-        for o in np.arange(len(orders)):
-            filew.write('{}: np.array([{:+1.8f}, {:+1.8f}, {:1.8}]),\n'.format(orders[o], np.nanmean(IP14box[:, o]), np.nanmean(IP13box[:, o]), np.nanmean(IP5box[:, o]) ))
-
-    if len(nightsL[0]) != 0:
-        dump1 = 0
-        for a0 in Ldirs:
-            hdulist = fits.open(a0)
-
-            tt= 1 ; orders = []
-            while 1==1:
-                try:
-                    orders.append( int(hdulist[tt].columns[0].name[9:]) )
-                    tt+=1
-                except:
-                    break
-
-            dump2 = 0
+            filew.write(f'Loose {nodd}\n')
             for o in np.arange(len(orders)):
-                try:
-                    tbdata = hdulist[o+1].data
-                    if dump2 == 0:
-                        IP14 = tbdata['PARFIT'][14]
-                        IP13 = tbdata['PARFIT'][13]
-                        IP5  = tbdata['PARFIT'][5]
-                        dump2 += 1
-                    else:
-                        IP14 = np.append(IP14, tbdata['PARFIT'][14])
-                        IP13 = np.append(IP13, tbdata['PARFIT'][13])
-                        IP5  = np.append(IP5,  tbdata['PARFIT'][5])
-                except:
-                        IP14 = np.append(IP14, np.nan)
-                        IP13 = np.append(IP13, np.nan)
-                        IP5  = np.append(IP5,  np.nan)
-            if dump1 == 0:
-                IP14box = IP14
-                IP13box = IP13
-                IP5box  = IP5
-                dump1 += 1
-            else:
-                IP14box = np.vstack((IP14box, IP14))
-                IP13box = np.vstack((IP13box, IP13))
-                IP5box  = np.vstack((IP5box,  IP5))
-
-        filew.write('Loose \n')
-        for o in np.arange(len(orders)):
-            filew.write('{}: np.array([{:+1.8f}, {:+1.8f}, {:1.8}]),\n'.format(orders[o], np.nanmean(IP14box[:, o]), np.nanmean(IP13box[:, o]), np.nanmean(IP5box[:, o]) ))
+                filew.write('{}: np.array([{:+1.8f}, {:+1.8f}, {:1.8}]),\n'.format(orders[o], np.nanmedian(IP14box[:, o]), np.nanmedian(IP13box[:, o]), np.nanmedian(IP5box[:, o]) ))
 
     filew.close()
 
@@ -224,6 +230,10 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
 #-------------------------------------------------------------------------------
+    # Create output directories as needed
+    if not os.path.isdir('./Tool_output'):
+        os.mkdir('./Tool_output')
+
     print('\n')
     print('###############################################################')
     try:
@@ -232,13 +242,15 @@ if __name__ == '__main__':
         sys.exit('NO SPACE IS ALLOWED BETWEEN NAMES!' )
 #-------------------------------------------------------------------------------
     for i in tars:
-        if os.path.isdir( f'./A0_Fits/A0_Fits_{i}_IP' ):
-            filesndirs = os.listdir(f'./A0_Fits/A0_Fits_{i}_IP/')
-            filesndirs_H = [j for j in filesndirs if j[-6:] == 'H.fits']
-            filesndirs_K = [j for j in filesndirs if j[-6:] == 'K.fits']
+        if os.path.isdir( f'../Output/{i}_tool/A0_Fits_IP' ):
+            filesndirs = os.listdir(f'../Output/{i}_tool/A0_Fits_IP')
+            filesndirs_AH = [j for j in filesndirs if j[-15:] == 'Atreated_H.fits']
+            filesndirs_BH = [j for j in filesndirs if j[-15:] == 'Btreated_H.fits']
+            filesndirs_AK = [j for j in filesndirs if j[-15:] == 'Atreated_K.fits']
+            filesndirs_BK = [j for j in filesndirs if j[-15:] == 'Btreated_K.fits']
 
             print('CONFIRMING... ')
-            print('{} of H band & {} of K band under ./A0_Fits/A0_Fits_{}_IP'.format(len(filesndirs_H), len(filesndirs_K), i))
+            print('{} of H band & {} of K band under ../Output/{i}_tool/A0_Fits_IP'.format(len(filesndirs_H), len(filesndirs_K), i))
             time.sleep(2)
 #-------------------------------------------------------------------------------
             if (args.mode == 1) or (args.mode == 2): #get IP & WaveSol
@@ -250,10 +262,10 @@ if __name__ == '__main__':
                 else:
                     IPval(i,'H')
                     IPval(i,'K')
-                print('DONE, saving under ./A0_Fits/IP_X.txt')
+                print('DONE, saving under ./Tool_output/IP_X.txt')
                 time.sleep(1)
         else:
-            sys.exit(f'NO FILES FOUND UNDER ./A0_Fits/A0_Fits_{i}_IP/' )
+            sys.exit(f'NO FILES FOUND UNDER ../Output/{i}_tool/A0_Fits_IP' )
 #-------------------------------------------------------------------------------
 
     for i in tars:
