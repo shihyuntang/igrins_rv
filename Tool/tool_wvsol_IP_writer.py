@@ -6,8 +6,8 @@ from Engine.rebin_jv import rebin_jv
 #-------------------------------------------------------------------------------
 
 def IPval(tar,band):
-    TdirsA = [] ; TdirsB = []
-    LdirsA = [] ; LdirsB = []
+    TdirsA = np.array([]) ; TdirsB = np.array([])
+    LdirsA = np.array([]) ; LdirsB = np.array([])
     for tt in tars:
         filesndirs = os.listdir('../Output/{}_tool/A0Fits_IP'.format(tt))
 
@@ -18,11 +18,11 @@ def IPval(tar,band):
         nightsT = np.where((nights < 20180401)  | (nights > 20190531))
         nightsL = np.where((nights >= 20180401) & (nights < 20190531))
 
-        TdirsA.append( [ '../Output/{}_tool/A0Fits_IP/{}A0_Atreated_{}.fits'.format(tt, nn, band) for nn in nights[nightsT] ] )
-        TdirsB.append( [ '../Output/{}_tool/A0Fits_IP/{}A0_Btreated_{}.fits'.format(tt, nn, band) for nn in nights[nightsT] ] )
+        TdirsA = np.append(TdirsA, [ '../Output/{}_tool/A0Fits_IP/{}A0_Atreated_{}.fits'.format(tt, nn, band) for nn in nights[nightsT] ] )
+        TdirsB = np.append(TdirsB, [ '../Output/{}_tool/A0Fits_IP/{}A0_Btreated_{}.fits'.format(tt, nn, band) for nn in nights[nightsT] ] )
 
-        LdirsA.append( [ '../Output/{}_tool/A0Fits_IP/{}A0_Atreated_{}.fits'.format(tt, nn, band) for nn in nights[nightsL] ] )
-        LdirsB.append( [ '../Output/{}_tool/A0Fits_IP/{}A0_Btreated_{}.fits'.format(tt, nn, band) for nn in nights[nightsL] ] )
+        LdirsA = np.append(LdirsA, [ '../Output/{}_tool/A0Fits_IP/{}A0_Atreated_{}.fits'.format(tt, nn, band) for nn in nights[nightsL] ] )
+        LdirsB = np.append(LdirsB, [ '../Output/{}_tool/A0Fits_IP/{}A0_Btreated_{}.fits'.format(tt, nn, band) for nn in nights[nightsL] ] )
 
         print(f'We have Tight nights with {tt}: {nights[nightsT]}')
         print(f'We have Loose nights with {tt}: {nights[nightsL]}')
