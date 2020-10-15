@@ -6,26 +6,28 @@ from Engine.rebin_jv import rebin_jv
 #-------------------------------------------------------------------------------
 
 def IPval(tar,band):
+    TdirsA = [] ; TdirsB = []
+    LdirsA = [] ; LdirsB = []
+    for tt in tars:
+        filesndirs = os.listdir('../Output/{}_tool/A0Fits_IP'.format(tt))
 
-    filesndirs = os.listdir('../Output/{}_tool/A0Fits_IP'.format(tar))
+        filesndirs_A = [j for j in filesndirs if j[-15:] == f'Atreated_{band}.fits']
+        filesndirs_B = [j for j in filesndirs if j[-15:] == f'Btreated_{band}.fits']
 
-    filesndirs_A = [j for j in filesndirs if j[-15:] == f'Atreated_{band}.fits']
-    filesndirs_B = [j for j in filesndirs if j[-15:] == f'Btreated_{band}.fits']
+        nights  = np.array([int(j[:8]) for j in filesndirs_A ])
+        nightsT = np.where((nights < 20180401)  | (nights > 20190531))
+        nightsL = np.where((nights >= 20180401) & (nights < 20190531))
 
-    nights  = np.array([int(j[:8]) for j in filesndirs_A ])
-    nightsT = np.where((nights < 20180401)  | (nights > 20190531))
-    nightsL = np.where((nights >= 20180401) & (nights < 20190531))
+        TdirsA.append( [ '../Output/{}_tool/A0Fits_IP/{}A0_Atreated_{}.fits'.format(tt, nn, band) for nn in nights[nightsT] ] )
+        TdirsB.append( [ '../Output/{}_tool/A0Fits_IP/{}A0_Btreated_{}.fits'.format(tt, nn, band) for nn in nights[nightsT] ] )
 
-    TdirsA = [ '../Output/{}_tool/A0Fits_IP/{}A0_Atreated_{}.fits'.format(tar, nn, band) for nn in nights[nightsT] ]
-    TdirsB = [ '../Output/{}_tool/A0Fits_IP/{}A0_Btreated_{}.fits'.format(tar, nn, band) for nn in nights[nightsT] ]
+        LdirsA.append( [ '../Output/{}_tool/A0Fits_IP/{}A0_Atreated_{}.fits'.format(tt, nn, band) for nn in nights[nightsL] ] )
+        LdirsB.append( [ '../Output/{}_tool/A0Fits_IP/{}A0_Btreated_{}.fits'.format(tt, nn, band) for nn in nights[nightsL] ] )
 
-    LdirsA = [ '../Output/{}_tool/A0Fits_IP/{}A0_Atreated_{}.fits'.format(tar, nn, band) for nn in nights[nightsL] ]
-    LdirsB = [ '../Output/{}_tool/A0Fits_IP/{}A0_Btreated_{}.fits'.format(tar, nn, band) for nn in nights[nightsL] ]
+        print(f'We have Tight nights with {tt}: {nights[nightsT]}')
+        print(f'We have Loose nights with {tt}: {nights[nightsL]}')
 
-    print(f'We have Tight nights: {nights[nightsT]}')
-    print(f'We have Loose nights: {nights[nightsL]}')
-
-    print(len(nightsL[0]), nightsL)
+    print(f'Total nights used for normal = {len(TdirsA)}, loose = {len(LdirsA)}')
 
     filew = open('./Tool_output/IP_{}.txt'.format(band),'w')
 
@@ -71,7 +73,7 @@ def IPval(tar,band):
                         IP13box = np.vstack((IP13box, IP13))
                         IP5box  = np.vstack((IP5box,  IP5))
                     except:
-                        print(f'{a0} do not have 10 orders')
+                        print(f'{a0} do not have {len(orders)} orders')
                         pass
 
             filew.write(f'Tight {nodd}\n')
@@ -252,20 +254,21 @@ if __name__ == '__main__':
             print('CONFIRMING... ')
             print('{} of H band & {} of K band under ../Output/{}_tool/A0Fits_IP'.format(len(filesndirs_AH), len(filesndirs_AK), i))
             time.sleep(2)
-#-------------------------------------------------------------------------------
-            if (args.mode == 1) or (args.mode == 2): #get IP & WaveSol
-                print('Getting IP average values...')
-                if (len(filesndirs_AH) == 0) & (len(filesndirs_AK) != 0):
-                    IPval(i,'K')
-                elif (len(filesndirs_AH) != 0) & (len(filesndirs_AK) == 0):
-                    IPval(i,'H')
-                else:
-                    IPval(i,'H')
-                    IPval(i,'K')
-                print('DONE, saving under ./Tool_output/IP_X.txt')
-                time.sleep(1)
+
         else:
             sys.exit(f'NO FILES FOUND UNDER ../Output/{i}_tool/A0Fits_IP' )
+#-------------------------------------------------------------------------------
+    if (args.mode == 1) or (args.mode == 2): #get IP & WaveSol
+        print('Getting IP average values...')
+        if (len(filesndirs_AH) == 0) & (len(filesndirs_AK) != 0):
+            IPval(tars,'K')
+        elif (len(filesndirs_AH) != 0) & (len(filesndirs_AK) == 0):
+            IPval(tars,'H')
+        else:
+            IPval(tars,'H')
+            IPval(tars,'K')
+        print('DONE, saving under ./Tool_output/IP_X.txt')
+        time.sleep(1)
 #-------------------------------------------------------------------------------
 
     for i in tars:
