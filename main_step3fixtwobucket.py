@@ -68,12 +68,6 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         logger.warning(f'  --> Previous run of {night} found it inadequate, skipping...')
         return nightsout, rvsminibox, parfitminibox, vsiniminibox, tagsminibox
 
-    # Use instrumental profile dictionary corresponding to whether IGRINS mounting was loose or not
-    if int(night[:8]) < 20180401 or int(night[:8]) > 20190531:
-        IPpars = inparam.ips_tightmount_pars[args.band][order]
-    else:
-        IPpars = inparam.ips_loosemount_pars[args.band][order]
-
     # start at bucket loc = 1250 +- 100, width = 250 +- 100, depth = 100 +- 5000 but floor at 0
     if args.band == 'H':
         centerloc = 1280
@@ -88,7 +82,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                       0.0,                                                   # 2: The shift of the telluric template (km/s)
                       0.6,                                                   # 3: The scale factor for the telluric template
                       inparam.initvsini,                                     # 4: vsini (km/s)
-                      IPpars[2],                                             # 5: The instrumental resolution (FWHM) in pixels
+                      np.nan,                                                # 5: The instrumental resolution (FWHM) in pixels
                       np.nan,                                                # 6: Wavelength 0-pt
                       np.nan,                                                # 7: Wavelength linear component
                       np.nan,                                                # 8: Wavelength quadratic component
@@ -96,8 +90,8 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                       1.0,                                                   #10: Continuum zero point
                       0.,                                                    #11: Continuum linear component
                       0.,                                                    #12: Continuum quadratic component
-                      IPpars[1],                                             #13: Instrumental resolution linear component
-                      IPpars[0],                                             #14: Instrumental resolution quadratic component
+                      np.nan,                                                #13: Instrumental resolution linear component
+                      np.nan,                                                #14: Instrumental resolution quadratic component
                       centerloc,                                             #15: Blaze dip center location
                       285,                                                   #16: Blaze dip full width
                       0.05,                                                  #17: Blaze dip depth
@@ -112,18 +106,14 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
         # Load synthetic telluric template generated during Step 1
         # [:8] here is to ensure program works under Night_Split mode
-        if beam == 'A':
-            antibeam = 'B'
-        elif beam == 'B':
-            antibeam = 'A'
+
+        # Use instrumental profile dictionary corresponding to whether IGRINS mounting was loose or not
+        if int(night[:8]) < 20180401 or int(night[:8]) > 20190531:
+            IPpars = inparam.ips_tightmount_pars[args.band][masterbeam][order]
         else:
-            sys.exit('uhoh')
-
-        ###A0loc = f'./Output/{args.targname}_{args.band}/A0Fits_doublebucket/{night[:8]}A0_{antibeam}treated_{args.band}.fits'
-
-        ### USE SAME BEAM A0
+            IPpars = inparam.ips_loosemount_pars[args.band][masterbeam][order]
+        
         A0loc = f'./Output/{args.targname}_{args.band}/A0Fits_doublebucket/{night[:8]}A0_{beam}treated_{args.band}.fits'
-        ####
 
         try:
             hdulist = fits.open(A0loc)
@@ -229,6 +219,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         par[9] = par9in ; par[8] = par8in ; par[7] = par7in ; par[6] = par6in
 
         par[0] = initguesses-inparam.bvcs[night+tag] # Initial RV with barycentric correction
+        par[5] = IPpars[2]; parfit[13] = IPpars[1]; parfit[14] = IPpars[0];
 
         # Arrays defining parameter variations during optimization steps
         dpars = {'cont' : np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0, 30., 80., 0.2,25,0.2]),
