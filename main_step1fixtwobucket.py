@@ -226,7 +226,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                 parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize)
                 parstart = parfit_1.copy()
                 if args.debug == True:
-                    outplotter_23(parfit_1,fitobj,'{}_{}_{}_parfit_{}{}'.format(order,night,tag,nk,optkind), trk, inparam, args, step2or3)
+                    outplotter_tel(parfit_1,fitobj,'{}_{}_{}_parfit_{}{}'.format(order,night,tag,nk,optkind),inparam, args)
                     logger.debug(f'{order}_{tag}_{nk}_{optkind}:\n {parfit_1}')
                 nk += 1
         parfit = parfit_1.copy()
@@ -329,7 +329,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                     parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize)
                     parstart = parfit_1.copy()
                     if args.debug == True:
-                        outplotter_23(parfit_1,fitobj,'{}_{}_{}_parfit_{}{}'.format(order,night,tag,nk,optkind), trk, inparam, args, step2or3)
+                        outplotter_tel(parfit_1,fitobj,'{}_{}_{}_parfit_{}{}'.format(order,night,tag,nk,optkind),inparam, args)
                         logger.debug(f'{order}_{tag}_{nk}_{optkind}:\n {parfit_1}')
                     nk += 1
             parfit = parfit_1.copy()
