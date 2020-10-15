@@ -250,14 +250,14 @@ if __name__ == '__main__':
             filesndirs_BK = [j for j in filesndirs if j[-15:] == 'Btreated_K.fits']
 
             print('CONFIRMING... ')
-            print('{} of H band & {} of K band under ../Output/{i}_tool/A0Fits_IP'.format(len(filesndirs_H), len(filesndirs_K), i))
+            print('{} of H band & {} of K band under ../Output/{i}_tool/A0Fits_IP'.format(len(filesndirs_AH), len(filesndirs_AK), i))
             time.sleep(2)
 #-------------------------------------------------------------------------------
             if (args.mode == 1) or (args.mode == 2): #get IP & WaveSol
                 print('Getting IP average values...')
-                if (len(filesndirs_H) == 0) & (len(filesndirs_K) != 0):
+                if (len(filesndirs_AH) == 0) & (len(filesndirs_AK) != 0):
                     IPval(i,'K')
-                elif (len(filesndirs_H) != 0) & (len(filesndirs_K) == 0):
+                elif (len(filesndirs_AH) != 0) & (len(filesndirs_AK) == 0):
                     IPval(i,'H')
                 else:
                     IPval(i,'H')
