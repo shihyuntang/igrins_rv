@@ -7,7 +7,7 @@ from Engine.rebin_jv import rebin_jv
 
 def IPval(tar,band):
 
-    filesndirs = os.listdir('../Output/{i}_tool/A0Fits_IP'.format(tar))
+    filesndirs = os.listdir('../Output/{}_tool/A0Fits_IP'.format(tar))
 
     filesndirs_A = [j for j in filesndirs if j[-15:] == f'Atreated_{band}.fits']
     filesndirs_B = [j for j in filesndirs if j[-15:] == f'Btreated_{band}.fits']
@@ -16,11 +16,11 @@ def IPval(tar,band):
     nightsT = np.where((nights < 20180401)  | (nights > 20190531))
     nightsL = np.where((nights >= 20180401) & (nights < 20190531))
 
-    TdirsA = [ '../Output/{i}_tool/A0Fits_IP/{}A0_Atreated_{}.fits'.format(tar, nn, band) for nn in nights[nightsT] ]
-    TdirsB = [ '../Output/{i}_tool/A0Fits_IP/{}A0_Btreated_{}.fits'.format(tar, nn, band) for nn in nights[nightsT] ]
+    TdirsA = [ '../Output/{}_tool/A0Fits_IP/{}A0_Atreated_{}.fits'.format(tar, nn, band) for nn in nights[nightsT] ]
+    TdirsB = [ '../Output/{}_tool/A0Fits_IP/{}A0_Btreated_{}.fits'.format(tar, nn, band) for nn in nights[nightsT] ]
 
-    LdirsA = [ '../Output/{i}_tool/A0Fits_IP/{}A0_Atreated_{}.fits'.format(tar, nn, band) for nn in nights[nightsL] ]
-    LdirsB = [ '../Output/{i}_tool/A0Fits_IP/{}A0_Btreated_{}.fits'.format(tar, nn, band) for nn in nights[nightsL] ]
+    LdirsA = [ '../Output/{}_tool/A0Fits_IP/{}A0_Atreated_{}.fits'.format(tar, nn, band) for nn in nights[nightsL] ]
+    LdirsB = [ '../Output/{}_tool/A0Fits_IP/{}A0_Btreated_{}.fits'.format(tar, nn, band) for nn in nights[nightsL] ]
 
     print(f'We have Tight nights: {nights[nightsT]}')
     print(f'We have Loose nights: {nights[nightsL]}')
