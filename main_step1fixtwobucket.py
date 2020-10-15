@@ -227,7 +227,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                 parstart = parfit_1.copy()
                 if args.debug == True:
                     outplotter_tel(parfit_1,fitobj,'{}_{}_parfit_{}{}'.format(order,night,nk,optkind),inparam, args)
-                    logger.debug(f'{order}_{tag}_{nk}_{optkind}:\n {parfit_1}')
+                    logger.debug(f'Pre_{order}_{night}_{nk}_{optkind}:\n {parfit_1}')
                 nk += 1
         parfit = parfit_1.copy()
 
@@ -330,7 +330,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                     parstart = parfit_1.copy()
                     if args.debug == True:
                         outplotter_tel(parfit_1,fitobj,'{}_{}_parfit_{}{}'.format(order,night,nk,optkind),inparam, args)
-                        logger.debug(f'{order}_{tag}_{nk}_{optkind}:\n {parfit_1}')
+                        logger.debug(f'Post_{order}_{night}_{nk}_{optkind}:\n {parfit_1}')
                     nk += 1
             parfit = parfit_1.copy()
 
