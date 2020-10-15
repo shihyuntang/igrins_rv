@@ -31,7 +31,7 @@ def IPval(tar,band):
 
     filew = open('./Tool_output/IP_{}.txt'.format(band),'w')
 
-    if len(nightsT[0]) != 0:
+    if len(TdirsA) != 0:
         for Tdirs, nodd in zip([TdirsA, TdirsB], ['A', 'B']): # loop throught A B nodding
             dump1 = 0
             for a0 in Tdirs:
@@ -80,7 +80,7 @@ def IPval(tar,band):
             for o in np.arange(len(orders)):
                 filew.write('{}: np.array([{:+1.8f}, {:+1.8f}, {:1.8}]),\n'.format(orders[o], np.nanmedian(IP14box[:, o]), np.nanmedian(IP13box[:, o]), np.nanmedian(IP5box[:, o]) ))
 
-    if len(nightsL[0]) != 0:
+    if len(LdirsA) != 0:
         for Ldirs, nodd in zip([LdirsA, LdirsB], ['A', 'B']): # loop throught A B nodding
             dump1 = 0
             for a0 in Ldirs:
