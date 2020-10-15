@@ -250,7 +250,7 @@ if __name__ == '__main__':
             filesndirs_BK = [j for j in filesndirs if j[-15:] == 'Btreated_K.fits']
 
             print('CONFIRMING... ')
-            print('{} of H band & {} of K band under ../Output/{i}_tool/A0Fits_IP'.format(len(filesndirs_AH), len(filesndirs_AK), i))
+            print('{} of H band & {} of K band under ../Output/{}_tool/A0Fits_IP'.format(len(filesndirs_AH), len(filesndirs_AK), i))
             time.sleep(2)
 #-------------------------------------------------------------------------------
             if (args.mode == 1) or (args.mode == 2): #get IP & WaveSol
