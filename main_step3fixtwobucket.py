@@ -696,7 +696,7 @@ Input Parameters:
                         stdmasterboxT[i,jerp] = np.nan
                     else:
                         rvmasterboxT[i,jerp]  = np.nanmean(rvtags)
-                        stdmasterboxT[i,jerp] = np.nanstd(rvtags)/np.sqrt(len(rvtags))
+                        stdmasterboxT[i,jerp] = np.nanstd(rvtags)/np.sqrt(len(rvtags[np.isnan(rvtags) == False]))
 
                 else:
                     vsinisL[i,jerp] = np.nanmean(vsinitags)
@@ -706,7 +706,7 @@ Input Parameters:
                         stdmasterboxL[i,jerp] = np.nan
                     else:
                         rvmasterboxL[i,jerp]  = np.nanmean(rvtags)
-                        stdmasterboxL[i,jerp] = np.nanstd(rvtags)/np.sqrt(len(rvtags))
+                        stdmasterboxL[i,jerp] = np.nanstd(rvtags)/np.sqrt(len(rvtags[np.isnan(rvtags) == False]))
             T_L = 'L'
 
 
