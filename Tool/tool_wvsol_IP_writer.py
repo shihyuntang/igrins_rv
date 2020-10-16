@@ -78,7 +78,7 @@ def IPval(tar,band):
 
             filew.write(f'Tight {nodd}\n')
             for o in np.arange(len(orders)):
-                filew.write('{}: np.array([{:+1.10f}, {:+1.10f}, {:1.10f}]),\n'.format(orders[o], np.nanmedian(IP14box[:, o]), np.nanmedian(IP13box[:, o]), np.nanmedian(IP5box[:, o]) ))
+                filew.write('{}: np.array([{:+1.10f}, {:+1.10f}, {:1.10f}]),\n'.format(orders[o], np.nanmean(IP14box[:, o]), np.nanmean(IP13box[:, o]), np.nanmean(IP5box[:, o]) ))
 
     if len(LdirsA) != 0:
         for Ldirs, nodd in zip([LdirsA, LdirsB], ['A', 'B']): # loop throught A B nodding
@@ -123,7 +123,7 @@ def IPval(tar,band):
 
             filew.write(f'Loose {nodd}\n')
             for o in np.arange(len(orders)):
-                filew.write('{}: np.array([{:+1.10f}, {:+1.10f}, {:1.10f}]),\n'.format(orders[o], np.nanmedian(IP14box[:, o]), np.nanmedian(IP13box[:, o]), np.nanmedian(IP5box[:, o]) ))
+                filew.write('{}: np.array([{:+1.10f}, {:+1.10f}, {:1.10f}]),\n'.format(orders[o], np.nanmean(IP14box[:, o]), np.nanmean(IP13box[:, o]), np.nanmean(IP5box[:, o]) ))
 
     filew.close()
 
@@ -271,16 +271,16 @@ if __name__ == '__main__':
         time.sleep(1)
 #-------------------------------------------------------------------------------
 
-    for i in tars:
-        if os.path.isdir( f'./A0_Fits/A0Fits_{i}_IP' ):
-            continue
-        else:
-            sys.exit(f'NO FILES FOUND UNDER ./A0_Fits/A0Fits_{i}_IP/' )
-
-    if (args.mode == 1) or (args.mode == 3):
-        print('-------------------------------------------------------------')
-        print('Getting Wave Solutions...')
-        sys.exit('Oops! not ready for this part yet!' )
+    # for i in tars:
+    #     if os.path.isdir( f'./A0_Fits/A0Fits_{i}_IP' ):
+    #         continue
+    #     else:
+    #         sys.exit(f'NO FILES FOUND UNDER ./A0_Fits/A0Fits_{i}_IP/' )
+    #
+    # if (args.mode == 1) or (args.mode == 3):
+    #     print('-------------------------------------------------------------')
+    #     print('Getting Wave Solutions...')
+    #     sys.exit('Oops! not ready for this part yet!' )
 
     #     WVsol(tars, 'H')
     #     WVsol(tars, 'K')
