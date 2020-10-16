@@ -110,7 +110,7 @@ def IPval(tar,band,args):
                 f = np.polyfit(xorder,ipmedian,2)
                 q = np.poly1d(f)
 
-                filew.write('{}: np.array([{:+1.10f}, {:+1.10f}, {:+1.10f}]),\n'.format(order, q[0], q[1], q[2] ))
+                filew.write('{}: np.array([{:+1.10f}, {:+1.10f}, {:+1.10f}]),\n'.format(order, q[2], q[1], q[0] ))
 
     if len(LdirsA) != 0:
         for Ldirs, nodd in zip([LdirsA, LdirsB], ['A', 'B']): # loop throught A B nodding
@@ -148,7 +148,7 @@ def IPval(tar,band,args):
                 f = np.polyfit(xorder,ipmedian,2)
                 q = np.poly1d(f)
 
-                filew.write('{}: np.array([{:+1.10f}, {:+1.10f}, {:+1.10f}]),\n'.format(order, q[0], q[1], q[2] ))
+                filew.write('{}: np.array([{:+1.10f}, {:+1.10f}, {:+1.10f}]),\n'.format(order, q[2], q[1], q[0] ))
 
     filew.close()
 
