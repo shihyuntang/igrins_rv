@@ -134,15 +134,15 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                       par8in,        # 8: Wavelength quadratic component
                       par9in,        # 9: Wavelength cubic component
                       1.0,           #10: Continuum zero point
-                      0.,            #11: Continuum linear component
-                      0.,            #12: Continuum quadratic component
+                      0.0,            #11: Continuum linear component
+                      0.0,            #12: Continuum quadratic component
                       IPpars[1],     #13: Insrumental resolution linear component
                       IPpars[0],     #14: Instrumental resolution quadratic component
                       centerloc,     #15: Blaze dip center location
                       330,           #16: Blaze dip full width
-                      0.05,           #17: Blaze dip depth
+                      0.05,          #17: Blaze dip depth
                       90,            #18: Secondary blaze dip full width
-                      0.05])           #19: Blaze dip depth
+                      0.05])          #19: Blaze dip depth
 
 
     # Make sure data is within telluric template range (shouldn't do anything)
@@ -165,15 +165,17 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
     # dpar_st   = np.array([0.0, 0.0, 0.0, 3.0, 0.0, 0.0, 0.0,   0.0,  0.0,        0,    1e4, 1, 1, 0,    0])
     # dpar_ip   = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0])
 
-    dpars = {'cont' :   np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0, 10., 20., 0.2, 50, 0.2]),
-             'twave':   np.array([0.0, 0.0, 0.0, 1.0, 0.0,               0.0, 10.0,  10.0, 5.00000e-5, 1e-7, 0,   0, 0, 0,    0, 0. , 0.,   0.,  0., 0.]),
-             'ip'   :   np.array([0.0, 0.0, 0.0, 0.0, 0,                 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0. , 0.,   0.,  0., 0.])}
+    #                            |0    1    2    3  |  | 4 |  | 5 |   | 6    7    8           9  |    |10 11 12|  |13 14|    |15    16    17   18    19|
+    dpars = {'cont' :   np.array([0.0, 0.0, 0.0, 0.0,   0.0,   0.0,    0.0,  0.0, 0.0,        0.0,    1e7, 1, 1,    0, 0,    10.0, 20.0, 0.2, 50.0, 0.2]),
+             'twave':   np.array([0.0, 0.0, 0.0, 1.0,   0.0,   0.0,   10.0, 10.0, 5.00000e-5, 1e-7,   0.0, 0, 0,    0, 0,     0.0,  0.0, 0.0,  0.0, 0.0]),
+             'ip'   :   np.array([0.0, 0.0, 0.0, 0.0,   0.0,   0.5,    0.0,  0.0, 0.0,        0.0,    0.0, 0, 0,    0, 0,     0.0,  0.0, 0.0,  0.0, 0.0])}
     if masterbeam == 'B':
-        dpars['cont'] = np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0, 0. , 0.,   0.,  0., 0.])
+        dpars['cont'] = np.array([0.0, 0.0, 0.0, 0.0,   0.0,   0.0,    0.0,  0.0, 0.0,        0.,     1e7, 1, 1,    0, 0,     0.0,  0.0, 0.0,  0.0, 0.0])
     else:
         if (args.band == 'K') and (order == 3):
             parA0[19] = 0.
-            dpars['cont'] = np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0, 10., 20., 0.2, 50, 0.])
+        #                            |0    1    2    3  |  | 4 |  | 5 |   | 6    7    8           9  |    |10 11 12|  |13 14|    |15    16    17   18    19|
+            dpars['cont'] = np.array([0.0, 0.0, 0.0, 0.0,   0.0,   0.0,    0.0, 0.0, 0.0,         0.,     1e7, 1, 1,    0, 0,    10.0, 20.0, 0.2, 50.0, 0.0])
     #-------------------------------------------------------------------------------
 
     # Initialize an array that puts hard bounds on vsini and the instrumental resolution to make sure they do not diverge to unphysical values
