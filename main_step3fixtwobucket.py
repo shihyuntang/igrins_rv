@@ -219,7 +219,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         par[9] = par9in ; par[8] = par8in ; par[7] = par7in ; par[6] = par6in
 
         par[0] = initguesses-inparam.bvcs[night+tag] # Initial RV with barycentric correction
-        par[5] = IPpars[2]; parfit[13] = IPpars[1]; parfit[14] = IPpars[0];
+        par[5] = IPpars[2]; par[13] = IPpars[1]; par[14] = IPpars[0];
 
         # Arrays defining parameter variations during optimization steps
         dpars = {'cont' : np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0, 30., 80., 0.2,25,0.2]),
