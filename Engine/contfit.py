@@ -45,7 +45,7 @@ def A0cont(a0wavecut,a0vcut,night,order):
 
     c = 0
 
-    for smoothing in np.arange(1e-2,3e3,1e-2):
+    for smoothing in np.arange(1e6,1e8,1e6):
         f = interpolate.UnivariateSpline(x[peaks], a0vcut[peaks], k=3, s=smoothing)
         continuum = f(x)
         peaks2 = detect_peaks(continuum)
