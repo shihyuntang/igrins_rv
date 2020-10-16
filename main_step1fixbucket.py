@@ -228,8 +228,8 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
     #-------------------------------------------------------------------------------
     if not pre_err:
 
-        # if inparam.plotfigs: # Plot results
-        #     outplotter_tel(parfit, fitobj, f'BeforeFit_Order{order}_{night}_{masterbeam}', inparam, args)
+        if inparam.plotfigs: # Plot results
+            outplotter_tel(parfit, fitobj, f'BeforeFit_Order{order}_{night}_{masterbeam}', inparam, args)
 
         # Get best fit wavelength solution
         a0w_out_fit = parfit[6] + parfit[7]*x + parfit[8]*(x**2.) + parfit[9]*(x**3.)

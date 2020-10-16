@@ -30,20 +30,20 @@ def outplotter_tel(parfit, fitobj, title, inparam, args):
     fig.savefig('{}/figs_{}/{}.png'.format(inparam.outpath, args.band, title),
                 bbox_inches='tight', format='png', overwrite=True)
 
-    fig, axes = plt.subplots(1, 1, figsize=(6,3), facecolor='white', dpi=300)
-
-    axes.plot(fitobj.x,fitobj.s, '-',  c = 'k',        lw=0.7, label='data',  alpha=.6)
-    axes.plot(fitobj.x,fit,      '--', c = 'tab:red',  lw=0.7, label='model', alpha=.6)
-    axes.plot(fitobj.x,cont,     '--', c = 'tab:blue',  lw=0.7, label='cont', alpha=.6)
-    axes.set_title( title,                 size=6, style='normal', family='sans-serif')
-    axes.set_ylabel(r'Flux',    size=6, style='normal', family='sans-serif')
-    axes.set_xlabel(r'Wavelength [$\AA$]', size=6, style='normal', family='sans-serif')
-    axes.xaxis.set_minor_locator(AutoMinorLocator(5))
-    axes.yaxis.set_minor_locator(AutoMinorLocator(2))
-    axes.tick_params(axis='both', which='both', labelsize=6, right=True, top=True, direction='in')
-    axes.legend(fontsize=5, edgecolor='white')
-    fig.savefig('{}/figs_{}/{}.png'.format(inparam.outpath, args.band, title+str('_X')),
-                bbox_inches='tight', format='png', overwrite=True)
+    # fig, axes = plt.subplots(1, 1, figsize=(6,3), facecolor='white', dpi=300)
+    #
+    # axes.plot(fitobj.x,fitobj.s, '-',  c = 'k',        lw=0.7, label='data',  alpha=.6)
+    # axes.plot(fitobj.x,fit,      '--', c = 'tab:red',  lw=0.7, label='model', alpha=.6)
+    # axes.plot(fitobj.x,cont,     '--', c = 'tab:blue',  lw=0.7, label='cont', alpha=.6)
+    # axes.set_title( title,                 size=6, style='normal', family='sans-serif')
+    # axes.set_ylabel(r'Flux',    size=6, style='normal', family='sans-serif')
+    # axes.set_xlabel(r'Wavelength [$\AA$]', size=6, style='normal', family='sans-serif')
+    # axes.xaxis.set_minor_locator(AutoMinorLocator(5))
+    # axes.yaxis.set_minor_locator(AutoMinorLocator(2))
+    # axes.tick_params(axis='both', which='both', labelsize=6, right=True, top=True, direction='in')
+    # axes.legend(fontsize=5, edgecolor='white')
+    # fig.savefig('{}/figs_{}/{}.png'.format(inparam.outpath, args.band, title+str('_X')),
+    #             bbox_inches='tight', format='png', overwrite=True)
 
 
 def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3):
