@@ -5,7 +5,48 @@ from Engine.importmodule import *
 from Engine.rebin_jv import rebin_jv
 #-------------------------------------------------------------------------------
 
-def IPval(tar,band):
+def IPval(tar,band,args):
+
+    xbounddict_special = { 'H':{
+                                10: [250, 150],
+                                11: [600, 150],
+                                13: [200, 600],
+                                14: [700, 100],
+                                16: [400, 100],
+                                17: [1000,100],
+                                20: [500, 150]},
+                           'K':{
+                                13: [200, 400],
+                                14: [200, 400]}
+                                }
+
+    xbounddict_default = { 'H':{},'K':{}}
+    for a in range(len(27)):
+        if a in [13, 14, 16, 20]:
+            xbounddict_default['H'][a] = np.array(xbounddict_special['H'][a])
+        else:
+            xbounddict_default['H'][a] = np.array([150,150])
+        if a in [14]:
+            xbounddict_default['K'][a] = np.array(xbounddict_special['K'][a])
+        else:
+            xbounddict_default['K'][a] = np.array([150,150])
+
+
+    if band == 'H' and args.WRegionH != None:
+        bounddata = Table.read(f'./Input/UseWv/XRegions_{args.WRegionH}_H.csv', format='csv')
+        starts  = np.array(bounddata['start'])
+        ends    = np.array(bounddata['end'])
+        orders  = np.array(bounddata['order'], dtype=int)
+        xbounddict = {orders[i]:np.array([starts[i],ends[i]]) for i in range(len(starts))}
+    elif band == 'K' and args.WRegionK != None:
+        bounddata = Table.read(f'./Input/UseWv/XRegions_{args.WRegionK}_K.csv', format='csv')
+        starts  = np.array(bounddata['start'])
+        ends    = np.array(bounddata['end'])
+        orders  = np.array(bounddata['order'], dtype=int)
+        xbounddict = {orders[i]:np.array([starts[i],ends[i]]) for i in range(len(starts))}
+    else:
+        xbounddict = xbounddict_default[band]
+    
     TdirsA = np.array([]) ; TdirsB = np.array([])
     LdirsA = np.array([]) ; LdirsB = np.array([])
     for tt in tars:
@@ -33,7 +74,9 @@ def IPval(tar,band):
 
     if len(TdirsA) != 0:
         for Tdirs, nodd in zip([TdirsA, TdirsB], ['A', 'B']): # loop throught A B nodding
-            dump1 = 0
+            
+            ipmaster = {}
+            
             for a0 in Tdirs:
                 hdulist = fits.open(a0)
 
@@ -45,40 +88,29 @@ def IPval(tar,band):
                     except:
                         break
 
-                dump2 = 0
                 for o in np.arange(len(orders)):
+                    tbdata = hdulist[o+1].data
+                    x = np.array(tbdata['X{}'.format(orders[o])])
+                    w = np.array(tbdata['WAVE{}'.format(orders[o])])
+                    parfit = np.array(tbdata['PARFIT'])
+                    x = x[(w != 0)]
+                    ip = parfit[5] + parfit[13]*x + parfit[14]*(x**2)
+                    xorder = np.arange(xbounddict[str(orders[o])][0],xbounddict[str(orders[o])][1])
+                    ip1 = rebin_jv(x,ip,xorder,False)
                     try:
-                        tbdata = hdulist[o+1].data
-                        if dump2 == 0:
-                            IP14 = tbdata['PARFIT'][14]
-                            IP13 = tbdata['PARFIT'][13]
-                            IP5  = tbdata['PARFIT'][5]
-                            dump2 += 1
-                        else:
-                            IP14 = np.append(IP14, tbdata['PARFIT'][14])
-                            IP13 = np.append(IP13, tbdata['PARFIT'][13])
-                            IP5  = np.append(IP5,  tbdata['PARFIT'][5])
-                    except:
-                            IP14 = np.append(IP14, np.nan)
-                            IP13 = np.append(IP13, np.nan)
-                            IP5  = np.append(IP5,  np.nan)
-                if dump1 == 0:
-                    IP14box = IP14
-                    IP13box = IP13
-                    IP5box  = IP5
-                    dump1 += 1
-                else:
-                    try:
-                        IP14box = np.vstack((IP14box, IP14))
-                        IP13box = np.vstack((IP13box, IP13))
-                        IP5box  = np.vstack((IP5box,  IP5))
-                    except:
-                        print(f'{a0} do not have {len(orders)} orders')
-                        pass
+                        ipmaster[o] = np.vstack((ipmaster[o],ip1))
+                    except KeyError:
+                        ipmaster[o] = ip1
+                      
+            filew.write(f'Tight {nodd}\n')  
+            for order in list(sorted(ipmaster.keys())):
+                xorder = np.arange(xbounddict[str(orders[o])][0],xbounddict[str(orders[o])][1])
+                ipmedian = [np.median(ipmaster[o][:,i]) for i in range(len(ipmaster[o][0,:]))]
 
-            filew.write(f'Tight {nodd}\n')
-            for o in np.arange(len(orders)):
-                filew.write('{}: np.array([{:+1.10f}, {:+1.10f}, {:1.10f}]),\n'.format(orders[o], np.nanmean(IP14box[:, o]), np.nanmean(IP13box[:, o]), np.nanmean(IP5box[:, o]) ))
+                f = np.polyfit(xorder,ipmedian,2)
+                q = np.poly1d(f)
+            
+                filew.write('{}: np.array([{:+1.10f}, {:+1.10f}, {:1.10f}]),\n'.format(order, q[0], q[1], q[2] ))
 
     if len(LdirsA) != 0:
         for Ldirs, nodd in zip([LdirsA, LdirsB], ['A', 'B']): # loop throught A B nodding
@@ -94,36 +126,29 @@ def IPval(tar,band):
                     except:
                         break
 
-                dump2 = 0
                 for o in np.arange(len(orders)):
+                    tbdata = hdulist[o+1].data
+                    x = np.array(tbdata['X{}'.format(orders[o])])
+                    w = np.array(tbdata['WAVE{}'.format(orders[o])])
+                    parfit = np.array(tbdata['PARFIT'])
+                    x = x[(w != 0)]
+                    ip = parfit[5] + parfit[13]*x + parfit[14]*(x**2)
+                    xorder = np.arange(xbounddict[str(orders[o])][0],xbounddict[str(orders[o])][1])
+                    ip1 = rebin_jv(x,ip,xorder,False)
                     try:
-                        tbdata = hdulist[o+1].data
-                        if dump2 == 0:
-                            IP14 = tbdata['PARFIT'][14]
-                            IP13 = tbdata['PARFIT'][13]
-                            IP5  = tbdata['PARFIT'][5]
-                            dump2 += 1
-                        else:
-                            IP14 = np.append(IP14, tbdata['PARFIT'][14])
-                            IP13 = np.append(IP13, tbdata['PARFIT'][13])
-                            IP5  = np.append(IP5,  tbdata['PARFIT'][5])
-                    except:
-                            IP14 = np.append(IP14, np.nan)
-                            IP13 = np.append(IP13, np.nan)
-                            IP5  = np.append(IP5,  np.nan)
-                if dump1 == 0:
-                    IP14box = IP14
-                    IP13box = IP13
-                    IP5box  = IP5
-                    dump1 += 1
-                else:
-                    IP14box = np.vstack((IP14box, IP14))
-                    IP13box = np.vstack((IP13box, IP13))
-                    IP5box  = np.vstack((IP5box,  IP5))
-
+                        ipmaster[o] = np.vstack((ipmaster[o],ip1))
+                    except KeyError:
+                        ipmaster[o] = ip1
+                      
             filew.write(f'Loose {nodd}\n')
-            for o in np.arange(len(orders)):
-                filew.write('{}: np.array([{:+1.10f}, {:+1.10f}, {:1.10f}]),\n'.format(orders[o], np.nanmean(IP14box[:, o]), np.nanmean(IP13box[:, o]), np.nanmean(IP5box[:, o]) ))
+            for order in list(sorted(ipmaster.keys())):
+                xorder = np.arange(xbounddict[str(orders[o])][0],xbounddict[str(orders[o])][1])
+                ipmedian = [np.median(ipmaster[o][:,i]) for i in range(len(ipmaster[o][0,:]))]
+
+                f = np.polyfit(xorder,ipmedian,2)
+                q = np.poly1d(f)
+            
+                filew.write('{}: np.array([{:+1.10f}, {:+1.10f}, {:1.10f}]),\n'.format(order, q[0], q[1], q[2] ))
 
     filew.close()
 
@@ -225,6 +250,12 @@ if __name__ == '__main__':
     parser.add_argument("targname",                          action="store",
                         help="Enter target names you wish to use as a list, e.g., [GJ281,CITau]",
                         type=str)
+    parser.add_argument("-Wr_H",      dest="WRegionH",          action="store",
+                        help="Which list of wavelength regions file (./Input/UseWv/WaveRegions_X) to use for H band? Defaults to those chosen by IGRINS RV team, -Wr 1",
+                        type=int,   default=None)
+    parser.add_argument("-Wr_K",      dest="WRegionK",          action="store",
+                        help="Which list of wavelength regions file (./Input/UseWv/WaveRegions_X) to use for K band? Defaults to those chosen by IGRINS RV team, -Wr 1",
+                        type=int,   default=None)
     parser.add_argument("-mode",    dest="mode",             action="store",
                         help="Which mode? 1) get IP & WaveSol, 2) only IP, 3) only WaveSol. Default = 1",
                         type=int,   default=int(1))
@@ -261,12 +292,12 @@ if __name__ == '__main__':
     if (args.mode == 1) or (args.mode == 2): #get IP & WaveSol
         print('Getting IP average values...')
         if (len(filesndirs_AH) == 0) & (len(filesndirs_AK) != 0):
-            IPval(tars,'K')
+            IPval(tars,'K',args)
         elif (len(filesndirs_AH) != 0) & (len(filesndirs_AK) == 0):
-            IPval(tars,'H')
+            IPval(tars,'H',args)
         else:
-            IPval(tars,'H')
-            IPval(tars,'K')
+            IPval(tars,'H',args)
+            IPval(tars,'K',args)
         print('DONE, saving under ./Tool_output/IP_X.txt')
         time.sleep(1)
 #-------------------------------------------------------------------------------
