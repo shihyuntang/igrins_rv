@@ -21,7 +21,7 @@ def IPval(tar,band,args):
                                 }
 
     xbounddict_default = { 'H':{},'K':{}}
-    for a in range(len(27)):
+    for a in range(27):
         if a in [13, 14, 16, 20]:
             xbounddict_default['H'][a] = np.array(xbounddict_special['H'][a])
         else:
@@ -46,7 +46,7 @@ def IPval(tar,band,args):
         xbounddict = {orders[i]:np.array([starts[i],ends[i]]) for i in range(len(starts))}
     else:
         xbounddict = xbounddict_default[band]
-    
+
     TdirsA = np.array([]) ; TdirsB = np.array([])
     LdirsA = np.array([]) ; LdirsB = np.array([])
     for tt in tars:
@@ -74,9 +74,9 @@ def IPval(tar,band,args):
 
     if len(TdirsA) != 0:
         for Tdirs, nodd in zip([TdirsA, TdirsB], ['A', 'B']): # loop throught A B nodding
-            
+
             ipmaster = {}
-            
+
             for a0 in Tdirs:
                 hdulist = fits.open(a0)
 
@@ -101,15 +101,15 @@ def IPval(tar,band,args):
                         ipmaster[o] = np.vstack((ipmaster[o],ip1))
                     except KeyError:
                         ipmaster[o] = ip1
-                      
-            filew.write(f'Tight {nodd}\n')  
+
+            filew.write(f'Tight {nodd}\n')
             for order in list(sorted(ipmaster.keys())):
                 xorder = np.arange(xbounddict[str(orders[o])][0],xbounddict[str(orders[o])][1])
                 ipmedian = [np.median(ipmaster[o][:,i]) for i in range(len(ipmaster[o][0,:]))]
 
                 f = np.polyfit(xorder,ipmedian,2)
                 q = np.poly1d(f)
-            
+
                 filew.write('{}: np.array([{:+1.10f}, {:+1.10f}, {:1.10f}]),\n'.format(order, q[0], q[1], q[2] ))
 
     if len(LdirsA) != 0:
@@ -139,7 +139,7 @@ def IPval(tar,band,args):
                         ipmaster[o] = np.vstack((ipmaster[o],ip1))
                     except KeyError:
                         ipmaster[o] = ip1
-                      
+
             filew.write(f'Loose {nodd}\n')
             for order in list(sorted(ipmaster.keys())):
                 xorder = np.arange(xbounddict[str(orders[o])][0],xbounddict[str(orders[o])][1])
@@ -147,7 +147,7 @@ def IPval(tar,band,args):
 
                 f = np.polyfit(xorder,ipmedian,2)
                 q = np.poly1d(f)
-            
+
                 filew.write('{}: np.array([{:+1.10f}, {:+1.10f}, {:1.10f}]),\n'.format(order, q[0], q[1], q[2] ))
 
     filew.close()
