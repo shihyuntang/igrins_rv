@@ -78,7 +78,7 @@ def IPval(tar,band):
 
             filew.write(f'Tight {nodd}\n')
             for o in np.arange(len(orders)):
-                filew.write('{}: np.array([{:+1.8f}, {:+1.8f}, {:1.8}]),\n'.format(orders[o], np.nanmedian(IP14box[:, o]), np.nanmedian(IP13box[:, o]), np.nanmedian(IP5box[:, o]) ))
+                filew.write('{}: np.array([{:+1.10f}, {:+1.10f}, {:1.10f}]),\n'.format(orders[o], np.nanmedian(IP14box[:, o]), np.nanmedian(IP13box[:, o]), np.nanmedian(IP5box[:, o]) ))
 
     if len(LdirsA) != 0:
         for Ldirs, nodd in zip([LdirsA, LdirsB], ['A', 'B']): # loop throught A B nodding
@@ -123,7 +123,7 @@ def IPval(tar,band):
 
             filew.write(f'Loose {nodd}\n')
             for o in np.arange(len(orders)):
-                filew.write('{}: np.array([{:+1.8f}, {:+1.8f}, {:1.8}]),\n'.format(orders[o], np.nanmedian(IP14box[:, o]), np.nanmedian(IP13box[:, o]), np.nanmedian(IP5box[:, o]) ))
+                filew.write('{}: np.array([{:+1.10f}, {:+1.10f}, {:1.10f}]),\n'.format(orders[o], np.nanmedian(IP14box[:, o]), np.nanmedian(IP13box[:, o]), np.nanmedian(IP5box[:, o]) ))
 
     filew.close()
 
