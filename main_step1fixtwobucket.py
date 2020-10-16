@@ -88,9 +88,6 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
     a0wavelist = basicclip_above(a0wavelist,a0fluxlist,nzones);   a0x = basicclip_above(a0x,a0fluxlist,nzones);
     a0u        = basicclip_above(a0u,a0fluxlist,nzones);   a0fluxlist = basicclip_above(a0fluxlist,a0fluxlist,nzones);
 
-    # Normalize
-    a0fluxlist /= np.median(a0fluxlist)
-
     # Compute rough blaze function estimate. Better fit will be provided by Telfit later.
     continuum    = A0cont(a0wavelist,a0fluxlist,night,order)
     a0masterwave = a0wavelist.copy()
@@ -209,7 +206,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
 
     cycles = 2
 
-    optgroup = ['cont', 'twave', 'cont',
+    optgroup = ['twave', 'cont',
                 'cont', 'twave', 'cont',
                 'twave',
                 'ip', 'twave',  'cont',
