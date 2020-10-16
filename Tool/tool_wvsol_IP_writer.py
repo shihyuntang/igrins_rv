@@ -98,14 +98,14 @@ def IPval(tar,band,args):
                     xorder = np.arange(xbounddict[orders[o]][0],xbounddict[orders[o]][1])
                     ip1 = rebin_jv(x,ip,xorder,False)
                     try:
-                        ipmaster[o] = np.vstack((ipmaster[o],ip1))
+                        ipmaster[orders[o]] = np.vstack((ipmaster[orders[o]],ip1))
                     except KeyError:
-                        ipmaster[o] = ip1
+                        ipmaster[orders[o]] = ip1
 
             filew.write(f'Tight {nodd}\n')
             for order in list(sorted(ipmaster.keys())):
-                xorder = np.arange(xbounddict[orders[o]][0],xbounddict[orders[o]][1])
-                ipmedian = [np.median(ipmaster[o][:,i]) for i in range(len(ipmaster[o][0,:]))]
+                xorder = np.arange(xbounddict[order][0],xbounddict[order][1])
+                ipmedian = [np.median(ipmaster[order][:,i]) for i in range(len(ipmaster[order][0,:]))]
 
                 f = np.polyfit(xorder,ipmedian,2)
                 q = np.poly1d(f)
@@ -136,14 +136,14 @@ def IPval(tar,band,args):
                     xorder = np.arange(xbounddict[orders[o]][0],xbounddict[orders[o]][1])
                     ip1 = rebin_jv(x,ip,xorder,False)
                     try:
-                        ipmaster[o] = np.vstack((ipmaster[o],ip1))
+                        ipmaster[orders[o]] = np.vstack((ipmaster[orders[o]],ip1))
                     except KeyError:
-                        ipmaster[o] = ip1
+                        ipmaster[orders[o]] = ip1
 
             filew.write(f'Loose {nodd}\n')
             for order in list(sorted(ipmaster.keys())):
-                xorder = np.arange(xbounddict[orders[o]][0],xbounddict[orders[o]][1])
-                ipmedian = [np.median(ipmaster[o][:,i]) for i in range(len(ipmaster[o][0,:]))]
+                xorder = np.arange(xbounddict[order][0],xbounddict[order][1])
+                ipmedian = [np.median(ipmaster[order][:,i]) for i in range(len(ipmaster[order][0,:]))]
 
                 f = np.polyfit(xorder,ipmedian,2)
                 q = np.poly1d(f)
