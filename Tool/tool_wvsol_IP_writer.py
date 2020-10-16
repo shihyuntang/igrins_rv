@@ -121,7 +121,7 @@ def IPval(tar,band,args):
                 tt= 1 ; orders = []
                 while 1==1:
                     try:
-                        orders.append( int(hdulist[tt].columns[0].name[9:]) )
+                        orders.append( int(hdulist[tt].columns[1].name[4:]) )
                         tt+=1
                     except:
                         break
