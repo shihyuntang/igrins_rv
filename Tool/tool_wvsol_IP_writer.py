@@ -33,13 +33,13 @@ def IPval(tar,band,args):
 
 
     if band == 'H' and args.WRegionH != None:
-        bounddata = Table.read(f'./Input/UseWv/XRegions_{args.WRegionH}_H.csv', format='csv')
+        bounddata = Table.read(f'../Input/UseWv/XRegions_{args.WRegionH}_H.csv', format='csv')
         starts  = np.array(bounddata['start'])
         ends    = np.array(bounddata['end'])
         orders  = np.array(bounddata['order'], dtype=int)
         xbounddict = {orders[i]:np.array([starts[i],ends[i]]) for i in range(len(starts))}
     elif band == 'K' and args.WRegionK != None:
-        bounddata = Table.read(f'./Input/UseWv/XRegions_{args.WRegionK}_K.csv', format='csv')
+        bounddata = Table.read(f'../Input/UseWv/XRegions_{args.WRegionK}_K.csv', format='csv')
         starts  = np.array(bounddata['start'])
         ends    = np.array(bounddata['end'])
         orders  = np.array(bounddata['order'], dtype=int)
