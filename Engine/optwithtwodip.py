@@ -123,7 +123,7 @@ def fmodel_chi(par,grad):
 
     # Load saved continuum
     c2 = fitobj_cp.continuum
-    smod *= c2/np.median(c2)
+    smod *= c2#/np.median(c2)
 
     # Apply continuum adjustment
     cont = par[10] + par[11]*fitobj_cp.x+ par[12]*(fitobj_cp.x**2)
@@ -222,7 +222,7 @@ def fmod(par,fitobj):
 
     # Load saved continuum
     c2 = fitobj.continuum
-    smod *= c2/np.median(c2)
+    smod *= c2#/np.median(c2)
 
     # Apply continuum adjustment
     cont = par[10] + par[11]*fitobj.x+ par[12]*(fitobj.x**2)
@@ -302,7 +302,7 @@ def fmod_conti(par,fitobj):
 
     # Load saved continuum
     c2 = fitobj.continuum
-    smod *= c2/np.median(c2)
+    smod *= c2#/np.median(c2)
 
     # Apply continuum adjustment
     cont = par[10] + par[11]*fitobj.x+ par[12]*(fitobj.x**2)
