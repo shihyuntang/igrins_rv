@@ -251,8 +251,8 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                           0., par_in[19]+dpars['cont'][19]]
         if hardbounds[0] < 0.5:
             hardbounds[0] = 0.5
-        if hardbounds[3] < 0:
-            hardbounds[3] = 1
+        if hardbounds[2] < 1:
+            hardbounds[2] = 1
 
         # Begin optimization. Fit the blaze, the wavelength solution, the telluric template power and RV, the stellar template power and RV, the
         # zero point for the instrumental resolution, and the vsini of the star separately, iterating and cycling between each set of parameter fits.
