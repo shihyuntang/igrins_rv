@@ -21,7 +21,7 @@ def outplotter_tel(parfit, fitobj, title, inparam, args):
     axes.plot(w,fit,      '--', c = 'tab:red',  lw=0.7, label='model', alpha=.6)
     axes.plot(w,cont,     '--', c = 'tab:blue',  lw=0.7, label='cont', alpha=.6)
     axes.set_title( title,                 size=6, style='normal', family='sans-serif')
-    axes.set_ylabel(r'Normalized Flux',    size=6, style='normal', family='sans-serif')
+    axes.set_ylabel(r'Flux',    size=6, style='normal', family='sans-serif')
     axes.set_xlabel(r'Wavelength [$\AA$]', size=6, style='normal', family='sans-serif')
     axes.xaxis.set_minor_locator(AutoMinorLocator(5))
     axes.yaxis.set_minor_locator(AutoMinorLocator(2))
@@ -36,7 +36,7 @@ def outplotter_tel(parfit, fitobj, title, inparam, args):
     axes.plot(fitobj.x,fit,      '--', c = 'tab:red',  lw=0.7, label='model', alpha=.6)
     axes.plot(fitobj.x,cont,     '--', c = 'tab:blue',  lw=0.7, label='cont', alpha=.6)
     axes.set_title( title,                 size=6, style='normal', family='sans-serif')
-    axes.set_ylabel(r'Normalized Flux',    size=6, style='normal', family='sans-serif')
+    axes.set_ylabel(r'Flux',    size=6, style='normal', family='sans-serif')
     axes.set_xlabel(r'Wavelength [$\AA$]', size=6, style='normal', family='sans-serif')
     axes.xaxis.set_minor_locator(AutoMinorLocator(5))
     axes.yaxis.set_minor_locator(AutoMinorLocator(2))
@@ -105,7 +105,7 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3):
         fig.tight_layout(pad=0.0)
         fig.suptitle( title,     x=0.5,y=1.05, size=6, style='normal', family='sans-serif')
         fig.text(0.5, -0.04, r'Wavelength [$\rm\AA$]', ha='center', size=6, style='normal', family='sans-serif')
-        fig.text(-0.04, 0.5, r'Normalized Flux',       va='center', rotation='vertical', size=6, style='normal', family='sans-serif')
+        fig.text(-0.04, 0.5, r'Flux',       va='center', rotation='vertical', size=6, style='normal', family='sans-serif')
         ax0.legend(fontsize=5, edgecolor='white')
 
     else:
@@ -116,7 +116,7 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3):
 
         axes.tick_params(axis='both', labelsize=6, right=True, top=True, direction='in')
         axes.set_title(title,  size=6, style='normal' , family='sans-serif' )
-        axes.set_ylabel(r'Normalized Flux',        size=6, style='normal', family='sans-serif' )
+        axes.set_ylabel(r'Flux',        size=6, style='normal', family='sans-serif' )
         axes.set_xlabel(r'Wavelength [$\rm\AA$]',  size=6, style='normal', family='sans-serif' )
 
         axes.tick_params(axis='both', labelsize=6, right=True, top=True, direction='in')
@@ -170,7 +170,7 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3):
         fig.tight_layout(pad=0.0)
         fig.suptitle( title,     x=0.5,y=1.05, size=6, style='normal', family='sans-serif')
         fig.text(0.5, -0.04, r'Pixel', ha='center', size=6, style='normal', family='sans-serif')
-        fig.text(-0.04, 0.5, r'Normalized Flux',       va='center', rotation='vertical', size=6, style='normal', family='sans-serif')
+        fig.text(-0.04, 0.5, r'Flux',       va='center', rotation='vertical', size=6, style='normal', family='sans-serif')
         ax0.legend(fontsize=5, edgecolor='white')
 
     else:
@@ -181,7 +181,7 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3):
 
         axes.tick_params(axis='both', labelsize=6, right=True, top=True, direction='in')
         axes.set_title(title,  size=6, style='normal' , family='sans-serif' )
-        axes.set_ylabel(r'Normalized Flux',        size=6, style='normal', family='sans-serif' )
+        axes.set_ylabel(r'Flux',        size=6, style='normal', family='sans-serif' )
         axes.set_xlabel(r'Pixel',  size=6, style='normal', family='sans-serif' )
 
         axes.tick_params(axis='both', labelsize=6, right=True, top=True, direction='in')
