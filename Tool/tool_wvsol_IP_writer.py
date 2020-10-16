@@ -95,7 +95,7 @@ def IPval(tar,band,args):
                     parfit = np.array(tbdata['PARFIT'])
                     x = x[(w != 0)]
                     ip = parfit[5] + parfit[13]*x + parfit[14]*(x**2)
-                    xorder = np.arange(xbounddict[str(orders[o])][0],xbounddict[str(orders[o])][1])
+                    xorder = np.arange(xbounddict[orders[o]][0],xbounddict[orders[o]][1])
                     ip1 = rebin_jv(x,ip,xorder,False)
                     try:
                         ipmaster[o] = np.vstack((ipmaster[o],ip1))
@@ -104,7 +104,7 @@ def IPval(tar,band,args):
 
             filew.write(f'Tight {nodd}\n')
             for order in list(sorted(ipmaster.keys())):
-                xorder = np.arange(xbounddict[str(orders[o])][0],xbounddict[str(orders[o])][1])
+                xorder = np.arange(xbounddict[orders[o]][0],xbounddict[orders[o]][1])
                 ipmedian = [np.median(ipmaster[o][:,i]) for i in range(len(ipmaster[o][0,:]))]
 
                 f = np.polyfit(xorder,ipmedian,2)
@@ -133,7 +133,7 @@ def IPval(tar,band,args):
                     parfit = np.array(tbdata['PARFIT'])
                     x = x[(w != 0)]
                     ip = parfit[5] + parfit[13]*x + parfit[14]*(x**2)
-                    xorder = np.arange(xbounddict[str(orders[o])][0],xbounddict[str(orders[o])][1])
+                    xorder = np.arange(xbounddict[orders[o]][0],xbounddict[orders[o]][1])
                     ip1 = rebin_jv(x,ip,xorder,False)
                     try:
                         ipmaster[o] = np.vstack((ipmaster[o],ip1))
@@ -142,7 +142,7 @@ def IPval(tar,band,args):
 
             filew.write(f'Loose {nodd}\n')
             for order in list(sorted(ipmaster.keys())):
-                xorder = np.arange(xbounddict[str(orders[o])][0],xbounddict[str(orders[o])][1])
+                xorder = np.arange(xbounddict[orders[o]][0],xbounddict[orders[o]][1])
                 ipmedian = [np.median(ipmaster[o][:,i]) for i in range(len(ipmaster[o][0,:]))]
 
                 f = np.polyfit(xorder,ipmedian,2)
