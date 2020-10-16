@@ -304,18 +304,6 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
         fitobj = fitobjs(s, x, u, continuum,watm1,satm1,mflux_in,mwave_in,[], masterbeam)
 
         try:
-            # parfit_1 = optimizer(par_in,   dpar_st,   hardbounds, fitobj, optimize)
-            # parfit_2 = optimizer(parfit_1, dpar_wave, hardbounds, fitobj, optimize)
-            # parfit_3 = optimizer(parfit_2, dpar_st,   hardbounds, fitobj, optimize)
-            # parfit_4 = optimizer(parfit_3, dpar_wave, hardbounds, fitobj, optimize)
-            # parfit   = optimizer(parfit_4, dpar,      hardbounds, fitobj, optimize)
-            cycles = 2
-            optgroup = ['cont', 'twave', 'cont',
-                        'cont', 'twave', 'cont',
-                        'twave',
-                        'ip', 'twave',  'cont',
-                        'ip', 'twave',  'cont',
-                        'twave']
             nk = 1
             for nc, cycle in enumerate(np.arange(cycles), start=1):
                 if cycle == 0:
