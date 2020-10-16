@@ -112,7 +112,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
             IPpars = inparam.ips_tightmount_pars[args.band][masterbeam][order]
         else:
             IPpars = inparam.ips_loosemount_pars[args.band][masterbeam][order]
-        
+
         A0loc = f'./Output/{args.targname}_{args.band}/A0Fits_doublebucket/{night[:8]}A0_{beam}treated_{args.band}.fits'
 
         try:
@@ -222,13 +222,14 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         par[5] = IPpars[2]; par[13] = IPpars[1]; par[14] = IPpars[0];
 
         # Arrays defining parameter variations during optimization steps
-        dpars = {'cont' : np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0, 30., 80., 0.2,25,0.2]),
-                 'twave': np.array([0.0, 0.0, 0.0, 1.0, 0.0,               0.0, 10.0,  10.0, 5.00000e-5, 1e-7, 0,   0, 0, 0,    0, 0., 0., 0.,0.,0.]),
-                 'ip'   : np.array([0.0, 0.0, 0.0, 0.0, 0,                 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0., 0., 0.,0.,0.]),
-                 's'    : np.array([5.0, 1.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0., 0., 0.,0.,0.]),
-                 'v'    : np.array([0.0, 0.0, 0.0, 0.0, inparam.vsinivary, 0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0., 0., 0.,0.,0.])}
+        #                            | 0    1    2    3 |  | ------ 4 ------ |  | 5 |   | 6     7     8           9  |  |10  11  12| |13 14|  |15   16   17   18    19 |
+        dpars = {'cont' : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    1e7, 1, 1,   0, 0,    30., 80., 0.2, 25.0, 0.2 ]),
+                 'twave': np.array([  0.0, 0.0, 0.0, 1.0,   0.0,                 0.0,   10.0, 10.0,  5.00000e-5, 1e-7,   0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.  ]),
+                 'ip'   : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.5,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0 ]),
+                 's'    : np.array([  5.0, 1.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0 ]),
+                 'v'    : np.array([  0.0, 0.0, 0.0, 0.0,   inparam.vsinivary,   0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0 ])}
         if masterbeam == 'B':
-            dpars['cont'] = np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0, 0., 0., 0.,0.,0.])
+            dpars['cont'] = np.array([0.0, 0.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    1e7, 1, 1,   0, 0,     0.,  0., 0.0,  0.,  0.0 ])
 
         continuum_in = rebin_jv(a0contx,continuum,x_piece,False)
         fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]),masterbeam)

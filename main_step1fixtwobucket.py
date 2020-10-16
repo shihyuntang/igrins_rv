@@ -134,15 +134,15 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                       par8in,        # 8: Wavelength quadratic component
                       par9in,        # 9: Wavelength cubic component
                       1.0,           #10: Continuum zero point
-                      0.0,            #11: Continuum linear component
-                      0.0,            #12: Continuum quadratic component
+                      0.0,           #11: Continuum linear component
+                      0.0,           #12: Continuum quadratic component
                       IPpars[1],     #13: Insrumental resolution linear component
                       IPpars[0],     #14: Instrumental resolution quadratic component
                       centerloc,     #15: Blaze dip center location
                       330,           #16: Blaze dip full width
                       0.05,          #17: Blaze dip depth
                       90,            #18: Secondary blaze dip full width
-                      0.05])          #19: Blaze dip depth
+                      0.05])         #19: Blaze dip depth
 
 
     # Make sure data is within telluric template range (shouldn't do anything)

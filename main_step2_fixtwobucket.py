@@ -152,7 +152,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         IPpars = inparam.ips_tightmount_pars[args.band][masterbeam][order]
     else:
         IPpars = inparam.ips_loosemount_pars[args.band][masterbeam][order]
-    
+
 
     # Retrieve pixel bounds for where within each other significant telluric absorption is present.
     # If these bounds were not applied, analyzing some orders would give garbage fits.
@@ -224,16 +224,17 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
     # Arrays defining parameter variations during optimization steps
     # Optimization will cycle twice. In the first cycle, the RVs can vary more than in the second.
-    dpars1 = {'cont' : np.array([ 0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0, 0., 0., 0.,0.,0.]),
-              'twave' : np.array([ 0.0, 0.0, 0.0, 1.0, 0.0,               0.0, 10.0,  10.0, 5.00000e-5, 1e-7, 0,   0, 0, 0,    0, 0., 0., 0.,0.,0.]),
-              'ip'   : np.array([ 0.0, 0.0, 0.0, 0.0, 0,                 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0., 0., 0.,0.,0.]),
-              's'    : np.array([20.0, 2.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0., 0., 0.,0.,0.]),
-              'v'    : np.array([ 0.0, 0.0, 0.0, 0.0, inparam.vsinivary, 0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0., 0., 0.,0.,0.])}
-    dpars2 = {'cont' : np.array([ 0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0, 0., 0., 0.,0.,0.]),
-              'twave' : np.array([ 0.0, 0.0, 0.0, 1.0, 0.0,               0.0, 10.0,  10.0, 5.00000e-5, 1e-7, 0,   0, 0, 0,    0, 0., 0., 0.,0.,0.]),
-              'ip'   : np.array([ 0.0, 0.0, 0.0, 0.0, 0,                 0.5, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0., 0., 0.,0.,0.]),
-              's'    : np.array([ 5.0, 2.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0., 0., 0.,0.,0.]),
-              'v'    : np.array([ 0.0, 0.0, 0.0, 0.0, inparam.vsinivary, 0.0, 0.0,   0.0,  0.0,        0,    0,   0, 0, 0,    0, 0., 0., 0.,0.,0.])}
+    #                             | 0    1    2    3 |  | ------ 4 ------ |  | 5 |   | 6     7     8           9  |  |10  11  12| |13 14|  |15  16  17  18  19|
+    dpars1 = {'cont' : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    1e7, 1, 1,   0, 0,    0., 0., 0., 0., 0. ]),
+              'twave': np.array([  0.0, 0.0, 0.0, 1.0,   0.0,                 0.0,   10.0, 10.0,  5.00000e-5, 1e-7,   0,   0, 0,   0, 0,    0., 0., 0., 0., 0. ]),
+              'ip'   : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.5,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,    0., 0., 0., 0., 0. ]),
+              's'    : np.array([ 20.0, 2.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,    0., 0., 0., 0., 0. ]),
+              'v'    : np.array([  0.0, 0.0, 0.0, 0.0,   inparam.vsinivary,   0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,    0., 0., 0., 0., 0. ])}
+    dpars2 = {'cont' : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0.,   1e7, 1, 1,   0, 0,    0., 0., 0., 0., 0. ]),
+              'twave': np.array([  0.0, 0.0, 0.0, 1.0,   0.0,                 0.0,   10.0, 10.0,  5.00000e-5, 1e-7,   0,   0, 0,   0, 0,    0., 0., 0., 0., 0. ]),
+              'ip'   : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.5,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,    0., 0., 0., 0., 0. ]),
+              's'    : np.array([  5.0, 2.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,    0., 0., 0., 0., 0. ]),
+              'v'    : np.array([  0.0, 0.0, 0.0, 0.0,   inparam.vsinivary,   0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,    0., 0., 0., 0., 0. ])}
 
     continuum_in = rebin_jv(a0contx,continuum,x_piece,False)
     fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]),masterbeam)
@@ -243,8 +244,8 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     # Initialize an array that puts hard bounds on vsini and the instrumental resolution to make sure they do not diverge to unphysical values
     optimize = True
     par_in = par.copy()
-    hardbounds = [par_in[4] -0,               par_in[4]+0,
-                  par_in[5] -dpars['ip'][5],   par_in[5]+dpars['ip'][5]]
+    hardbounds = [par_in[4] - 0,              par_in[4] + 0,
+                  par_in[5] - dpars['ip'][5], par_in[5] + dpars['ip'][5]]
     if hardbounds[0] < 0.5:
         hardbounds[0] = 0.5
     if hardbounds[3] < 1:
@@ -601,6 +602,3 @@ Input Parameters:
     print('You can now try to get a better RV initial guess with by rerunning Step 2 with -gX set to the run number you just completed.')
     print('OR, you can go on to the full RV analysis in Step 3.')
     print('####################################################################################')
-
-
-
