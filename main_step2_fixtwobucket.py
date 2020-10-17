@@ -53,11 +53,11 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
     # Only do B exposures------
     masterbeam = 'B'
-    # 
+    #
     # tag  = tagsnight[ [beamsnight=='B'][0][0] ] # use first B nodding
     # beam = beamsnight[ [beamsnight=='B'][0][0] ]
     tag = tagsnight[0]
-    beam = beamsnight[0]
+    beam = 'B'
     #--------------------------
 
     # start at bucket loc = 1250 +- 100, width = 250 +- 100, depth = 100 +- 5000 but floor at 0
