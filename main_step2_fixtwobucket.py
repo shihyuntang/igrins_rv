@@ -43,13 +43,20 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         return night, np.nan, np.nan
 
     # Collect relevant beam and filenum info
-    tagsnight = []; beamsnight = [];
+    tagsnight = []; beamsnight = np.array([]);
     for tag in inparam.tagsA[night]:
         tagsnight.append(tag)
-        beamsnight.append('A')
+        beamsnight = np.append(beamsnight, 'A')
     for tag in inparam.tagsB[night]:
         tagsnight.append(tag)
-        beamsnight.append('B')
+        beamsnight = np.append(beamsnight, 'B')
+
+    # Only do B exposures------
+    masterbeam = 'B'
+
+    tag  = tagsnight[ [beamsnight=='B'][0] ] # use first B nodding
+    beam = beamsnight[ [beamsnight=='B'][0] ]
+    #--------------------------
 
     # start at bucket loc = 1250 +- 100, width = 250 +- 100, depth = 100 +- 5000 but floor at 0
     if args.band == 'H':
@@ -57,8 +64,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     else:
         centerloc = 1150
 
-    # Only do B exposures
-    masterbeam = 'B'
+
 
 #-------------------------------------------------------------------------------
     ### Initialize parameter array for optimization as well as half-range values for each parameter during the various steps of the optimization.
@@ -152,7 +158,6 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         IPpars = inparam.ips_tightmount_pars[args.band][masterbeam][order]
     else:
         IPpars = inparam.ips_loosemount_pars[args.band][masterbeam][order]
-
 
     # Retrieve pixel bounds for where within each other significant telluric absorption is present.
     # If these bounds were not applied, analyzing some orders would give garbage fits.
