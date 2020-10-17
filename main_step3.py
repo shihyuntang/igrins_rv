@@ -240,16 +240,17 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         optimize = True
         par_in = par.copy()
         if masterbeam == 'B':
-            hardbounds = [par_in[4] -0,               par_in[4]+0,
-                          par_in[5] -dpars['ip'][5],   par_in[5]+dpars['ip'][5]]
+            hardbounds = [par_in[4] -0,                    par_in[4]+0,
+                          par_in[5] -dpars['ip'][5],       par_in[5]+dpars['ip'][5]]
         else:
-            hardbounds = [par_in[4] -0,               par_in[4]+0,
-                          par_in[5] -dpars['ip'][5],   par_in[5]+dpars['ip'][5],
-                          par_in[15] -dpars['cont'][15], par_in[15]+dpars['cont'][15],
-                          par_in[16] -dpars['cont'][16], par_in[16]+dpars['cont'][16],
-                          0., par_in[17]+dpars['cont'][17],
-                          par_in[18] -dpars['cont'][18], par_in[18]+dpars['cont'][18],
-                          0., par_in[19]+dpars['cont'][19]]
+            hardbounds = [par_in[4] -0,                    par_in[4]+0,
+                          par_in[5] -dpars['ip'][5],       par_in[5]+dpars['ip'][5],
+                          par_in[15] -dpars['cont'][15],   par_in[15]+dpars['cont'][15],
+                          par_in[16] -dpars['cont'][16],   par_in[16]+dpars['cont'][16],
+                          0.,                              par_in[17]+dpars['cont'][17],
+                          par_in[18] -dpars['cont'][18],   par_in[18]+dpars['cont'][18],
+                          0.,                              par_in[19]+dpars['cont'][19]
+                          ]
         if hardbounds[0] < 0.5:
             hardbounds[0] = 0.5
         if hardbounds[2] < 1:
@@ -534,19 +535,19 @@ Input Parameters:
 
     trk = 1; go = True;
     while go == True:
-        name = f'RV_results_twobucket_{trk}'
+        name = f'RV_results_{trk}'
         if name not in filesndirs:
             break
         trk += 1
 
     os.mkdir(f'./Output/{args.targname}_{args.band}/{name}')
 
-    if not os.path.isdir(f'./Output/{args.targname}_{args.band}/figs_twobucket'):
-        os.mkdir(f'./Output/{args.targname}_{args.band}/figs_twobucket')
+    if not os.path.isdir(f'./Output/{args.targname}_{args.band}/figs'):
+        os.mkdir(f'./Output/{args.targname}_{args.band}/figs')
 
     step2or3 = 3
-    if not os.path.isdir(f'./Output/{args.targname}_{args.band}/figs_twobucket/main_step{step2or3}_{args.band}_{trk}'):
-        os.mkdir(f'./Output/{args.targname}_{args.band}/figs_twobucket/main_step{step2or3}_{args.band}_{trk}')
+    if not os.path.isdir(f'./Output/{args.targname}_{args.band}/figs/main_step{step2or3}_{args.band}_{trk}'):
+        os.mkdir(f'./Output/{args.targname}_{args.band}/figs/main_step{step2or3}_{args.band}_{trk}')
 
     outpath = f'./Output/{args.targname}_{args.band}'
 
