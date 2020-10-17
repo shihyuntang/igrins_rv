@@ -255,7 +255,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     optimize = True
     par_in = par.copy()
     hardbounds = [par_in[4] - 0,              par_in[4] + 0,
-                  par_in[5] - dpars['ip'][5], par_in[5] + dpars['ip'][5]]
+                  par_in[5] - dpars1['ip'][5], par_in[5] + dpars1['ip'][5]]
     if hardbounds[0] < 0.5:
         hardbounds[0] = 0.5
     if hardbounds[3] < 1:
