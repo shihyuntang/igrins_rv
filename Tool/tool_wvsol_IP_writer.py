@@ -81,7 +81,7 @@ def IPval(tar,band,args):
                     parfit = np.array(tbdata['PARFIT'])
                     x = x[(w != 0)]
                     ip = parfit[5] + parfit[13]*x + parfit[14]*(x**2)
-                    xorder = np.arange(xbounddict[orders[o]][0],xbounddict[orders[o]][1])
+                    xorder = np.arange(xbounddict[orders[o]][0],2048-xbounddict[orders[o]][1])
                     ip1 = rebin_jv(x,ip,xorder,False)
                     try:
                         ipmaster[orders[o]] = np.vstack((ipmaster[orders[o]],ip1))
@@ -90,7 +90,7 @@ def IPval(tar,band,args):
 
             filew.write(f'Tight {nodd}\n')
             for order in list(sorted(ipmaster.keys())):
-                xorder = np.arange(xbounddict[order][0],xbounddict[order][1])
+                xorder = np.arange(xbounddict[order][0],2048-xbounddict[order][1])
 
                 fig, axes = plt.subplots(1, 1, figsize=(12,12), facecolor='white')
                 for i in range(len(ipmaster[order][:,0])):
@@ -130,7 +130,7 @@ def IPval(tar,band,args):
                     parfit = np.array(tbdata['PARFIT'])
                     x = x[(w != 0)]
                     ip = parfit[5] + parfit[13]*x + parfit[14]*(x**2)
-                    xorder = np.arange(xbounddict[orders[o]][0],xbounddict[orders[o]][1])
+                    xorder = np.arange(xbounddict[orders[o]][0],2048-xbounddict[orders[o]][1])
                     ip1 = rebin_jv(x,ip,xorder,False)
                     try:
                         ipmaster[orders[o]] = np.vstack((ipmaster[orders[o]],ip1))
@@ -139,7 +139,7 @@ def IPval(tar,band,args):
 
             filew.write(f'Loose {nodd}\n')
             for order in list(sorted(ipmaster.keys())):
-                xorder = np.arange(xbounddict[order][0],xbounddict[order][1])
+                xorder = np.arange(xbounddict[order][0],2048-xbounddict[order][1])
 
                 fig, axes = plt.subplots(1, 1, figsize=(12,12), facecolor='white')
                 for i in range(len(ipmaster[order][:,0])):
