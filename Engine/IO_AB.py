@@ -36,12 +36,12 @@ def init_fitsread(path,kind,beam,night,order,tag,band,Ncuts=None):
 
     # Initguesser takes combined AB versions of target spectra, of which there may be multiple, and combines /those/ together.
     if beam[:8] == 'combined':
-        
+
         if kind == 'target':
             subpath        = '{}{}/{}/'.format(path, night,beam[8:])
         else:
             subpath        = '{}std/{}/{}/'.format(path, night,beam[8:])
-            
+
         fullpathprefix = '{}SDC{}_{}_'.format(subpath, band, night[:8])
 
         onlyfiles = [f for f in listdir(subpath) if isfile(join(subpath, f))]
