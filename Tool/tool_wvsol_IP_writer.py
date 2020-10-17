@@ -116,7 +116,7 @@ def IPval(tar,band,args):
                 q = np.poly1d(f)
 
                 axes.plot(xorder,q(xorder),alpha=0.75,color='blue')
-                axes.savefig('Tight_{}_IPs_{}.png'.format(nodd,order))
+                fig.savefig('Tight_{}_IPs_{}.png'.format(nodd,order))
 
                 filew.write('{}: np.array([{:+1.10f}, {:+1.10f}, {:+1.10f}]),\n'.format(order, q[2], q[1], q[0] ))
 
@@ -162,7 +162,7 @@ def IPval(tar,band,args):
                 q = np.poly1d(f)
 
                 axes.plot(xorder,q(xorder),alpha=0.75,color='blue')
-                axes.savefig('Loose_{}_IPs_{}.png'.format(nodd,order))
+                fig.savefig('Loose_{}_IPs_{}.png'.format(nodd,order))
 
                 filew.write('{}: np.array([{:+1.10f}, {:+1.10f}, {:+1.10f}]),\n'.format(order, q[2], q[1], q[0] ))
 
