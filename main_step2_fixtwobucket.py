@@ -17,10 +17,10 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
     # Main function for RV fitting that will be threaded over by multiprocessing
 
-    nights   = inparam.nights
-    night = nights[i] # current looped night
+    nights = inparam.nights
+    night  = nights[i] # current looped night
 
-    order = orders[order_use]
+    order   = order_use
     xbounds = inparam.xbounddict[order]
     print('Working on order {:02d}, night {:03d}/{:03d} ({}) PID:{}...'.format(int(order),
                                                                                            i+1,
@@ -148,7 +148,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
 
     # Use instrumental profile dictionary corresponding to whether IGRINS mounting was loose or not
-    if int(night[:8]) < 20180401 or int(night[:8]) > 20190531:
+    if (int(night[:8]) < 20180401) or (int(night[:8]) > 20190531):
         IPpars = inparam.ips_tightmount_pars[args.band][masterbeam][order]
     else:
         IPpars = inparam.ips_loosemount_pars[args.band][masterbeam][order]
