@@ -31,21 +31,7 @@ def IPval(tar,band,args):
         else:
             xbounddict_default['K'][a] = np.array([150,150])
 
-
-    if band == 'H' and args.WRegionH != None:
-        bounddata = Table.read(f'../Input/UseWv/XRegions_{args.WRegionH}_H.csv', format='csv')
-        starts  = np.array(bounddata['start'])
-        ends    = np.array(bounddata['end'])
-        orders  = np.array(bounddata['order'], dtype=int)
-        xbounddict = {orders[i]:np.array([starts[i],ends[i]]) for i in range(len(starts))}
-    elif band == 'K' and args.WRegionK != None:
-        bounddata = Table.read(f'../Input/UseWv/XRegions_{args.WRegionK}_K.csv', format='csv')
-        starts  = np.array(bounddata['start'])
-        ends    = np.array(bounddata['end'])
-        orders  = np.array(bounddata['order'], dtype=int)
-        xbounddict = {orders[i]:np.array([starts[i],ends[i]]) for i in range(len(starts))}
-    else:
-        xbounddict = xbounddict_default[band]
+    xbounddict = xbounddict_default[band]
 
     TdirsA = np.array([]) ; TdirsB = np.array([])
     LdirsA = np.array([]) ; LdirsB = np.array([])
@@ -122,8 +108,11 @@ def IPval(tar,band,args):
 
     if len(LdirsA) != 0:
         for Ldirs, nodd in zip([LdirsA, LdirsB], ['A', 'B']): # loop throught A B nodding
-            dump1 = 0
+            
+            ipmaster = {}
+            
             for a0 in Ldirs:
+                
                 hdulist = fits.open(a0)
 
                 tt= 1 ; orders = []
