@@ -168,7 +168,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                 bound_cut = [150, 150]
 
         # Load target spectrum
-        x,wave,s,u = init_fitsread(f'{inparam.inpath}',
+        x,wave,s,u = init_fitsread(f'{inparam.inpath}/{night}/{beam}/',
                                     'target',
                                     'separate',
                                     night,
