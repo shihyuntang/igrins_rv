@@ -254,7 +254,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     # Initialize an array that puts hard bounds on vsini and the instrumental resolution to make sure they do not diverge to unphysical values
     optimize = True
     par_in = par.copy()
-    hardbounds = [par_in[4] - 0,               par_in[4] + 0,
+    hardbounds = [par_in[4] - dpars1['v'][4],  par_in[4] + dpars1['v'][4],
                   par_in[5] - dpars1['ip'][5], par_in[5] + dpars1['ip'][5]
                  ]
 

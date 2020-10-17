@@ -240,16 +240,16 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         optimize = True
         par_in = par.copy()
         if masterbeam == 'B':
-            hardbounds = [par_in[4] -0,                    par_in[4]+0,
-                          par_in[5] -dpars['ip'][5],       par_in[5]+dpars['ip'][5]]
+            hardbounds = [par_in[4] - dpars['v'][4],      par_in[4] + dpars['v'][4],
+                          par_in[5] - dpars['ip'][5],     par_in[5]+dpars['ip'][5]]
         else:
-            hardbounds = [par_in[4] -0,                    par_in[4]+0,
-                          par_in[5] -dpars['ip'][5],       par_in[5]+dpars['ip'][5],
-                          par_in[15] -dpars['cont'][15],   par_in[15]+dpars['cont'][15],
-                          par_in[16] -dpars['cont'][16],   par_in[16]+dpars['cont'][16],
-                          0.,                              par_in[17]+dpars['cont'][17],
-                          par_in[18] -dpars['cont'][18],   par_in[18]+dpars['cont'][18],
-                          0.,                              par_in[19]+dpars['cont'][19]
+            hardbounds = [par_in[4] - dpars['v'][4],      par_in[4] + dpars['v'][4],
+                          par_in[5]  - dpars['ip'][5],    par_in[5] + dpars['ip'][5],
+                          par_in[15] - dpars['cont'][15], par_in[15] + dpars['cont'][15],
+                          par_in[16] - dpars['cont'][16], par_in[16] + dpars['cont'][16],
+                          0.,                             par_in[17] + dpars['cont'][17],
+                          par_in[18] - dpars['cont'][18], par_in[18] + dpars['cont'][18],
+                          0.,                             par_in[19] + dpars['cont'][19]
                           ]
         if hardbounds[0] < 0.5:
             hardbounds[0] = 0.5
