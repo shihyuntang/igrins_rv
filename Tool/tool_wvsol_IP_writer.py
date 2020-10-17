@@ -105,20 +105,18 @@ def IPval(tar,band,args):
             filew.write(f'Tight {nodd}\n')
             for order in list(sorted(ipmaster.keys())):
                 xorder = np.arange(xbounddict[order][0],xbounddict[order][1])
-                
-                plt.figure(figsize=(12,12))
+
+                fig, axes = plt.subplots(1, 1, figsize=(12,12), facecolor='white')
                 for i in range(len(ipmaster[order][:,0])):
-                    plt.plot(xorder,ipmaster[order][i,:],alpha=0.5,color='black')
+                    axes.plot(xorder,ipmaster[order][i,:],alpha=0.5,color='black')
                 ipmedian = [np.median(ipmaster[order][:,i]) for i in range(len(ipmaster[order][0,:]))]
-                plt.plot(xorder,ipmedian,alpha=0.75,color='red')
+                axes.plot(xorder,ipmedian,alpha=0.75,color='red')
 
                 f = np.polyfit(xorder,ipmedian,2)
                 q = np.poly1d(f)
-                
-                plt.plot(xorder,q(xorder),alpha=0.75,color='blue')
-                plt.savefig('Tight_{}_IPs_{}.png'.format(nodd,order))
-                plt.clf()
-                plt.close()
+
+                axes.plot(xorder,q(xorder),alpha=0.75,color='blue')
+                axes.savefig('Tight_{}_IPs_{}.png'.format(nodd,order))
 
                 filew.write('{}: np.array([{:+1.10f}, {:+1.10f}, {:+1.10f}]),\n'.format(order, q[2], q[1], q[0] ))
 
@@ -153,20 +151,18 @@ def IPval(tar,band,args):
             filew.write(f'Loose {nodd}\n')
             for order in list(sorted(ipmaster.keys())):
                 xorder = np.arange(xbounddict[order][0],xbounddict[order][1])
-                
-                plt.figure(figsize=(12,12))
+
+                fig, axes = plt.subplots(1, 1, figsize=(12,12), facecolor='white')
                 for i in range(len(ipmaster[order][:,0])):
-                    plt.plot(xorder,ipmaster[order][i,:],alpha=0.5,color='black')
+                    axes.plot(xorder,ipmaster[order][i,:],alpha=0.5,color='black')
                 ipmedian = [np.median(ipmaster[order][:,i]) for i in range(len(ipmaster[order][0,:]))]
-                plt.plot(xorder,ipmedian,alpha=0.75,color='red')
+                axes.plot(xorder,ipmedian,alpha=0.75,color='red')
 
                 f = np.polyfit(xorder,ipmedian,2)
                 q = np.poly1d(f)
-                
-                plt.plot(xorder,q(xorder),alpha=0.75,color='blue')
-                plt.savefig('Loose_{}_IPs_{}.png'.format(nodd,order))
-                plt.clf()
-                plt.close()
+
+                axes.plot(xorder,q(xorder),alpha=0.75,color='blue')
+                axes.savefig('Loose_{}_IPs_{}.png'.format(nodd,order))
 
                 filew.write('{}: np.array([{:+1.10f}, {:+1.10f}, {:+1.10f}]),\n'.format(order, q[2], q[1], q[0] ))
 
