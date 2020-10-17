@@ -575,7 +575,7 @@ Input Parameters:
 
     # Run order by order, multiprocessing over nights within an order
     pool = mp.Pool(processes = args.Nthreads)
-    func = partial(ini_MPinst, args, inparam, orders, int(args.label_use), trk, step2or3 )
+    func = partial(rv_MPinst, args, inparam, orders, int(args.label_use), trk, step2or3 )
     outs = pool.map(func, np.arange(len(nightsFinal)))
     pool.close()
     pool.join()
