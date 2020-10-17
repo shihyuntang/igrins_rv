@@ -122,7 +122,7 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3):
         axes.tick_params(axis='both', labelsize=6, right=True, top=True, direction='in')
         axes.legend(fontsize=5, edgecolor='white')
 
-    fig.savefig(f'{inparam.outpath}/figs_twobucket/main_step{step2or3}_{args.band}_{trk}/{title}.png', bbox_inches='tight', format='png', overwrite=True)
+    fig.savefig(f'{inparam.outpath}/figs/main_step{step2or3}_{args.band}_{trk}/{title}.png', bbox_inches='tight', format='png', overwrite=True)
 
 
     fig, axes = plt.subplots(1, 1, figsize=(6,3), facecolor='white', dpi=300)
@@ -187,7 +187,7 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3):
         axes.tick_params(axis='both', labelsize=6, right=True, top=True, direction='in')
         axes.legend(fontsize=5, edgecolor='white')
 
-    fig.savefig(f'{inparam.outpath}/figs_twobucket/main_step{step2or3}_{args.band}_{trk}/{title}_X.png', bbox_inches='tight', format='png', overwrite=True)
+    fig.savefig(f'{inparam.outpath}/figs/main_step{step2or3}_{args.band}_{trk}/{title}_X.png', bbox_inches='tight', format='png', overwrite=True)
 
 
 
