@@ -83,26 +83,26 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 #-------------------------------------------------------------------------------
     ### Initialize parameter array for optimization as well as half-range values for each parameter during the various steps of the optimization.
     ### Many of the parameters initialized here will be changed throughout the code before optimization and in between optimization steps.
-    pars0 = np.array([np.nan,                                                # 0: The shift of the stellar template (km/s) [assigned later]
-                      0.3,                                                   # 1: The scale factor for the stellar template
-                      0.0,                                                   # 2: The shift of the telluric template (km/s)
-                      0.6,                                                   # 3: The scale factor for the telluric template
-                      inparam.initvsini,                                     # 4: vsini (km/s)
-                      IPpars[2],                                             # 5: The instrumental resolution (FWHM) in pixels
-                      np.nan,                                                # 6: Wavelength 0-pt
-                      np.nan,                                                # 7: Wavelength linear component
-                      np.nan,                                                # 8: Wavelength quadratic component
-                      np.nan,                                                # 9: Wavelength cubic component
-                      1.0,                                                   #10: Continuum zero point
-                      0.,                                                    #11: Continuum linear component
-                      0.,                                                    #12: Continuum quadratic component
-                      IPpars[1],                                             #13: Instrumental resolution linear component
-                      IPpars[0],                                             #14: Instrumental resolution quadratic component
-                      centerloc,                                             #15: Blaze dip center location
-                      315,                                                   #16: Blaze dip full width
-                      0.05])                                                 #17: Blaze dip depth
-
-    # Iterate over all A/B exposures
+    # pars0 = np.array([np.nan,                                                # 0: The shift of the stellar template (km/s) [assigned later]
+    #                   0.3,                                                   # 1: The scale factor for the stellar template
+    #                   0.0,                                                   # 2: The shift of the telluric template (km/s)
+    #                   0.6,                                                   # 3: The scale factor for the telluric template
+    #                   inparam.initvsini,                                     # 4: vsini (km/s)
+    #                   IPpars[2],                                             # 5: The instrumental resolution (FWHM) in pixels
+    #                   np.nan,                                                # 6: Wavelength 0-pt
+    #                   np.nan,                                                # 7: Wavelength linear component
+    #                   np.nan,                                                # 8: Wavelength quadratic component
+    #                   np.nan,                                                # 9: Wavelength cubic component
+    #                   1.0,                                                   #10: Continuum zero point
+    #                   0.,                                                    #11: Continuum linear component
+    #                   0.,                                                    #12: Continuum quadratic component
+    #                   IPpars[1],                                             #13: Instrumental resolution linear component
+    #                   IPpars[0],                                             #14: Instrumental resolution quadratic component
+    #                   centerloc,                                             #15: Blaze dip center location
+    #                   315,                                                   #16: Blaze dip full width
+    #                   0.05])                                                 #17: Blaze dip depth
+    #
+    # # Iterate over all A/B exposures
     for t in np.arange(len(tagsnight)):
         tag = tagsnight[t]
         beam = beamsnight[t]
@@ -683,6 +683,8 @@ Input Parameters:
     else:
         nightscomblist = [nightsT]
 
+    orders = np.array([5])
+    print('ONLY process order 5')
     #-------------------------------------------------------------------------------
 
     # Run order by order, multiprocessing over nights within an order
