@@ -70,9 +70,9 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
     # Use instrumental profile dictionary corresponding to whether IGRINS mounting was loose or not
     if int(night[:8]) < 20180401 or int(night[:8]) > 20190531:
-        IPpars = inparam.ips_tightmount_pars[args.band][masterbeam][order]
+        IPpars = inparam.ips_tightmount_pars[args.band][order]
     else:
-        IPpars = inparam.ips_loosemount_pars[args.band][masterbeam][order]
+        IPpars = inparam.ips_loosemount_pars[args.band][order]
 
     # start at bucket loc = 1250 +- 100, width = 250 +- 100, depth = 100 +- 5000 but floor at 0
     if args.band == 'H':
@@ -143,7 +143,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         if flag == 1:
             logger.warning(f'  --> TELFIT ENCOUNTERED CRITICAL ERROR IN ANTI ORDER: {order} NIGHT: {night}, skipping...')
             return nightsout, rvsminibox, parfitminibox, vsiniminibox, tagsminibox
-
+            
         A0loc = f'./Output/{args.targname}_{args.band}/A0Fits/{night[:8]}A0_{beam}treated_{args.band}.fits'
 
         try:
