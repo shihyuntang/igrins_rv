@@ -196,7 +196,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         else:
             centerloc = 1150
 
-    #-------------------------------------------------------------------------------
+        #-------------------------------------------------------------------------------
         ### Initialize parameter array for optimization as well as half-range values for each parameter during the various steps of the optimization.
         ### Many of the parameters initialized here will be changed throughout the code before optimization and in between optimization steps.
         pars0 = np.array([np.nan,                                                # 0: The shift of the stellar template (km/s) [assigned later]
