@@ -208,6 +208,41 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                                     args.band,
                                     bound_cut)
 
+        # Use instrumental profile dictionary corresponding to whether IGRINS mounting was loose or not
+        if int(night[:8]) < 20180401 or int(night[:8]) > 20190531:
+            IPpars = inparam.ips_tightmount_pars[args.band][masterbeam][order]
+        else:
+            IPpars = inparam.ips_loosemount_pars[args.band][masterbeam][order]
+
+        # start at bucket loc = 1250 +- 100, width = 250 +- 100, depth = 100 +- 5000 but floor at 0
+        if args.band == 'H':
+            centerloc = 1280
+        else:
+            centerloc = 1150
+
+        #-------------------------------------------------------------------------------
+        ### Initialize parameter array for optimization as well as half-range values for each parameter during the various steps of the optimization.
+        ### Many of the parameters initialized here will be changed throughout the code before optimization and in between optimization steps.
+        pars0 = np.array([np.nan,                                                # 0: The shift of the stellar template (km/s) [assigned later]
+                          0.3,                                                   # 1: The scale factor for the stellar template
+                          0.0,                                                   # 2: The shift of the telluric template (km/s)
+                          0.6,                                                   # 3: The scale factor for the telluric template
+                          inparam.initvsini,                                     # 4: vsini (km/s)
+                          IPpars[2],                                             # 5: The instrumental resolution (FWHM) in pixels
+                          np.nan,                                                # 6: Wavelength 0-pt
+                          np.nan,                                                # 7: Wavelength linear component
+                          np.nan,                                                # 8: Wavelength quadratic component
+                          np.nan,                                                # 9: Wavelength cubic component
+                          1.0,                                                   #10: Continuum zero point
+                          0.,                                                    #11: Continuum linear component
+                          0.,                                                    #12: Continuum quadratic component
+                          IPpars[1],                                             #13: Instrumental resolution linear component
+                          IPpars[0],                                             #14: Instrumental resolution quadratic component
+                          centerloc,                                             #15: Blaze dip center location
+                          315,                                                   #16: Blaze dip full width
+                          0.05])                                                 #17: Blaze dip depth
+
+
         #-------------------------------------------------------------------------------
 
         # Execute S/N cut
