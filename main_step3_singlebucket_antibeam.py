@@ -112,7 +112,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
             IPpars = inparam.ips_tightmount_pars[args.band][masterbeam][order]
         else:
             IPpars = inparam.ips_loosemount_pars[args.band][masterbeam][order]
-            
+
         if beam == 'A':
             antibeam = 'B'
         elif beam == 'B':

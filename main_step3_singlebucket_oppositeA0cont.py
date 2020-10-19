@@ -120,7 +120,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         else:
             sys.exit('uhoh')
 
-        A0locANTI = f'./Output/{args.targname}_{args.band}/A0Fits_singlebucket/{night[:8]}A0_{antibeam}treated_{args.band}.fits'
+        A0locANTI = f'./Output/{args.targname}_{args.band}/A0Fits_singlebucket/{night[:8]}A0_{antibeam}treated_{args.band}_singlebucket.fits'
 
         try:
             hdulistANTI = fits.open(A0locANTI)
