@@ -88,9 +88,9 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
 
     # Determine whether IGRINS mounting was loose or night for the night in question
     if (int(night) < 20180401) or (int(night) > 20190531):
-        IPpars = inparam.ips_tightmount_pars[args.band][order]
+        IPpars = inparam.ips_tightmount_pars[args.band][masterbeam][order]
     else:
-        IPpars = inparam.ips_loosemount_pars[args.band][order]
+        IPpars = inparam.ips_loosemount_pars[args.band][masterbeam][order]
 
     ### Initialize parameter array for optimization as well as half-range values for each parameter during
     ### the various steps of the optimization.
@@ -207,7 +207,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
             bleh = np.ones((3,3))
             primary_hdu = fits.PrimaryHDU(bleh)
             hdul = fits.HDUList([primary_hdu,hdu_1])
-            
+
             hdul.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band))
         else:
             hh = fits.open('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band))
@@ -517,7 +517,7 @@ if __name__ == '__main__':
     print('Processing the A nods first...')
     for jerp in range(len(orders)):
         outs = mp_run(args, inparam, args.Nthreads, jerp, orders, nightsFinal,'A')
-        
+
     print('A nods done! Halfway there! \n Now processing the B nods...')
     for jerp in range(len(orders)):
         outs = mp_run(args, inparam, args.Nthreads, jerp, orders, nightsFinal,'B')
