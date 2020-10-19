@@ -123,7 +123,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
     s = a0fluxlist.copy(); x = a0x.copy(); u = a0u.copy();
 
     # Collect all fit variables into one class
-    fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [])
+    fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam)
 
     # Arrays defining parameter variations during optimization steps
     dpar_cont = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0])
@@ -221,7 +221,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
 
         # Fit the A0 again using the new synthetic telluric template.
         # This allows for any tweaks to the blaze function fit that may be necessary.
-        fitobj = fitobjs(s, x, u, continuum,watm1,satm1,mflux_in,mwave_in,[])
+        fitobj = fitobjs(s, x, u, continuum,watm1,satm1,mflux_in,mwave_in,[], masterbeam)
 
         try:
             parfit_1 = optimizer(par_in,   dpar_st,   hardbounds, fitobj, optimize)
