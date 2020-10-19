@@ -182,8 +182,8 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                   0.,                            par_in[19]+dpars['cont'][19] ]
     if hardbounds[0] < 0:
         hardbounds[0] = 0
-    if hardbounds[3] < 1:
-        hardbounds[3] = 1
+    if hardbounds[2] < 1:
+        hardbounds[2] = 1
 
     # Begin optimization.
     # For every pre-Telfit spectral fit, first fit just template strength/rv/continuum, then just wavelength solution, then template/continuum again, then ip,
