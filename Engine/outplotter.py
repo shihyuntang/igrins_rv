@@ -8,10 +8,6 @@ def outplotter_tel(parfit, fitobj, title, inparam, args):
     c2 = fitobj.continuum
     c2 = c2/np.median(c2)
     cont = parfit[10] + parfit[11]*fitobj.x+ parfit[12]*(fitobj.x**2)
-    if fitobj.masterbeam == 'A':
-        bucket = np.zeros_like(cont)
-        bucket[(fitobj.x >= (parfit[15]-parfit[16]/2)) & (fitobj.x <= (parfit[15]+parfit[16]/2))] = parfit[17]
-        cont -= bucket
     cont *= c2
 
     fig, axes = plt.subplots(1, 1, figsize=(6,3), facecolor='white', dpi=300)
