@@ -112,7 +112,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
             IPpars = inparam.ips_tightmount_pars[args.band][masterbeam][order]
         else:
             IPpars = inparam.ips_loosemount_pars[args.band][masterbeam][order]
-        
+
         if beam == 'A':
             antibeam = 'B'
         elif beam == 'B':
@@ -146,7 +146,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         if flag == 1:
             logger.warning(f'  --> TELFIT ENCOUNTERED CRITICAL ERROR IN ANTI ORDER: {order} NIGHT: {night}, skipping...')
             return nightsout, rvsminibox, parfitminibox, vsiniminibox, tagsminibox
-            
+
         A0loc = f'./Output/{args.targname}_{args.band}/A0Fits/{night[:8]}A0_{beam}treated_{args.band}.fits'
 
         try:
@@ -656,8 +656,8 @@ Input Parameters:
     else:
         nightscomblist = [nightsT]
 
-    orders = np.array([5])
-    print('ONLY process order 5')
+    # orders = np.array([5])
+    # print('ONLY process order 5')
     #-------------------------------------------------------------------------------
 
     # Run order by order, multiprocessing over nights within an order
