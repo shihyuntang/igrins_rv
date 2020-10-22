@@ -102,17 +102,17 @@ def IPval(tar,band,args):
                 q = np.poly1d(f)
 
                 axes.plot(xorder,q(xorder),alpha=0.75,color='blue')
-                fig.savefig('Tight_{}_IPs_{}.png'.format(nodd,order))
+                fig.savefig('Tight_{}_IPs_{}_{}.png'.format(nodd,order,band))
 
                 filew.write('{}: np.array([{:+1.10f}, {:+1.10f}, {:+1.10f}]),\n'.format(order, q[2], q[1], q[0] ))
 
     if len(LdirsA) != 0:
         for Ldirs, nodd in zip([LdirsA, LdirsB], ['A', 'B']): # loop throught A B nodding
-            
+
             ipmaster = {}
-            
+
             for a0 in Ldirs:
-                
+
                 hdulist = fits.open(a0)
 
                 tt= 1 ; orders = []
@@ -151,7 +151,7 @@ def IPval(tar,band,args):
                 q = np.poly1d(f)
 
                 axes.plot(xorder,q(xorder),alpha=0.75,color='blue')
-                fig.savefig('Loose_{}_IPs_{}.png'.format(nodd,order))
+                fig.savefig('Loose_{}_IPs_{}_{}.png'.format(nodd,order,band))
 
                 filew.write('{}: np.array([{:+1.10f}, {:+1.10f}, {:+1.10f}]),\n'.format(order, q[2], q[1], q[0] ))
 
