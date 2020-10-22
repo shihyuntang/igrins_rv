@@ -99,9 +99,9 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
     # Trim telluric template to relevant wavelength range
     # Normalize continuum level of telluric atlas in the given band
     if args.band == 'H':
-        contlevel = inparam.satm[(inparam.watm > 15000) & (inparam.watm < 18000)]
+        contlevel = np.max(inparam.satm[(inparam.watm > 15000) & (inparam.watm < 18000)])
     else:
-        contlevel = inparam.satm[(inparam.watm > 20000) & (inparam.watm < 24000)]
+        contlevel = np.max(inparam.satm[(inparam.watm > 20000) & (inparam.watm < 24000)])
 
     # Trim telluric template to relevant wavelength range
     satm_in = inparam.satm[(inparam.watm > min(a0wavelist)*1e4 - 11) & (inparam.watm < max(a0wavelist)*1e4 + 11)]
