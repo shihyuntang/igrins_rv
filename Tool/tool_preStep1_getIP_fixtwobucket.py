@@ -98,9 +98,17 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
     # Trim stellar template to relevant wavelength range
     mwave_in, mflux_in = stellarmodel_setup(a0wavelist, inparam.mwave0, inparam.mflux0)
 
+    # Normalize continuum level of telluric atlas in the given band
+    if args.band == 'H':
+        contlevel = np.max(inparam.satm[(inparam.watm > 15000) & (inparam.watm < 18000)])
+    else:
+        contlevel = np.max(inparam.satm[(inparam.watm > 20000) & (inparam.watm < 24000)])
+
     # Trim telluric template to relevant wavelength range
     satm_in = inparam.satm[(inparam.watm > min(a0wavelist)*1e4 - 11) & (inparam.watm < max(a0wavelist)*1e4 + 11)]
     watm_in = inparam.watm[(inparam.watm > min(a0wavelist)*1e4 - 11) & (inparam.watm < max(a0wavelist)*1e4 + 11)]
+    satm_in /= contlevel
+
 
     # Get initial guess for cubic wavelength solution from reduction pipeline
     f = np.polyfit(a0x, a0wavelist, 3)
