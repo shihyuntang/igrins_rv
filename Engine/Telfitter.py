@@ -164,8 +164,8 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args):
 
             #Set bounds on the variables being fit
             fitter.SetBounds({"h2o": [1.0, 99.0],\
-                              "ch4": [1e-5,  10.0],\
-                              "co2": [ 1,1e4]})
+                              "ch4": [.1,  10.0],\
+                              "co2": [1.0, 1e4]})
 
     else: # If parameters are not in fits file, use initial guesses and letting them vary.
           # Guesses are taken from mean of parameters from DCT GJ281 data.
