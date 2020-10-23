@@ -33,7 +33,7 @@ def wavefunc(par,grad):
     w = f(x)
 
     if (w[-1] < w[0]) or (w[-1] > watm_Liv[-1]+5):
-        return 1e10
+        return 1e3
 
     satmTel2 = rebin_jv(w,satmLivGen,watm_Liv,False)
     return np.sum((satm_Liv - satmTel2)**2) / (len(satmTel2) - len(par))
@@ -50,7 +50,7 @@ def wavefit(par0, dpar0):
     opt.set_maxtime(1200) #seconds
     # Quit optimization based on relative change in output fit parameters between iterations.
     # Choosing smaller change tolerance than 1e-6 has demonstrated no improvement in precision.
-    opt.set_ftol_rel(1e-12)
+    opt.set_ftol_rel(1e-14)
     parfit = opt.optimize(par0)
     return parfit
 
@@ -588,7 +588,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args):
 
     watm_Liv  = inparam.watm[ (inparam.watm > watmLivGen[0]+1) & (inparam.watm < watmLivGen[-1]-1) ]
     satm_Liv  = inparam.satm[ (inparam.watm > watmLivGen[0]+1) & (inparam.watm < watmLivGen[-1]-1 )]
-    dpar = abs(initguess)*10
+    dpar = abs(initguess)*100
     dpar[-1] = 5
 
     waveparfit = wavefit(initguess, dpar)
