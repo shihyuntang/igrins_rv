@@ -588,7 +588,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args):
 
     watm_Liv  = inparam.watm[ (inparam.watm > watmLivGen[0]+1) & (inparam.watm < watmLivGen[-1]-1) ]
     satm_Liv  = inparam.satm[ (inparam.watm > watmLivGen[0]+1) & (inparam.watm < watmLivGen[-1]-1 )]
-    dpar = abs(initguess)*50
+    dpar = abs(initguess)*10
     dpar[-1] = 5
 
     waveparfit = wavefit(initguess, dpar)
