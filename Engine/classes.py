@@ -107,7 +107,7 @@ class inparams:
                                       'K': np.array([0.01796749, 0.01938923, 0.00467536, 0.0012493])
                                     }
 
-        self.bound_cut_dic = { 'H':{
+        self.bound_cut_dic ={ 'H':{
                                     6: [425, 200],
                                     10: [250, 150],
                                     11: [600, 150],
@@ -122,6 +122,7 @@ class inparams:
                                'K':{
                                     13: [200, 400],
                                     14: [200, 400]}
+                            }
 
 class inparamsA0:
 
