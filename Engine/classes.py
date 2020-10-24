@@ -206,7 +206,7 @@ class inparamsA0:
                                     }
 
 
-        self.bound_cut_dic = { 'H':{
+        self.bound_cut_dic ={ 'H':{
                                     6: [425, 200],
                                     10: [250, 150],
                                     11: [600, 150],
@@ -221,6 +221,7 @@ class inparamsA0:
                                'K':{
                                     13: [200, 400],
                                     14: [200, 400]}
+                            }
 
 
 class orderdict_cla:
