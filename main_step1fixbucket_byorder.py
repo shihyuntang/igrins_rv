@@ -33,13 +33,13 @@ def MPinst(args, inparam, i, orders, masterbeam, jerp):
     # Retrieve pixel bounds for where within each other significant telluric absorption is present.
     # If these bounds were not applied, analyzing some orders would give garbage fits.
     if args.band=='K':
-        if int(order) in [14]:
+        if int(order) in [13, 14]:
             bound_cut = inparam.bound_cut_dic[args.band][order]
         else:
             bound_cut = [150, 150]
 
     elif args.band=='H':
-        if int(order) in [13, 14, 16, 20]:
+        if int(order) in [6, 10, 11, 13, 14, 16, 17, 20, 21, 22]:
             bound_cut = inparam.bound_cut_dic[args.band][order]
         else:
             bound_cut = [150, 150]
@@ -376,7 +376,7 @@ def MPinst(args, inparam, i, orders, masterbeam, jerp):
             cols = fits.ColDefs([c0,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10])
             hdu_1 = fits.BinTableHDU.from_columns(cols)
 
-            
+
             try:
                 hh = fits.open('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band))
                 hh.append(hdu_1)
@@ -604,4 +604,3 @@ if __name__ == '__main__':
     logger.info(f'A0 Fitting using TelFit finished, Duration: {end_time - start_time}')
     print('You can start to run main_step2.py for RV initial guess')
     print('####################################################################################')
-
