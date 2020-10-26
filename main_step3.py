@@ -70,9 +70,9 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
     # start at bucket loc = 1250 +- 100, width = 250 +- 100, depth = 100 +- 5000 but floor at 0
     if args.band == 'H':
-        centerloc = 1280
+        centerloc = 1250
     else:
-        centerloc = 1150
+        centerloc = 1180
 
 #-------------------------------------------------------------------------------
     ### Initialize parameter array for optimization as well as half-range values for each parameter during the various steps of the optimization.
@@ -93,10 +93,14 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                       np.nan,                                                #13: Instrumental resolution linear component
                       np.nan,                                                #14: Instrumental resolution quadratic component
                       centerloc,                                             #15: Blaze dip center location
-                      285,                                                   #16: Blaze dip full width
+                      330,                                                   #16: Blaze dip full width
                       0.05,                                                  #17: Blaze dip depth
-                      70,                                                    #18: Secondary blaze dip full width
+                      90,                                                    #18: Secondary blaze dip full width
                       0.05])                                                 #19: Blaze dip depth
+
+    # This one specific order is small and telluric dominated, start with greater stellar template power to ensure good fits
+    if int(order) == 13:
+        pars0[1] = 0.8
 
     # Iterate over all A/B exposures
     for t in np.arange(len(tagsnight)):
@@ -218,6 +222,9 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         x_piece    = x_piece[   (wave_piece*1e4 > np.min(watm_in)+5) & (wave_piece*1e4 < np.max(watm_in)-5)]
         wave_piece = wave_piece[(wave_piece*1e4 > np.min(watm_in)+5) & (wave_piece*1e4 < np.max(watm_in)-5)]
 
+        # Normalize continuum from A0 to flux scale of data
+        continuum *= np.nanpercentile(s_piece,99)
+        
         # --------------------------------------------------------------
 
         par = pars0.copy()
@@ -229,10 +236,11 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
         par[0] = initguesses-inparam.bvcs[night+tag] # Initial RV with barycentric correction
         par[5] = IPpars[2]; par[13] = IPpars[1]; par[14] = IPpars[0];
+        
 
         # Arrays defining parameter variations during optimization steps
         #                            | 0    1    2    3 |  | ------ 4 ------ |  | 5 |   | 6     7     8           9  |  |10  11  12| |13 14|  |15   16   17   18    19 |
-        dpars = {'cont' : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    1e7, 1, 1,   0, 0,    30., 80., 0.2, 25.0, 0.2 ]),
+        dpars = {'cont' : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    1e7, 1, 1,   0, 0,    10., 20., 0.2, 50.0, 0.2 ]),
                  'twave': np.array([  0.0, 0.0, 0.0, 1.0,   0.0,                 0.0,   10.0, 10.0,  5.00000e-5, 1e-7,   0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.  ]),
                  'ip'   : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.5,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0 ]),
                  's'    : np.array([  5.0, 1.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0 ]),
