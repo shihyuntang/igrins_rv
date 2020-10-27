@@ -3,7 +3,7 @@ from Engine.optwithtwodip   import fmod
 
 def outplotter_tel(parfit, fitobj, title, inparam, args):
     fit,chi = fmod(parfit, fitobj)
-    w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
+    w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.) + parfit[20]*(fitobj.x**4.)
 
     c2 = fitobj.continuum
     c2 = c2#/np.median(c2)
@@ -48,7 +48,7 @@ def outplotter_tel(parfit, fitobj, title, inparam, args):
 
 def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3):
     fit,chi = fmod(parfit, fitobj)
-    w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
+    w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)  + parfit[20]*(fitobj.x**4.)
 
     c2 = fitobj.continuum
     c2 = c2#/np.median(c2)
