@@ -56,7 +56,7 @@ def fmodel_chi(par,grad):
     mflux = fitobj_cp.mflux_in;
 
     #Make the wavelength scale
-    w = par[6] + par[7]*fitobj_cp.x + par[8]*(fitobj_cp.x**2.) + par[9]*(fitobj_cp.x**3.)
+    w = par[6] + par[7]*fitobj_cp.x + par[8]*(fitobj_cp.x**2.) + par[9]*(fitobj_cp.x**3.) + par[20]*(fitobj_cp.x**4.)
 
     if w[-1] < w[0]:
         # print(f'{nc_cp}, {nk_cp}, {optkind_cp}: Hitting negative wavelength solution for some reason !')
@@ -157,7 +157,7 @@ def fmod(par,fitobj):
     mwave = fitobj.mwave_in;
     mflux = fitobj.mflux_in;
 
-    w = par[6] + par[7]*fitobj.x + par[8]*(fitobj.x**2.) + par[9]*(fitobj.x**3.)
+    w = par[6] + par[7]*fitobj.x + par[8]*(fitobj.x**2.) + par[9]*(fitobj.x**3.) + par[20]*(fitobj.x**4.)
 
     if w[-1] < w[0]:
         sys.exit('WAVE ERROR 1 {}'.format(par[6:10]))
@@ -247,7 +247,7 @@ def fmod_conti(par,fitobj):
     mwave = fitobj.mwave_in;
     mflux = fitobj.mflux_in;
 
-    w = par[6] + par[7]*fitobj.x + par[8]*(fitobj.x**2.) + par[9]*(fitobj.x**3.)
+    w = par[6] + par[7]*fitobj.x + par[8]*(fitobj.x**2.) + par[9]*(fitobj.x**3.) + par[20]*(fitobj.x**4.)
 
     if w[-1] < w[0]:
         sys.exit('WAVE ERROR 1 {}'.format(par[6:10]))
@@ -326,7 +326,7 @@ def optimizer(par0,dpar0, hardbounds_v_ip, fitobj, optimize):
     fitobj_cp   = fitobj
     optimize_cp = optimize
 
-    opt = nlopt.opt(nlopt.LN_NELDERMEAD, 20)
+    opt = nlopt.opt(nlopt.LN_NELDERMEAD, 21)
     opt.set_min_objective(fmodel_chi)
     lows  = par0-dpar0
     highs = par0+dpar0
