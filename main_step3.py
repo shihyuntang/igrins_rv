@@ -247,7 +247,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                  's'    : np.array([  5.0, 1.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0, 0.0 ]),
                  'v'    : np.array([  0.0, 0.0, 0.0, 0.0,   inparam.vsinivary,   0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0, 0.0 ])}
         if masterbeam == 'B':
-            dpars['cont'] = np.array([0.0, 0.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    1e7, 1, 1,   0, 0,     0.,  0., 0.0,  0.,  0.0 ])
+            dpars['cont'] = np.array([0.0, 0.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    1e7, 1, 1,   0, 0,     0.,  0., 0.0,  0.,  0.0, 0.0 ])
 
         continuum_in = rebin_jv(a0contx,continuum,x_piece,False)
         fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]),masterbeam)
