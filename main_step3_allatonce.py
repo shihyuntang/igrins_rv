@@ -254,8 +254,8 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         optimize = True
         par_in = par.copy()
         if masterbeam == 'B':
-            hardbounds = [par_in[4] - dpars['all'][4],      par_in[4] + dpars[4],
-                          par_in[5] - dpars['all'][5],     par_in[5]+dpars[5]]
+            hardbounds = [par_in[4] - dpars['all'][4],      par_in[4] + dpars['all'][4],
+                          par_in[5] - dpars['all'][5],     par_in[5]+dpars['all'][5]]
         else:
             hardbounds = [par_in[4] - dpars['all'][4],    par_in[4] + dpars['all'][4],
                           par_in[5]  - dpars['all'][5],   par_in[5] + dpars['all'][5],
