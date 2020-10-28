@@ -45,7 +45,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     rvsminibox     = np.ones(len(tagsnight));
     vsiniminibox   = np.ones(len(tagsnight));
     tagsminibox    = np.ones(len(tagsnight));
-    parfitminibox  = np.ones((len(tagsnight),20)); # need to match the dpar numbers
+    parfitminibox  = np.ones((len(tagsnight),21)); # need to match the dpar numbers
 
     rvsminibox[:]    = np.nan
     vsiniminibox[:]  = np.nan
@@ -96,7 +96,8 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                       330,                                                   #16: Blaze dip full width
                       0.05,                                                  #17: Blaze dip depth
                       90,                                                    #18: Secondary blaze dip full width
-                      0.05])                                                 #19: Blaze dip depth
+                      0.05,                                                  #19: Blaze dip depth
+                      0.0])                                                  #20: Continuum cubic component
 
     # This one specific order is small and telluric dominated, start with greater stellar template power to ensure good fits
     if int(order) == 13:
@@ -240,13 +241,13 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
         # Arrays defining parameter variations during optimization steps
         #                            | 0    1    2    3 |  | ------ 4 ------ |  | 5 |   | 6     7     8           9  |  |10  11  12| |13 14|  |15   16   17   18    19 |
-        dpars = {'cont' : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    1e7, 1, 1,   0, 0,    10., 20., 0.2, 50.0, 0.2 ]),
-                 'twave': np.array([  0.0, 0.0, 0.0, 1.0,   0.0,                 0.0,   10.0, 10.0,  5.00000e-5, 1e-7,   0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.  ]),
-                 'ip'   : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.5,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0 ]),
-                 's'    : np.array([  5.0, 1.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0 ]),
-                 'v'    : np.array([  0.0, 0.0, 0.0, 0.0,   inparam.vsinivary,   0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0 ])}
+        dpars = {'cont' : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    1e7, 1, 1,   0, 0,    10., 20., 0.2, 50.0, 0.2, 1.0 ]),
+                 'twave': np.array([  0.0, 0.0, 0.0, 1.0,   0.0,                 0.0,   10.0, 10.0,  5.00000e-5, 1e-7,   0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0, 0.0 ]),
+                 'ip'   : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.5,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0, 0.0 ]),
+                 's'    : np.array([  5.0, 1.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0, 0.0 ]),
+                 'v'    : np.array([  0.0, 0.0, 0.0, 0.0,   inparam.vsinivary,   0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0, 0.0 ])}
         if masterbeam == 'B':
-            dpars['cont'] = np.array([0.0, 0.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    1e7, 1, 1,   0, 0,     0.,  0., 0.0,  0.,  0.0 ])
+            dpars['cont'] = np.array([0.0, 0.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    1e7, 1, 1,   0, 0,     0.,  0., 0.0,  0.,  0.0, 1.0 ])
 
         continuum_in = rebin_jv(a0contx,continuum,x_piece,False)
         fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]),masterbeam)
