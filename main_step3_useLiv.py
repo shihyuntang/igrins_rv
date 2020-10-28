@@ -157,9 +157,9 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         watm = inparam.a0dict['watm']
         satm = inparam.a0dict['satm']
         if args.band == 'H':
-            contlevel = np.max(inparam.satm[(inparam.watm > 15000) & (inparam.watm < 18000)])
+            contlevel = np.max(satm[(watm > 15000) & (watm < 18000)])
         else:
-            contlevel = np.max(inparam.satm[(inparam.watm > 20000) & (inparam.watm < 24000)])
+            contlevel = np.max(satm[(watm > 20000) & (watm < 24000)])
         
         a0contx    = tbdata['X'+str(order)]
         continuum  = tbdata['BLAZE'+str(order)]
