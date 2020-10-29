@@ -300,6 +300,24 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                     outplotter_23(parfit_1,fitobj,'{}_{}_{}_parfit_{}{}'.format(order,night,tag,nk,optkind), trk, inparam, args, step2or3)
                     logger.debug(f'{order}_{tag}_{nk}_{optkind}:\n {parfit_1}')
                 nk += 1
+                
+            if nc == 1:
+                parfit = parfit_1.copy()
+                fit,chi = fmod(parfit, fitobj)
+                w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
+
+                c2 = fitobj.continuum
+                cont = parfit[10] + parfit[11]*fitobj.x+ parfit[12]*(fitobj.x**2)
+                if fitobj.masterbeam == 'A':
+                    bucket = np.zeros_like(cont)
+                    bucket[(fitobj.x >= (parfit[15]-parfit[16]/2)) & (fitobj.x <= (parfit[15]+parfit[16]/2))] = parfit[17]
+                    bucket[(fitobj.x >= (parfit[15]+parfit[16]/2-parfit[18])) & (fitobj.x <= (parfit[15]+parfit[16]/2))] += parfit[19]
+                    cont -= bucket
+                cont *= c2
+
+                CRmask = np.array(np.where(fitobj.s > 1.02*cont)[0])
+
+                fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]),masterbeam,CRmask)
 
         parfit = parfit_1.copy()
 
