@@ -225,7 +225,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
         # Normalize continuum from A0 to flux scale of data
         continuum *= np.nanpercentile(s_piece,99)
-        
+
         # --------------------------------------------------------------
 
         par = pars0.copy()
@@ -237,7 +237,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
         par[0] = initguesses-inparam.bvcs[night+tag] # Initial RV with barycentric correction
         par[5] = IPpars[2]; par[13] = IPpars[1]; par[14] = IPpars[0];
-        
+
 
         # Arrays defining parameter variations during optimization steps
         #                            | 0    1    2    3 |  | ------ 4 ------ |  | 5 |   | 6     7     8           9  |  |10  11  12| |13 14|  |15   16   17   18    19 |
@@ -250,7 +250,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
             dpars['cont'] = np.array([0.0, 0.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    1e7, 1, 1,   0, 0,     0.,  0., 0.0,  0.,  0.0, 1.0 ])
 
         continuum_in = rebin_jv(a0contx,continuum,x_piece,False)
-        fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]),masterbeam)
+        fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]),masterbeam,None)
 
         #-------------------------------------------------------------------------------
 
@@ -300,7 +300,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                     outplotter_23(parfit_1,fitobj,'{}_{}_{}_parfit_{}{}'.format(order,night,tag,nk,optkind), trk, inparam, args, step2or3)
                     logger.debug(f'{order}_{tag}_{nk}_{optkind}:\n {parfit_1}')
                 nk += 1
-                
+
             if nc == 1:
                 parfit = parfit_1.copy()
                 fit,chi = fmod(parfit, fitobj)
