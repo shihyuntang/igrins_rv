@@ -48,7 +48,7 @@ def outplotter_tel(parfit, fitobj, title, inparam, args):
 
 def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3):
     fit,chi = fmod(parfit, fitobj)
-    w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.) 
+    w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
 
     c2 = fitobj.continuum
     c2 = c2#/np.median(c2)
@@ -68,7 +68,7 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3):
             mask2[fitobj.CRmask] = False
     except TypeError:
         pass
-    
+
     n = len(fitobj.mask)
 
     if n > 0:
@@ -79,9 +79,10 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3):
         gs = gridspec.GridSpec(1, n+1, width_ratios=widths)
         for m in range(n+1):
             ax0 = plt.subplot(gs[m])
-            
-            
-            ax0.plot(w[mask2],fitobj.s[mask2], '-',  c='k',       lw=0.7, label='data',  alpha=.6)
+
+
+            ax0.plot(w,       fitobj.s,        '--', c='k',       lw=0.7, label='data',  alpha=.6)
+            ax0.plot(w[mask2],fitobj.s[mask2], '-',  c='k',       lw=0.7, label='data (emission removed)',  alpha=.6)
             ax0.plot(w[mask2],fit[mask2],      '--', c='tab:red', lw=0.7, label='model', alpha=.6)
             ax0.plot(w[mask2],cont[mask2],     '--', c='tab:blue',  lw=0.7, label='cont', alpha=.6)
             kwargs = dict(transform=ax0.transAxes, color='k', clip_on=False,lw= 0.6)
@@ -119,7 +120,8 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3):
 
     else:
         fig, axes = plt.subplots(1, 1, figsize=(6,3), facecolor='white', dpi=300)
-        axes.plot(w[mask2],fitobj.s[mask2], '-',  c='k',       lw=0.7, label='data',  alpha=.6)
+        axes.plot(w,       fitobj.s,        '--', c='k',       lw=0.7, label='data',  alpha=.6)
+        axes.plot(w[mask2],fitobj.s[mask2], '-',  c='k',       lw=0.7, label='data (emission removed)',  alpha=.6)
         axes.plot(w[mask2],fit[mask2],      '--', c='tab:red', lw=0.7, label='model', alpha=.6)
         axes.plot(w[mask2],cont[mask2],     '--', c='tab:blue',  lw=0.7, label='cont', alpha=.6)
         axes.tick_params(axis='both', labelsize=6, right=True, top=True, direction='in')
