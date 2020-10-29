@@ -304,20 +304,29 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
             if nc == 1:
                 parfit = parfit_1.copy()
                 fit,chi = fmod(parfit, fitobj)
-                w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
+            
+                residual = fitobj.s/fit
+                MAD = np.median(abs(np.median(residual)-residual))
+                CRmask = np.array(np.where(residual > np.median(residual)+2*MAD)[0]) #.5
 
-                c2 = fitobj.continuum
-                cont = parfit[10] + parfit[11]*fitobj.x+ parfit[12]*(fitobj.x**2)
-                if fitobj.masterbeam == 'A':
-                    bucket = np.zeros_like(cont)
-                    bucket[(fitobj.x >= (parfit[15]-parfit[16]/2)) & (fitobj.x <= (parfit[15]+parfit[16]/2))] = parfit[17]
-                    bucket[(fitobj.x >= (parfit[15]+parfit[16]/2-parfit[18])) & (fitobj.x <= (parfit[15]+parfit[16]/2))] += parfit[19]
-                    cont -= bucket
-                cont *= c2
+                CRmaskF = [];
+                CRmask = list(CRmask)
 
-                CRmask = np.array(np.where(fitobj.s > 1.02*cont)[0])
+                for hit in [0,len(fitobj.x)-1]:
+                    if hit in CRmask:
+                        CRmaskF.append(hit)
+                        CRmask.remove(hit)
+                CRmask = np.array(CRmask)
 
-                fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]),masterbeam,CRmask)
+                for hit in CRmask:
+                    slopeL = (fitobj.s[hit]-fitobj.s[hit-1])/(fitobj.x[hit]-fitobj.x[hit-1])
+                    slopeR = -1*((fitobj.s[hit+1]-fitobj.s[hit])/(fitobj.x[hit+1]-fitobj.x[hit])) 
+                    if slopeL > 150 and slopeR > 150:
+                        CRmaskF.append(hit)
+                CRmaskF = np.array(CRmaskF)
+                    
+                fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]),masterbeam,CRmaskF)
+
 
         parfit = parfit_1.copy()
 
