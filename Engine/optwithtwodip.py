@@ -141,6 +141,12 @@ def fmodel_chi(par,grad):
         for maskbounds in fitobj_cp.mask:
             mask[(fitobj_cp.x > maskbounds[0]) & (fitobj_cp.x < maskbounds[1]) ] = False
 
+    try:
+        if len(fitobj_cp.CRmask) != 0:
+            mask[fitobj_cp.CRmask] = False
+    except TypeError:
+        pass
+    
     # Compute chisq
     chisq = np.sum((fitobj_cp.s[mask] - smod[mask])**2. / fitobj_cp.u[mask]**2.)
     chisq = chisq / (len(smod[mask]) - len(par))
