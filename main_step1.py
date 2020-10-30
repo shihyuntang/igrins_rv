@@ -164,7 +164,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
     s = a0fluxlist.copy(); x = a0x.copy(); u = a0u.copy();
 
     # Collect all fit variables into one class
-    fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam)
+    fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam, None)
 
     #                            |0    1    2    3  |  | 4 |  | 5 |   | 6    7    8           9  |    |10 11 12|  |13 14|    |15    16    17   18    19|
     dpars = {'cont' :   np.array([0.0, 0.0, 0.0, 0.0,   0.0,   0.0,    0.0,  0.0, 0.0,        0.0,    1e7, 1, 1,    0, 0,    10.0, 20.0, 0.2, 50.0, 0.2]),
@@ -229,6 +229,33 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                     outplotter_tel(parfit_1,fitobj,'{}_{}_parfit_{}{}'.format(order,night,nk,optkind),inparam, args)
                     logger.debug(f'Pre_{order}_{night}_{nk}_{optkind}:\n {parfit_1}')
                 nk += 1
+                
+            if nc == 1:
+                parfit = parfit_1.copy()
+                fit,chi = fmod(parfit, fitobj)
+
+                residual = fitobj.s/fit
+                MAD = np.median(abs(np.median(residual)-residual))
+                CRmask = np.array(np.where(residual > np.median(residual)+2*MAD)[0]) #.5
+
+                CRmaskF = []; 
+                CRmask = list(CRmask)
+
+                for hit in [0,len(fitobj.x)-1]:
+                    if hit in CRmask:
+                        CRmaskF.append(hit)
+                        CRmask.remove(hit)
+                CRmask = np.array(CRmask)
+
+                for hit in CRmask:
+                    slopeL = (fitobj.s[hit]-fitobj.s[hit-1])/(fitobj.x[hit]-fitobj.x[hit-1])
+                    slopeR = -1*((fitobj.s[hit+1]-fitobj.s[hit])/(fitobj.x[hit+1]-fitobj.x[hit])) 
+                    if slopeL > 150 and slopeR > 150:
+                        CRmaskF.append(hit)
+                CRmaskF = np.array(CRmaskF)
+
+                fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]),masterbeam,CRmaskF)
+
         parfit = parfit_1.copy()
 
     except:
@@ -298,7 +325,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
 
         # Fit the A0 again using the new synthetic telluric template.
         # This allows for any tweaks to the blaze function fit that may be necessary.
-        fitobj = fitobjs(s, x, u, continuum,watm1,satm1,mflux_in,mwave_in,[], masterbeam)
+        fitobj = fitobjs(s, x, u, continuum,watm1,satm1,mflux_in,mwave_in,[], masterbeam, None)
 
         try:
             nk = 1
@@ -314,6 +341,33 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                         outplotter_tel(parfit_1,fitobj,'{}_{}_parfit_{}{}'.format(order,night,nk,optkind),inparam, args)
                         logger.debug(f'Post_{order}_{night}_{nk}_{optkind}:\n {parfit_1}')
                     nk += 1
+                    
+                if nc == 1:
+                    parfit = parfit_1.copy()
+                    fit,chi = fmod(parfit, fitobj)
+
+                    residual = fitobj.s/fit
+                    MAD = np.median(abs(np.median(residual)-residual))
+                    CRmask = np.array(np.where(residual > np.median(residual)+2*MAD)[0]) #.5
+
+                    CRmaskF = []; 
+                    CRmask = list(CRmask)
+
+                    for hit in [0,len(fitobj.x)-1]:
+                        if hit in CRmask:
+                            CRmaskF.append(hit)
+                            CRmask.remove(hit)
+                    CRmask = np.array(CRmask)
+
+                    for hit in CRmask:
+                        slopeL = (fitobj.s[hit]-fitobj.s[hit-1])/(fitobj.x[hit]-fitobj.x[hit-1])
+                        slopeR = -1*((fitobj.s[hit+1]-fitobj.s[hit])/(fitobj.x[hit+1]-fitobj.x[hit])) 
+                        if slopeL > 150 and slopeR > 150:
+                            CRmaskF.append(hit)
+                    CRmaskF = np.array(CRmaskF)
+
+                    fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]),masterbeam,CRmaskF)
+
             parfit = parfit_1.copy()
 
         except:
