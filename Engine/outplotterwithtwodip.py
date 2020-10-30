@@ -21,10 +21,10 @@ def outplotter_tel(parfit, fitobj, title, inparam, args):
             mask2[fitobj.CRmask] = False
     except TypeError:
         pass
-    
+
     fig, axes = plt.subplots(1, 1, figsize=(6,3), facecolor='white', dpi=300)
 
-    axes.plot(w,fitobj.s, '-',  c = 'k',        lw=0.7, label='data',  alpha=.6)
+    axes.plot(w,fitobj.s, '-',  c = 'k',        lw=0.7, label='data',  alpha=.3)
     axes.plot(w[mask2],fitobj.s[mask2], '-',  c='k',       lw=0.7, label='data (emission removed)',  alpha=.8)
     axes.plot(w[mask2],fit[mask2],      '--', c='tab:red', lw=0.7, label='model', alpha=.8)
     axes.plot(w[mask2],cont[mask2],     '--', c='tab:blue',  lw=0.7, label='cont', alpha=.8)
