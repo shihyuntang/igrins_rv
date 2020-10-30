@@ -224,6 +224,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                 parstart = par_in.copy()
 
             for optkind in optgroup:
+                print(optkind)
                 # print(f'{optkind}, nc={nc}, tag={tag}')
                 parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize)
                 parstart = parfit_1.copy()
@@ -252,7 +253,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                 for hit in CRmask:
                     slopeL = (fitobj.s[hit]-fitobj.s[hit-1])/(fitobj.x[hit]-fitobj.x[hit-1])
                     slopeR = -1*((fitobj.s[hit+1]-fitobj.s[hit])/(fitobj.x[hit+1]-fitobj.x[hit]))
-                    if slopeL > 150 and slopeR > 150:
+                    if (slopeL > 150) and (slopeR > 150):
                         CRmaskF.append(hit)
                 CRmaskF = np.array(CRmaskF)
 

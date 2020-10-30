@@ -305,7 +305,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
             if nc == 1:
                 parfit = parfit_1.copy()
                 fit,chi = fmod(parfit, fitobj)
-            
+
                 residual = fitobj.s/fit
                 MAD = np.median(abs(np.median(residual)-residual))
                 CRmask = np.array(np.where(residual > np.median(residual)+2*MAD)[0]) #.5
@@ -321,11 +321,11 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
                 for hit in CRmask:
                     slopeL = (fitobj.s[hit]-fitobj.s[hit-1])/(fitobj.x[hit]-fitobj.x[hit-1])
-                    slopeR = -1*((fitobj.s[hit+1]-fitobj.s[hit])/(fitobj.x[hit+1]-fitobj.x[hit])) 
-                    if slopeL > 150 and slopeR > 150:
+                    slopeR = -1*((fitobj.s[hit+1]-fitobj.s[hit])/(fitobj.x[hit+1]-fitobj.x[hit]))
+                    if (slopeL > 150) and (slopeR > 150):
                         CRmaskF.append(hit)
                 CRmaskF = np.array(CRmaskF)
-                    
+
                 fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]),masterbeam,CRmaskF)
 
 
