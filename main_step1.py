@@ -224,7 +224,6 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                 parstart = par_in.copy()
 
             for optkind in optgroup:
-                print(optkind)
                 # print(f'{optkind}, nc={nc}, tag={tag}')
                 parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize)
                 parstart = parfit_1.copy()
@@ -258,7 +257,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                 CRmaskF = np.array(CRmaskF)
 
                 fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam, CRmaskF)
-                
+
         parfit = parfit_1.copy()
 
     except:
