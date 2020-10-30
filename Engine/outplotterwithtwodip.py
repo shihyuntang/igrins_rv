@@ -81,10 +81,10 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3):
             ax0 = plt.subplot(gs[m])
 
 
-            ax0.plot(w,       fitobj.s,        '--', c='k',       lw=0.7, label='data',  alpha=.6)
-            ax0.plot(w[mask2],fitobj.s[mask2], '-',  c='k',       lw=0.7, label='data (emission removed)',  alpha=.6)
-            ax0.plot(w[mask2],fit[mask2],      '--', c='tab:red', lw=0.7, label='model', alpha=.6)
-            ax0.plot(w[mask2],cont[mask2],     '--', c='tab:blue',  lw=0.7, label='cont', alpha=.6)
+            ax0.plot(w,       fitobj.s,        '--', c='k',       lw=0.7, label='data',  alpha=.3)
+            ax0.plot(w[mask2],fitobj.s[mask2], '-',  c='k',       lw=0.7, label='data (emission removed)',  alpha=.8)
+            ax0.plot(w[mask2],fit[mask2],      '--', c='tab:red', lw=0.7, label='model', alpha=.8)
+            ax0.plot(w[mask2],cont[mask2],     '--', c='tab:blue',  lw=0.7, label='cont', alpha=.8)
             kwargs = dict(transform=ax0.transAxes, color='k', clip_on=False,lw= 0.6)
             if m == 0:
                 ax0.tick_params(axis='both', labelsize=6, right=False, top=True, direction='in')
@@ -120,10 +120,10 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3):
 
     else:
         fig, axes = plt.subplots(1, 1, figsize=(6,3), facecolor='white', dpi=300)
-        axes.plot(w,       fitobj.s,        '--', c='k',       lw=0.7, label='data',  alpha=.6)
-        axes.plot(w[mask2],fitobj.s[mask2], '-',  c='k',       lw=0.7, label='data (emission removed)',  alpha=.6)
-        axes.plot(w[mask2],fit[mask2],      '--', c='tab:red', lw=0.7, label='model', alpha=.6)
-        axes.plot(w[mask2],cont[mask2],     '--', c='tab:blue',  lw=0.7, label='cont', alpha=.6)
+        axes.plot(w,       fitobj.s,        '--', c='k',       lw=0.7, label='data',  alpha=.3)
+        axes.plot(w[mask2],fitobj.s[mask2], '-',  c='k',       lw=0.7, label='data (emission removed)',  alpha=.8)
+        axes.plot(w[mask2],fit[mask2],      '--', c='tab:red', lw=0.7, label='model', alpha=.8)
+        axes.plot(w[mask2],cont[mask2],     '--', c='tab:blue',  lw=0.7, label='cont', alpha=.8)
         axes.tick_params(axis='both', labelsize=6, right=True, top=True, direction='in')
         axes.set_title(title,  size=6, style='normal' , family='sans-serif' )
         axes.set_ylabel(r'Flux',        size=6, style='normal', family='sans-serif' )
