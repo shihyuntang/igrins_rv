@@ -7,7 +7,7 @@ def outplotter_tel(parfit, fitobj, title, inparam, args):
 
     c2 = fitobj.continuum
     c2 = c2#/np.median(c2)
-    cont = parfit[10] + parfit[11]*fitobj.x+ parfit[12]*(fitobj.x**2) + parfit[20]*(fitobj.x**3)
+    cont = parfit[10] + parfit[11]*fitobj.x+ parfit[12]*(fitobj.x**2) + parfit[20]*(fitobj.x**3) + parfit[21]*(fitobj.x**4)
     if fitobj.masterbeam == 'A':
         bucket = np.zeros_like(cont)
         bucket[(fitobj.x >= (parfit[15]-parfit[16]/2)) & (fitobj.x <= (parfit[15]+parfit[16]/2))] = parfit[17]
@@ -52,7 +52,7 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3):
 
     c2 = fitobj.continuum
     c2 = c2#/np.median(c2)
-    cont = parfit[10] + parfit[11]*fitobj.x+ parfit[12]*(fitobj.x**2) + parfit[20]*(fitobj.x**3)
+    cont = parfit[10] + parfit[11]*fitobj.x+ parfit[12]*(fitobj.x**2) + parfit[20]*(fitobj.x**3) + parfit[21]*(fitobj.x**4)
     if fitobj.masterbeam == 'A':
         bucket = np.zeros_like(cont)
         bucket[(fitobj.x >= (parfit[15]-parfit[16]/2)) & (fitobj.x <= (parfit[15]+parfit[16]/2))] = parfit[17]
