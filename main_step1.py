@@ -368,8 +368,8 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                             CRmaskF.append(hit)
                     CRmaskF = np.array(CRmaskF)
 
-                    fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]),masterbeam,CRmaskF)
-
+                    fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam, CRmaskF)
+                    
             parfit = parfit_1.copy()
 
         except:
