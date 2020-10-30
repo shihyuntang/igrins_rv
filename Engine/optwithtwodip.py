@@ -126,7 +126,7 @@ def fmodel_chi(par,grad):
     smod *= c2#/np.median(c2)
 
     # Apply continuum adjustment
-    cont = par[10] + par[11]*fitobj_cp.x+ par[12]*(fitobj_cp.x**2) + par[20]*(fitobj_cp.x**3)
+    cont = par[10] + par[11]*fitobj_cp.x+ par[12]*(fitobj_cp.x**2) + par[20]*(fitobj_cp.x**3) + par[21]*(fitobj_cp.x**4)
     if fitobj_cp.masterbeam == 'A':
         bucket = np.zeros_like(cont)
         bucket[(fitobj_cp.x >= (par[15]-par[16]/2))         & (fitobj_cp.x <= (par[15]+par[16]/2))] = par[17]
@@ -231,7 +231,7 @@ def fmod(par,fitobj):
     smod *= c2#/np.median(c2)
 
     # Apply continuum adjustment
-    cont = par[10] + par[11]*fitobj.x+ par[12]*(fitobj.x**2) + par[20]*(fitobj.x**3)
+    cont = par[10] + par[11]*fitobj.x+ par[12]*(fitobj.x**2) + par[20]*(fitobj.x**3) + par[21]*(fitobj.x**4)
     if fitobj.masterbeam == 'A':
         bucket = np.zeros_like(cont)
         bucket[(fitobj.x >= (par[15]-par[16]/2)) & (fitobj.x <= (par[15]+par[16]/2))] = par[17]
@@ -311,7 +311,7 @@ def fmod_conti(par,fitobj):
     smod *= c2#/np.median(c2)
 
     # Apply continuum adjustment
-    cont = par[10] + par[11]*fitobj.x+ par[12]*(fitobj.x**2) + par[20]*(fitobj.x**3)
+    cont = par[10] + par[11]*fitobj.x+ par[12]*(fitobj.x**2) + par[20]*(fitobj.x**3) + par[21]*(fitobj.x**4)
     if fitobj.masterbeam == 'A':
         bucket = np.zeros_like(cont)
         bucket[(fitobj.x >= (par[15]-par[16]/2)) & (fitobj.x <= (par[15]+par[16]/2))] = par[17]
