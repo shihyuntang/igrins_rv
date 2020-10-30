@@ -146,7 +146,7 @@ def fmodel_chi(par,grad):
             mask[fitobj_cp.CRmask] = False
     except TypeError:
         pass
-    
+
     # Compute chisq
     chisq = np.sum((fitobj_cp.s[mask] - smod[mask])**2. / fitobj_cp.u[mask]**2.)
     chisq = chisq / (len(smod[mask]) - len(par))
@@ -332,7 +332,7 @@ def optimizer(par0,dpar0, hardbounds_v_ip, fitobj, optimize):
     fitobj_cp   = fitobj
     optimize_cp = optimize
 
-    opt = nlopt.opt(nlopt.LN_NELDERMEAD, 21)
+    opt = nlopt.opt(nlopt.LN_NELDERMEAD, 22)
     opt.set_min_objective(fmodel_chi)
     lows  = par0-dpar0
     highs = par0+dpar0
