@@ -15,11 +15,19 @@ def outplotter_tel(parfit, fitobj, title, inparam, args):
         cont -= bucket
     cont *= c2
 
+    mask2 = np.ones_like(fitobj.x,dtype=bool)
+    try:
+        if len(fitobj.CRmask) != 0:
+            mask2[fitobj.CRmask] = False
+    except TypeError:
+        pass
+    
     fig, axes = plt.subplots(1, 1, figsize=(6,3), facecolor='white', dpi=300)
 
     axes.plot(w,fitobj.s, '-',  c = 'k',        lw=0.7, label='data',  alpha=.6)
-    axes.plot(w,fit,      '--', c = 'tab:red',  lw=0.7, label='model', alpha=.6)
-    axes.plot(w,cont,     '--', c = 'tab:blue',  lw=0.7, label='cont', alpha=.6)
+    axes.plot(w[mask2],fitobj.s[mask2], '-',  c='k',       lw=0.7, label='data (emission removed)',  alpha=.8)
+    axes.plot(w[mask2],fit[mask2],      '--', c='tab:red', lw=0.7, label='model', alpha=.8)
+    axes.plot(w[mask2],cont[mask2],     '--', c='tab:blue',  lw=0.7, label='cont', alpha=.8)
     axes.set_title( title,                 size=6, style='normal', family='sans-serif')
     axes.set_ylabel(r'Flux',    size=6, style='normal', family='sans-serif')
     axes.set_xlabel(r'Wavelength [$\AA$]', size=6, style='normal', family='sans-serif')
