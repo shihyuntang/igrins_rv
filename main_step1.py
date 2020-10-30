@@ -217,68 +217,68 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                 'ip', 'twave',  'cont',
                 'ip', 'twave',  'cont',
                 'twave']
-    # try:
-    nk = 1
-    for nc, cycle in enumerate(np.arange(cycles), start=1):
-        if cycle == 0:
-            parstart = par_in.copy()
+    try:
+        nk = 1
+        for nc, cycle in enumerate(np.arange(cycles), start=1):
+            if cycle == 0:
+                parstart = par_in.copy()
 
-        for optkind in optgroup:
-            print(cycle, optkind)
-            # print(f'{optkind}, nc={nc}, tag={tag}')
-            parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize)
-            parstart = parfit_1.copy()
-            if args.debug == True:
-                outplotter_tel(parfit_1,fitobj,'{}_{}_parfit_{}{}'.format(order,night,nk,optkind),inparam, args)
-                logger.debug(f'Pre_{order}_{night}_{nk}_{optkind}:\n {parfit_1}')
-            nk += 1
+            for optkind in optgroup:
+                print(optkind)
+                # print(f'{optkind}, nc={nc}, tag={tag}')
+                parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize)
+                parstart = parfit_1.copy()
+                if args.debug == True:
+                    outplotter_tel(parfit_1,fitobj,'{}_{}_parfit_{}{}'.format(order,night,nk,optkind),inparam, args)
+                    logger.debug(f'Pre_{order}_{night}_{nk}_{optkind}:\n {parfit_1}')
+                nk += 1
 
-        if nc == 1:
-            parfit = parfit_1.copy()
-            fit,chi = fmod(parfit, fitobj)
+            if nc == 1:
+                parfit = parfit_1.copy()
+                fit,chi = fmod(parfit, fitobj)
 
-            residual = fitobj.s/fit
-            MAD = np.median(abs(np.median(residual)-residual))
-            CRmask = np.array(np.where(residual > np.median(residual)+2*MAD)[0]) #.5
+                residual = fitobj.s/fit
+                MAD = np.median(abs(np.median(residual)-residual))
+                CRmask = np.array(np.where(residual > np.median(residual)+2*MAD)[0]) #.5
 
-            CRmaskF = [];
-            CRmask = list(CRmask)
+                CRmaskF = [];
+                CRmask = list(CRmask)
 
-            for hit in [0,len(fitobj.x)-1]:
-                if hit in CRmask:
-                    CRmaskF.append(hit)
-                    CRmask.remove(hit)
-            CRmask = np.array(CRmask)
+                for hit in [0,len(fitobj.x)-1]:
+                    if hit in CRmask:
+                        CRmaskF.append(hit)
+                        CRmask.remove(hit)
+                CRmask = np.array(CRmask)
 
-            for hit in CRmask:
-                slopeL = (fitobj.s[hit]-fitobj.s[hit-1])/(fitobj.x[hit]-fitobj.x[hit-1])
-                slopeR = -1*((fitobj.s[hit+1]-fitobj.s[hit])/(fitobj.x[hit+1]-fitobj.x[hit]))
-                if (slopeL > 150) and (slopeR > 150):
-                    CRmaskF.append(hit)
-            CRmaskF = np.array(CRmaskF)
+                for hit in CRmask:
+                    slopeL = (fitobj.s[hit]-fitobj.s[hit-1])/(fitobj.x[hit]-fitobj.x[hit-1])
+                    slopeR = -1*((fitobj.s[hit+1]-fitobj.s[hit])/(fitobj.x[hit+1]-fitobj.x[hit]))
+                    if (slopeL > 150) and (slopeR > 150):
+                        CRmaskF.append(hit)
+                CRmaskF = np.array(CRmaskF)
 
-            fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]),masterbeam,CRmaskF)
+                fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]),masterbeam,CRmaskF)
 
-    parfit = parfit_1.copy()
+        parfit = parfit_1.copy()
 
-    # except:
-    pre_err = True
-    logger.warning(f'  --> NIGHT {night}, ORDER {order} HIT ERROR DURING PRE_OPT')
-    # Write out table to fits header with errorflag = 1
-    c0    = fits.Column(name=f'ERRORFLAG{order}', array=np.array([1]), format='K')
-    cols  = fits.ColDefs([c0])
-    hdu_1 = fits.BinTableHDU.from_columns(cols)
+    except:
+        pre_err = True
+        logger.warning(f'  --> NIGHT {night}, ORDER {order} HIT ERROR DURING PRE_OPT')
+        # Write out table to fits header with errorflag = 1
+        c0    = fits.Column(name=f'ERRORFLAG{order}', array=np.array([1]), format='K')
+        cols  = fits.ColDefs([c0])
+        hdu_1 = fits.BinTableHDU.from_columns(cols)
 
-    # If first time writing fits file, make up filler primary hdu
-    if order == firstorder: # If first time writing fits file, make up filler primary hdu
-        bleh = np.ones((3,3))
-        primary_hdu = fits.PrimaryHDU(bleh)
-        hdul = fits.HDUList([primary_hdu,hdu_1])
-        hdul.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band), overwrite=True)
-    else:
-        hh = fits.open('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band))
-        hh.append(hdu_1)
-        hh.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band), overwrite=True)
+        # If first time writing fits file, make up filler primary hdu
+        if order == firstorder: # If first time writing fits file, make up filler primary hdu
+            bleh = np.ones((3,3))
+            primary_hdu = fits.PrimaryHDU(bleh)
+            hdul = fits.HDUList([primary_hdu,hdu_1])
+            hdul.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band), overwrite=True)
+        else:
+            hh = fits.open('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band))
+            hh.append(hdu_1)
+            hh.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band), overwrite=True)
 
 
     #-------------------------------------------------------------------------------
