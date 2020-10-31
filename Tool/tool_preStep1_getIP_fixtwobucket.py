@@ -149,7 +149,9 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                       330,           #16: Blaze dip full width
                       0.05,           #17: Blaze dip depth
                       90,            #18: Secondary blaze dip full width
-                      0.05])           #19: Blaze dip depth
+                      0.05,                                                  #19: Blaze dip depth
+                      0.0,                                                   #20: Continuum cubic component
+                      0.0])                                                  #21: Continuum quartic component
 
     # Make sure data is within telluric template range (shouldn't do anything)
     a0fluxlist = a0fluxlist[(a0wavelist*1e4 > min(watm_in)+5) & (a0wavelist*1e4 < max(watm_in)-5)]
@@ -162,20 +164,21 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
     s = a0fluxlist.copy(); x = a0x.copy(); u = a0u.copy();
 
     # Collect all fit variables into one class
-    fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam)
+    fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam, None)
 
     # Arrays defining parameter variations during optimization steps
-    dpars = {'cont' : np.array([ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,   0.0,  0.0,    0,    1e7, 1, 1,    0,    0, 10., 20., 0.2, 50, 0.2]),
-             'twave' : np.array([0.0, 0.0, 0.0, 3.0, 0.0, 0.0, 10.0, 10.0, 5e-5, 1e-7,      0, 0, 0,    0,    0,  0.,  0.,  0., 0., 0.]),
-             'ip'   : np.array([ 0.0, 0.0, 0.0, 0.0, 0.0, 4.0, 0.0,   0.0,  0.0,    0,    1e4, 1, 1, 1e-2, 1e-5, 10., 20., 0.2, 50, 0.2])}
+    #                             |0    1    2    3  |  | 4 |  | 5 |   | 6    7    8           9  |    |10 11 12|    |13    14|   |15    16   17  18    19|
+    dpars = {'cont' : np.array([   0.0, 0.0, 0.0, 0.0,   0.0,   0.0,    0.0,  0.0, 0.0,        0,      1e7, 1, 1,      0,    0,   10.,  20., 0.2, 50.0, 0.2,  1.0, 1.0 ]),
+             'twave': np.array([   0.0, 0.0, 0.0, 3.0,   0.0,   0.0,   10.0, 10.0, 5e-5,    1e-7,        0, 0, 0,      0,    0,    0.,   0., 0.,   0.0, 0.0,  0.0, 0.0 ]),
+             'ip'   : np.array([   0.0, 0.0, 0.0, 0.0,   0.0,   4.0,    0.0,  0.0, 0.0,        0,      1e4, 1, 1,   1e-2, 1e-5,   10.,  20., 0.2, 50.0, 0.2,  0.0, 0.0 ])}
     if masterbeam == 'B':
-        dpars = {'cont' : np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,   0.0, 0.0,  0,    1e7, 1, 1, 0,    0, 0., 0., 0.,0.,0.]),
-                 'twave' : np.array([0.0, 0.0, 0.0, 3.0, 0.0, 0.0, 10.0, 10.0, 5e-5, 1e-7, 0,   0, 0, 0,    0, 0., 0., 0.,0.,0.]),
-                 'ip'   : np.array([0.0, 0.0, 0.0, 0.0, 0.0, 4.0, 0.0,   0.0, 0.0,  0,    1e4, 1, 1, 1e-2, 1e-5, 0., 0., 0.,0.,0.])}
+        dpars = {'cont' :np.array([0.0, 0.0, 0.0, 0.0,   0.0,   0.0,    0.0,  0.0, 0.0,        0,      1e7, 1, 1,      0,    0,    0.,   0.,  0.,  0.0, 0.0,  1.0, 1.0 ]),
+                 'twave':np.array([0.0, 0.0, 0.0, 3.0,   0.0,   0.0,   10.0, 10.0, 5e-5,    1e-7,        0, 0, 0,      0,    0,    0,    0.,  0.,  0.0, 0.0,  0.0, 0.0 ]),
+                 'ip'   :np.array([0.0, 0.0, 0.0, 0.0,   0.0,   4.0,    0.0,  0.0, 0.0,        0,      1e4, 1, 1,   1e-2, 1e-5,    0.,   0.,  0.,  0.0, 0.0,  0.0, 0.0 ])}
     else:
         if (args.band == 'K') and (order == 3):
             parA0[19] = 0.
-            dpars['cont'] = np.array([0.0, 0.0, 0.0, 0.0, 0.0,               0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0, 10., 20., 0.2, 50, 0.])
+            dpars['cont']=np.array([0.0,0.0, 0.0, 0.0,   0.0,   0.0,    0.0,  0.0, 0.0,        0.,     1e7, 1, 1,      0,    0,   10.,  20.,0.2,  50.0, 0.0,  1.0, 1.0 ])
     #-------------------------------------------------------------------------------
 
     # Initialize an array that puts hard bounds on vsini and the instrumental resolution to make sure they do not diverge to unphysical values
@@ -218,6 +221,33 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
             parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize)
             parstart = parfit_1.copy()
             nk += 1
+
+        if nc == 1:
+            parfit = parfit_1.copy()
+            fit,chi = fmod(parfit, fitobj)
+
+            residual = fitobj.s/fit
+            MAD = np.median(abs(np.median(residual)-residual))
+            CRmask = np.array(np.where(residual > np.median(residual)+2*MAD)[0]) #.5
+
+            CRmaskF = [];
+            CRmask = list(CRmask)
+
+            for hit in [0,len(fitobj.x)-1]:
+                if hit in CRmask:
+                    CRmaskF.append(hit)
+                    CRmask.remove(hit)
+            CRmask = np.array(CRmask)
+
+            for hit in CRmask:
+                slopeL = (fitobj.s[hit]-fitobj.s[hit-1])/(fitobj.x[hit]-fitobj.x[hit-1])
+                slopeR = -1*((fitobj.s[hit+1]-fitobj.s[hit])/(fitobj.x[hit+1]-fitobj.x[hit]))
+                if (slopeL > 150) and (slopeR > 150):
+                    CRmaskF.append(hit)
+            CRmaskF = np.array(CRmaskF)
+
+            fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam, CRmaskF)
+
     parfit = parfit_1.copy()
 
     # Get best fit wavelength solution
@@ -258,7 +288,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
 
         # Fit the A0 again using the new synthetic telluric template.
         # This allows for any tweaks to the blaze function fit that may be necessary.
-        fitobj = fitobjs(s, x, u, continuum,watm1,satm1,mflux_in,mwave_in,[], masterbeam)
+        fitobj = fitobjs(s, x, u, continuum,watm1,satm1,mflux_in,mwave_in,[], masterbeam, None)
 
         nk = 1
         for nc, cycle in enumerate(np.arange(cycles), start=1):
@@ -270,6 +300,33 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                 parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize)
                 parstart = parfit_1.copy()
                 nk += 1
+
+            if nc == 1:
+                parfit = parfit_1.copy()
+                fit,chi = fmod(parfit, fitobj)
+
+                residual = fitobj.s/fit
+                MAD = np.median(abs(np.median(residual)-residual))
+                CRmask = np.array(np.where(residual > np.median(residual)+2*MAD)[0]) #.5
+
+                CRmaskF = [];
+                CRmask = list(CRmask)
+
+                for hit in [0,len(fitobj.x)-1]:
+                    if hit in CRmask:
+                        CRmaskF.append(hit)
+                        CRmask.remove(hit)
+                CRmask = np.array(CRmask)
+
+                for hit in CRmask:
+                    slopeL = (fitobj.s[hit]-fitobj.s[hit-1])/(fitobj.x[hit]-fitobj.x[hit-1])
+                    slopeR = -1*((fitobj.s[hit+1]-fitobj.s[hit])/(fitobj.x[hit+1]-fitobj.x[hit]))
+                    if slopeL > 150 and slopeR > 150:
+                        CRmaskF.append(hit)
+                CRmaskF = np.array(CRmaskF)
+
+                fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam, CRmaskF)
+
         parfit = parfit_1.copy()
 
         if inparam.plotfigs: # Plot results
