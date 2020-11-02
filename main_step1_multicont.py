@@ -333,66 +333,69 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
         # This allows for any tweaks to the blaze function fit that may be necessary.
         fitobj = fitobjs(s, x, u, continuum,watm1,satm1,mflux_in,mwave_in,[], masterbeam, None)
 
-        try:
-            nk = 1
-            for nc, cycle in enumerate(np.arange(cycles), start=1):
-                if cycle == 0:
-                    parstart = par_in.copy()
 
-                if nc == 2:
-                    dpars = {'cont' :   np.array([0.0, 0.0, 0.0, 0.0,   0.0,   0.0,    0.0,  0.0, 0.0,        0.0,    1e7, 1, 1,    0, 0,    10.0, 20.0, 0.2, 50.0, 0.2, 1.0, 1.0, 1.0, 1.0 ])}
+        nk = 1
+        for nc, cycle in enumerate(np.arange(cycles), start=1):
+            if cycle == 0:
+                parstart = par_in.copy()
 
-                    if masterbeam == 'B':
-                        dpars['cont'] = np.array([0.0, 0.0, 0.0, 0.0,   0.0,   0.0,    0.0,  0.0, 0.0,        0.,     1e7, 1, 1,    0, 0,     0.0,  0.0, 0.0,  0.0, 0.0, 1.0, 1.0, 1.0, 1.0 ])
+            if nc == 2:
+                dpars = {'cont' :   np.array([0.0, 0.0, 0.0, 0.0,   0.0,   0.0,    0.0,  0.0, 0.0,        0.0,    1e7, 1, 1,    0, 0,    10.0, 20.0, 0.2, 50.0, 0.2, 1.0, 1.0, 1.0, 1.0 ])}
+
+                if masterbeam == 'B':
+                    dpars['cont'] = np.array([0.0, 0.0, 0.0, 0.0,   0.0,   0.0,    0.0,  0.0, 0.0,        0.,     1e7, 1, 1,    0, 0,     0.0,  0.0, 0.0,  0.0, 0.0, 1.0, 1.0, 1.0, 1.0 ])
+                else:
+                    if (args.band == 'K') and (order == 3):
+                         dpars['cont'] = np.array([0.0, 0.0, 0.0, 0.0,   0.0,   0.0,    0.0, 0.0, 0.0,         0.,     1e7, 1, 1,    0, 0,    10.0, 20.0, 0.2, 50.0, 0.0, 1.0, 1.0, 1.0, 1.0  ])
+
+                if args.band == 'H':
+                    if int(order) in [13]:
+                        dpars['cont'][20] = 0.; dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
+                    elif int(order) in [6,14,21]:
+                        dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
                     else:
-                        if (args.band == 'K') and (order == 3):
-                             dpars['cont'] = np.array([0.0, 0.0, 0.0, 0.0,   0.0,   0.0,    0.0, 0.0, 0.0,         0.,     1e7, 1, 1,    0, 0,    10.0, 20.0, 0.2, 50.0, 0.0, 1.0, 1.0, 1.0, 1.0  ])
+                        pass
 
-                    if args.band == 'H':
-                        if int(order) in [13]:
-                            dpars['cont'][20] = 0.; dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
-                        elif int(order) in [6,14,21]:
-                            dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
-                        else:
-                            pass
+            for optkind in optgroup:
+                # print(f'{optkind}, nc={nc}, tag={tag}')
+                parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize)
+                parstart = parfit_1.copy()
+                if args.debug == True:
+                    outplotter_tel(parfit_1,fitobj,'{}_{}_parfit_{}{}'.format(order,night,nk,optkind),inparam, args, order)
+                    logger.debug(f'Post_{order}_{night}_{nk}_{optkind}:\n {parfit_1}')
+                nk += 1
 
-                for optkind in optgroup:
-                    # print(f'{optkind}, nc={nc}, tag={tag}')
-                    parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize)
-                    parstart = parfit_1.copy()
-                    if args.debug == True:
-                        outplotter_tel(parfit_1,fitobj,'{}_{}_parfit_{}{}'.format(order,night,nk,optkind),inparam, args, order)
-                        logger.debug(f'Post_{order}_{night}_{nk}_{optkind}:\n {parfit_1}')
-                    nk += 1
+            if nc == 1:
+                parfit = parfit_1.copy()
+                fit,chi = fmod(parfit, fitobj)
 
-                if nc == 1:
-                    parfit = parfit_1.copy()
-                    fit,chi = fmod(parfit, fitobj)
+                residual = fitobj.s/fit
+                MAD = np.median(abs(np.median(residual)-residual))
 
-                    residual = fitobj.s/fit
-                    MAD = np.median(abs(np.median(residual)-residual))
+                CRmask = np.array(np.where(residual > np.median(residual)+1.75*MAD)[0]) #.5
 
-                    CRmask = np.array(np.where(residual > np.median(residual)+1.75*MAD)[0]) #.5
+                CRmaskF = [];
+                CRmask = list(CRmask)
 
-                    CRmaskF = [];
-                    CRmask = list(CRmask)
+                for hit in [0,len(fitobj.x)-1]:
+                    if hit in CRmask:
+                        CRmaskF.append(hit)
+                        CRmask.remove(hit)
+                CRmask = np.array(CRmask)
 
-                    for hit in [0,len(fitobj.x)-1]:
-                        if hit in CRmask:
-                            CRmaskF.append(hit)
-                            CRmask.remove(hit)
-                    CRmask = np.array(CRmask)
+                for hit in CRmask:
+                    slopeL = (fitobj.s[hit]-fitobj.s[hit-1])/(fitobj.x[hit]-fitobj.x[hit-1])
+                    slopeR = -1*((fitobj.s[hit+1]-fitobj.s[hit])/(fitobj.x[hit+1]-fitobj.x[hit]))
+                    if (slopeL > 100) and (slopeR > 100):
+                        CRmaskF.append(hit)
+                CRmaskF = np.array(CRmaskF)
 
-                    for hit in CRmask:
-                        slopeL = (fitobj.s[hit]-fitobj.s[hit-1])/(fitobj.x[hit]-fitobj.x[hit-1])
-                        slopeR = -1*((fitobj.s[hit+1]-fitobj.s[hit])/(fitobj.x[hit+1]-fitobj.x[hit]))
-                        if (slopeL > 100) and (slopeR > 100):
-                            CRmaskF.append(hit)
-                    CRmaskF = np.array(CRmaskF)
+                fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam, CRmaskF)
 
-                    fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam, CRmaskF)
+        parfit = parfit_1.copy()
 
-            parfit = parfit_1.copy()
+        try:
+            print('OPST DONE')
 
         except:
             pre_err = True
