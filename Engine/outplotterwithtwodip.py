@@ -124,6 +124,7 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3):
         fig.suptitle( title,     x=0.5,y=1.05, size=6, style='normal', family='sans-serif')
         fig.text(0.5, -0.04, r'Wavelength [$\rm\AA$]', ha='center', size=6, style='normal', family='sans-serif')
         fig.text(-0.04, 0.5, r'Flux',       va='center', rotation='vertical', size=6, style='normal', family='sans-serif')
+        fig.text(0.65, 0.2, r'$\rm\chi^{2}_{\nu}$ = '+str(round(chi,2)), size=6, style='normal', family='sans-serif')
         ax0.legend(fontsize=5, edgecolor='white')
 
     else:
@@ -136,6 +137,7 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3):
         axes.set_title(title,  size=6, style='normal' , family='sans-serif' )
         axes.set_ylabel(r'Flux',        size=6, style='normal', family='sans-serif' )
         axes.set_xlabel(r'Wavelength [$\rm\AA$]',  size=6, style='normal', family='sans-serif' )
+        fig.text(0.65, 0.2, r'$\rm\chi^{2}_{\nu}$ = '+str(round(chi,2)), size=6, style='normal', family='sans-serif')
 
         axes.tick_params(axis='both', labelsize=6, right=True, top=True, direction='in')
         axes.legend(fontsize=5, edgecolor='white')
