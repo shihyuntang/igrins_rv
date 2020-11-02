@@ -45,7 +45,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     rvsminibox     = np.ones(len(tagsnight));
     vsiniminibox   = np.ones(len(tagsnight));
     tagsminibox    = np.ones(len(tagsnight));
-    parfitminibox  = np.ones((len(tagsnight),22)); # need to match the dpar numbers
+    parfitminibox  = np.ones((len(tagsnight),24)); # need to match the dpar numbers
 
     rvsminibox[:]    = np.nan
     vsiniminibox[:]  = np.nan
@@ -98,7 +98,9 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                       90,                                                    #18: Secondary blaze dip full width
                       0.05,                                                  #19: Blaze dip depth
                       0.0,                                                   #20: Continuum cubic component
-                      0.0])                                                  #21: Continuum quartic component
+                      0.0,                                                   #21: Continuum quartic component
+                      0.0,                                                   #22: Continuum pentic component
+                      0.0])                                                  #23: Continuum hexic component
 
     # This one specific order is small and telluric dominated, start with greater stellar template power to ensure good fits
     if int(order) == 13:
@@ -242,20 +244,20 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
         # Arrays defining parameter variations during optimization steps
         #                            | 0    1    2    3 |  | ------ 4 ------ |  | 5 |   | 6     7     8           9  |  |10  11  12| |13 14|  |15   16   17   18    19 |
-        dpars = {'cont' : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    1e7, 1, 1,   0, 0,    10., 20., 0.2, 50.0, 0.2, 1.0, 1.0 ]),
-                 'twave': np.array([  0.0, 0.0, 0.0, 1.0,   0.0,                 0.0,   10.0, 10.0,  5.00000e-5, 1e-7,   0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0, 0.0, 0.0 ]),
-                 'ip'   : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.5,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0, 0.0, 0.0 ]),
-                 's'    : np.array([  5.0, 1.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0, 0.0, 0.0 ]),
-                 'v'    : np.array([  0.0, 0.0, 0.0, 0.0,   inparam.vsinivary,   0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0, 0.0, 0.0 ])}
+        dpars = {'cont' : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    1e7, 1, 1,   0, 0,    10., 20., 0.2, 50.0, 0.2, 1.0, 1.0 , 1.0, 1.0 ]),
+                 'twave': np.array([  0.0, 0.0, 0.0, 1.0,   0.0,                 0.0,   10.0, 10.0,  5.00000e-5, 1e-7,   0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0, 0.0, 0.0, 0.0, 0.0 ]),
+                 'ip'   : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.5,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0, 0.0, 0.0, 0.0, 0.0 ]),
+                 's'    : np.array([  5.0, 1.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0, 0.0, 0.0, 0.0, 0.0 ]),
+                 'v'    : np.array([  0.0, 0.0, 0.0, 0.0,   inparam.vsinivary,   0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0, 0.0, 0.0, 0.0, 0.0 ])}
         if masterbeam == 'B':
-            dpars['cont'] = np.array([0.0, 0.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    1e7, 1, 1,   0, 0,     0.,  0., 0.0,  0.,  0.0, 1.0, 1.0 ])
+            dpars['cont'] = np.array([0.0, 0.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    1e7, 1, 1,   0, 0,     0.,  0., 0.0,  0.,  0.0, 1.0, 1.0 , 1.0, 1.0 ])
 
         # Use quadratic blaze correction for order 13; cubic for orders 6, 14, 21; quartic for orders 16 and 22
         if args.band == 'H':
             if int(order) in [13]:
-                dpars['cont'][20] = 0.; dpars['cont'][21] = 0.;
+                dpars['cont'][20] = 0.; dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
             elif int(order) in [6,14,21]:
-                dpars['cont'][21] = 0.;
+                dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
             else:
                 pass
 
