@@ -32,7 +32,7 @@ def outplotter_tel(parfit, fitobj, title, inparam, args, order):
 
     npars -= 6 # subtract 6 from npars total, 2 for linear/quadratic IP, 1 for RV_telluric, 2 fot stellar template power and RV, 1 for vsini
 
-    chi_new = chi*(len(fitobj.s[mask]) - len(par))/(len(fitobj.s[mask]) - npars)
+    chi_new = chi*(len(fitobj.s[mask]) - len(parfit))/(len(fitobj.s[mask]) - npars)
 
     w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
 
@@ -119,7 +119,7 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3, order):
 
     npars -= 3 # subtract 3 from npars total, 2 for linear/quadratic IP and 1 for RV_telluric
 
-    chi_new = chi*(len(fitobj.s[mask]) - len(par))/(len(fitobj.s[mask]) - npars)
+    chi_new = chi*(len(fitobj.s[mask]) - len(parfit))/(len(fitobj.s[mask]) - npars)
 
     w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
 
