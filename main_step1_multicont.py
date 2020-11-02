@@ -237,7 +237,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                 parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize)
                 parstart = parfit_1.copy()
                 if args.debug == True:
-                    outplotter_tel(parfit_1,fitobj,'{}_{}_parfit_{}{}'.format(order,night,nk,optkind),inparam, args)
+                    outplotter_tel(parfit_1,fitobj,'{}_{}_parfit_{}{}'.format(order,night,nk,optkind),inparam, args, order)
                     logger.debug(f'Pre_{order}_{night}_{nk}_{optkind}:\n {parfit_1}')
                 nk += 1
 
@@ -293,7 +293,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
     if not pre_err:
 
         if inparam.plotfigs: # Plot results
-            outplotter_tel(parfit, fitobj, f'BeforeTelFit_Order{order}_{night}_{masterbeam}', inparam, args)
+            outplotter_tel(parfit, fitobj, f'BeforeTelFit_Order{order}_{night}_{masterbeam}', inparam, args, order)
 
         # Get best fit wavelength solution
         a0w_out_fit = parfit[6] + parfit[7]*x + parfit[8]*(x**2.) + parfit[9]*(x**3.)
@@ -349,7 +349,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                     parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize)
                     parstart = parfit_1.copy()
                     if args.debug == True:
-                        outplotter_tel(parfit_1,fitobj,'{}_{}_parfit_{}{}'.format(order,night,nk,optkind),inparam, args)
+                        outplotter_tel(parfit_1,fitobj,'{}_{}_parfit_{}{}'.format(order,night,nk,optkind),inparam, args, order)
                         logger.debug(f'Post_{order}_{night}_{nk}_{optkind}:\n {parfit_1}')
                     nk += 1
 
@@ -378,7 +378,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                     CRmaskF = np.array(CRmaskF)
 
                     fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam, CRmaskF)
-                    
+
             parfit = parfit_1.copy()
 
         except:
@@ -402,7 +402,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
 
         if not pre_err:
             if inparam.plotfigs: # Plot results
-                outplotter_tel(parfit, fitobj, f'FinalFit_Order{order}_{night}_{masterbeam}', inparam, args)
+                outplotter_tel(parfit, fitobj, f'FinalFit_Order{order}_{night}_{masterbeam}', inparam, args, order)
 
             if args.debug: # Output debug stuff
                 fig, axes = plt.subplots(1, 1, figsize=(6,3), facecolor='white', dpi=300)
@@ -417,11 +417,11 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                 fig.savefig(f'{inparam.outpath}/figs_{args.band}/IP_{order}_{night}.png',
                             bbox_inches='tight', format='png', overwrite=True)
 
-                outplotter_tel(parfit_1,fitobj, f'Post_parfit1_{order}_{night}', inparam, args)
-                outplotter_tel(parfit_2,fitobj, f'Post_parfit2_{order}_{night}', inparam, args)
-                outplotter_tel(parfit_3,fitobj, f'Post_parfit3_{order}_{night}', inparam, args)
-                outplotter_tel(parfit_4,fitobj, f'Post_parfit4_{order}_{night}', inparam, args)
-                outplotter_tel(parfit, fitobj, f'Post_parfit_{order}_{night}', inparam, args)
+                outplotter_tel(parfit_1,fitobj, f'Post_parfit1_{order}_{night}', inparam, args, order)
+                outplotter_tel(parfit_2,fitobj, f'Post_parfit2_{order}_{night}', inparam, args, order)
+                outplotter_tel(parfit_3,fitobj, f'Post_parfit3_{order}_{night}', inparam, args, order)
+                outplotter_tel(parfit_4,fitobj, f'Post_parfit4_{order}_{night}', inparam, args, order)
+                outplotter_tel(parfit, fitobj, f'Post_parfit_{order}_{night}', inparam, args, order)
 
             # logger.debug(f'Post_par_in:\n {par_in}')
             # logger.debug(f'Post_parfit1:\n {parfit_1}')
