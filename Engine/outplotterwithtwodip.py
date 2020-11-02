@@ -2,10 +2,10 @@ from Engine.importmodule import *
 from Engine.optwithtwodip   import fmod
 
 def outplotter_tel(parfit, fitobj, title, inparam, args, order):
-    
+
     fit,chi = fmod(parfit, fitobj)
     npars = len(parfit)
-    
+
     mask = np.ones_like(fitobj.s,dtype=bool)
     mask[(fitobj.s < .0)] = False
 
@@ -17,8 +17,8 @@ def outplotter_tel(parfit, fitobj, title, inparam, args, order):
         if len(fitobj.CRmask) != 0:
             mask[fitobj.CRmask] = False
     except TypeError:
-        pass   
-    
+        pass
+
     if args.band == 'H':
         if int(order) in [13]:
             npars -= 2
@@ -26,14 +26,14 @@ def outplotter_tel(parfit, fitobj, title, inparam, args, order):
             npars -= 1
         else:
             pass
-    
+
     if fitobj.masterbeam == 'B':
         npars -= 5
-        
+
     npars -= 6 # subtract 6 from npars total, 2 for linear/quadratic IP, 1 for RV_telluric, 2 fot stellar template power and RV, 1 for vsini
-    
+
     chi_new = chi*(len(fitobj.s[mask]) - len(par))/(len(fitobj.s[mask]) - npars)
-    
+
     w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
 
     c2 = fitobj.continuum
@@ -66,7 +66,9 @@ def outplotter_tel(parfit, fitobj, title, inparam, args, order):
     axes.yaxis.set_minor_locator(AutoMinorLocator(2))
     axes.tick_params(axis='both', which='both', labelsize=6, right=True, top=True, direction='in')
     axes.legend(fontsize=5, edgecolor='white')
-    fig.text(0.65, 0.2, r'$\rm\chi^{2}_{\nu}$ = '+str(round(chi_new,2)), size=6, style='normal', family='sans-serif')
+    fig.text(0.65, 0.2, r'$\rm \chi^{2}_{\nu}$ = {:1.2f}'.format(chi_new),
+                        size=6, style='normal', family='sans-serif')
+
     fig.savefig('{}/figs_{}/{}.png'.format(inparam.outpath, args.band, title),
                 bbox_inches='tight', format='png', overwrite=True)
 
@@ -88,9 +90,9 @@ def outplotter_tel(parfit, fitobj, title, inparam, args, order):
 
 def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3, order):
     fit,chi = fmod(parfit, fitobj)
-    
+
     npars = len(parfit)
-    
+
     mask = np.ones_like(fitobj.s,dtype=bool)
     mask[(fitobj.s < .0)] = False
 
@@ -102,8 +104,8 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3, order):
         if len(fitobj.CRmask) != 0:
             mask[fitobj.CRmask] = False
     except TypeError:
-        pass   
-    
+        pass
+
     if args.band == 'H':
         if int(order) in [13]:
             npars -= 2
@@ -111,14 +113,14 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3, order):
             npars -= 1
         else:
             pass
-    
+
     if fitobj.masterbeam == 'B':
         npars -= 5
-        
+
     npars -= 3 # subtract 3 from npars total, 2 for linear/quadratic IP and 1 for RV_telluric
-        
+
     chi_new = chi*(len(fitobj.s[mask]) - len(par))/(len(fitobj.s[mask]) - npars)
-    
+
     w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
 
     c2 = fitobj.continuum
@@ -187,7 +189,8 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3, order):
         fig.suptitle( title,     x=0.5,y=1.05, size=6, style='normal', family='sans-serif')
         fig.text(0.5, -0.04, r'Wavelength [$\rm\AA$]', ha='center', size=6, style='normal', family='sans-serif')
         fig.text(-0.04, 0.5, r'Flux',       va='center', rotation='vertical', size=6, style='normal', family='sans-serif')
-        fig.text(0.65, 0.2, r'$\rm\chi^{2}_{\nu}$ = '+str(round(chi_new,2)), size=6, style='normal', family='sans-serif')
+        fig.text(0.65, 0.2, r'$\rm \chi^{2}_{\nu}$ = {:1.2f}'.format(chi_new),
+                            size=6, style='normal', family='sans-serif')
         ax0.legend(fontsize=5, edgecolor='white')
 
     else:
@@ -200,7 +203,8 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3, order):
         axes.set_title(title,  size=6, style='normal' , family='sans-serif' )
         axes.set_ylabel(r'Flux',        size=6, style='normal', family='sans-serif' )
         axes.set_xlabel(r'Wavelength [$\rm\AA$]',  size=6, style='normal', family='sans-serif' )
-        fig.text(0.65, 0.2, r'$\rm\chi^{2}_{\nu}$ = '+str(round(chi_new,2)), size=6, style='normal', family='sans-serif')
+        fig.text(0.65, 0.2, r'$\rm \chi^{2}_{\nu}$ = {:1.2f}'.format(chi_new),
+                            size=6, style='normal', family='sans-serif')
 
         axes.tick_params(axis='both', labelsize=6, right=True, top=True, direction='in')
         axes.legend(fontsize=5, edgecolor='white')
