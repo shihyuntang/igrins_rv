@@ -241,7 +241,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
 
                 residual = fitobj.s/fit
                 MAD = np.median(abs(np.median(residual)-residual))
-                
+
                 CRmask = np.array(np.where(residual > np.median(residual)+1.75*MAD)[0]) #.5
 
                 CRmaskF = [];
@@ -338,9 +338,9 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
             for nc, cycle in enumerate(np.arange(cycles), start=1):
                 if cycle == 0:
                     parstart = par_in.copy()
-                    
+
                 if nc == 2:
-                    dpars = {'cont' :   np.array([0.0, 0.0, 0.0, 0.0,   0.0,   0.0,    0.0,  0.0, 0.0,        0.0,    1e7, 1, 1,    0, 0,    10.0, 20.0, 0.2, 50.0, 0.2, 1.0, 1.0, 1.0, 1.0 ]),
+                    dpars = {'cont' :   np.array([0.0, 0.0, 0.0, 0.0,   0.0,   0.0,    0.0,  0.0, 0.0,        0.0,    1e7, 1, 1,    0, 0,    10.0, 20.0, 0.2, 50.0, 0.2, 1.0, 1.0, 1.0, 1.0 ])}
 
                     if masterbeam == 'B':
                         dpars['cont'] = np.array([0.0, 0.0, 0.0, 0.0,   0.0,   0.0,    0.0,  0.0, 0.0,        0.,     1e7, 1, 1,    0, 0,     0.0,  0.0, 0.0,  0.0, 0.0, 1.0, 1.0, 1.0, 1.0 ])
