@@ -368,7 +368,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                             CRmaskF.append(hit)
                     CRmaskF = np.array(CRmaskF)
 
-                    fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam, CRmaskF)
+                    fitobj = fitobjs(s, x, u, continuum, watm1, satm1, mflux_in, mwave_in, [], masterbeam, CRmaskF)
                     
             parfit = parfit_1.copy()
 
