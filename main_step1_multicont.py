@@ -247,7 +247,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
 
                 residual = fitobj.s/fit
                 MAD = np.median(abs(np.median(residual)-residual))
-                CRmask = np.array(np.where(residual > np.median(residual)+2*MAD)[0]) #.5
+                CRmask = np.array(np.where(residual > np.median(residual)+1.75*MAD)[0]) #.5
 
                 CRmaskF = [];
                 CRmask = list(CRmask)
@@ -359,7 +359,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
 
                     residual = fitobj.s/fit
                     MAD = np.median(abs(np.median(residual)-residual))
-                    CRmask = np.array(np.where(residual > np.median(residual)+2*MAD)[0]) #.5
+                    CRmask = np.array(np.where(residual > np.median(residual)+1.75*MAD)[0]) #.5
 
                     CRmaskF = [];
                     CRmask = list(CRmask)
