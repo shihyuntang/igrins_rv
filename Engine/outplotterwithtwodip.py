@@ -1,8 +1,37 @@
 from Engine.importmodule import *
 from Engine.optwithtwodip   import fmod
 
-def outplotter_tel(parfit, fitobj, title, inparam, args):
+def outplotter_tel(parfit, fitobj, title, inparam, args, order):
+    
     fit,chi = fmod(parfit, fitobj)
+    npars = len(parfit)
+    
+    mask = np.ones_like(fitobj.s,dtype=bool)
+    mask[(fitobj.s < .0)] = False
+
+    if len(fitobj.mask) != 0:
+        for maskbounds in fitobj.mask:
+            mask[(fitobj.x > maskbounds[0]) & (fitobj.x < maskbounds[1]) ] = False
+
+    try:
+        if len(fitobj.CRmask) != 0:
+            mask[fitobj.CRmask] = False
+    except TypeError:
+        pass   
+    
+    if args.band == 'H':
+        if int(order) in [13]:
+            npars -= 2
+        elif int(order) in [6,14,21]:
+            npars -= 1
+        else:
+            pass
+    
+    if fitobj.masterbeam == 'B':
+        npars -= 5
+        
+    chi_new = chi*(len(fitobj.s[mask]) - len(par))/(len(fitobj.s[mask]) - npars)
+    
     w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
 
     c2 = fitobj.continuum
@@ -35,6 +64,7 @@ def outplotter_tel(parfit, fitobj, title, inparam, args):
     axes.yaxis.set_minor_locator(AutoMinorLocator(2))
     axes.tick_params(axis='both', which='both', labelsize=6, right=True, top=True, direction='in')
     axes.legend(fontsize=5, edgecolor='white')
+    fig.text(0.65, 0.2, r'$\rm\chi^{2}_{\nu}$ = '+str(round(chi_new,2)), size=6, style='normal', family='sans-serif')
     fig.savefig('{}/figs_{}/{}.png'.format(inparam.outpath, args.band, title),
                 bbox_inches='tight', format='png', overwrite=True)
 
@@ -54,8 +84,37 @@ def outplotter_tel(parfit, fitobj, title, inparam, args):
     #             bbox_inches='tight', format='png', overwrite=True)
 
 
-def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3):
+def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3, order):
     fit,chi = fmod(parfit, fitobj)
+    
+    npars = len(parfit)
+    
+    mask = np.ones_like(fitobj.s,dtype=bool)
+    mask[(fitobj.s < .0)] = False
+
+    if len(fitobj.mask) != 0:
+        for maskbounds in fitobj.mask:
+            mask[(fitobj.x > maskbounds[0]) & (fitobj.x < maskbounds[1]) ] = False
+
+    try:
+        if len(fitobj.CRmask) != 0:
+            mask[fitobj.CRmask] = False
+    except TypeError:
+        pass   
+    
+    if args.band == 'H':
+        if int(order) in [13]:
+            npars -= 2
+        elif int(order) in [6,14,21]:
+            npars -= 1
+        else:
+            pass
+    
+    if fitobj.masterbeam == 'B':
+        npars -= 5
+        
+    chi_new = chi*(len(fitobj.s[mask]) - len(par))/(len(fitobj.s[mask]) - npars)
+    
     w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
 
     c2 = fitobj.continuum
@@ -124,7 +183,7 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3):
         fig.suptitle( title,     x=0.5,y=1.05, size=6, style='normal', family='sans-serif')
         fig.text(0.5, -0.04, r'Wavelength [$\rm\AA$]', ha='center', size=6, style='normal', family='sans-serif')
         fig.text(-0.04, 0.5, r'Flux',       va='center', rotation='vertical', size=6, style='normal', family='sans-serif')
-        fig.text(0.65, 0.2, r'$\rm\chi^{2}_{\nu}$ = '+str(round(chi,2)), size=6, style='normal', family='sans-serif')
+        fig.text(0.65, 0.2, r'$\rm\chi^{2}_{\nu}$ = '+str(round(chi_new,2)), size=6, style='normal', family='sans-serif')
         ax0.legend(fontsize=5, edgecolor='white')
 
     else:
@@ -137,7 +196,7 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3):
         axes.set_title(title,  size=6, style='normal' , family='sans-serif' )
         axes.set_ylabel(r'Flux',        size=6, style='normal', family='sans-serif' )
         axes.set_xlabel(r'Wavelength [$\rm\AA$]',  size=6, style='normal', family='sans-serif' )
-        fig.text(0.65, 0.2, r'$\rm\chi^{2}_{\nu}$ = '+str(round(chi,2)), size=6, style='normal', family='sans-serif')
+        fig.text(0.65, 0.2, r'$\rm\chi^{2}_{\nu}$ = '+str(round(chi_new,2)), size=6, style='normal', family='sans-serif')
 
         axes.tick_params(axis='both', labelsize=6, right=True, top=True, direction='in')
         axes.legend(fontsize=5, edgecolor='white')
