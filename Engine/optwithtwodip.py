@@ -126,7 +126,7 @@ def fmodel_chi(par,grad):
     smod *= c2#/np.median(c2)
 
     # Apply continuum adjustment
-    cont = par[10] + par[11]*fitobj_cp.x+ par[12]*(fitobj_cp.x**2) + par[20]*(fitobj_cp.x**3) + par[21]*(fitobj_cp.x**4)
+    cont = par[10] + par[11]*fitobj_cp.x+ par[12]*(fitobj_cp.x**2) + par[20]*(fitobj_cp.x**3) + par[21]*(fitobj_cp.x**4) + par[22]*(fitobj_cp.x**5) + par[23]*(fitobj_cp.x**6)
     if fitobj_cp.masterbeam == 'A':
         bucket = np.zeros_like(cont)
         bucket[(fitobj_cp.x >= (par[15]-par[16]/2))         & (fitobj_cp.x <= (par[15]+par[16]/2))] = par[17]
@@ -231,7 +231,7 @@ def fmod(par,fitobj):
     smod *= c2#/np.median(c2)
 
     # Apply continuum adjustment
-    cont = par[10] + par[11]*fitobj.x+ par[12]*(fitobj.x**2) + par[20]*(fitobj.x**3) + par[21]*(fitobj.x**4)
+    cont = par[10] + par[11]*fitobj.x+ par[12]*(fitobj.x**2) + par[20]*(fitobj.x**3) + par[21]*(fitobj.x**4) + par[22]*(fitobj.x**5) + par[23]*(fitobj.x**6)
     if fitobj.masterbeam == 'A':
         bucket = np.zeros_like(cont)
         bucket[(fitobj.x >= (par[15]-par[16]/2)) & (fitobj.x <= (par[15]+par[16]/2))] = par[17]
@@ -311,7 +311,7 @@ def fmod_conti(par,fitobj):
     smod *= c2#/np.median(c2)
 
     # Apply continuum adjustment
-    cont = par[10] + par[11]*fitobj.x+ par[12]*(fitobj.x**2) + par[20]*(fitobj.x**3) + par[21]*(fitobj.x**4)
+    cont = par[10] + par[11]*fitobj.x+ par[12]*(fitobj.x**2) + par[20]*(fitobj.x**3) + par[21]*(fitobj.x**4) + par[22]*(fitobj.x**5) + par[23]*(fitobj.x**6)
     if fitobj.masterbeam == 'A':
         bucket = np.zeros_like(cont)
         bucket[(fitobj.x >= (par[15]-par[16]/2)) & (fitobj.x <= (par[15]+par[16]/2))] = par[17]
@@ -332,7 +332,7 @@ def optimizer(par0,dpar0, hardbounds_v_ip, fitobj, optimize):
     fitobj_cp   = fitobj
     optimize_cp = optimize
 
-    opt = nlopt.opt(nlopt.LN_NELDERMEAD, 22)
+    opt = nlopt.opt(nlopt.LN_NELDERMEAD, 24)
     opt.set_min_objective(fmodel_chi)
     lows  = par0-dpar0
     highs = par0+dpar0
