@@ -272,10 +272,10 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                         '''
 
                         if len(peaks) < 1:
-                            if max(residual[group] - np.median(residual))/MAD > 7:
-                                CRmaskF = np.concatenate((CRmaskF,group))
-                            #print('no peaks', fitobj.x[group],max(residual[group] - np.median(residual))/MAD)
-                            continue
+                            group = np.concatenate((np.array([group[0]-1]),group,np.array([group[-1]+1])))
+                            peaks = detect_peaks(fitobj.s[group])
+                            if len(peaks) < 1:
+                                continue
                         if len(peaks) > 1:
                             continue
                         gL = group[:peaks[0]]; gR = group[peaks[0]+1:];
@@ -355,191 +355,34 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
 
     else: # If Telfit exited normally, proceed.
         #  Save best blaze function fit
-        a0contwave /= 1e4
-        continuum = rebin_jv(a0contwave,continuum,a0wavelist,False)
+        continuum = rebin_jv(a0contwave,continuum,a0w_out_fit,False)
 
-        # Fit the A0 again using the new synthetic telluric template.
-        # This allows for any tweaks to the blaze function fit that may be necessary.
-        fitobj = fitobjs(s, x, u, continuum,watm1,satm1,mflux_in,mwave_in,[], masterbeam, None)
-
-
-        nk = 1
-        for nc, cycle in enumerate(np.arange(cycles), start=1):
-            if cycle == 0:
-                parstart = par_in.copy()
-
-            if nc == 2:
-                dpars = {'cont' :   np.array([0.0, 0.0, 0.0, 0.0,   0.0,   0.0,    0.0,  0.0, 0.0,        0.0,    1e7, 1, 1,    0, 0,    10.0, 20.0, 0.2, 50.0, 0.2, 1.0, 1.0, 1.0, 1.0 ])}
-
-                if masterbeam == 'B':
-                    dpars['cont'] = np.array([0.0, 0.0, 0.0, 0.0,   0.0,   0.0,    0.0,  0.0, 0.0,        0.,     1e7, 1, 1,    0, 0,     0.0,  0.0, 0.0,  0.0, 0.0, 1.0, 1.0, 1.0, 1.0 ])
-                else:
-                    if (args.band == 'K') and (order == 3):
-                         dpars['cont'] = np.array([0.0, 0.0, 0.0, 0.0,   0.0,   0.0,    0.0, 0.0, 0.0,         0.,     1e7, 1, 1,    0, 0,    10.0, 20.0, 0.2, 50.0, 0.0, 1.0, 1.0, 1.0, 1.0  ])
-
-                if args.band == 'H':
-                    if int(order) in [13]:
-                        dpars['cont'][20] = 0.; dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
-                    elif int(order) in [6,14,21]:
-                        dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
-                    else:
-                        pass
-
-            for optkind in optgroup:
-                # print(f'{optkind}, nc={nc}, tag={tag}')
-                parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize)
-                parstart = parfit_1.copy()
-                if args.debug == True:
-                    outplotter_tel(parfit_1,fitobj,'{}_{}_parfit_{}{}'.format(order,night,nk,optkind),inparam, args, order)
-                    logger.debug(f'Post_{order}_{night}_{nk}_{optkind}:\n {parfit_1}')
-                nk += 1
-
-            if nc == 1:
-                parfit = parfit_1.copy()
-                fit,chi = fmod(parfit, fitobj)
-
-                residual = fitobj.s/fit
-                MAD = np.median(abs(np.median(residual)-residual))
-
-                CRmask = np.array(np.where(residual > np.median(residual)+2*MAD)[0]) #.5
-
-                CRmaskF = [];
-                CRmask = list(CRmask)
-
-                for hit in [0,len(fitobj.x)-1]:
-                    if hit in CRmask:
-                        CRmaskF.append(hit)
-                        CRmask.remove(hit)
-                CRmask = np.array(CRmask, dtype=np.int); CRmaskF = np.array(CRmaskF, dtype=np.int);
-
-                import more_itertools as mit
-                from Engine.detect_peaks import detect_peaks
-
-                for group in mit.consecutive_groups(CRmask):
-                    group = np.array(list(group))
-                    if len(group) == 1:
-                        gL = group-1; gR = group+1;
-                    else:
-                        peaks = detect_peaks(fitobj.s[group])
-                        '''
-                        plt.figure(figsize=(8,8))
-                        plt.plot(fitobj.x[group],fitobj.s[group])
-                        plt.scatter(fitobj.x[group][peaks],fitobj.s[group][peaks],s=30,color='red')
-                        plt.savefig('CRcheck_{}.png'.format(group))
-                        plt.clf()
-                        plt.close()
-                        '''
-
-                        if len(peaks) < 1:
-                            if max(residual[group] - np.median(residual))/MAD > 7:
-                                CRmaskF = np.concatenate((CRmaskF,group))
-                            #print('no peaks', fitobj.x[group],max(residual[group] - np.median(residual))/MAD)
-                            continue
-                        if len(peaks) > 1:
-                            continue
-                        gL = group[:peaks[0]]; gR = group[peaks[0]+1:];
-
-                    slopeL = (fitobj.s[gL+1]-fitobj.s[gL])/(fitobj.x[gL+1]-fitobj.x[gL])
-                    slopeR = (fitobj.s[gR]-fitobj.s[gR-1])/(fitobj.x[gR]-fitobj.x[gR-1])
-                    try:
-                        if (min(slopeL) > 0) and (max(slopeR) < 0):
-                            CRmaskF = np.concatenate((CRmaskF,group))
-                    except ValueError:
-                        if (slopeL > 0) and (slopeR < 0):
-                            CRmaskF = np.concatenate((CRmaskF,group))
-
-                fitobj = fitobjs(s, x, u, continuum, watm1, satm1, mflux_in, mwave_in, [], masterbeam, CRmaskF)
-
-        parfit = parfit_1.copy()
-
-        try:
-            print('OPST DONE')
-
-        except:
-            pre_err = True
-            logger.warning(f'  --> NIGHT {night}, ORDER {order} HIT ERROR DURING POST_OPT')
-            # Write out table to fits header with errorflag = 1
-            c0    = fits.Column(name=f'ERRORFLAG{order}', array=np.array([1]), format='K')
-            cols  = fits.ColDefs([c0])
-            hdu_1 = fits.BinTableHDU.from_columns(cols)
-
-            # If first time writing fits file, make up filler primary hdu
-            if order == firstorder: # If first time writing fits file, make up filler primary hdu
-                bleh = np.ones((3,3))
-                primary_hdu = fits.PrimaryHDU(bleh)
-                hdul = fits.HDUList([primary_hdu,hdu_1])
-                hdul.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band), overwrite=True)
-            else:
-                hh = fits.open('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band))
-                hh.append(hdu_1)
-                hh.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band), overwrite=True)
-
-        if not pre_err:
-            if inparam.plotfigs: # Plot results
-                outplotter_tel(parfit, fitobj, f'FinalFit_Order{order}_{night}_{masterbeam}', inparam, args, order)
-
-            if args.debug: # Output debug stuff
-                fig, axes = plt.subplots(1, 1, figsize=(6,3), facecolor='white', dpi=300)
-                axes.plot(fitobj.x,
-                          parfit[5] + parfit[13]*(fitobj.x) + parfit[14]*(fitobj.x**2),
-                          '-k', lw=0.7, label='data', alpha=.6)
-
-                axes.tick_params(axis='both', labelsize=6, right=True, top=True, direction='in')
-                axes.set_ylabel('IP',           size=6, style='normal', family='sans-serif')
-                axes.set_xlabel('Pixel Number', size=6, style='normal', family='sans-serif')
-                axes.legend(fontsize=5, edgecolor='white')
-                fig.savefig(f'{inparam.outpath}/figs_{args.band}/IP_{order}_{night}.png',
-                            bbox_inches='tight', format='png', overwrite=True)
-
-                outplotter_tel(parfit_1,fitobj, f'Post_parfit1_{order}_{night}', inparam, args, order)
-                outplotter_tel(parfit_2,fitobj, f'Post_parfit2_{order}_{night}', inparam, args, order)
-                outplotter_tel(parfit_3,fitobj, f'Post_parfit3_{order}_{night}', inparam, args, order)
-                outplotter_tel(parfit_4,fitobj, f'Post_parfit4_{order}_{night}', inparam, args, order)
-                outplotter_tel(parfit, fitobj, f'Post_parfit_{order}_{night}', inparam, args, order)
-
-            # logger.debug(f'Post_par_in:\n {par_in}')
-            # logger.debug(f'Post_parfit1:\n {parfit_1}')
-            # logger.debug(f'Post_parfit2:\n {parfit_2}')
-            # logger.debug(f'Post_parfit3:\n {parfit_3}')
-            # logger.debug(f'Post_parfit4:\n {parfit_4}')
-            # logger.debug(f'Post_parfit:\n {parfit}')
-
-            #-------------------------------------------------------------------------------
-
-            # Save slightly better wavelength and blaze function solution
-            a0w_out  = parfit[6] + parfit[7]*x + parfit[8]*(x**2.) + parfit[9]*(x**3.)
-            cont_adj = parfit[10] + parfit[11]*x + parfit[12]*(x**2.)
-
-            continuum /= np.median(continuum)
-            cont_save = continuum*cont_adj
-
-            # Write out table to fits file with errorflag = 0
-            c0  = fits.Column(name='ERRORFLAG'+str(order),      array=np.array([0]),            format='K')
-            c1  = fits.Column(name='WAVE'+str(order),           array=a0w_out,                  format='D')
-            c2  = fits.Column(name='BLAZE'+str(order),          array=cont_save,                format='D')
-            c3  = fits.Column(name='X'+str(order),              array=a0x,                      format='D')
-            c4  = fits.Column(name='INTENS'+str(order),         array=a0fluxlist,               format='D')
-            c5  = fits.Column(name='SIGMA'+str(order),          array=a0u,                      format='D')
-            c6  = fits.Column(name='WATM'+str(order),           array=watm1,                    format='D')
-            c7  = fits.Column(name='SATM'+str(order),           array=satm1,                    format='D')
-            c8  = fits.Column(name='TELFITPARNAMES'+str(order), array=np.array(telfitparnames), format='8A')
-            c9  = fits.Column(name='TELFITPARS'+str(order),     array=telfitpars,               format='D')
-            c10 = fits.Column(name='PARFIT',                    array=parfit,                   format='D')
-            cols = fits.ColDefs([c0,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10])
-            hdu_1 = fits.BinTableHDU.from_columns(cols)
+        # Write out table to fits file with errorflag = 0
+        c0  = fits.Column(name='ERRORFLAG'+str(order),      array=np.array([0]),            format='K')
+        c1  = fits.Column(name='WAVE'+str(order),           array=a0w_out_fit,              format='D')
+        c2  = fits.Column(name='BLAZE'+str(order),          array=continuum,                format='D')
+        c3  = fits.Column(name='X'+str(order),              array=a0x,                      format='D')
+        c4  = fits.Column(name='INTENS'+str(order),         array=a0fluxlist,               format='D')
+        c5  = fits.Column(name='SIGMA'+str(order),          array=a0u,                      format='D')
+        c6  = fits.Column(name='WATM'+str(order),           array=watm1,                    format='D')
+        c7  = fits.Column(name='SATM'+str(order),           array=satm1,                    format='D')
+        c8  = fits.Column(name='TELFITPARNAMES'+str(order), array=np.array(telfitparnames), format='8A')
+        c9  = fits.Column(name='TELFITPARS'+str(order),     array=telfitpars,               format='D')
+        c10 = fits.Column(name='PARFIT',                    array=parfit,                   format='D')
+        cols = fits.ColDefs([c0,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10])
+        hdu_1 = fits.BinTableHDU.from_columns(cols)
 
 
-            if order == firstorder: # If first time writing fits file, make up filler primary hdu
-                bleh = np.ones((3,3))
-                primary_hdu = fits.PrimaryHDU(bleh)
-                hdul = fits.HDUList([primary_hdu,hdu_1])
-                hdul.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band), overwrite=True)
-            else:
-                hh = fits.open('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band))
-                hh.append(hdu_1)
-                hh.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band), overwrite=True)
+        if order == firstorder: # If first time writing fits file, make up filler primary hdu
+            bleh = np.ones((3,3))
+            primary_hdu = fits.PrimaryHDU(bleh)
+            hdul = fits.HDUList([primary_hdu,hdu_1])
+            hdul.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band), overwrite=True)
         else:
-            pass
+            hh = fits.open('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band))
+            hh.append(hdu_1)
+            hh.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band), overwrite=True)
+            
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 
