@@ -338,11 +338,12 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                         plt.close()
                         '''
 
+                        
                         if len(peaks) < 1:
-                            if max(residual[group] - np.median(residual))/MAD > 7:
-                                CRmaskF = np.concatenate((CRmaskF,group))
-                            #print('no peaks', fitobj.x[group],max(residual[group] - np.median(residual))/MAD)
-                            continue
+                            group = np.concatenate((np.array([group[0]-1]),group,np.array([group[-1]+1])))
+                            peaks = detect_peaks(fitobj.s[group])
+                            if len(peaks) < 1:
+                                continue
                         if len(peaks) > 1:
                             continue
                         gL = group[:peaks[0]]; gR = group[peaks[0]+1:];
