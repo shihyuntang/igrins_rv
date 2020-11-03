@@ -251,7 +251,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                     if hit in CRmask:
                         CRmaskF.append(hit)
                         CRmask.remove(hit)
-                CRmask = np.array(CRmask, dtype=np.int); CRmaskF = np.array(CRmaskF, dtype=np.int));
+                CRmask = np.array(CRmask, dtype=np.int); CRmaskF = np.array(CRmaskF, dtype=np.int);
 
                 import more_itertools as mit
                 from Engine.detect_peaks import detect_peaks
