@@ -93,6 +93,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args):
 
         # Only 3 molecules present in chosen IGRINS orders' wavelength range are H2O, CH4, and CO.
         if (order < 9) & (args.band =='K'):
+            num_fit = 3
             # Only 3 molecules present in chosen IGRINS orders' wavelength range are H2O, CH4, and CO.
             fitter.FitVariable({"h2o": humidity,"ch4": 1.8,"co": 5e-3})
 
@@ -118,6 +119,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args):
                               "ch4": [.1,  10.0],\
                               "co": [ 1e-6,1e2]})
         elif (order >= 9) & (args.band =='K'):
+            num_fit = 4
             # Only molecules present in chosen IGRINS orders' wavelength range are H2O, CH4, N2O, and CO2.
             fitter.FitVariable({"h2o": humidity,"ch4": 1.8,"co2": 3.675e2, "n2o":5e-2})
 
@@ -143,6 +145,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args):
                               "n2o": [1e-5,1e2],\
                               "co2": [1.0, 1e4]})
         elif args.band =='H':
+            num_fit = 3
             fitter.FitVariable({"h2o": humidity,"ch4": 1.8,"co2": 3.675e2})
 
             #Adjust parameters that will not be fit, but are important
@@ -174,6 +177,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args):
 
         # Only 3 molecules present in chosen IGRINS orders' wavelength range are H2O, CH4, and CO.
         if (order < 9) & (args.band =='K'):
+            num_fit = 6
             fitter.FitVariable({"h2o": 43.,"ch4": 1.8,"co": 5e-3,
                                 "angle": 39., "pressure":1023., "temperature":280.87})
 
@@ -199,6 +203,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args):
                               "pressure": [1010.,1035.],\
                               "co": [ 1e-6,1e2]})
         elif (order >= 9) & (args.band =='K'):
+            num_fit = 7
             # Only molecules present in chosen IGRINS orders' wavelength range are H2O, CH4, N2O, and CO2.
             fitter.FitVariable({"h2o": 43.,"ch4": 1.8,"co2": 3.675e2, "n2o": 5e-2,
                                 "angle": 39., "pressure":1023., "temperature":280.87})
@@ -225,6 +230,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args):
                               "pressure": [1010.,1035.],\
                               "co2": [1.0, 1e4]})
         elif args.band =='H':
+            num_fit = 6
             fitter.FitVariable({"h2o": 43.,"ch4": 1.8,"co": 5e-3,"co2": 3.675e2,
                                 "angle": 39., "pressure":1023., "temperature":280.87})
 
@@ -283,7 +289,8 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args):
                        the wavelength solution to vary.
     '''
 
-
+    chi_new = np.sum((satm_in - model.y*cont1)**2. / model.u**2.)
+    chi_new = chisq / (len(model.y) - num_fit)
     #Get the improved continuum from the fitter
     cont1  = fitter.data.cont
     wcont1 = model.x
@@ -301,6 +308,9 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args):
         axes.set_ylabel(r'Flux',       size=6, style='normal' , family='sans-serif' )
         axes.set_xlabel(r'Wavelength [$\AA$]', size=6, style='normal' , family='sans-serif' )
         axes.legend(fontsize=5, edgecolor='white')
+
+        fig.text(0.65, 0.2, r'$\rm \chi^{{2}}_{{\nu}}$ = {:1.2f}'.format(chi_new),
+                            size=6, style='normal', family='sans-serif')
         fig.savefig('{}/figs_{}/A0Telfit_{}_{}.png'.format(inparam.outpath, args.band, order, night),
                     format='png', bbox_inches='tight', overwrite=True)
 
