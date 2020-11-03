@@ -326,7 +326,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
         mwave_in,mflux_in = stellarmodel_setup(a0w_out_fit/1e4, inparam.mwave0, inparam.mflux0)
 
         # Feed this new wavelength solution into Telfit. Returns high-res synthetic telluric template, parameters of that best fit, and blaze function best fit
-        watm1, satm1, telfitparnames, telfitpars, a0contwave, continuum = telfitter(a0w_out_fit,a0fluxlist,a0u,inparam,night,order,args)
+        watm1, satm1, telfitparnames, telfitpars, a0contwave, continuum = telfitter(a0w_out_fit,a0fluxlist,a0u,inparam,night,order,args,masterbeam)
     else:
         pass
     #-------------------------------------------------------------------------------
@@ -382,7 +382,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
             hh = fits.open('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band))
             hh.append(hdu_1)
             hh.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band), overwrite=True)
-            
+
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 

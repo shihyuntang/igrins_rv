@@ -56,7 +56,7 @@ def wavefit(par0, dpar0):
 
 
 
-def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args):
+def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam):
     # Code to produced fitted telluric template. How and why it works is detailed in comments throughout the code.
     os.environ['PYSYN_CDBS'] = inparam.cdbsloc
     fitter = TelluricFitter(debug=False)
@@ -308,10 +308,11 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args):
         axes.set_ylabel(r'Flux',       size=6, style='normal' , family='sans-serif' )
         axes.set_xlabel(r'Wavelength [$\AA$]', size=6, style='normal' , family='sans-serif' )
         axes.legend(fontsize=5, edgecolor='white')
-
+        axes.set_title('{}/figs_{}/A0Telfit_Order{}_{}_{}.png'.format(inparam.outpath, args.band, order, night, masterbeam),
+                         size=6, style='normal', family='sans-serif')
         fig.text(0.65, 0.2, r'$\rm \chi^{{2}}_{{\nu}}$ = {:1.2f}'.format(chi_new),
                             size=6, style='normal', family='sans-serif')
-        fig.savefig('{}/figs_{}/A0Telfit_{}_{}.png'.format(inparam.outpath, args.band, order, night),
+        fig.savefig('{}/figs_{}/A0Telfit_Order{}_{}_{}.png'.format(inparam.outpath, args.band, order, night, masterbeam),
                     format='png', bbox_inches='tight', overwrite=True)
 
     ############### Generate template with these parameters but at higher resolution
