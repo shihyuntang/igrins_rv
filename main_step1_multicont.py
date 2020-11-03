@@ -241,8 +241,8 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
 
                 residual = fitobj.s/fit
                 MAD = np.median(abs(np.median(residual)-residual))
-
-                CRmask = np.array(np.where(residual > np.median(residual)+1.75*MAD)[0]) #.5
+                
+                CRmask = np.array(np.where(residual > np.median(residual)+2*MAD)[0]) #.5
 
                 CRmaskF = [];
                 CRmask = list(CRmask)
@@ -251,14 +251,43 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                     if hit in CRmask:
                         CRmaskF.append(hit)
                         CRmask.remove(hit)
-                CRmask = np.array(CRmask)
+                CRmask = np.array(CRmask); CRmaskF = np.array(CRmaskF);
 
-                for hit in CRmask:
-                    slopeL = (fitobj.s[hit]-fitobj.s[hit-1])/(fitobj.x[hit]-fitobj.x[hit-1])
-                    slopeR = -1*((fitobj.s[hit+1]-fitobj.s[hit])/(fitobj.x[hit+1]-fitobj.x[hit]))
-                    if (slopeL > 100) and (slopeR > 100):
-                        CRmaskF.append(hit)
-                CRmaskF = np.array(CRmaskF)
+                import more_itertools as mit
+                from Engine.detect_peaks import detect_peaks
+
+                for group in mit.consecutive_groups(CRmask):
+                    group = np.array(list(group))
+                    if len(group) == 1:
+                        gL = group-1; gR = group+1;
+                    else:
+                        peaks = detect_peaks(fitobj.s[group])
+                        '''
+                        plt.figure(figsize=(8,8))
+                        plt.plot(fitobj.x[group],fitobj.s[group])
+                        plt.scatter(fitobj.x[group][peaks],fitobj.s[group][peaks],s=30,color='red')
+                        plt.savefig('CRcheck_{}.png'.format(group))
+                        plt.clf()
+                        plt.close()
+                        '''
+
+                        if len(peaks) < 1:
+                            if max(residual[group] - np.median(residual))/MAD > 7:
+                                CRmaskF = np.concatenate((CRmaskF,group))
+                            #print('no peaks', fitobj.x[group],max(residual[group] - np.median(residual))/MAD)
+                            continue
+                        if len(peaks) > 1:
+                            continue
+                        gL = group[:peaks[0]]; gR = group[peaks[0]+1:];
+
+                    slopeL = (fitobj.s[gL+1]-fitobj.s[gL])/(fitobj.x[gL+1]-fitobj.x[gL])
+                    slopeR = (fitobj.s[gR]-fitobj.s[gR-1])/(fitobj.x[gR]-fitobj.x[gR-1])
+                    try:
+                        if (min(slopeL) > 0) and (max(slopeR) < 0):
+                            CRmaskF = np.concatenate((CRmaskF,group))
+                    except ValueError:
+                        if (slopeL > 0) and (slopeR < 0):
+                            CRmaskF = np.concatenate((CRmaskF,group))
 
                 fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam, CRmaskF)
 
@@ -371,8 +400,8 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
 
                 residual = fitobj.s/fit
                 MAD = np.median(abs(np.median(residual)-residual))
-
-                CRmask = np.array(np.where(residual > np.median(residual)+1.75*MAD)[0]) #.5
+                
+                CRmask = np.array(np.where(residual > np.median(residual)+2*MAD)[0]) #.5
 
                 CRmaskF = [];
                 CRmask = list(CRmask)
@@ -381,14 +410,43 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                     if hit in CRmask:
                         CRmaskF.append(hit)
                         CRmask.remove(hit)
-                CRmask = np.array(CRmask)
+                CRmask = np.array(CRmask); CRmaskF = np.array(CRmaskF);
 
-                for hit in CRmask:
-                    slopeL = (fitobj.s[hit]-fitobj.s[hit-1])/(fitobj.x[hit]-fitobj.x[hit-1])
-                    slopeR = -1*((fitobj.s[hit+1]-fitobj.s[hit])/(fitobj.x[hit+1]-fitobj.x[hit]))
-                    if (slopeL > 100) and (slopeR > 100):
-                        CRmaskF.append(hit)
-                CRmaskF = np.array(CRmaskF)
+                import more_itertools as mit
+                from Engine.detect_peaks import detect_peaks
+
+                for group in mit.consecutive_groups(CRmask):
+                    group = np.array(list(group))
+                    if len(group) == 1:
+                        gL = group-1; gR = group+1;
+                    else:
+                        peaks = detect_peaks(fitobj.s[group])
+                        '''
+                        plt.figure(figsize=(8,8))
+                        plt.plot(fitobj.x[group],fitobj.s[group])
+                        plt.scatter(fitobj.x[group][peaks],fitobj.s[group][peaks],s=30,color='red')
+                        plt.savefig('CRcheck_{}.png'.format(group))
+                        plt.clf()
+                        plt.close()
+                        '''
+
+                        if len(peaks) < 1:
+                            if max(residual[group] - np.median(residual))/MAD > 7:
+                                CRmaskF = np.concatenate((CRmaskF,group))
+                            #print('no peaks', fitobj.x[group],max(residual[group] - np.median(residual))/MAD)
+                            continue
+                        if len(peaks) > 1:
+                            continue
+                        gL = group[:peaks[0]]; gR = group[peaks[0]+1:];
+
+                    slopeL = (fitobj.s[gL+1]-fitobj.s[gL])/(fitobj.x[gL+1]-fitobj.x[gL])
+                    slopeR = (fitobj.s[gR]-fitobj.s[gR-1])/(fitobj.x[gR]-fitobj.x[gR-1])
+                    try:
+                        if (min(slopeL) > 0) and (max(slopeR) < 0):
+                            CRmaskF = np.concatenate((CRmaskF,group))
+                    except ValueError:
+                        if (slopeL > 0) and (slopeR < 0):
+                            CRmaskF = np.concatenate((CRmaskF,group))
 
                 fitobj = fitobjs(s, x, u, continuum, watm1, satm1, mflux_in, mwave_in, [], masterbeam, CRmaskF)
 
