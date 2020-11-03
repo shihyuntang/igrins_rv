@@ -225,6 +225,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         wave_piece = wave_piece[(wave_piece*1e4 > np.min(watm_in)+5) & (wave_piece*1e4 < np.max(watm_in)-5)]
 
         # Normalize continuum from A0 to flux scale of data
+        continuum /= np.nanmedian(continuum)
         continuum *= np.nanpercentile(s_piece,99)
 
         # --------------------------------------------------------------
@@ -351,10 +352,10 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                     slopeL = (fitobj.s[gL+1]-fitobj.s[gL])/(fitobj.x[gL+1]-fitobj.x[gL])
                     slopeR = (fitobj.s[gR]-fitobj.s[gR-1])/(fitobj.x[gR]-fitobj.x[gR-1])
                     try:
-                        if (min(slopeL) > 0) and (max(slopeR) < 0):
+                        if (min(slopeL) > 200) and (max(slopeR) < -200):
                             CRmaskF = np.concatenate((CRmaskF,group))
                     except ValueError:
-                        if (slopeL > 0) and (slopeR < 0):
+                        if (slopeL > 200) and (slopeR < -200):
                             CRmaskF = np.concatenate((CRmaskF,group))
 
 
