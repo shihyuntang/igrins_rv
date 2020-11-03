@@ -293,8 +293,8 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
     cont1  = fitter.data.cont
     wcont1 = model.x
 
-    chi_new = np.sum((satm_in - model.y*cont1)**2. / model.u**2.)
-    chi_new = chisq / (len(model.y) - num_fit)
+    # chi_new = np.sum((satm_in - model.y*cont1)**2. / model.u**2.)
+    # chi_new = chisq / (len(model.y) - num_fit)
 
     if args.plotfigs:
         fig, axes = plt.subplots(1, 1, figsize=(6,3), facecolor='white', dpi=300)
@@ -311,8 +311,8 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
         axes.legend(fontsize=5, edgecolor='white')
         axes.set_title('{}/figs_{}/A0Telfit_Order{}_{}_{}.png'.format(inparam.outpath, args.band, order, night, masterbeam),
                          size=6, style='normal', family='sans-serif')
-        fig.text(0.65, 0.2, r'$\rm \chi^{{2}}_{{\nu}}$ = {:1.2f}'.format(chi_new),
-                            size=6, style='normal', family='sans-serif')
+        # fig.text(0.65, 0.2, r'$\rm \chi^{{2}}_{{\nu}}$ = {:1.2f}'.format(chi_new),
+        #                     size=6, style='normal', family='sans-serif')
         fig.savefig('{}/figs_{}/A0Telfit_Order{}_{}_{}.png'.format(inparam.outpath, args.band, order, night, masterbeam),
                     format='png', bbox_inches='tight', overwrite=True)
 
