@@ -280,10 +280,10 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                     slopeL = (fitobj.s[gL+1]-fitobj.s[gL])/(fitobj.x[gL+1]-fitobj.x[gL])
                     slopeR = (fitobj.s[gR]-fitobj.s[gR-1])/(fitobj.x[gR]-fitobj.x[gR-1])
                     try:
-                        if (min(slopeL) > 0) and (max(slopeR) < 0):
+                        if (min(slopeL) > 200) and (max(slopeR) < -200):
                             CRmaskF = np.concatenate((CRmaskF,group))
                     except ValueError:
-                        if (slopeL > 0) and (slopeR < 0):
+                        if (slopeL > 200) and (slopeR < -200):
                             CRmaskF = np.concatenate((CRmaskF,group))
 
                 fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam, CRmaskF)
