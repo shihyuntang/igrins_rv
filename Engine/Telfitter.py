@@ -291,15 +291,15 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args):
     if args.plotfigs:
         fig, axes = plt.subplots(1, 1, figsize=(6,3), facecolor='white', dpi=300)
 
-        axes.plot(watm_in, satm_in,       color='black',    alpha=.6, label='data',      lw=0.7)
-        axes.plot(model.x, model.y*cont1, color='tab:red',  alpha=.6, label='model fit', lw=0.7)
-        axes.plot(model.x, cont1,         color='tab:blue', alpha=.6, label='blaze fit', lw=0.7)
+        axes.plot(watm_in, satm_in,       color='black',    alpha=.8, label='data',      lw=0.7)
+        axes.plot(model.x, model.y*cont1, color='tab:red',  alpha=.8, label='model fit', lw=0.7)
+        axes.plot(model.x, cont1,         color='tab:blue', alpha=.8, label='blaze fit', lw=0.7)
 
         axes.xaxis.set_minor_locator(AutoMinorLocator(5))
         axes.yaxis.set_minor_locator(AutoMinorLocator(2))
         axes.tick_params(axis='both', which='both', labelsize=6, right=True, top=True, direction='in')
-        axes.set_ylabel(r'Normalized Flux',       size=6, style='normal' , family='sans-serif' )
-        axes.set_xlabel(r'Wavelength [$\rm\AA$]', size=6, style='normal' , family='sans-serif' )
+        axes.set_ylabel(r'Flux',       size=6, style='normal' , family='sans-serif' )
+        axes.set_xlabel(r'Wavelength [$\AA$]', size=6, style='normal' , family='sans-serif' )
         axes.legend(fontsize=5, edgecolor='white')
         fig.savefig('{}/figs_{}/A0Telfit_{}_{}.png'.format(inparam.outpath, args.band, order, night),
                     format='png', bbox_inches='tight', overwrite=True)
