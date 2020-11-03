@@ -288,7 +288,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args):
     cont1  = fitter.data.cont
     wcont1 = model.x
 
-    if args.debug:
+    if args.plotfigs:
         fig, axes = plt.subplots(1, 1, figsize=(6,3), facecolor='white', dpi=300)
 
         axes.plot(watm_in, satm_in,       color='black',    alpha=.6, label='data',      lw=0.7)
