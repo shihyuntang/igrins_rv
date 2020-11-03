@@ -289,11 +289,12 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
                        the wavelength solution to vary.
     '''
 
-    chi_new = np.sum((satm_in - model.y*cont1)**2. / model.u**2.)
-    chi_new = chisq / (len(model.y) - num_fit)
     #Get the improved continuum from the fitter
     cont1  = fitter.data.cont
     wcont1 = model.x
+
+    chi_new = np.sum((satm_in - model.y*cont1)**2. / model.u**2.)
+    chi_new = chisq / (len(model.y) - num_fit)
 
     if args.plotfigs:
         fig, axes = plt.subplots(1, 1, figsize=(6,3), facecolor='white', dpi=300)
