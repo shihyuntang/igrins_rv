@@ -309,7 +309,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                 parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize)
                 parstart = parfit_1.copy()
                 if args.debug == True:
-                    outplotter_23(parfit_1,fitobj,'{}_{}_{}_parfit_{}{}'.format(order,night,tag,nk,optkind), trk, inparam, args, step2or3)
+                    outplotter_23(parfit_1,fitobj,'{}_{}_{}_parfit_{}{}'.format(order,night,tag,nk,optkind), trk, inparam, args, step2or3, order)
                     logger.debug(f'{order}_{tag}_{nk}_{optkind}:\n {parfit_1}')
                 nk += 1
 
@@ -329,14 +329,44 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                     if hit in CRmask:
                         CRmaskF.append(hit)
                         CRmask.remove(hit)
-                CRmask = np.array(CRmask)
+                CRmask = np.array(CRmask); CRmaskF = np.array(CRmaskF);
 
-                for hit in CRmask:
-                    slopeL = (fitobj.s[hit]-fitobj.s[hit-1])/(fitobj.x[hit]-fitobj.x[hit-1])
-                    slopeR = -1*((fitobj.s[hit+1]-fitobj.s[hit])/(fitobj.x[hit+1]-fitobj.x[hit]))
-                    if (slopeL > 100) and (slopeR > 100):
-                        CRmaskF.append(hit)
-                CRmaskF = np.array(CRmaskF)
+                import more_itertools as mit
+                from Engine.detect_peaks import detect_peaks
+
+                for group in mit.consecutive_groups(CRmask):
+                    group = np.array(list(group))
+                    if len(group) == 1:
+                        gL = group-1; gR = group+1;
+                    else:
+                        peaks = detect_peaks(fitobj.s[group])
+                        '''
+                        plt.figure(figsize=(8,8))
+                        plt.plot(fitobj.x[group],fitobj.s[group])
+                        plt.scatter(fitobj.x[group][peaks],fitobj.s[group][peaks],s=30,color='red')
+                        plt.savefig('CRcheck_{}.png'.format(group))
+                        plt.clf()
+                        plt.close()
+                        '''
+
+                        if len(peaks) < 1:
+                            if max(residual[group] - np.median(residual))/MAD > 7:
+                                CRmaskF = np.concatenate((CRmaskF,group))
+                            #print('no peaks', fitobj.x[group],max(residual[group] - np.median(residual))/MAD)
+                            continue
+                        if len(peaks) > 1:
+                            continue
+                        gL = group[:peaks[0]]; gR = group[peaks[0]+1:];
+
+                    slopeL = (fitobj.s[gL+1]-fitobj.s[gL])/(fitobj.x[gL+1]-fitobj.x[gL])
+                    slopeR = (fitobj.s[gR]-fitobj.s[gR-1])/(fitobj.x[gR]-fitobj.x[gR-1])
+                    try:
+                        if (min(slopeL) > 0) and (max(slopeR) < 0):
+                            CRmaskF = np.concatenate((CRmaskF,group))
+                    except ValueError:
+                        if (slopeL > 0) and (slopeR < 0):
+                            CRmaskF = np.concatenate((CRmaskF,group))
+
 
                 fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]),masterbeam,CRmaskF)
 
@@ -366,9 +396,9 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         if args.plotfigs == True:
             parfitS = parfit.copy(); parfitS[3] = 0
             parfitT = parfit.copy(); parfitT[1] = 0
-            outplotter_23(parfitS, fitobj, 'parfitS_{}_{}_{}'.format(order,night,tag), trk, inparam, args, step2or3)
-            outplotter_23(parfitT, fitobj, 'parfitT_{}_{}_{}'.format(order,night,tag), trk, inparam, args, step2or3)
-            outplotter_23(parfit, fitobj,  'parfit_{}_{}_{}'.format(order,night,tag), trk, inparam, args, step2or3)
+            outplotter_23(parfitS, fitobj, 'parfitS_{}_{}_{}'.format(order,night,tag), trk, inparam, args, step2or3,order)
+            outplotter_23(parfitT, fitobj, 'parfitT_{}_{}_{}'.format(order,night,tag), trk, inparam, args, step2or3,order)
+            outplotter_23(parfit, fitobj,  'parfit_{}_{}_{}'.format(order,night,tag), trk, inparam, args, step2or3,order)
 
         rv0 = parfit[0]
 
