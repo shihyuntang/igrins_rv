@@ -321,7 +321,6 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
 
             med = np.median(a0fluxlist)
             a0fluxlist /= justdip
-            a0fluxlist *= med
 
     except:
         pre_err = True
