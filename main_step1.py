@@ -238,7 +238,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
 
                 residual = fitobj.s/fit
                 MAD = np.median(abs(np.median(residual)-residual))
-                
+
                 CRmask = np.array(np.where(residual > np.median(residual)+2*MAD)[0]) #.5
 
                 CRmaskF = [];
@@ -280,10 +280,10 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                     slopeL = (fitobj.s[gL+1]-fitobj.s[gL])/(fitobj.x[gL+1]-fitobj.x[gL])
                     slopeR = (fitobj.s[gR]-fitobj.s[gR-1])/(fitobj.x[gR]-fitobj.x[gR-1])
                     try:
-                        if (min(slopeL) > 200) and (max(slopeR) < -200):
+                        if (min(slopeL) > 300) and (max(slopeR) < -300):
                             CRmaskF = np.concatenate((CRmaskF,group))
                     except ValueError:
-                        if (slopeL > 200) and (slopeR < -200):
+                        if (slopeL > 300) and (slopeR < -300):
                             CRmaskF = np.concatenate((CRmaskF,group))
 
                 fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam, CRmaskF)
@@ -379,7 +379,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
             hh = fits.open('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band))
             hh.append(hdu_1)
             hh.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band), overwrite=True)
-            
+
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 

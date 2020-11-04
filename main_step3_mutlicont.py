@@ -362,10 +362,10 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                     slopeL = (fitobj.s[gL+1]-fitobj.s[gL])/(fitobj.x[gL+1]-fitobj.x[gL])
                     slopeR = (fitobj.s[gR]-fitobj.s[gR-1])/(fitobj.x[gR]-fitobj.x[gR-1])
                     try:
-                        if (min(slopeL) > 200) and (max(slopeR) < -200):
+                        if (min(slopeL) > 300) and (max(slopeR) < -300):
                             CRmaskF = np.concatenate((CRmaskF,group))
                     except ValueError:
-                        if (slopeL > 200) and (slopeR < -200):
+                        if (slopeL > 300) and (slopeR < -300):
                             CRmaskF = np.concatenate((CRmaskF,group))
 
 
