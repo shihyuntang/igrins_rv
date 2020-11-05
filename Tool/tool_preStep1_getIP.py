@@ -167,7 +167,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
     fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam,  np.array([],dtype=int))
 
     # Arrays defining parameter variations during optimization steps
-    #                             |0    1    2    3  |  | 4 |  | 5 |   | 6    7    8           9  |    |10 11 12|    |13    14|   |15    16   17  18    19|  |20   21   22    23 | 
+    #                             |0    1    2    3  |  | 4 |  | 5 |   | 6    7    8           9  |    |10 11 12|    |13    14|   |15    16   17  18    19|  |20   21   22    23 |
     dpars = {'cont' : np.array([   0.0, 0.0, 0.0, 0.0,   0.0,   0.0,    0.0,  0.0, 0.0,        0,      1e7, 1, 1,      0,    0,   10.,  20., 0.2, 50.0, 0.2,  1.0, 1.0, 1.0, 1.0 ]),
              'twave': np.array([   0.0, 0.0, 0.0, 3.0,   0.0,   0.0,   10.0, 10.0, 5e-5,    1e-7,        0, 0, 0,      0,    0,    0.,   0., 0.,   0.0, 0.0,  0.0, 0.0, 0.0, 0.0 ]),
              'ip'   : np.array([   0.0, 0.0, 0.0, 0.0,   0.0,   4.0,    0.0,  0.0, 0.0,        0,      1e4, 1, 1,   1e-2, 1e-5,   10.,  20., 0.2, 50.0, 0.2,  0.0, 0.0, 0.0, 0.0 ])}
@@ -189,7 +189,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
             dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
         else:
             pass
-        
+
     # Initialize an array that puts hard bounds on vsini and the instrumental resolution to make sure they do not diverge to unphysical values
     optimize = True
     par_in = parA0.copy()
@@ -246,7 +246,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                 # Everywhere where data protrudes high above model, check whether slope surrounding protrusion is /\ and mask if sufficiently steep
                 residual = fitobj.s/fit
                 MAD = np.median(abs(np.median(residual)-residual))
-                CRmask = np.array(np.where(residual > np.median(residual)+2*MAD)[0]) 
+                CRmask = np.array(np.where(residual > np.median(residual)+2*MAD)[0])
 
                 CRmaskF = []; CRmask = list(CRmask);
 
@@ -289,7 +289,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                 fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam, CRmaskF)
 
         parfit = parfit_1.copy()
-        
+
         # If dip present, correct it out of data before running Telfit to enable better fit
         if masterbeam == 'A':
             cont = parfit[10] + parfit[11]*fitobj.x+ parfit[12]*(fitobj.x**2) + parfit[20]*(fitobj.x**3) + parfit[21]*(fitobj.x**4) + parfit[22]*(fitobj.x**5) + parfit[23]*(fitobj.x**6)
@@ -298,7 +298,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
             bucket[(fitobj.x >= (parfit[15]-parfit[16]/2)) & (fitobj.x <= (parfit[15]+parfit[16]/2))] = parfit[17]
             bucket[(fitobj.x >= (parfit[15]+parfit[16]/2-parfit[18])) & (fitobj.x <= (parfit[15]+parfit[16]/2))] += parfit[19]
             cont -= bucket
-            
+
             justdip = cont/cont0
             a0fluxlist /= justdip
 
@@ -324,7 +324,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
 
     #-------------------------------------------------------------------------------
     if not pre_err:
-        
+
         if inparam.plotfigs: # Plot results
             outplotter_tel(parfit, fitobj, f'BeforeTelFit_Order{order}_{night}_{masterbeam}', inparam, args, order)
 
@@ -335,7 +335,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
         mwave_in,mflux_in = stellarmodel_setup(a0w_out_fit/1e4, inparam.mwave0, inparam.mflux0)
 
         # Feed this new wavelength solution into Telfit. Returns high-res synthetic telluric template, parameters of that best fit, and blaze function best fit
-        watm1, satm1, telfitparnames, telfitpars, a0contwave, continuum = telfitter(a0w_out_fit,a0fluxlist,a0u,inparam,night,order,args)
+        watm1, satm1, telfitparnames, telfitpars, a0contwave, continuum = telfitter(a0w_out_fit,a0fluxlist,a0u,inparam,night,order,args,masterbeam)
 
     else:
         pass
@@ -390,7 +390,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                 # Everywhere where data protrudes high above model, check whether slope surrounding protrusion is /\ and mask if sufficiently steep
                 residual = fitobj.s/fit
                 MAD = np.median(abs(np.median(residual)-residual))
-                CRmask = np.array(np.where(residual > np.median(residual)+2*MAD)[0]) 
+                CRmask = np.array(np.where(residual > np.median(residual)+2*MAD)[0])
 
                 CRmaskF = []; CRmask = list(CRmask);
 

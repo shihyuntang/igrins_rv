@@ -202,7 +202,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
                               "angle": [1.,75.],\
                               "pressure": [1010.,1035.],\
                               "co": [ 1e-6,1e2]})
-            
+
         elif (order >= 9) & (args.band =='K'):
             num_fit = 7
             # Only molecules present in chosen IGRINS orders' wavelength range are H2O, CH4, N2O, and CO2.
@@ -230,7 +230,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
                               "n2o":[1e-5,1e2],\
                               "pressure": [1010.,1035.],\
                               "co2": [1.0, 1e4]})
-            
+
         elif args.band =='H':
             num_fit = 6
             fitter.FitVariable({"h2o": 43.,"ch4": 1.8,"co": 5e-3,"co2": 3.675e2,"n2o" : 5e-2,
@@ -311,7 +311,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
         axes.set_ylabel(r'Flux',       size=6, style='normal' , family='sans-serif' )
         axes.set_xlabel(r'Wavelength [$\AA$]', size=6, style='normal' , family='sans-serif' )
         axes.legend(fontsize=5, edgecolor='white')
-        axes.set_title('{}/figs_{}/A0Telfit_Order{}_{}_{}.png'.format(inparam.outpath, args.band, order, night, masterbeam),
+        axes.set_title('A0Telfit_Order{}_{}_{}.png'.format(order, night, masterbeam),
                          size=6, style='normal', family='sans-serif')
         # fig.text(0.65, 0.2, r'$\rm \chi^{{2}}_{{\nu}}$ = {:1.2f}'.format(chi_new),
         #                     size=6, style='normal', family='sans-serif')
