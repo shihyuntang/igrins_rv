@@ -309,17 +309,17 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                     logger.debug(f'{order}_{tag}_{nk}_{optkind}:\n {parfit_1}')
                 nk += 1
 
+            ## After first cycle, use best fit model to identify CRs/hot pixels
             if nc == 1:
                 parfit = parfit_1.copy()
                 fit,chi = fmod(parfit, fitobj)
 
+                # Everywhere where data protrudes high above model, check whether slope surrounding protrusion is /\ and mask if sufficiently steep
                 residual = fitobj.s/fit
                 MAD = np.median(abs(np.median(residual)-residual))
+                CRmask = np.array(np.where(residual > np.median(residual)+2*MAD)[0]) 
 
-                CRmask = np.array(np.where(residual > np.median(residual)+2*MAD)[0]) #.5
-
-                CRmaskF = [];
-                CRmask = list(CRmask)
+                CRmaskF = []; CRmask = list(CRmask);
 
                 for hit in [0,len(fitobj.x)-1]:
                     if hit in CRmask:
@@ -327,24 +327,12 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                         CRmask.remove(hit)
                 CRmask = np.array(CRmask, dtype=np.int); CRmaskF = np.array(CRmaskF, dtype=np.int);
 
-                import more_itertools as mit
-                from Engine.detect_peaks import detect_peaks
-
                 for group in mit.consecutive_groups(CRmask):
                     group = np.array(list(group))
                     if len(group) == 1:
                         gL = group-1; gR = group+1;
                     else:
                         peaks = detect_peaks(fitobj.s[group])
-                        '''
-                        plt.figure(figsize=(8,8))
-                        plt.plot(fitobj.x[group],fitobj.s[group])
-                        plt.scatter(fitobj.x[group][peaks],fitobj.s[group][peaks],s=30,color='red')
-                        plt.savefig('CRcheck_{}.png'.format(group))
-                        plt.clf()
-                        plt.close()
-                        '''
-
                         if len(peaks) < 1:
                             group = np.concatenate((np.array([group[0]-1]),group,np.array([group[-1]+1])))
                             peaks = detect_peaks(fitobj.s[group])
@@ -357,15 +345,13 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                     slopeL = (fitobj.s[gL+1]-fitobj.s[gL])/(fitobj.x[gL+1]-fitobj.x[gL])
                     slopeR = (fitobj.s[gR]-fitobj.s[gR-1])/(fitobj.x[gR]-fitobj.x[gR-1])
                     try:
-                        if (min(slopeL) > 300) and (max(slopeR) < -300):
+                        if (min(slopeL) > 300) and (max(slopeR) < -300) and len(group) < 6:
                             CRmaskF = np.concatenate((CRmaskF,group))
                     except ValueError:
                         if (slopeL > 300) and (slopeR < -300):
                             CRmaskF = np.concatenate((CRmaskF,group))
 
-
                 fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]),masterbeam,CRmaskF)
-
 
         parfit = parfit_1.copy()
 
@@ -402,6 +388,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         parfitminibox[t]= parfit
         vsiniminibox[t] = parfit[4]
         tagsminibox[t]  = tag
+        
     return nightsout,rvsminibox,parfitminibox,vsiniminibox,tagsminibox
 
 #-------------------------------------------------------------------------------
