@@ -1,5 +1,5 @@
 from Engine.importmodule import *
-from Engine.optwithtwodip   import fmod
+from Engine.opt   import fmod
 
 def outplotter_tel(parfit, fitobj, title, inparam, args, order):
 
