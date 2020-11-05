@@ -146,7 +146,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
                               "co2": [1.0, 1e4]})
         elif args.band =='H':
             num_fit = 3
-            fitter.FitVariable({"h2o": humidity,"ch4": 1.8,"co2": 3.675e2})
+            fitter.FitVariable({"h2o": humidity,"ch4": 1.8,"co": 5e-3,"co2": 3.675e2,"n2o" : 5e-2,})
 
             #Adjust parameters that will not be fit, but are important
             fitter.AdjustValue({"angle": angle,\
@@ -155,9 +155,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
                                 "resolution": resolution,
                                 "wavestart": data.x[0]-0.01*units.angstrom,\
                                 "waveend": data.x[-1]+0.01*units.angstrom,\
-                                "co": 5e-3,\
                                 "o3": 7.6e-4,\
-                                "n2o": 5e-2,\
                                 "o2": 2.1e5,\
                                 "no": 0.,\
                                 "so2": 5e-9,\
@@ -168,6 +166,8 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
             #Set bounds on the variables being fit
             fitter.SetBounds({"h2o": [1.0, 99.0],\
                               "ch4": [.1,  10.0],\
+                              "n2o": [1e-6,1e2],\
+                              "co": [1e-6,1e2],\
                               "co2": [1.0, 1e4]})
 
     else: # If parameters are not in fits file, use initial guesses and letting them vary.
@@ -202,6 +202,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
                               "angle": [1.,75.],\
                               "pressure": [1010.,1035.],\
                               "co": [ 1e-6,1e2]})
+            
         elif (order >= 9) & (args.band =='K'):
             num_fit = 7
             # Only molecules present in chosen IGRINS orders' wavelength range are H2O, CH4, N2O, and CO2.
@@ -229,18 +230,17 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
                               "n2o":[1e-5,1e2],\
                               "pressure": [1010.,1035.],\
                               "co2": [1.0, 1e4]})
+            
         elif args.band =='H':
             num_fit = 6
-            fitter.FitVariable({"h2o": 43.,"ch4": 1.8,"co": 5e-3,"co2": 3.675e2,
+            fitter.FitVariable({"h2o": 43.,"ch4": 1.8,"co": 5e-3,"co2": 3.675e2,"n2o" : 5e-2,
                                 "angle": 39., "pressure":1023., "temperature":280.87})
 
             #Adjust parameters that will not be fit, but are important
             fitter.AdjustValue({"resolution": resolution,\
                                 "wavestart": data.x[0]-0.01*units.angstrom,\
                                 "waveend": data.x[-1]+0.01*units.angstrom,\
-                                "co": 5e-3,\
                                 "o3": 7.6e-4,\
-                                "n2o": 5e-2,\
                                 "o2": 2.1e5,\
                                 "no": 0.,\
                                 "so2": 5e-9,\
@@ -251,6 +251,8 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
             #Set bounds on the variables being fit
             fitter.SetBounds({"h2o": [1.0, 99.0],\
                               "ch4": [.1,10.0],\
+                              "n2o": [1e-6,1e2],\
+                              "co": [1e-6,1e2],\
                               "temperature": [265.,300.],\
                               "angle": [1.,75.],\
                               "pressure": [1010.,1035.],\
