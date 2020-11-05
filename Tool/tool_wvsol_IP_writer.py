@@ -5,117 +5,155 @@ from Engine.importmodule import *
 from Engine.rebin_jv import rebin_jv
 #-------------------------------------------------------------------------------
 
+def IPval(tar,band,args):
 
-def IPval(tar,band):
+    xbounddict_special = { 'H':{
+                                10: [250, 150],
+                                11: [600, 150],
+                                13: [200, 600],
+                                14: [700, 100],
+                                16: [400, 100],
+                                17: [1000,100],
+                                20: [500, 150]},
+                           'K':{
+                                13: [200, 400],
+                                14: [200, 400]}
+                                }
 
-    filesndirs = os.listdir('./A0_Fits/A0_Fits_{}_IP/'.format(tar))
-    filesndirs = [j for j in filesndirs if j[-6:] == '{}.fits'.format(band)]
+    xbounddict_default = { 'H':{},'K':{}}
+    for a in range(27):
+        if a in [13, 14, 16, 20]:
+            xbounddict_default['H'][a] = np.array(xbounddict_special['H'][a])
+        else:
+            xbounddict_default['H'][a] = np.array([150,150])
+        if a in [14]:
+            xbounddict_default['K'][a] = np.array(xbounddict_special['K'][a])
+        else:
+            xbounddict_default['K'][a] = np.array([150,150])
 
-    nights  = np.array([int(j[:8]) for j in filesndirs ])
-    nightsT = np.where((nights < 20180401)  | (nights > 20190531))
-    nightsL = np.where((nights >= 20180401) & (nights < 20190531))
+    xbounddict = xbounddict_default[band]
 
-    Tdirs = [ './A0_Fits/A0_Fits_{}_IP/{}A0_treated_{}.fits'.format(tar, nn, band) for nn in nights[nightsT] ]
-    Ldirs = [ './A0_Fits/A0_Fits_{}_IP/{}A0_treated_{}.fits'.format(tar, nn, band) for nn in nights[nightsL] ]
+    TdirsA = np.array([]) ; TdirsB = np.array([])
+    LdirsA = np.array([]) ; LdirsB = np.array([])
+    for tt in tars:
+        filesndirs = os.listdir('../Output/{}_tool/A0Fits_IP'.format(tt))
 
-    print(f'We have Tight nights: {nights[nightsT]}')
-    print(f'We have Loose nights: {nights[nightsL]}')
+        filesndirs_A = [j for j in filesndirs if j[-15:] == f'Atreated_{band}.fits']
+        filesndirs_B = [j for j in filesndirs if j[-15:] == f'Btreated_{band}.fits']
 
-    print(len(nightsL[0]), nightsL)
+        nights  = np.array([int(j[:8]) for j in filesndirs_A ])
+        nightsT = np.where((nights < 20180401)  | (nights > 20190531))
+        nightsL = np.where((nights >= 20180401) & (nights < 20190531))
 
-    filew = open('./A0_Fits/IP_{}.txt'.format(band),'w')
+        TdirsA = np.append(TdirsA, [ '../Output/{}_tool/A0Fits_IP/{}A0_Atreated_{}.fits'.format(tt, nn, band) for nn in nights[nightsT] ] )
+        TdirsB = np.append(TdirsB, [ '../Output/{}_tool/A0Fits_IP/{}A0_Btreated_{}.fits'.format(tt, nn, band) for nn in nights[nightsT] ] )
 
-    if len(nightsT[0]) != 0:
-        dump1 = 0
-        for a0 in Tdirs:
-            hdulist = fits.open(a0)
+        LdirsA = np.append(LdirsA, [ '../Output/{}_tool/A0Fits_IP/{}A0_Atreated_{}.fits'.format(tt, nn, band) for nn in nights[nightsL] ] )
+        LdirsB = np.append(LdirsB, [ '../Output/{}_tool/A0Fits_IP/{}A0_Btreated_{}.fits'.format(tt, nn, band) for nn in nights[nightsL] ] )
 
-            tt= 1 ; orders = []
-            while 1==1:
-                try:
-                    orders.append( int(hdulist[tt].columns[0].name[9:]) )
-                    tt+=1
-                except:
-                    break
+        print(f'We have Tight nights with {tt}: {nights[nightsT]}')
+        print(f'We have Loose nights with {tt}: {nights[nightsL]}')
 
-            dump2 = 0
-            for o in np.arange(len(orders)):
-                try:
+    print(f'Total nights used for normal = {len(TdirsA)}, loose = {len(LdirsA)}')
+
+    filew = open('./Tool_output/IP_{}.txt'.format(band),'w')
+
+    if len(TdirsA) != 0:
+        for Tdirs, nodd in zip([TdirsA, TdirsB], ['A', 'B']): # loop throught A B nodding
+
+            ipmaster = {}
+
+            for a0 in Tdirs:
+                hdulist = fits.open(a0)
+
+                tt= 1 ; orders = []
+                while 1==1:
+                    try:
+                        orders.append( int(hdulist[tt].columns[1].name[4:]) )
+                        tt+=1
+                    except:
+                        break
+
+                for o in np.arange(len(orders)):
                     tbdata = hdulist[o+1].data
-                    if dump2 == 0:
-                        IP14 = tbdata['PARFIT'][14]
-                        IP13 = tbdata['PARFIT'][13]
-                        IP5  = tbdata['PARFIT'][5]
-                        dump2 += 1
-                    else:
-                        IP14 = np.append(IP14, tbdata['PARFIT'][14])
-                        IP13 = np.append(IP13, tbdata['PARFIT'][13])
-                        IP5  = np.append(IP5,  tbdata['PARFIT'][5])
-                except:
-                        IP14 = np.append(IP14, np.nan)
-                        IP13 = np.append(IP13, np.nan)
-                        IP5  = np.append(IP5,  np.nan)
-            if dump1 == 0:
-                IP14box = IP14
-                IP13box = IP13
-                IP5box  = IP5
-                dump1 += 1
-            else:
-                try:
-                    IP14box = np.vstack((IP14box, IP14))
-                    IP13box = np.vstack((IP13box, IP13))
-                    IP5box  = np.vstack((IP5box,  IP5))
-                except:
-                    print(f'{a0} do not have 10 orders')
-                    pass
+                    x = np.array(tbdata['X{}'.format(orders[o])])
+                    w = np.array(tbdata['WAVE{}'.format(orders[o])])
+                    parfit = np.array(tbdata['PARFIT'])
+                    x = x[(w != 0)]
+                    ip = parfit[5] + parfit[13]*x + parfit[14]*(x**2)
+                    xorder = np.arange(xbounddict[orders[o]][0],2048-xbounddict[orders[o]][1])
+                    ip1 = rebin_jv(x,ip,xorder,False)
+                    try:
+                        ipmaster[orders[o]] = np.vstack((ipmaster[orders[o]],ip1))
+                    except KeyError:
+                        ipmaster[orders[o]] = ip1
 
-        filew.write('Tight \n')
-        for o in np.arange(len(orders)):
-            filew.write('{}: np.array([{:+1.8f}, {:+1.8f}, {:1.8}]),\n'.format(orders[o], np.nanmean(IP14box[:, o]), np.nanmean(IP13box[:, o]), np.nanmean(IP5box[:, o]) ))
+            filew.write(f'Tight {nodd}\n')
+            for order in list(sorted(ipmaster.keys())):
+                xorder = np.arange(xbounddict[order][0],2048-xbounddict[order][1])
 
-    if len(nightsL[0]) != 0:
-        dump1 = 0
-        for a0 in Ldirs:
-            hdulist = fits.open(a0)
+                fig, axes = plt.subplots(1, 1, figsize=(12,12), facecolor='white')
+                for i in range(len(ipmaster[order][:,0])):
+                    axes.plot(xorder,ipmaster[order][i,:],alpha=0.5,color='black')
+                ipmedian = [np.median(ipmaster[order][:,i]) for i in range(len(ipmaster[order][0,:]))]
+                axes.plot(xorder,ipmedian,alpha=0.75,color='red')
 
-            tt= 1 ; orders = []
-            while 1==1:
-                try:
-                    orders.append( int(hdulist[tt].columns[0].name[9:]) )
-                    tt+=1
-                except:
-                    break
+                f = np.polyfit(xorder,ipmedian,2)
+                q = np.poly1d(f)
 
-            dump2 = 0
-            for o in np.arange(len(orders)):
-                try:
+                axes.plot(xorder,q(xorder),alpha=0.75,color='blue')
+                fig.savefig('./Tool_output/Tight_{}_IPs_{}_{}.png'.format(nodd,order,band))
+
+                filew.write('{}: np.array([{:+1.10f}, {:+1.10f}, {:+1.10f}]),\n'.format(order, q[2], q[1], q[0] ))
+
+    if len(LdirsA) != 0:
+        for Ldirs, nodd in zip([LdirsA, LdirsB], ['A', 'B']): # loop throught A B nodding
+
+            ipmaster = {}
+
+            for a0 in Ldirs:
+
+                hdulist = fits.open(a0)
+
+                tt= 1 ; orders = []
+                while 1==1:
+                    try:
+                        orders.append( int(hdulist[tt].columns[1].name[4:]) )
+                        tt+=1
+                    except:
+                        break
+
+                for o in np.arange(len(orders)):
                     tbdata = hdulist[o+1].data
-                    if dump2 == 0:
-                        IP14 = tbdata['PARFIT'][14]
-                        IP13 = tbdata['PARFIT'][13]
-                        IP5  = tbdata['PARFIT'][5]
-                        dump2 += 1
-                    else:
-                        IP14 = np.append(IP14, tbdata['PARFIT'][14])
-                        IP13 = np.append(IP13, tbdata['PARFIT'][13])
-                        IP5  = np.append(IP5,  tbdata['PARFIT'][5])
-                except:
-                        IP14 = np.append(IP14, np.nan)
-                        IP13 = np.append(IP13, np.nan)
-                        IP5  = np.append(IP5,  np.nan)
-            if dump1 == 0:
-                IP14box = IP14
-                IP13box = IP13
-                IP5box  = IP5
-                dump1 += 1
-            else:
-                IP14box = np.vstack((IP14box, IP14))
-                IP13box = np.vstack((IP13box, IP13))
-                IP5box  = np.vstack((IP5box,  IP5))
+                    x = np.array(tbdata['X{}'.format(orders[o])])
+                    w = np.array(tbdata['WAVE{}'.format(orders[o])])
+                    parfit = np.array(tbdata['PARFIT'])
+                    x = x[(w != 0)]
+                    ip = parfit[5] + parfit[13]*x + parfit[14]*(x**2)
+                    xorder = np.arange(xbounddict[orders[o]][0],2048-xbounddict[orders[o]][1])
+                    ip1 = rebin_jv(x,ip,xorder,False)
+                    try:
+                        ipmaster[orders[o]] = np.vstack((ipmaster[orders[o]],ip1))
+                    except KeyError:
+                        ipmaster[orders[o]] = ip1
 
-        filew.write('Loose \n')
-        for o in np.arange(len(orders)):
-            filew.write('{}: np.array([{:+1.8f}, {:+1.8f}, {:1.8}]),\n'.format(orders[o], np.nanmean(IP14box[:, o]), np.nanmean(IP13box[:, o]), np.nanmean(IP5box[:, o]) ))
+            filew.write(f'Loose {nodd}\n')
+            for order in list(sorted(ipmaster.keys())):
+                xorder = np.arange(xbounddict[order][0],2048-xbounddict[order][1])
+
+                fig, axes = plt.subplots(1, 1, figsize=(12,12), facecolor='white')
+                for i in range(len(ipmaster[order][:,0])):
+                    axes.plot(xorder,ipmaster[order][i,:],alpha=0.5,color='black')
+                ipmedian = [np.median(ipmaster[order][:,i]) for i in range(len(ipmaster[order][0,:]))]
+                axes.plot(xorder,ipmedian,alpha=0.75,color='red')
+
+                f = np.polyfit(xorder,ipmedian,2)
+                q = np.poly1d(f)
+
+                axes.plot(xorder,q(xorder),alpha=0.75,color='blue')
+                fig.savefig('./Tool_output/Loose_{}_IPs_{}_{}.png'.format(nodd,order,band))
+
+                filew.write('{}: np.array([{:+1.10f}, {:+1.10f}, {:+1.10f}]),\n'.format(order, q[2], q[1], q[0] ))
 
     filew.close()
 
@@ -217,6 +255,12 @@ if __name__ == '__main__':
     parser.add_argument("targname",                          action="store",
                         help="Enter target names you wish to use as a list, e.g., [GJ281,CITau]",
                         type=str)
+    parser.add_argument("-Wr_H",      dest="WRegionH",          action="store",
+                        help="Which list of wavelength regions file (./Input/UseWv/WaveRegions_X) to use for H band? Defaults to those chosen by IGRINS RV team, -Wr 1",
+                        type=int,   default=None)
+    parser.add_argument("-Wr_K",      dest="WRegionK",          action="store",
+                        help="Which list of wavelength regions file (./Input/UseWv/WaveRegions_X) to use for K band? Defaults to those chosen by IGRINS RV team, -Wr 1",
+                        type=int,   default=None)
     parser.add_argument("-mode",    dest="mode",             action="store",
                         help="Which mode? 1) get IP & WaveSol, 2) only IP, 3) only WaveSol. Default = 1",
                         type=int,   default=int(1))
@@ -224,6 +268,10 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
 #-------------------------------------------------------------------------------
+    # Create output directories as needed
+    if not os.path.isdir('./Tool_output'):
+        os.mkdir('./Tool_output')
+
     print('\n')
     print('###############################################################')
     try:
@@ -232,40 +280,43 @@ if __name__ == '__main__':
         sys.exit('NO SPACE IS ALLOWED BETWEEN NAMES!' )
 #-------------------------------------------------------------------------------
     for i in tars:
-        if os.path.isdir( f'./A0_Fits/A0_Fits_{i}_IP' ):
-            filesndirs = os.listdir(f'./A0_Fits/A0_Fits_{i}_IP/')
-            filesndirs_H = [j for j in filesndirs if j[-6:] == 'H.fits']
-            filesndirs_K = [j for j in filesndirs if j[-6:] == 'K.fits']
+        if os.path.isdir( f'../Output/{i}_tool/A0Fits_IP' ):
+            filesndirs = os.listdir(f'../Output/{i}_tool/A0Fits_IP')
+            filesndirs_AH = [j for j in filesndirs if j[-15:] == 'Atreated_H.fits']
+            filesndirs_BH = [j for j in filesndirs if j[-15:] == 'Btreated_H.fits']
+            filesndirs_AK = [j for j in filesndirs if j[-15:] == 'Atreated_K.fits']
+            filesndirs_BK = [j for j in filesndirs if j[-15:] == 'Btreated_K.fits']
 
             print('CONFIRMING... ')
-            print('{} of H band & {} of K band under ./A0_Fits/A0_Fits_{}_IP'.format(len(filesndirs_H), len(filesndirs_K), i))
+            print('{} of H band & {} of K band under ../Output/{}_tool/A0Fits_IP'.format(len(filesndirs_AH), len(filesndirs_AK), i))
             time.sleep(2)
-#-------------------------------------------------------------------------------
-            if (args.mode == 1) or (args.mode == 2): #get IP & WaveSol
-                print('Getting IP average values...')
-                if (len(filesndirs_H) == 0) & (len(filesndirs_K) != 0):
-                    IPval(i,'K')
-                elif (len(filesndirs_H) != 0) & (len(filesndirs_K) == 0):
-                    IPval(i,'H')
-                else:
-                    IPval(i,'H')
-                    IPval(i,'K')
-                print('DONE, saving under ./A0_Fits/IP_X.txt')
-                time.sleep(1)
+
         else:
-            sys.exit(f'NO FILES FOUND UNDER ./A0_Fits/A0_Fits_{i}_IP/' )
+            sys.exit(f'NO FILES FOUND UNDER ../Output/{i}_tool/A0Fits_IP' )
+#-------------------------------------------------------------------------------
+    if (args.mode == 1) or (args.mode == 2): #get IP & WaveSol
+        print('Getting IP average values...')
+        if (len(filesndirs_AH) == 0) & (len(filesndirs_AK) != 0):
+            IPval(tars,'K',args)
+        elif (len(filesndirs_AH) != 0) & (len(filesndirs_AK) == 0):
+            IPval(tars,'H',args)
+        else:
+            IPval(tars,'H',args)
+            IPval(tars,'K',args)
+        print('DONE, saving under ./Tool_output/IP_X.txt')
+        time.sleep(1)
 #-------------------------------------------------------------------------------
 
-    for i in tars:
-        if os.path.isdir( f'./A0_Fits/A0_Fits_{i}_IP' ):
-            continue
-        else:
-            sys.exit(f'NO FILES FOUND UNDER ./A0_Fits/A0_Fits_{i}_IP/' )
-
-    if (args.mode == 1) or (args.mode == 3):
-        print('-------------------------------------------------------------')
-        print('Getting Wave Solutions...')
-        sys.exit('Oops! not ready for this part yet!' )
+    # for i in tars:
+    #     if os.path.isdir( f'./A0_Fits/A0Fits_{i}_IP' ):
+    #         continue
+    #     else:
+    #         sys.exit(f'NO FILES FOUND UNDER ./A0_Fits/A0Fits_{i}_IP/' )
+    #
+    # if (args.mode == 1) or (args.mode == 3):
+    #     print('-------------------------------------------------------------')
+    #     print('Getting Wave Solutions...')
+    #     sys.exit('Oops! not ready for this part yet!' )
 
     #     WVsol(tars, 'H')
     #     WVsol(tars, 'K')

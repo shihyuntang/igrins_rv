@@ -30,21 +30,18 @@ def partial_loader(inpath0,order):
 
 def init_fitsread(path,kind,beam,night,order,tag,band,Ncuts=None):
 
-    if beam not in ['combined','separate']:
-        print('beam MUST BE "combined" OR "separate",  FORCE QUITTING!')
-        print(breaker)
-
     if kind not in ['A0','target']:
         print('kind MUST BE "target" OR "A0", FORCE QUITTING!')
         print(breaker)
 
     # Initguesser takes combined AB versions of target spectra, of which there may be multiple, and combines /those/ together.
-    if beam == 'combined':
-        if kind != 'target':
-            sys.exit('IO_AB ERROR: KIND SHOULD BE TARGET, THIS ERROR SHOULD ONLY THROW FROM INITGUESSER')
+    if beam[:8] == 'combined':
 
+        if kind == 'target':
+            subpath        = '{}{}/{}/'.format(path, night,beam[8:])
+        else:
+            subpath        = '{}std/{}/{}/'.format(path, night,beam[8:])
 
-        subpath        = '{}{}/AB/'.format(path, night)
         fullpathprefix = '{}SDC{}_{}_'.format(subpath, band, night[:8])
 
         onlyfiles = [f for f in listdir(subpath) if isfile(join(subpath, f))]

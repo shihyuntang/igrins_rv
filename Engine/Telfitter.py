@@ -33,10 +33,10 @@ def wavefunc(par,grad):
     w = f(x)
 
     if (w[-1] < w[0]) or (w[-1] > watm_Liv[-1]+5):
-        return 1e20
+        return 1e3
 
     satmTel2 = rebin_jv(w,satmLivGen,watm_Liv,False)
-    return np.sum((satm_Liv - satmTel2)**2.)
+    return np.sum((satm_Liv - satmTel2)**2) / (len(satmTel2) - len(par))
 
 
 def wavefit(par0, dpar0):
@@ -47,16 +47,16 @@ def wavefit(par0, dpar0):
     highs = par0+dpar0
     opt.set_lower_bounds(lows)
     opt.set_upper_bounds(highs)
-    opt.set_maxtime(600) #seconds
+    opt.set_maxtime(1200) #seconds
     # Quit optimization based on relative change in output fit parameters between iterations.
     # Choosing smaller change tolerance than 1e-6 has demonstrated no improvement in precision.
-    opt.set_xtol_rel(1e-6)
+    opt.set_ftol_rel(1e-14)
     parfit = opt.optimize(par0)
     return parfit
 
 
 
-def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args):
+def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam):
     # Code to produced fitted telluric template. How and why it works is detailed in comments throughout the code.
     os.environ['PYSYN_CDBS'] = inparam.cdbsloc
     fitter = TelluricFitter(debug=False)
@@ -93,6 +93,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args):
 
         # Only 3 molecules present in chosen IGRINS orders' wavelength range are H2O, CH4, and CO.
         if (order < 9) & (args.band =='K'):
+            num_fit = 3
             # Only 3 molecules present in chosen IGRINS orders' wavelength range are H2O, CH4, and CO.
             fitter.FitVariable({"h2o": humidity,"ch4": 1.8,"co": 5e-3})
 
@@ -118,6 +119,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args):
                               "ch4": [.1,  10.0],\
                               "co": [ 1e-6,1e2]})
         elif (order >= 9) & (args.band =='K'):
+            num_fit = 4
             # Only molecules present in chosen IGRINS orders' wavelength range are H2O, CH4, N2O, and CO2.
             fitter.FitVariable({"h2o": humidity,"ch4": 1.8,"co2": 3.675e2, "n2o":5e-2})
 
@@ -143,7 +145,8 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args):
                               "n2o": [1e-5,1e2],\
                               "co2": [1.0, 1e4]})
         elif args.band =='H':
-            fitter.FitVariable({"h2o": humidity,"ch4": 1.8,"co2": 3.675e2})
+            num_fit = 3
+            fitter.FitVariable({"h2o": humidity,"ch4": 1.8,"co": 5e-3,"co2": 3.675e2,"n2o" : 5e-2,})
 
             #Adjust parameters that will not be fit, but are important
             fitter.AdjustValue({"angle": angle,\
@@ -152,9 +155,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args):
                                 "resolution": resolution,
                                 "wavestart": data.x[0]-0.01*units.angstrom,\
                                 "waveend": data.x[-1]+0.01*units.angstrom,\
-                                "co": 5e-3,\
                                 "o3": 7.6e-4,\
-                                "n2o": 5e-2,\
                                 "o2": 2.1e5,\
                                 "no": 0.,\
                                 "so2": 5e-9,\
@@ -165,7 +166,9 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args):
             #Set bounds on the variables being fit
             fitter.SetBounds({"h2o": [1.0, 99.0],\
                               "ch4": [.1,  10.0],\
-                              "co2": [ 1,1e4]})
+                              "n2o": [1e-6,1e2],\
+                              "co": [1e-6,1e2],\
+                              "co2": [1.0, 1e4]})
 
     else: # If parameters are not in fits file, use initial guesses and letting them vary.
           # Guesses are taken from mean of parameters from DCT GJ281 data.
@@ -174,6 +177,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args):
 
         # Only 3 molecules present in chosen IGRINS orders' wavelength range are H2O, CH4, and CO.
         if (order < 9) & (args.band =='K'):
+            num_fit = 6
             fitter.FitVariable({"h2o": 43.,"ch4": 1.8,"co": 5e-3,
                                 "angle": 39., "pressure":1023., "temperature":280.87})
 
@@ -198,7 +202,9 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args):
                               "angle": [1.,75.],\
                               "pressure": [1010.,1035.],\
                               "co": [ 1e-6,1e2]})
+            
         elif (order >= 9) & (args.band =='K'):
+            num_fit = 7
             # Only molecules present in chosen IGRINS orders' wavelength range are H2O, CH4, N2O, and CO2.
             fitter.FitVariable({"h2o": 43.,"ch4": 1.8,"co2": 3.675e2, "n2o": 5e-2,
                                 "angle": 39., "pressure":1023., "temperature":280.87})
@@ -224,17 +230,17 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args):
                               "n2o":[1e-5,1e2],\
                               "pressure": [1010.,1035.],\
                               "co2": [1.0, 1e4]})
+            
         elif args.band =='H':
-            fitter.FitVariable({"h2o": 43.,"ch4": 1.8,"co": 5e-3,"co2": 3.675e2,
+            num_fit = 6
+            fitter.FitVariable({"h2o": 43.,"ch4": 1.8,"co": 5e-3,"co2": 3.675e2,"n2o" : 5e-2,
                                 "angle": 39., "pressure":1023., "temperature":280.87})
 
             #Adjust parameters that will not be fit, but are important
             fitter.AdjustValue({"resolution": resolution,\
                                 "wavestart": data.x[0]-0.01*units.angstrom,\
                                 "waveend": data.x[-1]+0.01*units.angstrom,\
-                                "co": 5e-3,\
                                 "o3": 7.6e-4,\
-                                "n2o": 5e-2,\
                                 "o2": 2.1e5,\
                                 "no": 0.,\
                                 "so2": 5e-9,\
@@ -245,6 +251,8 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args):
             #Set bounds on the variables being fit
             fitter.SetBounds({"h2o": [1.0, 99.0],\
                               "ch4": [.1,10.0],\
+                              "n2o": [1e-6,1e2],\
+                              "co": [1e-6,1e2],\
                               "temperature": [265.,300.],\
                               "angle": [1.,75.],\
                               "pressure": [1010.,1035.],\
@@ -283,25 +291,31 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args):
                        the wavelength solution to vary.
     '''
 
-
     #Get the improved continuum from the fitter
     cont1  = fitter.data.cont
     wcont1 = model.x
 
-    if args.debug:
+    # chi_new = np.sum((satm_in - model.y*cont1)**2. / model.u**2.)
+    # chi_new = chisq / (len(model.y) - num_fit)
+
+    if args.plotfigs:
         fig, axes = plt.subplots(1, 1, figsize=(6,3), facecolor='white', dpi=300)
 
-        axes.plot(watm_in, satm_in,       color='black',    alpha=.6, label='data',      lw=0.7)
-        axes.plot(model.x, model.y*cont1, color='tab:red',  alpha=.6, label='model fit', lw=0.7)
-        axes.plot(model.x, cont1,         color='tab:blue', alpha=.6, label='blaze fit', lw=0.7)
+        axes.plot(watm_in, satm_in,       color='black',    alpha=.8, label='data',      lw=0.7)
+        axes.plot(model.x, model.y*cont1, color='tab:red',  alpha=.8, label='model fit', lw=0.7)
+        axes.plot(model.x, cont1,         color='tab:blue', alpha=.8, label='blaze fit', lw=0.7)
 
         axes.xaxis.set_minor_locator(AutoMinorLocator(5))
         axes.yaxis.set_minor_locator(AutoMinorLocator(2))
         axes.tick_params(axis='both', which='both', labelsize=6, right=True, top=True, direction='in')
-        axes.set_ylabel(r'Normalized Flux',       size=6, style='normal' , family='sans-serif' )
-        axes.set_xlabel(r'Wavelength [$\rm\AA$]', size=6, style='normal' , family='sans-serif' )
+        axes.set_ylabel(r'Flux',       size=6, style='normal' , family='sans-serif' )
+        axes.set_xlabel(r'Wavelength [$\AA$]', size=6, style='normal' , family='sans-serif' )
         axes.legend(fontsize=5, edgecolor='white')
-        fig.savefig('{}/figs_{}/A0Telfit_{}_{}.png'.format(inparam.outpath, args.band, order, night),
+        axes.set_title('{}/figs_{}/A0Telfit_Order{}_{}_{}.png'.format(inparam.outpath, args.band, order, night, masterbeam),
+                         size=6, style='normal', family='sans-serif')
+        # fig.text(0.65, 0.2, r'$\rm \chi^{{2}}_{{\nu}}$ = {:1.2f}'.format(chi_new),
+        #                     size=6, style='normal', family='sans-serif')
+        fig.savefig('{}/figs_{}/A0Telfit_Order{}_{}_{}.png'.format(inparam.outpath, args.band, order, night, masterbeam),
                     format='png', bbox_inches='tight', overwrite=True)
 
     ############### Generate template with these parameters but at higher resolution
@@ -588,7 +602,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args):
 
     watm_Liv  = inparam.watm[ (inparam.watm > watmLivGen[0]+1) & (inparam.watm < watmLivGen[-1]-1) ]
     satm_Liv  = inparam.satm[ (inparam.watm > watmLivGen[0]+1) & (inparam.watm < watmLivGen[-1]-1 )]
-    dpar = abs(initguess)*100
+    dpar = abs(initguess)*10
     dpar[-1] = 5
 
     waveparfit = wavefit(initguess, dpar)

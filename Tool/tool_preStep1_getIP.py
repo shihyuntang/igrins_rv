@@ -1,3 +1,5 @@
+import sys
+sys.path.append("..") # Adds higher directory to python modules path.
 from Engine.importmodule import *
 
 from Engine.IO_AB     import setup_templates_tel, init_fitsread, stellarmodel_setup, setup_outdir
@@ -43,8 +45,6 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
             bound_cut = inparam.bound_cut_dic[args.band][order]
         else:
             bound_cut = [150, 150]
-    # bound_cut = [150, 150]
-
 
     ### Load relevant A0 spectrum
     x, a0wavelist, a0fluxlist, u = init_fitsread(inparam.inpath,
@@ -96,7 +96,6 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
     # Trim stellar template to relevant wavelength range
     mwave_in, mflux_in = stellarmodel_setup(a0wavelist, inparam.mwave0, inparam.mflux0)
 
-    # Trim telluric template to relevant wavelength range
     # Normalize continuum level of telluric atlas in the given band
     if args.band == 'H':
         contlevel = np.max(inparam.satm[(inparam.watm > 15000) & (inparam.watm < 18000)])
@@ -108,6 +107,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
     watm_in = inparam.watm[(inparam.watm > min(a0wavelist)*1e4 - 11) & (inparam.watm < max(a0wavelist)*1e4 + 11)]
     satm_in /= contlevel
 
+
     # Get initial guess for cubic wavelength solution from reduction pipeline
     f = np.polyfit(a0x, a0wavelist, 3)
     par9in = f[0]*1e4;
@@ -116,10 +116,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
     par6in = f[3]*1e4;
 
     # Determine whether IGRINS mounting was loose or night for the night in question
-    if (int(night) < 20180401) or (int(night) > 20190531):
-        IPpars = inparam.ips_tightmount_pars[args.band][masterbeam][order]
-    else:
-        IPpars = inparam.ips_loosemount_pars[args.band][masterbeam][order]
+    IPpars = np.array([ 0,  0,  3.3])
 
     # start at bucket loc = 1250 +- 100, width = 250 +- 100, depth = 100 +- 5000 but floor at 0
     if args.band == 'H':
@@ -142,20 +139,19 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                       par8in,        # 8: Wavelength quadratic component
                       par9in,        # 9: Wavelength cubic component
                       1.0,           #10: Continuum zero point
-                      0.0,           #11: Continuum linear component
-                      0.0,           #12: Continuum quadratic component
+                      0.,            #11: Continuum linear component
+                      0.,            #12: Continuum quadratic component
                       IPpars[1],     #13: Insrumental resolution linear component
                       IPpars[0],     #14: Instrumental resolution quadratic component
                       centerloc,     #15: Blaze dip center location
                       330,           #16: Blaze dip full width
-                      0.05,          #17: Blaze dip depth
+                      0.05,           #17: Blaze dip depth
                       90,            #18: Secondary blaze dip full width
                       0.05,          #19: Blaze dip depth
                       0.0,           #20: Continuum cubic component
                       0.0,           #21: Continuum quartic component
                       0.0,           #22: Continuum quintic component
                       0.0])          #23: Continuum hexic component
-
 
     # Make sure data is within telluric template range (shouldn't do anything)
     a0fluxlist = a0fluxlist[(a0wavelist*1e4 > min(watm_in)+5) & (a0wavelist*1e4 < max(watm_in)-5)]
@@ -168,19 +164,21 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
     s = a0fluxlist.copy(); x = a0x.copy(); u = a0u.copy();
 
     # Collect all fit variables into one class
-    fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam, np.array([],dtype=int))
+    fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam,  np.array([],dtype=int))
 
-    #                            |0    1    2    3  |  | 4 |  | 5 |   | 6    7    8           9  |    |10 11 12|  |13 14|    |15    16    17   18    19|  |20   21   22    23 |
-    dpars = {'cont' :   np.array([0.0, 0.0, 0.0, 0.0,   0.0,   0.0,    0.0,  0.0, 0.0,        0.0,    1e7, 1, 1,    0, 0,    10.0, 20.0, 0.2, 50.0, 0.2,   1.0, 1.0, 1.0, 1.0 ]),
-             'twave':   np.array([0.0, 0.0, 0.0, 1.0,   0.0,   0.0,   10.0, 10.0, 5.00000e-5, 1e-7,   0.0, 0, 0,    0, 0,     0.0,  0.0, 0.0,  0.0, 0.0,   0.0, 0.0, 0.0, 0.0 ]),
-             'ip'   :   np.array([0.0, 0.0, 0.0, 0.0,   0.0,   0.5,    0.0,  0.0, 0.0,        0.0,    0.0, 0, 0,    0, 0,     0.0,  0.0, 0.0,  0.0, 0.0,   0.0, 0.0, 0.0, 0.0 ])}
+    # Arrays defining parameter variations during optimization steps
+    #                             |0    1    2    3  |  | 4 |  | 5 |   | 6    7    8           9  |    |10 11 12|    |13    14|   |15    16   17  18    19|  |20   21   22    23 | 
+    dpars = {'cont' : np.array([   0.0, 0.0, 0.0, 0.0,   0.0,   0.0,    0.0,  0.0, 0.0,        0,      1e7, 1, 1,      0,    0,   10.,  20., 0.2, 50.0, 0.2,  1.0, 1.0, 1.0, 1.0 ]),
+             'twave': np.array([   0.0, 0.0, 0.0, 3.0,   0.0,   0.0,   10.0, 10.0, 5e-5,    1e-7,        0, 0, 0,      0,    0,    0.,   0., 0.,   0.0, 0.0,  0.0, 0.0, 0.0, 0.0 ]),
+             'ip'   : np.array([   0.0, 0.0, 0.0, 0.0,   0.0,   4.0,    0.0,  0.0, 0.0,        0,      1e4, 1, 1,   1e-2, 1e-5,   10.,  20., 0.2, 50.0, 0.2,  0.0, 0.0, 0.0, 0.0 ])}
     if masterbeam == 'B':
-        dpars['cont'] = np.array([0.0, 0.0, 0.0, 0.0,   0.0,   0.0,    0.0,  0.0, 0.0,        0.,     1e7, 1, 1,    0, 0,     0.0,  0.0, 0.0,  0.0, 0.0,   1.0, 1.0, 1.0, 1.0  ])
+        dpars = {'cont' :np.array([0.0, 0.0, 0.0, 0.0,   0.0,   0.0,    0.0,  0.0, 0.0,        0,      1e7, 1, 1,      0,    0,    0.,   0.,  0.,  0.0, 0.0,  1.0, 1.0, 1.0, 1.0 ]),
+                 'twave':np.array([0.0, 0.0, 0.0, 3.0,   0.0,   0.0,   10.0, 10.0, 5e-5,    1e-7,        0, 0, 0,      0,    0,    0,    0.,  0.,  0.0, 0.0,  0.0, 0.0, 0.0, 0.0 ]),
+                 'ip'   :np.array([0.0, 0.0, 0.0, 0.0,   0.0,   4.0,    0.0,  0.0, 0.0,        0,      1e4, 1, 1,   1e-2, 1e-5,    0.,   0.,  0.,  0.0, 0.0,  0.0, 0.0, 0.0, 0.0 ])}
     else:
         if (args.band == 'K') and (order == 3):
             parA0[19] = 0.
-        #                            |0    1    2    3  |  | 4 |  | 5 |   | 6    7    8           9  |    |10 11 12|  |13 14|    |15    16    17   18    19|  |20   21   22    23 |
-            dpars['cont'] = np.array([0.0, 0.0, 0.0, 0.0,   0.0,   0.0,    0.0, 0.0, 0.0,         0.,     1e7, 1, 1,    0, 0,    10.0, 20.0, 0.2, 50.0, 0.0,   1.0, 1.0, 1.0, 1.0  ])
+            dpars['cont']=np.array([0.0,0.0, 0.0, 0.0,   0.0,   0.0,    0.0,  0.0, 0.0,        0.,     1e7, 1, 1,      0,    0,   10.,  20.,0.2,  50.0, 0.0,  1.0, 1.0, 1.0, 1.0 ])
     #-------------------------------------------------------------------------------
 
     # Use quadratic blaze correction for order 13; cubic for orders 6, 14, 21; quartic for orders 16 and 22
@@ -191,7 +189,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
             dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
         else:
             pass
-            
+        
     # Initialize an array that puts hard bounds on vsini and the instrumental resolution to make sure they do not diverge to unphysical values
     optimize = True
     par_in = parA0.copy()
@@ -208,10 +206,9 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                       par_in[18] - dpars['cont'][18], par_in[18] + dpars['cont'][18],
                       0.,                             par_in[19] + dpars['cont'][19]
                      ]
-
     if hardbounds[0] < 0:
         hardbounds[0] = 0
-    if hardbounds[2] < 0:
+    if hardbounds[2] < 1:
         hardbounds[2] = 1
 
     # Begin optimization.
@@ -222,12 +219,14 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
     pre_err = False
 
     cycles = 3
+
     optgroup = ['twave', 'cont',
                 'cont', 'twave', 'cont',
                 'twave',
                 'ip', 'twave',  'cont',
                 'ip', 'twave',  'cont',
-                'twave']
+                'twave','ip']
+
     try:
         nk = 1
         for nc, cycle in enumerate(np.arange(cycles), start=1):
@@ -237,9 +236,6 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
             for optkind in optgroup:
                 parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize)
                 parstart = parfit_1.copy()
-                if args.debug == True:
-                    outplotter_tel(parfit_1,fitobj,'{}_{}_parfit_{}{}'.format(order,night,nk,optkind),inparam, args, order)
-                    logger.debug(f'Pre_{order}_{night}_{nk}_{optkind}:\n {parfit_1}')
                 nk += 1
 
             ## After first cycle, use best fit model to identify CRs/hot pixels
@@ -303,8 +299,6 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
             bucket[(fitobj.x >= (parfit[15]+parfit[16]/2-parfit[18])) & (fitobj.x <= (parfit[15]+parfit[16]/2))] += parfit[19]
             cont -= bucket
             
-            cont *= continuum
-            cont0 *= continuum
             justdip = cont/cont0
             a0fluxlist /= justdip
 
@@ -317,7 +311,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
         hdu_1 = fits.BinTableHDU.from_columns(cols)
 
         # If first time writing fits file, make up filler primary hdu
-        if order == firstorder: # If first time writing fits file, make up filler primary hdu
+        if order == firstorder:
             bleh = np.ones((3,3))
             primary_hdu = fits.PrimaryHDU(bleh)
             hdul = fits.HDUList([primary_hdu,hdu_1])
@@ -330,7 +324,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
 
     #-------------------------------------------------------------------------------
     if not pre_err:
-
+        
         if inparam.plotfigs: # Plot results
             outplotter_tel(parfit, fitobj, f'BeforeTelFit_Order{order}_{night}_{masterbeam}', inparam, args, order)
 
@@ -341,7 +335,8 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
         mwave_in,mflux_in = stellarmodel_setup(a0w_out_fit/1e4, inparam.mwave0, inparam.mflux0)
 
         # Feed this new wavelength solution into Telfit. Returns high-res synthetic telluric template, parameters of that best fit, and blaze function best fit
-        watm1, satm1, telfitparnames, telfitpars, a0contwave, continuum = telfitter(a0w_out_fit,a0fluxlist,a0u,inparam,night,order,args,masterbeam)
+        watm1, satm1, telfitparnames, telfitpars, a0contwave, continuum = telfitter(a0w_out_fit,a0fluxlist,a0u,inparam,night,order,args)
+
     else:
         pass
     #-------------------------------------------------------------------------------
@@ -358,7 +353,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
         hdu_1 = fits.BinTableHDU.from_columns(cols)
 
         # If first time writing fits file, make up filler primary hdu
-        if order == firstorder: # If first time writing fits file, make up filler primary hdu
+        if order == firstorder:
             bleh = np.ones((3,3))
             primary_hdu = fits.PrimaryHDU(bleh)
             hdul = fits.HDUList([primary_hdu,hdu_1])
@@ -370,12 +365,98 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
 
     else: # If Telfit exited normally, proceed.
         #  Save best blaze function fit
-        continuum = rebin_jv(a0contwave,continuum,a0w_out_fit,False)
+        a0contwave /= 1e4
+        continuum = rebin_jv(a0contwave,continuum,a0wavelist,False)
+
+        # Fit the A0 again using the new synthetic telluric template.
+        # This allows for any tweaks to the blaze function fit that may be necessary.
+        fitobj = fitobjs(s, x, u, continuum,watm1,satm1,mflux_in,mwave_in,[], masterbeam, CRmaskF)
+
+        nk = 1
+        for nc, cycle in enumerate(np.arange(cycles), start=1):
+            if cycle == 0:
+                parstart = par_in.copy()
+
+            for optkind in optgroup:
+                parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize)
+                parstart = parfit_1.copy()
+                nk += 1
+
+            ## After first cycle, use best fit model to identify CRs/hot pixels
+            if nc == 1:
+                parfit = parfit_1.copy()
+                fit,chi = fmod(parfit, fitobj)
+
+                # Everywhere where data protrudes high above model, check whether slope surrounding protrusion is /\ and mask if sufficiently steep
+                residual = fitobj.s/fit
+                MAD = np.median(abs(np.median(residual)-residual))
+                CRmask = np.array(np.where(residual > np.median(residual)+2*MAD)[0]) 
+
+                CRmaskF = []; CRmask = list(CRmask);
+
+                for hit in [0,len(fitobj.x)-1]:
+                    if hit in CRmask:
+                        CRmaskF.append(hit)
+                        CRmask.remove(hit)
+                CRmask = np.array(CRmask, dtype=np.int); CRmaskF = np.array(CRmaskF, dtype=np.int);
+
+                for group in mit.consecutive_groups(CRmask):
+                    group = np.array(list(group))
+                    if len(group) == 1:
+                        gL = group-1; gR = group+1;
+                    else:
+                        peaks = detect_peaks(fitobj.s[group])
+                        if len(peaks) < 1:
+                            group = np.concatenate((np.array([group[0]-1]),group,np.array([group[-1]+1])))
+                            peaks = detect_peaks(fitobj.s[group])
+                            if len(peaks) < 1:
+                                continue
+                        if len(peaks) > 1:
+                            continue
+                        gL = group[:peaks[0]]; gR = group[peaks[0]+1:];
+
+                    slopeL = (fitobj.s[gL+1]-fitobj.s[gL])/(fitobj.x[gL+1]-fitobj.x[gL])
+                    slopeR = (fitobj.s[gR]-fitobj.s[gR-1])/(fitobj.x[gR]-fitobj.x[gR-1])
+                    try:
+                        if (min(slopeL) > 300) and (max(slopeR) < -300) and len(group) < 6:
+                            CRmaskF = np.concatenate((CRmaskF,group))
+                    except ValueError:
+                        if (slopeL > 300) and (slopeR < -300):
+                            CRmaskF = np.concatenate((CRmaskF,group))
+
+                fitobj = fitobjs(s, x, u, continuum, watm1, satm1, mflux_in, mwave_in, [], masterbeam, CRmaskF)
+
+        parfit = parfit_1.copy()
+
+        if inparam.plotfigs: # Plot results
+            outplotter_tel(parfit, fitobj, f'FinalFit_Order{order}_{night}_{masterbeam}', inparam, args, order)
+
+        if args.debug: # Output debug stuff
+            fig, axes = plt.subplots(1, 1, figsize=(6,3), facecolor='white', dpi=300)
+            axes.plot(fitobj.x,
+                      parfit[5] + parfit[13]*(fitobj.x) + parfit[14]*(fitobj.x**2),
+                      '-k', lw=0.7, label='data', alpha=.6)
+
+            axes.tick_params(axis='both', labelsize=6, right=True, top=True, direction='in')
+            axes.set_ylabel('IP',           size=6, style='normal', family='sans-serif')
+            axes.set_xlabel('Pixel Number', size=6, style='normal', family='sans-serif')
+            axes.legend(fontsize=5, edgecolor='white')
+            fig.savefig(f'{inparam.outpath}/figs_{args.band}/IP_{order}_{night}.png',
+                        bbox_inches='tight', format='png', overwrite=True)
+
+        #-------------------------------------------------------------------------------
+
+        # Save slightly better wavelength and blaze function solution
+        a0w_out  = parfit[6] + parfit[7]*x + parfit[8]*(x**2.) + parfit[9]*(x**3.)
+        cont_adj = parfit[10] + parfit[11]*x + parfit[12]*(x**2.)
+
+        continuum /= np.median(continuum)
+        cont_save = continuum*cont_adj
 
         # Write out table to fits file with errorflag = 0
         c0  = fits.Column(name='ERRORFLAG'+str(order),      array=np.array([0]),            format='K')
-        c1  = fits.Column(name='WAVE'+str(order),           array=a0w_out_fit,              format='D')
-        c2  = fits.Column(name='BLAZE'+str(order),          array=continuum,                format='D')
+        c1  = fits.Column(name='WAVE'+str(order),           array=a0w_out,                  format='D')
+        c2  = fits.Column(name='BLAZE'+str(order),          array=cont_save,                format='D')
         c3  = fits.Column(name='X'+str(order),              array=a0x,                      format='D')
         c4  = fits.Column(name='INTENS'+str(order),         array=a0fluxlist,               format='D')
         c5  = fits.Column(name='SIGMA'+str(order),          array=a0u,                      format='D')
@@ -386,7 +467,6 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
         c10 = fits.Column(name='PARFIT',                    array=parfit,                   format='D')
         cols = fits.ColDefs([c0,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10])
         hdu_1 = fits.BinTableHDU.from_columns(cols)
-
 
         if order == firstorder: # If first time writing fits file, make up filler primary hdu
             bleh = np.ones((3,3))
@@ -409,20 +489,19 @@ def mp_run(args, inparam, Nthreads, jerp, orders, nights, masterbeam):
     pool.close()
     pool.join()
 
-
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 
 def use_w(args):
     # Load wavelength regions list file
     try:
-        bounddata = Table.read(f'./Input/UseWv/WaveRegions_{args.WRegion}_{args.band}.csv', format='csv')
+        bounddata = Table.read(f'../Input/UseWv/WaveRegions_{args.WRegion}_{args.band}.csv', format='csv')
     except IOError:
-        sys.exit(f'WaveRegions FILE "./Input/UseWv/WaveRegions_{args.WRegion}_{args.band}.csv" NOT FOUND!')
+        sys.exit(f'WaveRegions FILE "../Input/UseWv/WaveRegions_{args.WRegion}_{args.band}.csv" NOT FOUND!')
 
-    wavesols = pd.read_csv(f'./Input/UseWv/WaveSolns_{args.band}.csv')
+    wavesols = pd.read_csv(f'../Input/UseWv/WaveSolns_{args.band}.csv')
 #-------------------------------------------------------------------------------
-    with open(f'./Input/UseWv/XRegions_{args.WRegion}_{args.band}.csv','w') as filew:
+    with open(f'../Input/UseWv/XRegions_{args.WRegion}_{args.band}.csv','w') as filew:
         filew.write('order, start,  end, masks\n')
 
         m_order  = np.array(bounddata['order'])
@@ -497,23 +576,23 @@ if __name__ == '__main__':
                         help="If set, DeBug logging will be output, as well as (lots of) extra plots under ./Temp/Debug/*target_*band/main_step1")
     parser.add_argument('--version',                         action='version',  version='%(prog)s 0.9')
     args = parser.parse_args()
-    inpath   = './Input/{}/'.format(args.targname)
+    inpath   = '../Input/{}/'.format(args.targname)
     cdbs_loc = '~/cdbs/'
 #-------------------------------------------------------------------------------
     # Create output directories as needed
-    if not os.path.isdir('./Output'):
-        os.mkdir('./Output')
+    if not os.path.isdir('../Output'):
+        os.mkdir('../Output')
 
-    if not os.path.isdir(f'./Output/{args.targname}_{args.band}'):
-        os.mkdir(f'./Output/{args.targname}_{args.band}')
+    if not os.path.isdir(f'../Output/{args.targname}_tool'):
+        os.mkdir(f'../Output/{args.targname}_tool')
 
-    if not os.path.isdir(f'./Output/{args.targname}_{args.band}/A0Fits'):
-        os.mkdir(f'./Output/{args.targname}_{args.band}/A0Fits')
+    if not os.path.isdir(f'../Output/{args.targname}_tool/A0Fits_IP'):
+        os.mkdir(f'../Output/{args.targname}_tool/A0Fits_IP')
 
-    if not os.path.isdir(f'./Output/{args.targname}_{args.band}/A0Fits/figs_{args.band}'):
-        os.mkdir(f'./Output/{args.targname}_{args.band}/A0Fits/figs_{args.band}')
+    if not os.path.isdir(f'../Output/{args.targname}_tool/A0Fits_IP/figs_{args.band}'):
+        os.mkdir(f'../Output/{args.targname}_tool/A0Fits_IP/figs_{args.band}')
 
-    outpath = f'./Output/{args.targname}_{args.band}/A0Fits'
+    outpath = f'../Output/{args.targname}_tool/A0Fits_IP'
 #-------------------------------------------------------------------------------
     # Handle logger
     logger = logging.getLogger(__name__)
@@ -543,7 +622,7 @@ if __name__ == '__main__':
 
     print('Fetching Done!')
     print(f'File "XRegions_{args.WRegion}_{args.band}.csv" saved under "./Input/UseWv/"')
-    #time.sleep(5)
+    time.sleep(5)
 
     #-------------------------------------------------------------------------------
 
@@ -555,14 +634,14 @@ if __name__ == '__main__':
     # Read in newly created pixel regions file to get list of orders to analyze.
     # Note that only target star observations will have their fits limited to the wavelength regions specified.
     # For A0 observations, only the orders specified will be analyzed, but each order will be fit as far as there is significant telluric absoprtion.
-    bounddata = Table.read(f'./Input/UseWv/XRegions_{args.WRegion}_{args.band}.csv', format='csv')
+    bounddata = Table.read(f'../Input/UseWv/XRegions_{args.WRegion}_{args.band}.csv', format='csv')
     starts  = np.array(bounddata['start'])
     ends    = np.array(bounddata['end'])
     orders  = np.array(bounddata['order'], dtype=int)
     xbounddict = {orders[i]:np.array([starts[i],ends[i]]) for i in range(len(starts))}
 
     ## Collect relevant file information from Predata files
-    A0data = Table.read(f'./Input/Prepdata/Prepdata_A0_{args.targname}.txt', format='ascii')
+    A0data = Table.read(f'../Input/Prepdata/Prepdata_A0_{args.targname}.txt', format='ascii')
 
     ind    = [i != 'NA' for i in A0data['humid']]
     humids = {str(k):str(v) for k,v in zip(A0data[ind]['night'],A0data[ind]['humid'])}
@@ -585,7 +664,7 @@ if __name__ == '__main__':
 
     logger.info(f'Analyze {len(nightsFinal)} nights')
 
-    #time.sleep(6)
+    time.sleep(6)
     print('\n')
 
     # print('For paper plot!')
@@ -618,4 +697,3 @@ if __name__ == '__main__':
     end_time = datetime.now()
     logger.info(f'A0 Fitting using TelFit finished, Duration: {end_time - start_time}')
     print('You can start to run main_step2.py for RV initial guess')
-    print('####################################################################################')

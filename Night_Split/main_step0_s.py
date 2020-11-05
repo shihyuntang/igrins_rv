@@ -157,7 +157,7 @@ def DataPrep(args, tar_night, tar_num, tar_frame, file_night_num, std_name, std_
         num   = str(std_num[x])
 
         anyK = False
-        subpath        = '{}std/{}/AB/'.format(inpath, night)
+        subpath        = '{}std/{}/A/'.format(inpath, night)
         fullpathprefix = '{}SDC{}_{}_'.format(subpath, args.band, night)
 
         onlyfiles = [f for f in listdir(subpath) if isfile(join(subpath, f))]
@@ -181,7 +181,7 @@ def DataPrep(args, tar_night, tar_num, tar_frame, file_night_num, std_name, std_
             tagA0 = int(num)
 
             tagA = '{:04d}'.format(tagA0)
-            subpath = '{}std/{}/AB/SDC{}_{}_{}.spec.fits'.format(inpath, night, args.band, night, tagA)
+            subpath = '{}std/{}/A/SDC{}_{}_{}.spec.fits'.format(inpath, night, args.band, night, tagA)
 
             try:
                 hdulist = fits.open(subpath)
@@ -189,7 +189,7 @@ def DataPrep(args, tar_night, tar_num, tar_frame, file_night_num, std_name, std_
 
             except FileNotFoundError:
                 # If best airmass match A0 for night not found, check if Joe chose a different A0 instead
-                subpath        = '{}std/{}/AB/'.format(inpath, night)
+                subpath        = '{}std/{}/A/'.format(inpath, night)
                 fullpathprefix = '{}SDC{}_{}_'.format(subpath, args.band, night)
 
                 onlyfiles = [f for f in listdir(subpath) if isfile(join(subpath, f))]

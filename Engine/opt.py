@@ -3,7 +3,6 @@ import numpy as np
 from scipy.interpolate import interp1d, splrep,splev
 from Engine.classes import fitobjs,inparams
 from Engine.rotint import rotint
-# from Engine.rotint_old import rotint_old
 from Engine.macbro_dynamic    import macbro_dyn
 from Engine.rebin_jv import rebin_jv
 import time
@@ -31,6 +30,16 @@ def fmodel_chi(par,grad):
           12: Continuum quadratic component
           13: IP linear component
           14: IP quadratic component
+          15: Blaze dip center location        \
+          16: Blaze dip full width              |
+          17: Blaze dip depth                   | <-- If beam is A
+          18: Secondary blaze dip full width    |
+          19: Blaze dip depth                  /
+          20: Continuum cubic component      \
+          21: Continuum quartic component     |  <-- Only enabled for some orders, depending on size of region being fit
+          22: Continuum pentic component      |
+          23: Continuum hexic component      /
+
      OUTPUTS:
        The model spectrum on the observed wavelength scale.
     '''
@@ -70,21 +79,13 @@ def fmodel_chi(par,grad):
 
     vsini = par[4]
 
-
     # Rotationally broaden stellar template
     if vsini != 0:
         wspot2,rspot2 = rotint(wspot,sspot,vsini)
     else:
         wspot2 = wspot
         rspot2 = sspot
-    '''
-    # Rotationally broaden stellar template
-    if vsini != 0:
-        rspot2 = rotint_old(wspot,sspot,vsini,eps=.6,nr=5,ntheta=25,dif=None)
-    else:
-        rspot2 = sspot
-    wspot2 = wspot
-    '''
+        
     #Now rebin the spot spectrum onto the telluric wavelength scale
     sspot2 = rebin_jv(wspot2,rspot2,watm,False)
 
@@ -114,10 +115,15 @@ def fmodel_chi(par,grad):
 
     # Load saved continuum
     c2 = fitobj_cp.continuum
-    smod *= c2/np.median(c2)
+    smod *= c2
 
     # Apply continuum adjustment
-    cont = par[10] + par[11]*fitobj_cp.x+ par[12]*(fitobj_cp.x**2)
+    cont = par[10] + par[11]*fitobj_cp.x+ par[12]*(fitobj_cp.x**2) + par[20]*(fitobj_cp.x**3) + par[21]*(fitobj_cp.x**4) + par[22]*(fitobj_cp.x**5) + par[23]*(fitobj_cp.x**6)
+    if fitobj_cp.masterbeam == 'A':
+        bucket = np.zeros_like(cont)
+        bucket[(fitobj_cp.x >= (par[15]-par[16]/2))         & (fitobj_cp.x <= (par[15]+par[16]/2))] = par[17]
+        bucket[(fitobj_cp.x >= (par[15]+par[16]/2-par[18])) & (fitobj_cp.x <= (par[15]+par[16]/2))] += par[19]
+        cont -= bucket
     smod *= cont
 
     mask = np.ones_like(smod,dtype=bool)
@@ -127,15 +133,16 @@ def fmodel_chi(par,grad):
         for maskbounds in fitobj_cp.mask:
             mask[(fitobj_cp.x > maskbounds[0]) & (fitobj_cp.x < maskbounds[1]) ] = False
 
+    mask[fitobj_cp.CRmask] = False
+
     # Compute chisq
     chisq = np.sum((fitobj_cp.s[mask] - smod[mask])**2. / fitobj_cp.u[mask]**2.)
-    chisq = chisq / (len(smod[mask]) - 15)
+    chisq = chisq / (len(smod[mask]) - len(par))
 
     if optimize_cp == True:
         return chisq
     else:
         return smod,chisq
-
 
 def fmod(par,fitobj):
 
@@ -150,7 +157,6 @@ def fmod(par,fitobj):
         sys.exit('WAVE ERROR 1 {}'.format(par[6:10]))
         return 1e10
 
-    # c = 2.99792e5
     c = 2.99792458e5
     npts = len(w)
 
@@ -165,22 +171,13 @@ def fmod(par,fitobj):
 
     vsini = par[4]
 
-
-
     # Rotationally broaden stellar template
     if vsini != 0:
         wspot2,rspot2 = rotint(wspot,sspot,vsini)
     else:
         wspot2 = wspot
         rspot2 = sspot
-    '''
-    # Rotationally broaden stellar template
-    if vsini != 0:
-        rspot2 = rotint_old(wspot,sspot,vsini,eps=.6,nr=5,ntheta=25,dif=None)
-    else:
-        rspot2 = sspot
-    wspot2 = wspot
-    '''
+        
     sspot2 = rebin_jv(wspot2,rspot2,watm,False)
 
     smod = sspot2*satm
@@ -199,6 +196,7 @@ def fmod(par,fitobj):
     except ValueError:
         sys.exit('IP ERROR 2 {} {} {}'.format(par[5],par[13],par[14]))
         return 1e10
+    
     fwhm = splev(watm,spl)
 
     vhwhm = dw*abs(fwhm)/mnw*c/2.
@@ -208,15 +206,27 @@ def fmod(par,fitobj):
     smod = rebin_jv(watm,nsmod,w,False)
 
     # Load saved continuum
-    c2 = fitobj_cp.continuum
-    smod *= c2/np.median(c2)
+    c2 = fitobj.continuum
+    smod *= c2#/np.median(c2)
 
     # Apply continuum adjustment
-    cont = par[10] + par[11]*fitobj_cp.x+ par[12]*(fitobj_cp.x**2)
+    cont = par[10] + par[11]*fitobj.x+ par[12]*(fitobj.x**2) + par[20]*(fitobj.x**3) + par[21]*(fitobj.x**4) + par[22]*(fitobj.x**5) + par[23]*(fitobj.x**6)
+    if fitobj.masterbeam == 'A':
+        bucket = np.zeros_like(cont)
+        bucket[(fitobj.x >= (par[15]-par[16]/2)) & (fitobj.x <= (par[15]+par[16]/2))] = par[17]
+        bucket[(fitobj.x >= (par[15]+par[16]/2-par[18])) & (fitobj.x <= (par[15]+par[16]/2))] += par[19]
+        cont -= bucket
     smod *= cont
 
     mask = np.ones_like(smod,dtype=bool)
     mask[(fitobj.s < .0)] = False
+    
+    if len(fitobj_cp.mask) != 0:
+        for maskbounds in fitobj_cp.mask:
+            mask[(fitobj_cp.x > maskbounds[0]) & (fitobj_cp.x < maskbounds[1]) ] = False
+
+    mask[fitobj_cp.CRmask] = False
+    
     chisq = np.sum((fitobj.s[mask] - smod[mask])**2. / fitobj.u[mask]**2.)
     chisq = chisq / (len(smod[mask]) - 15)
 
@@ -235,7 +245,6 @@ def fmod_conti(par,fitobj):
         sys.exit('WAVE ERROR 1 {}'.format(par[6:10]))
         return 1e10
 
-    # c = 2.99792e5
     c = 2.99792458e5
     npts = len(w)
 
@@ -283,11 +292,16 @@ def fmod_conti(par,fitobj):
     smod = rebin_jv(watm,nsmod,w,False)
 
     # Load saved continuum
-    c2 = fitobj_cp.continuum
-    smod *= c2/np.median(c2)
+    c2 = fitobj.continuum
+    smod *= c2
 
     # Apply continuum adjustment
-    cont = par[10] + par[11]*fitobj_cp.x+ par[12]*(fitobj_cp.x**2)
+    cont = par[10] + par[11]*fitobj.x+ par[12]*(fitobj.x**2) + par[20]*(fitobj.x**3) + par[21]*(fitobj.x**4) + par[22]*(fitobj.x**5) + par[23]*(fitobj.x**6)
+    if fitobj.masterbeam == 'A':
+        bucket = np.zeros_like(cont)
+        bucket[(fitobj.x >= (par[15]-par[16]/2)) & (fitobj.x <= (par[15]+par[16]/2))] = par[17]
+        bucket[(fitobj.x >= (par[15]+par[16]/2-par[18])) & (fitobj.x <= (par[15]+par[16]/2))] += par[19]
+        cont -= bucket
     smod *= cont
 
     mask = np.ones_like(smod,dtype=bool)
@@ -302,25 +316,66 @@ def optimizer(par0,dpar0, hardbounds_v_ip, fitobj, optimize):
     global fitobj_cp, optimize_cp
     fitobj_cp   = fitobj
     optimize_cp = optimize
-    opt = nlopt.opt(nlopt.LN_NELDERMEAD, 15)
+
+    opt = nlopt.opt(nlopt.LN_NELDERMEAD, 24)
     opt.set_min_objective(fmodel_chi)
     lows  = par0-dpar0
     highs = par0+dpar0
+
     for frg in [1,3]:
         if dpar0[frg] != 0 and lows[frg] < 0:
             lows[frg] = 0
+
     if dpar0[4] != 0:
         lows[4] = hardbounds_v_ip[0]; highs[4] = hardbounds_v_ip[1];
         if highs[4]-par0[4] < 1e-4:
             par0[4] = par0[4] - 1e-4
         if par0[4] -lows[4] < 1e-4:
             par0[4] = par0[4] + 1e-4
+
     if dpar0[5] != 0:
         lows[5] = hardbounds_v_ip[2]; highs[5] = hardbounds_v_ip[3];
         if highs[5]-par0[5] < 1e-4:
             par0[5] = par0[5] - 1e-4
         if par0[5] -lows[5] < 1e-4:
             par0[5] = par0[5] + 1e-4
+
+    if fitobj_cp.masterbeam == 'A':
+        if dpar0[15] != 0:
+            lows[15] = hardbounds_v_ip[4]; highs[15] = hardbounds_v_ip[5];
+            if highs[15]-par0[15] < 1e-4:
+                par0[15] = par0[15] - 1e-4
+            if par0[15] -lows[15] < 1e-4:
+                par0[15] = par0[15] + 1e-4
+
+        if dpar0[16] != 0:
+            lows[16] = hardbounds_v_ip[6]; highs[16] = hardbounds_v_ip[7];
+            if highs[16]-par0[16] < 1e-4:
+                par0[16] = par0[16] - 1e-4
+            if par0[16] -lows[16] < 1e-4:
+                par0[16] = par0[16] + 1e-4
+
+        if dpar0[17] != 0:
+            lows[17] = hardbounds_v_ip[8]; highs[17] = hardbounds_v_ip[9];
+            if highs[17]-par0[17] < 1e-4:
+                par0[17] = par0[17] - 1e-4
+            if par0[17] -lows[17] < 1e-4:
+                par0[17] = par0[17] + 1e-4
+
+        if dpar0[18] != 0:
+            lows[18] = hardbounds_v_ip[10]; highs[18] = hardbounds_v_ip[11];
+            if highs[18]-par0[18] < 1e-4:
+                par0[18] = par0[18] - 1e-4
+            if par0[18] -lows[18] < 1e-4:
+                par0[18] = par0[18] + 1e-4
+
+        if dpar0[19] != 0:
+            lows[19] = hardbounds_v_ip[12]; highs[19] = hardbounds_v_ip[13];
+            if highs[19]-par0[19] < 1e-4:
+                par0[19] = par0[19] - 1e-4
+            if par0[19] -lows[19] < 1e-4:
+                par0[19] = par0[19] + 1e-4
+
     opt.set_lower_bounds(lows)
     opt.set_upper_bounds(highs)
 
