@@ -6,12 +6,12 @@ from Engine.IO_AB     import setup_templates_tel, init_fitsread, stellarmodel_se
 from Engine.clips     import basicclip_above
 from Engine.contfit   import A0cont
 from Engine.classes   import fitobjs,inparamsA0,orderdict_cla
-#from Engine.macbro    import macbro
 from Engine.rebin_jv  import rebin_jv
 from Engine.rotint    import rotint
 from Engine.Telfitter import telfitter
 from Engine.optwithtwodip import optimizer, fmod
 from Engine.outplotterwithtwodip import outplotter_tel
+from Engine.detect_peaks import detect_peaks
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 
@@ -45,8 +45,6 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
             bound_cut = inparam.bound_cut_dic[args.band][order]
         else:
             bound_cut = [150, 150]
-    # bound_cut = [150, 150]
-
 
     ### Load relevant A0 spectrum
     x, a0wavelist, a0fluxlist, u = init_fitsread(inparam.inpath,
@@ -149,9 +147,11 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                       330,           #16: Blaze dip full width
                       0.05,           #17: Blaze dip depth
                       90,            #18: Secondary blaze dip full width
-                      0.05,                                                  #19: Blaze dip depth
-                      0.0,                                                   #20: Continuum cubic component
-                      0.0])                                                  #21: Continuum quartic component
+                      0.05,          #19: Blaze dip depth
+                      0.0,           #20: Continuum cubic component
+                      0.0,           #21: Continuum quartic component
+                      0.0,           #22: Continuum quintic component
+                      0.0])          #23: Continuum hexic component
 
     # Make sure data is within telluric template range (shouldn't do anything)
     a0fluxlist = a0fluxlist[(a0wavelist*1e4 > min(watm_in)+5) & (a0wavelist*1e4 < max(watm_in)-5)]
@@ -164,33 +164,48 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
     s = a0fluxlist.copy(); x = a0x.copy(); u = a0u.copy();
 
     # Collect all fit variables into one class
-    fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam, None)
+    fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam,  np.array([],dtype=int))
 
     # Arrays defining parameter variations during optimization steps
-    #                             |0    1    2    3  |  | 4 |  | 5 |   | 6    7    8           9  |    |10 11 12|    |13    14|   |15    16   17  18    19|
-    dpars = {'cont' : np.array([   0.0, 0.0, 0.0, 0.0,   0.0,   0.0,    0.0,  0.0, 0.0,        0,      1e7, 1, 1,      0,    0,   10.,  20., 0.2, 50.0, 0.2,  1.0, 1.0 ]),
-             'twave': np.array([   0.0, 0.0, 0.0, 3.0,   0.0,   0.0,   10.0, 10.0, 5e-5,    1e-7,        0, 0, 0,      0,    0,    0.,   0., 0.,   0.0, 0.0,  0.0, 0.0 ]),
-             'ip'   : np.array([   0.0, 0.0, 0.0, 0.0,   0.0,   4.0,    0.0,  0.0, 0.0,        0,      1e4, 1, 1,   1e-2, 1e-5,   10.,  20., 0.2, 50.0, 0.2,  0.0, 0.0 ])}
+    #                             |0    1    2    3  |  | 4 |  | 5 |   | 6    7    8           9  |    |10 11 12|    |13    14|   |15    16   17  18    19|  |20   21   22    23 | 
+    dpars = {'cont' : np.array([   0.0, 0.0, 0.0, 0.0,   0.0,   0.0,    0.0,  0.0, 0.0,        0,      1e7, 1, 1,      0,    0,   10.,  20., 0.2, 50.0, 0.2,  1.0, 1.0, 1.0, 1.0 ]),
+             'twave': np.array([   0.0, 0.0, 0.0, 3.0,   0.0,   0.0,   10.0, 10.0, 5e-5,    1e-7,        0, 0, 0,      0,    0,    0.,   0., 0.,   0.0, 0.0,  0.0, 0.0, 0.0, 0.0 ]),
+             'ip'   : np.array([   0.0, 0.0, 0.0, 0.0,   0.0,   4.0,    0.0,  0.0, 0.0,        0,      1e4, 1, 1,   1e-2, 1e-5,   10.,  20., 0.2, 50.0, 0.2,  0.0, 0.0, 0.0, 0.0 ])}
     if masterbeam == 'B':
-        dpars = {'cont' :np.array([0.0, 0.0, 0.0, 0.0,   0.0,   0.0,    0.0,  0.0, 0.0,        0,      1e7, 1, 1,      0,    0,    0.,   0.,  0.,  0.0, 0.0,  1.0, 1.0 ]),
-                 'twave':np.array([0.0, 0.0, 0.0, 3.0,   0.0,   0.0,   10.0, 10.0, 5e-5,    1e-7,        0, 0, 0,      0,    0,    0,    0.,  0.,  0.0, 0.0,  0.0, 0.0 ]),
-                 'ip'   :np.array([0.0, 0.0, 0.0, 0.0,   0.0,   4.0,    0.0,  0.0, 0.0,        0,      1e4, 1, 1,   1e-2, 1e-5,    0.,   0.,  0.,  0.0, 0.0,  0.0, 0.0 ])}
+        dpars = {'cont' :np.array([0.0, 0.0, 0.0, 0.0,   0.0,   0.0,    0.0,  0.0, 0.0,        0,      1e7, 1, 1,      0,    0,    0.,   0.,  0.,  0.0, 0.0,  1.0, 1.0, 1.0, 1.0 ]),
+                 'twave':np.array([0.0, 0.0, 0.0, 3.0,   0.0,   0.0,   10.0, 10.0, 5e-5,    1e-7,        0, 0, 0,      0,    0,    0,    0.,  0.,  0.0, 0.0,  0.0, 0.0, 0.0, 0.0 ]),
+                 'ip'   :np.array([0.0, 0.0, 0.0, 0.0,   0.0,   4.0,    0.0,  0.0, 0.0,        0,      1e4, 1, 1,   1e-2, 1e-5,    0.,   0.,  0.,  0.0, 0.0,  0.0, 0.0, 0.0, 0.0 ])}
     else:
         if (args.band == 'K') and (order == 3):
             parA0[19] = 0.
-            dpars['cont']=np.array([0.0,0.0, 0.0, 0.0,   0.0,   0.0,    0.0,  0.0, 0.0,        0.,     1e7, 1, 1,      0,    0,   10.,  20.,0.2,  50.0, 0.0,  1.0, 1.0 ])
+            dpars['cont']=np.array([0.0,0.0, 0.0, 0.0,   0.0,   0.0,    0.0,  0.0, 0.0,        0.,     1e7, 1, 1,      0,    0,   10.,  20.,0.2,  50.0, 0.0,  1.0, 1.0, 1.0, 1.0 ])
     #-------------------------------------------------------------------------------
 
+    # Use quadratic blaze correction for order 13; cubic for orders 6, 14, 21; quartic for orders 16 and 22
+    if args.band == 'H':
+        if int(order) in [13]:
+            dpars['cont'][20] = 0.; dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
+        elif int(order) in [6,14,21]:
+            dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
+        else:
+            pass
+        
     # Initialize an array that puts hard bounds on vsini and the instrumental resolution to make sure they do not diverge to unphysical values
     optimize = True
     par_in = parA0.copy()
-    hardbounds = [par_in[4] -dpars['ip'][4],     par_in[4]+dpars['ip'][4],
-                  par_in[5] -dpars['ip'][5],     par_in[5]+dpars['ip'][5],
-                  par_in[15] -dpars['cont'][15], par_in[15]+dpars['cont'][15],
-                  par_in[16] -dpars['cont'][16], par_in[16]+dpars['cont'][16],
-                  0.,                            par_in[17]+dpars['cont'][17],
-                  par_in[18] -dpars['cont'][18], par_in[18]+dpars['cont'][18],
-                  0.,                            par_in[19]+dpars['cont'][19] ]
+    if masterbeam == 'B':
+        hardbounds = [par_in[4]  - 0,                 par_in[4]  + 0,
+                      par_in[5]  - dpars['ip'][5],    par_in[5]  + dpars['ip'][5]
+                     ]
+    else:
+        hardbounds = [par_in[4]  - 0,                 par_in[4]  + 0,
+                      par_in[5]  - dpars['ip'][5],    par_in[5]  + dpars['ip'][5],
+                      par_in[15] - dpars['cont'][15], par_in[15] + dpars['cont'][15],
+                      par_in[16] - dpars['cont'][16], par_in[16] + dpars['cont'][16],
+                      0.,                             par_in[17] + dpars['cont'][17],
+                      par_in[18] - dpars['cont'][18], par_in[18] + dpars['cont'][18],
+                      0.,                             par_in[19] + dpars['cont'][19]
+                     ]
     if hardbounds[0] < 0:
         hardbounds[0] = 0
     if hardbounds[2] < 1:
@@ -203,66 +218,133 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
 
     pre_err = False
 
-    cycles = 2
+    cycles = 3
 
-    optgroup = ['cont', 'twave',
-                'cont', 'twave',
-                'cont', 'twave', 'ip',
-                'cont', 'twave', 'ip',
-                'cont', 'twave']
+    optgroup = ['twave', 'cont',
+                'cont', 'twave', 'cont',
+                'twave',
+                'ip', 'twave',  'cont',
+                'ip', 'twave',  'cont',
+                'twave','ip']
 
-    nk = 1
-    for nc, cycle in enumerate(np.arange(cycles), start=1):
-        if cycle == 0:
-            parstart = par_in.copy()
+    try:
+        nk = 1
+        for nc, cycle in enumerate(np.arange(cycles), start=1):
+            if cycle == 0:
+                parstart = par_in.copy()
 
-        for optkind in optgroup:
-            # print(f'{optkind}, nc={nc}, tag={tag}')
-            parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize)
-            parstart = parfit_1.copy()
-            nk += 1
+            for optkind in optgroup:
+                parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize)
+                parstart = parfit_1.copy()
+                nk += 1
 
-        if nc == 1:
-            parfit = parfit_1.copy()
-            fit,chi = fmod(parfit, fitobj)
+            ## After first cycle, use best fit model to identify CRs/hot pixels
+            if nc == 1:
+                parfit = parfit_1.copy()
+                fit,chi = fmod(parfit, fitobj)
 
-            residual = fitobj.s/fit
-            MAD = np.median(abs(np.median(residual)-residual))
-            CRmask = np.array(np.where(residual > np.median(residual)+2*MAD)[0]) #.5
+                # Everywhere where data protrudes high above model, check whether slope surrounding protrusion is /\ and mask if sufficiently steep
+                residual = fitobj.s/fit
+                MAD = np.median(abs(np.median(residual)-residual))
+                CRmask = np.array(np.where(residual > np.median(residual)+2*MAD)[0]) 
 
-            CRmaskF = [];
-            CRmask = list(CRmask)
+                CRmaskF = []; CRmask = list(CRmask);
 
-            for hit in [0,len(fitobj.x)-1]:
-                if hit in CRmask:
-                    CRmaskF.append(hit)
-                    CRmask.remove(hit)
-            CRmask = np.array(CRmask)
+                for hit in [0,len(fitobj.x)-1]:
+                    if hit in CRmask:
+                        CRmaskF.append(hit)
+                        CRmask.remove(hit)
+                CRmask = np.array(CRmask, dtype=np.int); CRmaskF = np.array(CRmaskF, dtype=np.int);
 
-            for hit in CRmask:
-                slopeL = (fitobj.s[hit]-fitobj.s[hit-1])/(fitobj.x[hit]-fitobj.x[hit-1])
-                slopeR = -1*((fitobj.s[hit+1]-fitobj.s[hit])/(fitobj.x[hit+1]-fitobj.x[hit]))
-                if (slopeL > 150) and (slopeR > 150):
-                    CRmaskF.append(hit)
-            CRmaskF = np.array(CRmaskF)
+                for group in mit.consecutive_groups(CRmask):
+                    group = np.array(list(group))
+                    if len(group) == 1:
+                        gL = group-1; gR = group+1;
+                    else:
+                        peaks = detect_peaks(fitobj.s[group])
+                        if len(peaks) < 1:
+                            group = np.concatenate((np.array([group[0]-1]),group,np.array([group[-1]+1])))
+                            peaks = detect_peaks(fitobj.s[group])
+                            if len(peaks) < 1:
+                                continue
+                        if len(peaks) > 1:
+                            continue
+                        gL = group[:peaks[0]]; gR = group[peaks[0]+1:];
 
-            fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam, CRmaskF)
+                    slopeL = (fitobj.s[gL+1]-fitobj.s[gL])/(fitobj.x[gL+1]-fitobj.x[gL])
+                    slopeR = (fitobj.s[gR]-fitobj.s[gR-1])/(fitobj.x[gR]-fitobj.x[gR-1])
+                    try:
+                        if (min(slopeL) > 300) and (max(slopeR) < -300) and len(group) < 6:
+                            CRmaskF = np.concatenate((CRmaskF,group))
+                    except ValueError:
+                        if (slopeL > 300) and (slopeR < -300):
+                            CRmaskF = np.concatenate((CRmaskF,group))
 
-    parfit = parfit_1.copy()
+                # Redo rough blaze fit in case hot pixels were throwing it off
+                w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
+                mask = np.ones_like(w,dtype=bool)
+                mask[CRmaskF] = False
+                continuum    = A0cont(w[mask]/1e4,s[mask],night,order)
+                continuum    = rebin_jv(w[mask],continuum,w,False)
+                fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam, CRmaskF)
 
-    # Get best fit wavelength solution
-    a0w_out_fit = parfit[6] + parfit[7]*x + parfit[8]*(x**2.) + parfit[9]*(x**3.)
+        parfit = parfit_1.copy()
+        
+        # If dip present, correct it out of data before running Telfit to enable better fit
+        if masterbeam == 'A':
+            cont = parfit[10] + parfit[11]*fitobj.x+ parfit[12]*(fitobj.x**2) + parfit[20]*(fitobj.x**3) + parfit[21]*(fitobj.x**4) + parfit[22]*(fitobj.x**5) + parfit[23]*(fitobj.x**6)
+            cont0 = cont.copy()
+            bucket = np.zeros_like(cont)
+            bucket[(fitobj.x >= (parfit[15]-parfit[16]/2)) & (fitobj.x <= (parfit[15]+parfit[16]/2))] = parfit[17]
+            bucket[(fitobj.x >= (parfit[15]+parfit[16]/2-parfit[18])) & (fitobj.x <= (parfit[15]+parfit[16]/2))] += parfit[19]
+            cont -= bucket
+            
+            justdip = cont/cont0
+            a0fluxlist /= justdip
 
-    # Trim stellar template to new relevant wavelength range
-    mwave_in,mflux_in = stellarmodel_setup(a0w_out_fit/1e4, inparam.mwave0, inparam.mflux0)
+    except:
+        pre_err = True
+        logger.warning(f'  --> NIGHT {night}, ORDER {order} HIT ERROR DURING PRE_OPT')
+        # Write out table to fits header with errorflag = 1
+        c0    = fits.Column(name=f'ERRORFLAG{order}', array=np.array([1]), format='K')
+        cols  = fits.ColDefs([c0])
+        hdu_1 = fits.BinTableHDU.from_columns(cols)
 
-    # Feed this new wavelength solution into Telfit. Returns high-res synthetic telluric template, parameters of that best fit, and blaze function best fit
-    watm1, satm1, telfitparnames, telfitpars, a0contwave, continuum = telfitter(a0w_out_fit,a0fluxlist,a0u,inparam,night,order,args)
+        # If first time writing fits file, make up filler primary hdu
+        if order == firstorder:
+            bleh = np.ones((3,3))
+            primary_hdu = fits.PrimaryHDU(bleh)
+            hdul = fits.HDUList([primary_hdu,hdu_1])
+            hdul.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band), overwrite=True)
+        else:
+            hh = fits.open('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band))
+            hh.append(hdu_1)
+            hh.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band), overwrite=True)
 
+
+    #-------------------------------------------------------------------------------
+    if not pre_err:
+        
+        if inparam.plotfigs: # Plot results
+            outplotter_tel(parfit, fitobj, f'BeforeTelFit_Order{order}_{night}_{masterbeam}', inparam, args, order)
+
+        # Get best fit wavelength solution
+        a0w_out_fit = parfit[6] + parfit[7]*x + parfit[8]*(x**2.) + parfit[9]*(x**3.)
+
+        # Trim stellar template to new relevant wavelength range
+        mwave_in,mflux_in = stellarmodel_setup(a0w_out_fit/1e4, inparam.mwave0, inparam.mflux0)
+
+        # Feed this new wavelength solution into Telfit. Returns high-res synthetic telluric template, parameters of that best fit, and blaze function best fit
+        watm1, satm1, telfitparnames, telfitpars, a0contwave, continuum = telfitter(a0w_out_fit,a0fluxlist,a0u,inparam,night,order,args)
+
+    else:
+        pass
     #-------------------------------------------------------------------------------
 
     # If Telfit encountered error (details in Telfitter.py), skip night/order combo
-    if len(watm1) == 1:
+    if pre_err:
+        pass
+    elif len(watm1) == 1:
         logger.warning(f'  --> TELFIT ENCOUNTERED CRITICAL ERROR IN ORDER: {order} NIGHT: {night}')
 
         # Write out table to fits header with errorflag = 1
@@ -288,7 +370,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
 
         # Fit the A0 again using the new synthetic telluric template.
         # This allows for any tweaks to the blaze function fit that may be necessary.
-        fitobj = fitobjs(s, x, u, continuum,watm1,satm1,mflux_in,mwave_in,[], masterbeam, None)
+        fitobj = fitobjs(s, x, u, continuum,watm1,satm1,mflux_in,mwave_in,[], masterbeam, CRmaskF)
 
         nk = 1
         for nc, cycle in enumerate(np.arange(cycles), start=1):
@@ -296,41 +378,58 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                 parstart = par_in.copy()
 
             for optkind in optgroup:
-                # print(f'{optkind}, nc={nc}, tag={tag}')
                 parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize)
                 parstart = parfit_1.copy()
                 nk += 1
 
+            ## After first cycle, use best fit model to identify CRs/hot pixels
             if nc == 1:
                 parfit = parfit_1.copy()
                 fit,chi = fmod(parfit, fitobj)
 
+                # Everywhere where data protrudes high above model, check whether slope surrounding protrusion is /\ and mask if sufficiently steep
                 residual = fitobj.s/fit
                 MAD = np.median(abs(np.median(residual)-residual))
-                CRmask = np.array(np.where(residual > np.median(residual)+2*MAD)[0]) #.5
+                CRmask = np.array(np.where(residual > np.median(residual)+2*MAD)[0]) 
 
-                CRmaskF = [];
-                CRmask = list(CRmask)
+                CRmaskF = []; CRmask = list(CRmask);
 
                 for hit in [0,len(fitobj.x)-1]:
                     if hit in CRmask:
                         CRmaskF.append(hit)
                         CRmask.remove(hit)
-                CRmask = np.array(CRmask)
+                CRmask = np.array(CRmask, dtype=np.int); CRmaskF = np.array(CRmaskF, dtype=np.int);
 
-                for hit in CRmask:
-                    slopeL = (fitobj.s[hit]-fitobj.s[hit-1])/(fitobj.x[hit]-fitobj.x[hit-1])
-                    slopeR = -1*((fitobj.s[hit+1]-fitobj.s[hit])/(fitobj.x[hit+1]-fitobj.x[hit]))
-                    if slopeL > 150 and slopeR > 150:
-                        CRmaskF.append(hit)
-                CRmaskF = np.array(CRmaskF)
+                for group in mit.consecutive_groups(CRmask):
+                    group = np.array(list(group))
+                    if len(group) == 1:
+                        gL = group-1; gR = group+1;
+                    else:
+                        peaks = detect_peaks(fitobj.s[group])
+                        if len(peaks) < 1:
+                            group = np.concatenate((np.array([group[0]-1]),group,np.array([group[-1]+1])))
+                            peaks = detect_peaks(fitobj.s[group])
+                            if len(peaks) < 1:
+                                continue
+                        if len(peaks) > 1:
+                            continue
+                        gL = group[:peaks[0]]; gR = group[peaks[0]+1:];
 
-                fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam, CRmaskF)
+                    slopeL = (fitobj.s[gL+1]-fitobj.s[gL])/(fitobj.x[gL+1]-fitobj.x[gL])
+                    slopeR = (fitobj.s[gR]-fitobj.s[gR-1])/(fitobj.x[gR]-fitobj.x[gR-1])
+                    try:
+                        if (min(slopeL) > 300) and (max(slopeR) < -300) and len(group) < 6:
+                            CRmaskF = np.concatenate((CRmaskF,group))
+                    except ValueError:
+                        if (slopeL > 300) and (slopeR < -300):
+                            CRmaskF = np.concatenate((CRmaskF,group))
+
+                fitobj = fitobjs(s, x, u, continuum, watm1, satm1, mflux_in, mwave_in, [], masterbeam, CRmaskF)
 
         parfit = parfit_1.copy()
 
         if inparam.plotfigs: # Plot results
-            outplotter_tel(parfit, fitobj, f'FinalFit_Order{order}_{night}_{masterbeam}', inparam, args)
+            outplotter_tel(parfit, fitobj, f'FinalFit_Order{order}_{night}_{masterbeam}', inparam, args, order)
 
         if args.debug: # Output debug stuff
             fig, axes = plt.subplots(1, 1, figsize=(6,3), facecolor='white', dpi=300)
@@ -344,19 +443,6 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
             axes.legend(fontsize=5, edgecolor='white')
             fig.savefig(f'{inparam.outpath}/figs_{args.band}/IP_{order}_{night}.png',
                         bbox_inches='tight', format='png', overwrite=True)
-
-            outplotter_tel(parfit_1,fitobj, f'Post_parfit1_{order}_{night}', inparam, args)
-        #     outplotter_tel(parfit_2,fitobj, f'Post_parfit2_{order}_{night}', inparam, args)
-        #     outplotter_tel(parfit_3,fitobj, f'Post_parfit3_{order}_{night}', inparam, args)
-        #     outplotter_tel(parfit_4,fitobj, f'Post_parfit4_{order}_{night}', inparam, args)
-        #     outplotter_tel(parfit, fitobj, f'Post_parfit_{order}_{night}', inparam, args)
-        #
-        logger.debug(f'Post_par_in:\n {par_in}')
-        # logger.debug(f'Post_parfit1:\n {parfit_1}')
-        # logger.debug(f'Post_parfit2:\n {parfit_2}')
-        # logger.debug(f'Post_parfit3:\n {parfit_3}')
-        # logger.debug(f'Post_parfit4:\n {parfit_4}')
-        # logger.debug(f'Post_parfit:\n {parfit}')
 
         #-------------------------------------------------------------------------------
 
