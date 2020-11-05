@@ -31,14 +31,15 @@ def fmodel_chi(par,grad):
           12: Continuum quadratic component
           13: IP linear component
           14: IP quadratic component
-
-          If beam is A:
-
-              15: Blaze dip center location
-              16: Blaze dip full width
-              17: Blaze dip depth
-              18: Secondary blaze dip full width
-              19: Blaze dip depth
+          15: Blaze dip center location        \
+          16: Blaze dip full width              |
+          17: Blaze dip depth                   | <-- If beam is A
+          18: Secondary blaze dip full width    |
+          19: Blaze dip depth                  /
+          20: Continuum cubic component      \
+          21: Continuum quartic component     |  <-- Only enabled for some orders, depending on size of region being fit
+          22: Continuum pentic component      |
+          23: Continuum hexic component      /
 
      OUTPUTS:
        The model spectrum on the observed wavelength scale.
@@ -79,21 +80,13 @@ def fmodel_chi(par,grad):
 
     vsini = par[4]
 
-
     # Rotationally broaden stellar template
     if vsini != 0:
         wspot2,rspot2 = rotint(wspot,sspot,vsini)
     else:
         wspot2 = wspot
         rspot2 = sspot
-    '''
-    # Rotationally broaden stellar template
-    if vsini != 0:
-        rspot2 = rotint_old(wspot,sspot,vsini,eps=.6,nr=5,ntheta=25,dif=None)
-    else:
-        rspot2 = sspot
-    wspot2 = wspot
-    '''
+        
     #Now rebin the spot spectrum onto the telluric wavelength scale
     sspot2 = rebin_jv(wspot2,rspot2,watm,False)
 
@@ -123,7 +116,7 @@ def fmodel_chi(par,grad):
 
     # Load saved continuum
     c2 = fitobj_cp.continuum
-    smod *= c2#/np.median(c2)
+    smod *= c2
 
     # Apply continuum adjustment
     cont = par[10] + par[11]*fitobj_cp.x+ par[12]*(fitobj_cp.x**2) + par[20]*(fitobj_cp.x**3) + par[21]*(fitobj_cp.x**4) + par[22]*(fitobj_cp.x**5) + par[23]*(fitobj_cp.x**6)
@@ -141,11 +134,7 @@ def fmodel_chi(par,grad):
         for maskbounds in fitobj_cp.mask:
             mask[(fitobj_cp.x > maskbounds[0]) & (fitobj_cp.x < maskbounds[1]) ] = False
 
-    try:
-        if len(fitobj_cp.CRmask) != 0:
-            mask[fitobj_cp.CRmask] = False
-    except TypeError:
-        pass
+    mask[fitobj_cp.CRmask] = False
 
     # Compute chisq
     chisq = np.sum((fitobj_cp.s[mask] - smod[mask])**2. / fitobj_cp.u[mask]**2.)
@@ -169,7 +158,6 @@ def fmod(par,fitobj):
         sys.exit('WAVE ERROR 1 {}'.format(par[6:10]))
         return 1e10
 
-    # c = 2.99792e5
     c = 2.99792458e5
     npts = len(w)
 
@@ -184,22 +172,13 @@ def fmod(par,fitobj):
 
     vsini = par[4]
 
-
-
     # Rotationally broaden stellar template
     if vsini != 0:
         wspot2,rspot2 = rotint(wspot,sspot,vsini)
     else:
         wspot2 = wspot
         rspot2 = sspot
-    '''
-    # Rotationally broaden stellar template
-    if vsini != 0:
-        rspot2 = rotint_old(wspot,sspot,vsini,eps=.6,nr=5,ntheta=25,dif=None)
-    else:
-        rspot2 = sspot
-    wspot2 = wspot
-    '''
+        
     sspot2 = rebin_jv(wspot2,rspot2,watm,False)
 
     smod = sspot2*satm
@@ -218,6 +197,7 @@ def fmod(par,fitobj):
     except ValueError:
         sys.exit('IP ERROR 2 {} {} {}'.format(par[5],par[13],par[14]))
         return 1e10
+    
     fwhm = splev(watm,spl)
 
     vhwhm = dw*abs(fwhm)/mnw*c/2.
@@ -241,6 +221,13 @@ def fmod(par,fitobj):
 
     mask = np.ones_like(smod,dtype=bool)
     mask[(fitobj.s < .0)] = False
+    
+    if len(fitobj_cp.mask) != 0:
+        for maskbounds in fitobj_cp.mask:
+            mask[(fitobj_cp.x > maskbounds[0]) & (fitobj_cp.x < maskbounds[1]) ] = False
+
+    mask[fitobj_cp.CRmask] = False
+    
     chisq = np.sum((fitobj.s[mask] - smod[mask])**2. / fitobj.u[mask]**2.)
     chisq = chisq / (len(smod[mask]) - 15)
 
@@ -259,7 +246,6 @@ def fmod_conti(par,fitobj):
         sys.exit('WAVE ERROR 1 {}'.format(par[6:10]))
         return 1e10
 
-    # c = 2.99792e5
     c = 2.99792458e5
     npts = len(w)
 
@@ -308,7 +294,7 @@ def fmod_conti(par,fitobj):
 
     # Load saved continuum
     c2 = fitobj.continuum
-    smod *= c2#/np.median(c2)
+    smod *= c2
 
     # Apply continuum adjustment
     cont = par[10] + par[11]*fitobj.x+ par[12]*(fitobj.x**2) + par[20]*(fitobj.x**3) + par[21]*(fitobj.x**4) + par[22]*(fitobj.x**5) + par[23]*(fitobj.x**6)
