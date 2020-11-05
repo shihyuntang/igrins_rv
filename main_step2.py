@@ -5,12 +5,11 @@ from Engine.IO_AB      import setup_templates, init_fitsread,stellarmodel_setup,
 from Engine.clips      import basicclip_above
 from Engine.contfit    import A0cont
 from Engine.classes    import fitobjs,inparams
-# from Engine.macbro     import macbro
 from Engine.rebin_jv   import rebin_jv
 from Engine.rotint     import rotint
-from Engine.optwithtwodip import optimizer, fmod, fmod_conti
-# from Engine.opt_intense import optimizer, fmod, fmod_conti
-from Engine.outplotterwithtwodip import outplotter_23
+from Engine.opt import optimizer, fmod, fmod_conti
+from Engine.outplotter import outplotter_23
+from Engine.detect_peaks import detect_peaks
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
@@ -44,31 +43,15 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
     # Collect relevant beam and filenum info
     tagsnight = []; beamsnight = np.array([]);
-    for tag in inparam.tagsA[night]:
-        tagsnight.append(tag)
-        beamsnight = np.append(beamsnight, 'A')
     for tag in inparam.tagsB[night]:
         tagsnight.append(tag)
         beamsnight = np.append(beamsnight, 'B')
 
-    # Only do B exposures------
-    masterbeam = 'B'
-    #
-    # tag  = tagsnight[ [beamsnight=='B'][0][0] ] # use first B nodding
-    # beam = beamsnight[ [beamsnight=='B'][0][0] ]
+    # Only do B exposures, and just use first B nodding
+    masterbeam = 'B'; beam = 'B';
     tag  = tagsnight[0]
-    beam = 'B'
-    #--------------------------
-
-    # start at bucket loc = 1250 +- 100, width = 250 +- 100, depth = 100 +- 5000 but floor at 0
-    if args.band == 'H':
-        centerloc = 1280
-    else:
-        centerloc = 1150
-
-
-
-#-------------------------------------------------------------------------------
+    
+    #-------------------------------------------------------------------------------
     ### Initialize parameter array for optimization as well as half-range values for each parameter during the various steps of the optimization.
     ### Many of the parameters initialized here will be changed throughout the code before optimization and in between optimization steps.
     pars0 = np.array([np.nan,                                                # 0: The shift of the stellar template (km/s) [assigned later]
@@ -86,13 +69,21 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                       0.,                                                    #12: Continuum quadratic component
                       np.nan,                                                #13: Instrumental resolution linear component
                       np.nan,                                                #14: Instrumental resolution quadratic component
-                      centerloc,                                             #15: Blaze dip center location
-                      285,                                                   #16: Blaze dip full width
-                      0.05,                                                  #17: Blaze dip depth
-                      70,                                                    #18: Secondary blaze dip full width
-                      0.05])                                                 #19: Blaze dip depth
+                      0,                                                     #15: Blaze dip center location
+                      0,                                                     #16: Blaze dip full width
+                      0,                                                     #17: Blaze dip depth
+                      0,                                                     #18: Secondary blaze dip full width
+                      0,                                                     #19: Blaze dip depth
+                      0.0,                                                   #20: Continuum cubic component
+                      0.0,                                                   #21: Continuum quartic component
+                      0.0,                                                   #22: Continuum pentic component
+                      0.0])                                                  #23: Continuum hexic component
 
 
+    # This one specific order is small and telluric dominated, start with greater stellar template power to ensure good fits
+    if int(order) == 13:
+        pars0[1] = 0.8
+        
     # Load synthetic telluric template generated during Step 1
     # [:8] here is to ensure program works under Night_Split mode
 
@@ -188,10 +179,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     #-------------------------------------------------------------------------------
 
     # Execute S/N cut
-    try:
-        s2n = s/u
-    except:
-        print(  f'!!! ERROR !!! {inparam.inpath} {night} {order} {tag} {args.band}')
+    s2n = s/u
     if np.nanmedian(s2n) < float(args.SN_cut):
         logger.warning('  --> Bad S/N {:1.3f} < {} for {}{} {}... '.format( np.nanmedian(s2n), args.SN_cut, night, beam, tag))
         pass
@@ -220,6 +208,10 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     x_piece    = x_piece[   (wave_piece*1e4 > np.min(watm_in)+5) & (wave_piece*1e4 < np.max(watm_in)-5)]
     wave_piece = wave_piece[(wave_piece*1e4 > np.min(watm_in)+5) & (wave_piece*1e4 < np.max(watm_in)-5)]
 
+    # Normalize continuum from A0 to flux scale of data
+    continuum /= np.nanmedian(continuum)
+    continuum *= np.nanpercentile(s_piece,99)
+
     # --------------------------------------------------------------
 
     par = pars0.copy()
@@ -234,20 +226,30 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
     # Arrays defining parameter variations during optimization steps
     # Optimization will cycle twice. In the first cycle, the RVs can vary more than in the second.
-    #                             | 0    1    2    3 |  | ------ 4 ------ |  | 5 |   | 6     7     8           9  |  |10  11  12| |13 14|  |15  16  17  18  19|
-    dpars1 = {'cont' : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    1e7, 1, 1,   0, 0,    0., 0., 0., 0., 0. ]),
-              'twave': np.array([  0.0, 0.0, 0.0, 1.0,   0.0,                 0.0,   10.0, 10.0,  5.00000e-5, 1e-7,   0,   0, 0,   0, 0,    0., 0., 0., 0., 0. ]),
-              'ip'   : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.5,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,    0., 0., 0., 0., 0. ]),
-              's'    : np.array([ 20.0, 2.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,    0., 0., 0., 0., 0. ]),
-              'v'    : np.array([  0.0, 0.0, 0.0, 0.0,   inparam.vsinivary,   0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,    0., 0., 0., 0., 0. ])}
-    dpars2 = {'cont' : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    1e7, 1, 1,   0, 0,    0., 0., 0., 0., 0. ]),
-              'twave': np.array([  0.0, 0.0, 0.0, 1.0,   0.0,                 0.0,   10.0, 10.0,  5.00000e-5, 1e-7,   0,   0, 0,   0, 0,    0., 0., 0., 0., 0. ]),
-              'ip'   : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.5,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,    0., 0., 0., 0., 0. ]),
-              's'    : np.array([  5.0, 2.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,    0., 0., 0., 0., 0. ]),
-              'v'    : np.array([  0.0, 0.0, 0.0, 0.0,   inparam.vsinivary,   0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,    0., 0., 0., 0., 0. ])}
+    #                             | 0    1    2    3 |  | ------ 4 ------ |  | 5 |   | 6     7     8           9  |  |10  11  12| |13 14|  |15  16  17  18  19|  |20   21   22   23 |
+    dpars1 = {'cont' : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    1e7, 1, 1,   0, 0,    0., 0., 0., 0., 0.,   1.0, 1.0, 1.0, 1.0  ]),
+              'twave': np.array([  0.0, 0.0, 0.0, 1.0,   0.0,                 0.0,   10.0, 10.0,  5.00000e-5, 1e-7,   0,   0, 0,   0, 0,    0., 0., 0., 0., 0.,   0.0, 0.0, 0.0, 0.0 ]),
+              'ip'   : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.5,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,    0., 0., 0., 0., 0.,   0.0, 0.0, 0.0, 0.0 ]),
+              's'    : np.array([ 20.0, 2.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,    0., 0., 0., 0., 0.,   0.0, 0.0, 0.0, 0.0 ]),
+              'v'    : np.array([  0.0, 0.0, 0.0, 0.0,   inparam.vsinivary,   0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,    0., 0., 0., 0., 0.,   0.0, 0.0, 0.0, 0.0 ])}
+    
+    dpars2 = {'cont' : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    1e7, 1, 1,   0, 0,    0., 0., 0., 0., 0.,  1.0, 1.0, 1.0, 1.0  ]),
+              'twave': np.array([  0.0, 0.0, 0.0, 1.0,   0.0,                 0.0,   10.0, 10.0,  5.00000e-5, 1e-7,   0,   0, 0,   0, 0,    0., 0., 0., 0., 0.,   0.0, 0.0, 0.0, 0.0 ]),
+              'ip'   : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.5,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,    0., 0., 0., 0., 0.,   0.0, 0.0, 0.0, 0.0 ]),
+              's'    : np.array([  5.0, 2.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,    0., 0., 0., 0., 0.,   0.0, 0.0, 0.0, 0.0 ]),
+              'v'    : np.array([  0.0, 0.0, 0.0, 0.0,   inparam.vsinivary,   0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,    0., 0., 0., 0., 0.,   0.0, 0.0, 0.0, 0.0 ])}
+
+    # Use quadratic blaze correction for order 13; cubic for orders 6, 14, 21; quartic for orders 16 and 22
+    if args.band == 'H':
+        if int(order) in [13]:
+            dpars['cont'][20] = 0.; dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
+        elif int(order) in [6,14,21]:
+            dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
+        else:
+            pass
 
     continuum_in = rebin_jv(a0contx,continuum,x_piece,False)
-    fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]),masterbeam)
+    fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]),masterbeam,np.array([],dtype=int))
 
     #-------------------------------------------------------------------------------
 
@@ -260,8 +262,8 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
     if hardbounds[0] < 0.5:
         hardbounds[0] = 0.5
-    if hardbounds[3] < 1:
-        hardbounds[3] = 1
+    if hardbounds[2] < 1:
+        hardbounds[2] = 1
 
     # Begin optimization. Fit the blaze, the wavelength solution, the telluric template power and RV, the stellar template power and RV, the
     # zero point for the instrumental resolution, and the vsini of the star separately, iterating and cycling between each set of parameter fits.
@@ -285,7 +287,6 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
             dpars = dpars2
 
         for optkind in optgroup:
-            # print(f'{optkind}, nc={nc}, tag={tag}')
             parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize)
             parstart = parfit_1.copy()
             if args.debug == True:
@@ -323,8 +324,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         outplotter_23(parfit, fitobj,  'parfit_{}_{}_{}'.format(order,night,tag), trk, inparam, args, step2or3)
 
     rv0 = parfit[0]
-
-    rvsmini    = rv0 + inparam.bvcs[night+tag] + rv0*inparam.bvcs[night+tag]/(3e5**2) # Barycentric correction
+    rvsmini    = rv0 + inparam.bvcs[night+tag] + rv0*inparam.bvcs[night+tag]/(2.99792458e5**2) # Barycentric correction
     vsinismini = parfit[4]
 
     bestguess = round(rvsmini,5)
