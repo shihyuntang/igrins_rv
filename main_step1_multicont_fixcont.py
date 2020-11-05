@@ -7,8 +7,8 @@ from Engine.classes   import fitobjs,inparamsA0,orderdict_cla
 from Engine.rebin_jv  import rebin_jv
 from Engine.rotint    import rotint
 from Engine.Telfitter import telfitter
-from Engine.optwithtwodip import optimizer, fmod
-from Engine.outplotterwithtwodip import outplotter_tel
+from Engine.opt       import optimizer, fmod
+from Engine.outplotter import outplotter_tel
 from Engine.detect_peaks import detect_peaks
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
