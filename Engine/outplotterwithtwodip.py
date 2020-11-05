@@ -13,11 +13,7 @@ def outplotter_tel(parfit, fitobj, title, inparam, args, order):
         for maskbounds in fitobj.mask:
             mask[(fitobj.x > maskbounds[0]) & (fitobj.x < maskbounds[1]) ] = False
 
-    try:
-        if len(fitobj.CRmask) != 0:
-            mask[fitobj.CRmask] = False
-    except TypeError:
-        pass
+    mask[fitobj.CRmask] = False
 
     if args.band == 'H':
         if int(order) in [13]:
@@ -26,32 +22,28 @@ def outplotter_tel(parfit, fitobj, title, inparam, args, order):
             npars -= 3
         else:
             pass
+    else:
+        print("We haven't determined what polynomial orders for K band yet and hardcoded this!")
 
     if fitobj.masterbeam == 'B':
         npars -= 5
 
-    npars -= 6 # subtract 6 from npars total, 2 for linear/quadratic IP, 1 for RV_telluric, 2 fot stellar template power and RV, 1 for vsini
+    npars -= 6 # subtract 6 from npars total: 2 for linear/quadratic IP, 1 for RV_telluric, 2 fot stellar template power and RV, 1 for vsini
 
-    chi_new = chi*(len(fitobj.s[mask]) - len(parfit))/(len(fitobj.s[mask]) - npars)
+    chi_new = chi*(len(fitobj.s[mask]) - len(parfit))/(len(fitobj.s[mask]) - npars) # correct reduce chisq
 
     w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
 
-    c2 = fitobj.continuum
-    c2 = c2#/np.median(c2)
     cont = parfit[10] + parfit[11]*fitobj.x+ parfit[12]*(fitobj.x**2) + parfit[20]*(fitobj.x**3) + parfit[21]*(fitobj.x**4) + parfit[22]*(fitobj.x**5) + parfit[23]*(fitobj.x**6)
     if fitobj.masterbeam == 'A':
         bucket = np.zeros_like(cont)
         bucket[(fitobj.x >= (parfit[15]-parfit[16]/2)) & (fitobj.x <= (parfit[15]+parfit[16]/2))] = parfit[17]
         bucket[(fitobj.x >= (parfit[15]+parfit[16]/2-parfit[18])) & (fitobj.x <= (parfit[15]+parfit[16]/2))] += parfit[19]
         cont -= bucket
-    cont *= c2
+    cont *= fitobj.continuum
 
     mask2 = np.ones_like(fitobj.x,dtype=bool)
-    try:
-        if len(fitobj.CRmask) != 0:
-            mask2[fitobj.CRmask] = False
-    except TypeError:
-        pass
+    mask2[fitobj.CRmask] = False
 
     fig, axes = plt.subplots(1, 1, figsize=(6,3), facecolor='white', dpi=300)
 
@@ -100,11 +92,7 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3, order):
         for maskbounds in fitobj.mask:
             mask[(fitobj.x > maskbounds[0]) & (fitobj.x < maskbounds[1]) ] = False
 
-    try:
-        if len(fitobj.CRmask) != 0:
-            mask[fitobj.CRmask] = False
-    except TypeError:
-        pass
+    mask[fitobj.CRmask] = False
 
     if args.band == 'H':
         if int(order) in [13]:
@@ -113,6 +101,8 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3, order):
             npars -= 3
         else:
             pass
+    else:
+        print("We haven't determined what polynomial orders for K band yet and hardcoded this!")
 
     if fitobj.masterbeam == 'B':
         npars -= 5
@@ -123,24 +113,18 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3, order):
 
     w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
 
-    c2 = fitobj.continuum
-    c2 = c2#/np.median(c2)
     cont = parfit[10] + parfit[11]*fitobj.x+ parfit[12]*(fitobj.x**2) + parfit[20]*(fitobj.x**3) + parfit[21]*(fitobj.x**4) + parfit[22]*(fitobj.x**5) + parfit[23]*(fitobj.x**6)
     if fitobj.masterbeam == 'A':
         bucket = np.zeros_like(cont)
         bucket[(fitobj.x >= (parfit[15]-parfit[16]/2)) & (fitobj.x <= (parfit[15]+parfit[16]/2))] = parfit[17]
         bucket[(fitobj.x >= (parfit[15]+parfit[16]/2-parfit[18])) & (fitobj.x <= (parfit[15]+parfit[16]/2))] += parfit[19]
         cont -= bucket
-    cont *= c2
+    cont *= fitobj.continuum
 
     fig, axes = plt.subplots(1, 1, figsize=(6,3), facecolor='white', dpi=300)
 
     mask2 = np.ones_like(fitobj.x,dtype=bool)
-    try:
-        if len(fitobj.CRmask) != 0:
-            mask2[fitobj.CRmask] = False
-    except TypeError:
-        pass
+    mask2[fitobj.CRmask] = False
 
     n = len(fitobj.mask)
 
