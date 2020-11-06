@@ -218,7 +218,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
 
     pre_err = False
 
-    cycles = 3
+    cycles = 2
 
     optgroup = ['twave', 'cont',
                 'cont', 'twave', 'cont',
@@ -372,6 +372,8 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
         # This allows for any tweaks to the blaze function fit that may be necessary.
         fitobj = fitobjs(s, x, u, continuum,watm1,satm1,mflux_in,mwave_in,[], masterbeam, CRmaskF)
 
+        cycles = 3
+        
         nk = 1
         for nc, cycle in enumerate(np.arange(cycles), start=1):
             if cycle == 0:
