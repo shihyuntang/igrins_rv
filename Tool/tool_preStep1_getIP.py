@@ -89,7 +89,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
     a0u        = basicclip_above(a0u,a0fluxlist,nzones);   a0fluxlist = basicclip_above(a0fluxlist,a0fluxlist,nzones);
 
     # Compute rough blaze function estimate. Better fit will be provided by Telfit later.
-    continuum    = A0cont(a0wavelist,a0fluxlist,night,order)
+    continuum    = A0cont(a0wavelist,a0fluxlist,night,order,args.band)
     a0masterwave = a0wavelist.copy()
     a0masterwave *= 1e4
 
