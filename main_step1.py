@@ -191,7 +191,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
             dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
         else:
             pass
-            
+
     # Initialize an array that puts hard bounds on vsini and the instrumental resolution to make sure they do not diverge to unphysical values
     optimize = True
     par_in = parA0.copy()
@@ -250,7 +250,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                 # Everywhere where data protrudes high above model, check whether slope surrounding protrusion is /\ and mask if sufficiently steep
                 residual = fitobj.s/fit
                 MAD = np.median(abs(np.median(residual)-residual))
-                CRmask = np.array(np.where(residual > np.median(residual)+2*MAD)[0]) 
+                CRmask = np.array(np.where(residual > np.median(residual)+2*MAD)[0])
 
                 CRmaskF = []; CRmask = list(CRmask);
 
@@ -288,12 +288,12 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                 w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
                 mask = np.ones_like(w,dtype=bool)
                 mask[CRmaskF] = False
-                continuum    = A0cont(w[mask]/1e4,s[mask],night,order)
+                continuum    = A0cont(w[mask]/1e4,s[mask],night,order,args.band)
                 continuum    = rebin_jv(w[mask],continuum,w,False)
                 fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam, CRmaskF)
 
         parfit = parfit_1.copy()
-        
+
         # If dip present, correct it out of data before running Telfit to enable better fit
         if masterbeam == 'A':
             cont = parfit[10] + parfit[11]*fitobj.x+ parfit[12]*(fitobj.x**2) + parfit[20]*(fitobj.x**3) + parfit[21]*(fitobj.x**4) + parfit[22]*(fitobj.x**5) + parfit[23]*(fitobj.x**6)
@@ -302,7 +302,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
             bucket[(fitobj.x >= (parfit[15]-parfit[16]/2)) & (fitobj.x <= (parfit[15]+parfit[16]/2))] = parfit[17]
             bucket[(fitobj.x >= (parfit[15]+parfit[16]/2-parfit[18])) & (fitobj.x <= (parfit[15]+parfit[16]/2))] += parfit[19]
             cont -= bucket
-            
+
             cont *= continuum
             cont0 *= continuum
             justdip = cont/cont0
