@@ -227,99 +227,99 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                 'ip', 'twave',  'cont',
                 'twave','ip']
 
-    #try:
-    nk = 1
-    for nc, cycle in enumerate(np.arange(cycles), start=1):
-        if cycle == 0:
-            parstart = par_in.copy()
+    try:
+        nk = 1
+        for nc, cycle in enumerate(np.arange(cycles), start=1):
+            if cycle == 0:
+                parstart = par_in.copy()
 
-        for optkind in optgroup:
-            parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize)
-            parstart = parfit_1.copy()
-            nk += 1
+            for optkind in optgroup:
+                parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize)
+                parstart = parfit_1.copy()
+                nk += 1
 
-        ## After first cycle, use best fit model to identify CRs/hot pixels
-        if nc == 1:
-            parfit = parfit_1.copy()
-            fit,chi = fmod(parfit, fitobj)
+            ## After first cycle, use best fit model to identify CRs/hot pixels
+            if nc == 1:
+                parfit = parfit_1.copy()
+                fit,chi = fmod(parfit, fitobj)
 
-            # Everywhere where data protrudes high above model, check whether slope surrounding protrusion is /\ and mask if sufficiently steep
-            residual = fitobj.s/fit
-            MAD = np.median(abs(np.median(residual)-residual))
-            CRmask = np.array(np.where(residual > np.median(residual)+2*MAD)[0])
+                # Everywhere where data protrudes high above model, check whether slope surrounding protrusion is /\ and mask if sufficiently steep
+                residual = fitobj.s/fit
+                MAD = np.median(abs(np.median(residual)-residual))
+                CRmask = np.array(np.where(residual > np.median(residual)+2*MAD)[0])
 
-            CRmaskF = []; CRmask = list(CRmask);
+                CRmaskF = []; CRmask = list(CRmask);
 
-            for hit in [0,len(fitobj.x)-1]:
-                if hit in CRmask:
-                    CRmaskF.append(hit)
-                    CRmask.remove(hit)
-            CRmask = np.array(CRmask, dtype=np.int); CRmaskF = np.array(CRmaskF, dtype=np.int);
+                for hit in [0,len(fitobj.x)-1]:
+                    if hit in CRmask:
+                        CRmaskF.append(hit)
+                        CRmask.remove(hit)
+                CRmask = np.array(CRmask, dtype=np.int); CRmaskF = np.array(CRmaskF, dtype=np.int);
 
-            for group in mit.consecutive_groups(CRmask):
-                group = np.array(list(group))
-                if len(group) == 1:
-                    gL = group-1; gR = group+1;
-                else:
-                    peaks = detect_peaks(fitobj.s[group])
-                    if len(peaks) < 1:
-                        group = np.concatenate((np.array([group[0]-1]),group,np.array([group[-1]+1])))
+                for group in mit.consecutive_groups(CRmask):
+                    group = np.array(list(group))
+                    if len(group) == 1:
+                        gL = group-1; gR = group+1;
+                    else:
                         peaks = detect_peaks(fitobj.s[group])
                         if len(peaks) < 1:
+                            group = np.concatenate((np.array([group[0]-1]),group,np.array([group[-1]+1])))
+                            peaks = detect_peaks(fitobj.s[group])
+                            if len(peaks) < 1:
+                                continue
+                        if len(peaks) > 1:
                             continue
-                    if len(peaks) > 1:
-                        continue
-                    gL = group[:peaks[0]]; gR = group[peaks[0]+1:];
+                        gL = group[:peaks[0]]; gR = group[peaks[0]+1:];
 
-                slopeL = (fitobj.s[gL+1]-fitobj.s[gL])/(fitobj.x[gL+1]-fitobj.x[gL])
-                slopeR = (fitobj.s[gR]-fitobj.s[gR-1])/(fitobj.x[gR]-fitobj.x[gR-1])
-                try:
-                    if (min(slopeL) > 300) and (max(slopeR) < -300) and len(group) < 6:
-                        CRmaskF = np.concatenate((CRmaskF,group))
-                except ValueError:
-                    if (slopeL > 300) and (slopeR < -300):
-                        CRmaskF = np.concatenate((CRmaskF,group))
+                    slopeL = (fitobj.s[gL+1]-fitobj.s[gL])/(fitobj.x[gL+1]-fitobj.x[gL])
+                    slopeR = (fitobj.s[gR]-fitobj.s[gR-1])/(fitobj.x[gR]-fitobj.x[gR-1])
+                    try:
+                        if (min(slopeL) > 300) and (max(slopeR) < -300) and len(group) < 6:
+                            CRmaskF = np.concatenate((CRmaskF,group))
+                    except ValueError:
+                        if (slopeL > 300) and (slopeR < -300):
+                            CRmaskF = np.concatenate((CRmaskF,group))
 
-            # Redo rough blaze fit in case hot pixels were throwing it off
-            w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
-            mask = np.ones_like(w,dtype=bool)
-            mask[CRmaskF] = False
-            continuum    = A0cont(w[mask]/1e4,s[mask],night,order)
-            continuum    = rebin_jv(w[mask],continuum,w,False)
-            fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam, CRmaskF)
+                # Redo rough blaze fit in case hot pixels were throwing it off
+                w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
+                mask = np.ones_like(w,dtype=bool)
+                mask[CRmaskF] = False
+                continuum    = A0cont(w[mask]/1e4,s[mask],night,order)
+                continuum    = rebin_jv(w[mask],continuum,w,False)
+                fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam, CRmaskF)
 
-    parfit = parfit_1.copy()
+        parfit = parfit_1.copy()
 
-    # If dip present, correct it out of data before running Telfit to enable better fit
-    if masterbeam == 'A':
-        cont = parfit[10] + parfit[11]*fitobj.x+ parfit[12]*(fitobj.x**2) + parfit[20]*(fitobj.x**3) + parfit[21]*(fitobj.x**4) + parfit[22]*(fitobj.x**5) + parfit[23]*(fitobj.x**6)
-        cont0 = cont.copy()
-        bucket = np.zeros_like(cont)
-        bucket[(fitobj.x >= (parfit[15]-parfit[16]/2)) & (fitobj.x <= (parfit[15]+parfit[16]/2))] = parfit[17]
-        bucket[(fitobj.x >= (parfit[15]+parfit[16]/2-parfit[18])) & (fitobj.x <= (parfit[15]+parfit[16]/2))] += parfit[19]
-        cont -= bucket
+        # If dip present, correct it out of data before running Telfit to enable better fit
+        if masterbeam == 'A':
+            cont = parfit[10] + parfit[11]*fitobj.x+ parfit[12]*(fitobj.x**2) + parfit[20]*(fitobj.x**3) + parfit[21]*(fitobj.x**4) + parfit[22]*(fitobj.x**5) + parfit[23]*(fitobj.x**6)
+            cont0 = cont.copy()
+            bucket = np.zeros_like(cont)
+            bucket[(fitobj.x >= (parfit[15]-parfit[16]/2)) & (fitobj.x <= (parfit[15]+parfit[16]/2))] = parfit[17]
+            bucket[(fitobj.x >= (parfit[15]+parfit[16]/2-parfit[18])) & (fitobj.x <= (parfit[15]+parfit[16]/2))] += parfit[19]
+            cont -= bucket
 
-        justdip = cont/cont0
-        a0fluxlist /= justdip
+            justdip = cont/cont0
+            a0fluxlist /= justdip
 
-#    except:
-    pre_err = True
-    logger.warning(f'  --> NIGHT {night}, ORDER {order} HIT ERROR DURING PRE_OPT')
-    # Write out table to fits header with errorflag = 1
-    c0    = fits.Column(name=f'ERRORFLAG{order}', array=np.array([1]), format='K')
-    cols  = fits.ColDefs([c0])
-    hdu_1 = fits.BinTableHDU.from_columns(cols)
+    except:
+        pre_err = True
+        logger.warning(f'  --> NIGHT {night}, ORDER {order} HIT ERROR DURING PRE_OPT')
+        # Write out table to fits header with errorflag = 1
+        c0    = fits.Column(name=f'ERRORFLAG{order}', array=np.array([1]), format='K')
+        cols  = fits.ColDefs([c0])
+        hdu_1 = fits.BinTableHDU.from_columns(cols)
 
-    # If first time writing fits file, make up filler primary hdu
-    if order == firstorder:
-        bleh = np.ones((3,3))
-        primary_hdu = fits.PrimaryHDU(bleh)
-        hdul = fits.HDUList([primary_hdu,hdu_1])
-        hdul.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band), overwrite=True)
-    else:
-        hh = fits.open('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band))
-        hh.append(hdu_1)
-        hh.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band), overwrite=True)
+        # If first time writing fits file, make up filler primary hdu
+        if order == firstorder:
+            bleh = np.ones((3,3))
+            primary_hdu = fits.PrimaryHDU(bleh)
+            hdul = fits.HDUList([primary_hdu,hdu_1])
+            hdul.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band), overwrite=True)
+        else:
+            hh = fits.open('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band))
+            hh.append(hdu_1)
+            hh.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band), overwrite=True)
 
 
     #-------------------------------------------------------------------------------
