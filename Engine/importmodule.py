@@ -95,7 +95,7 @@ def read_prepdata(args):
         if os.getcwd()[-1]=='v':
             bounddata = Table.read('./Input/UseWv/XRegions_{}_{}.csv'.format(args.WRegion, args.band), format='csv')
         else:
-            bounddata = Table.read('../Input/UseWv/XRegions_{}_{}.csv'.format(args.WRegion, args.band), format='csv')            
+            bounddata = Table.read('../Input/UseWv/XRegions_{}_{}.csv'.format(args.WRegion, args.band), format='csv')
         starts  = np.array(bounddata['start'])
         ends    = np.array(bounddata['end'])
         orders  = np.array(bounddata['order'], dtype=int)
@@ -136,7 +136,7 @@ def read_prepdata(args):
         tagsB[Tnights[-1]] = tagsB0
 
         nightsFinal = np.array(list(sorted(set(Tnights))))
-        
+
         obs = np.array([obs0[n[:8]] for n in nightsFinal])
 
         return xbounddict, maskdict, tagsA, tagsB, mjds, bvcs, nightsFinal, orders, obs

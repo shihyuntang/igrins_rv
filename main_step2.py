@@ -50,7 +50,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     # Only do B exposures, and just use first B nodding
     masterbeam = 'B'; beam = 'B';
     tag  = tagsnight[0]
-    
+
     #-------------------------------------------------------------------------------
     ### Initialize parameter array for optimization as well as half-range values for each parameter during the various steps of the optimization.
     ### Many of the parameters initialized here will be changed throughout the code before optimization and in between optimization steps.
@@ -83,7 +83,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     # This one specific order is small and telluric dominated, start with greater stellar template power to ensure good fits
     if int(order) == 13:
         pars0[1] = 0.8
-        
+
     # Load synthetic telluric template generated during Step 1
     # [:8] here is to ensure program works under Night_Split mode
 
@@ -104,7 +104,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         except:
             continue
 
-    fits_layer = [ i for i in np.arange(num_orders)+1 if int(hdulist[i].columns[0].name[9:]) == order ][0]
+    fits_layer = [ i for i in np.arange(num_orders)+1 if np.int(hdulist[i].columns[0].name[9:]) == order ][0]
 
     tbdata = hdulist[ fits_layer ].data
     flag = np.array(tbdata[f'ERRORFLAG{order}'])[0]
@@ -113,7 +113,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     nexto = 0
     ordertry = order
     while 1 == 1:
-        fits_layer = [ i for i in np.arange(num_orders)+1 if int(hdulist[i].columns[0].name[9:]) == ordertry ][0]
+        fits_layer = [ i for i in np.arange(num_orders)+1 if np.int(hdulist[i].columns[0].name[9:]) == ordertry ][0]
 
         tbdata = hdulist[ fits_layer ].data
         flag = np.array(tbdata[f'ERRORFLAG{ordertry}'])[0]
@@ -147,7 +147,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
 
     # Use instrumental profile dictionary corresponding to whether IGRINS mounting was loose or not
-    if (int(night[:8]) < 20180401) or (int(night[:8]) > 20190531):
+    if (np.int(night[:8]) < 20180401) or (np.int(night[:8]) > 20190531):
         IPpars = inparam.ips_tightmount_pars[args.band][masterbeam][order]
     else:
         IPpars = inparam.ips_loosemount_pars[args.band][masterbeam][order]
@@ -180,7 +180,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
     # Execute S/N cut
     s2n = s/u
-    if np.nanmedian(s2n) < float(args.SN_cut):
+    if np.nanmedian(s2n) < np.float(args.SN_cut):
         logger.warning('  --> Bad S/N {:1.3f} < {} for {}{} {}... '.format( np.nanmedian(s2n), args.SN_cut, night, beam, tag))
         pass
 
@@ -232,7 +232,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
               'ip'   : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.5,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,    0., 0., 0., 0., 0.,   0.0, 0.0, 0.0, 0.0 ]),
               's'    : np.array([ 20.0, 2.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,    0., 0., 0., 0., 0.,   0.0, 0.0, 0.0, 0.0 ]),
               'v'    : np.array([  0.0, 0.0, 0.0, 0.0,   inparam.vsinivary,   0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,    0., 0., 0., 0., 0.,   0.0, 0.0, 0.0, 0.0 ])}
-    
+
     dpars2 = {'cont' : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    1e7, 1, 1,   0, 0,    0., 0., 0., 0., 0.,  1.0, 1.0, 1.0, 1.0  ]),
               'twave': np.array([  0.0, 0.0, 0.0, 1.0,   0.0,                 0.0,   10.0, 10.0,  5.00000e-5, 1e-7,   0,   0, 0,   0, 0,    0., 0., 0., 0., 0.,   0.0, 0.0, 0.0, 0.0 ]),
               'ip'   : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.5,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,    0., 0., 0., 0., 0.,   0.0, 0.0, 0.0, 0.0 ]),
@@ -327,8 +327,8 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     rvsmini    = rv0 + inparam.bvcs[night+tag] + rv0*inparam.bvcs[night+tag]/(2.99792458e5**2) # Barycentric correction
     vsinismini = parfit[4]
 
-    bestguess = round(rvsmini,5)
-    vsinimini = round(vsinismini,5)
+    bestguess = np.round(rvsmini,5)
+    vsinimini = np.round(vsinismini,5)
     return night, bestguess, vsinimini
 
 #-------------------------------------------------------------------------------
@@ -403,8 +403,8 @@ if __name__ == '__main__':
 
     #### Check user inputs
 
-    initvsini = float(args.initvsini)
-    vsinivary = float(args.vsinivary)
+    initvsini = np.float(args.initvsini)
+    vsinivary = np.float(args.vsinivary)
 
     #------------------------------
 

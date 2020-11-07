@@ -20,7 +20,7 @@ def A0cont(a0wavecut,a0vcut,night,order,band):
         f = np.polyfit(x[peaks],a0vcut[peaks],4)
         q = np.poly1d(f)
         residual = a0vcut[peaks]-q(x[peaks])
-        MAD = np.median(abs(residual-np.median(residual)))
+        MAD = np.median(np.abs(residual-np.median(residual)))
 
         '''
         plt.figure(figsize=(20,12))
@@ -36,7 +36,7 @@ def A0cont(a0wavecut,a0vcut,night,order,band):
 
         mask[(a0vcut[peaks] < .1)] = False
         mask[(a0vcut[peaks] < q(x[peaks])-5*MAD)] = False
-        mask[(a0vcut[peaks] > q(x[peaks])+3*MAD)] = False 
+        mask[(a0vcut[peaks] > q(x[peaks])+3*MAD)] = False
         peaks = peaks[mask]
 
     c = 0

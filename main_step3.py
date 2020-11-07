@@ -115,11 +115,11 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         # [:8] here is to ensure program works under Night_Split mode
 
         # Use instrumental profile dictionary corresponding to whether IGRINS mounting was loose or not
-        if int(night[:8]) < 20180401 or int(night[:8]) > 20190531:
+        if np.int(night[:8]) < 20180401 or np.int(night[:8]) > 20190531:
             IPpars = inparam.ips_tightmount_pars[args.band][masterbeam][order]
         else:
             IPpars = inparam.ips_loosemount_pars[args.band][masterbeam][order]
-            
+
         if beam == 'A':
             antibeam = 'B'
         elif beam == 'B':
@@ -144,7 +144,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
             except:
                 continue
 
-        fits_layer = [ i for i in np.arange(num_orders)+1 if int(hdulist[i].columns[0].name[9:]) == order ][0]
+        fits_layer = [ i for i in np.arange(num_orders)+1 if np.int(hdulist[i].columns[0].name[9:]) == order ][0]
 
         tbdata = hdulist[ fits_layer ].data
         flag = np.array(tbdata[f'ERRORFLAG{order}'])[0]
@@ -195,7 +195,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
         # Execute S/N cut
         s2n = s/u
-        if np.nanmedian(s2n) < float(args.SN_cut):
+        if np.nanmedian(s2n) < np.float(args.SN_cut):
             logger.warning('  --> Bad S/N {:1.3f} < {} for {}{} {}, SKIP'.format( np.nanmedian(s2n), args.SN_cut, night, beam, tag))
             continue
 
@@ -252,9 +252,9 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
         # Use quadratic blaze correction for order 13; cubic for orders 6, 14, 21; quartic for orders 16 and 22
         if args.band == 'H':
-            if int(order) in [13]:
+            if np.int(order) in [13]:
                 dpars['cont'][20] = 0.; dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
-            elif int(order) in [6,14,21]:
+            elif np.int(order) in [6,14,21]:
                 dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
             else:
                 pass
@@ -318,7 +318,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                 # Everywhere where data protrudes high above model, check whether slope surrounding protrusion is /\ and mask if sufficiently steep
                 residual = fitobj.s/fit
                 MAD = np.median(abs(np.median(residual)-residual))
-                CRmask = np.array(np.where(residual > np.median(residual)+2*MAD)[0]) 
+                CRmask = np.array(np.where(residual > np.median(residual)+2*MAD)[0])
 
                 CRmaskF = []; CRmask = list(CRmask);
 
@@ -346,7 +346,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                     slopeL = (fitobj.s[gL+1]-fitobj.s[gL])/(fitobj.x[gL+1]-fitobj.x[gL])
                     slopeR = (fitobj.s[gR]-fitobj.s[gR-1])/(fitobj.x[gR]-fitobj.x[gR-1])
                     try:
-                        if (min(slopeL) > 300) and (max(slopeR) < -300) and len(group) < 6:
+                        if (np.min(slopeL) > 300) and (np.max(slopeR) < -300) and len(group) < 6:
                             CRmaskF = np.concatenate((CRmaskF,group))
                     except ValueError:
                         if (slopeL > 300) and (slopeR < -300):
@@ -389,7 +389,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         parfitminibox[t]= parfit
         vsiniminibox[t] = parfit[4]
         tagsminibox[t]  = tag
-        
+
     return nightsout,rvsminibox,parfitminibox,vsiniminibox,tagsminibox
 
 #-------------------------------------------------------------------------------
@@ -529,7 +529,7 @@ if __name__ == '__main__':
     #------------------------------
 
     if args.mode.lower() == 'std': # Specify initial RV guesses as a single value applied to all nights
-        initguesses = float(args.guesses)
+        initguesses = np.float(args.guesses)
         initguesses_show = initguesses
     else: # Load initial RV guesses from file
         if args.guesses_source == 'init': # From Step 2 results
@@ -554,7 +554,7 @@ if __name__ == '__main__':
             initguesses = {}
             initguesses_show = f'RVresultsSummary_{args.guessesX}.csv'
             for hrt in range(len(initnights)):
-                initguesses[str(initnights[hrt])] = float(initrvs[hrt])
+                initguesses[str(initnights[hrt])] = np.float(initrvs[hrt])
 
     #-------------------------------------------------------------------------------
 
@@ -662,7 +662,7 @@ Input Parameters:
     #-------------------------------------------------------------------------------
 
     # Retrieve stellar and telluric templates
-    watm,satm, mwave0, mflux0 = setup_templates(logger, args.template, args.band, int(args.temperature), float(args.logg))
+    watm,satm, mwave0, mflux0 = setup_templates(logger, args.template, args.band, np.int(args.temperature), np.float(args.logg))
 
     # Save pars in class for future use
     inparam = inparams(inpath,outpath,initvsini,vsinivary,args.plotfigs,

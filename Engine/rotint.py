@@ -11,7 +11,7 @@ def rotint(wave_spec,flux_spec,vrot):
     dvelo = velo_[1]-velo_[0]
     vrot = vrot/(2.99792e5)
     #-- compute the convolution kernel and normalise it
-    n = int(2*vrot/dvelo)
+    n = np.int(2*vrot/dvelo)
     velo_k = np.arange(n)*dvelo
     velo_k -= velo_k[-1]/2.
     y = 1 - (velo_k/vrot)**2 # transformation of velocity

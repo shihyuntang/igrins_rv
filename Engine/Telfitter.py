@@ -77,10 +77,10 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
     # DCT data has parameters describing night of observation that the McDonald data does not.
     if inparam.zds[night] != 'NOINFO': # If such information is available:
 
-        angle       = float(inparam.zds[night])           #Zenith distance
-        pressure    = float(inparam.press[night])         #Pressure, in hPa
-        humidity    = float(inparam.humids[night])        #Percent humidity, at the observatory altitude
-        temperature = float(inparam.temps[night])+273.15  #Temperature in Kelvin
+        angle       = np.float(inparam.zds[night])           #Zenith distance
+        pressure    = np.float(inparam.press[night])         #Pressure, in hPa
+        humidity    = np.float(inparam.humids[night])        #Percent humidity, at the observatory altitude
+        temperature = np.float(inparam.temps[night])+273.15  #Temperature in Kelvin
         resolution  = 45000.0                             #Resolution lambda/delta-lambda
 
         # Ideally, we'd fit resolution as well since that varies across the detector.
@@ -340,7 +340,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
     Livingston_minimum_wsep = .035
     IGRINS_minimum_wsep     = .130 # <-- This would compute template with IGRINS resolution, sensibly coarser than Livingston
 
-    newwave = np.arange(min(watm_in)-25, max(watm_in)+25, Livingston_minimum_wsep)
+    newwave = np.arange(np.min(watm_in)-25, np.max(watm_in)+25, Livingston_minimum_wsep)
 
     data2 = DataStructures.xypoint(x=newwave*units.angstrom,
                                    y=None,
@@ -348,7 +348,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
                                    err=None)
     params = {}
     for k in range(len(names)):
-        params[names[k]] = float(parfitted[k])
+        params[names[k]] = np.float(parfitted[k])
 
     params['wavestart'] = data2.x[0] -0.01*units.angstrom
     params['waveend']   = data2.x[-1]+0.01*units.angstrom
@@ -578,7 +578,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
     parfittedL = telparsdict[str(order)]
     paramsL = {}
     for k in range(len(names)):
-        paramsL[names[k]] = float(parfittedL[k])
+        paramsL[names[k]] = np.float(parfittedL[k])
 
     params['wavestart'] = dataL.x[0]
     params['waveend']   = dataL.x[-1]
@@ -602,7 +602,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
 
     watm_Liv  = inparam.watm[ (inparam.watm > watmLivGen[0]+1) & (inparam.watm < watmLivGen[-1]-1) ]
     satm_Liv  = inparam.satm[ (inparam.watm > watmLivGen[0]+1) & (inparam.watm < watmLivGen[-1]-1 )]
-    dpar = abs(initguess)*10
+    dpar = np.abs(initguess)*10
     dpar[-1] = 5
 
     waveparfit = wavefit(initguess, dpar)

@@ -85,7 +85,7 @@ def fmodel_chi(par,grad):
     else:
         wspot2 = wspot
         rspot2 = sspot
-        
+
     #Now rebin the spot spectrum onto the telluric wavelength scale
     sspot2 = rebin_jv(wspot2,rspot2,watm,False)
 
@@ -103,11 +103,11 @@ def fmodel_chi(par,grad):
     except:
         return 1e10
     fwhm = splev(watm,spl)
-    if min(fwhm) < 1 or max(fwhm) > 7:
+    if np.min(fwhm) < 1 or np.max(fwhm) > 7:
         return 1e10
 
     #Handle instrumental broadening
-    vhwhm = dw*abs(fwhm)/mnw*c/2.
+    vhwhm = dw*np.abs(fwhm)/mnw*c/2.
     nsmod = macbro_dyn(vel,smod,vhwhm)
 
     #Rebin model to observed wavelength scale
@@ -177,7 +177,7 @@ def fmod(par,fitobj):
     else:
         wspot2 = wspot
         rspot2 = sspot
-        
+
     sspot2 = rebin_jv(wspot2,rspot2,watm,False)
 
     smod = sspot2*satm
@@ -188,18 +188,18 @@ def fmod(par,fitobj):
     vel = (watm-mnw)/mnw*c
 
     fwhmraw = par[5] + par[13]*(fitobj.x) + par[14]*(fitobj.x**2)
-    if min(fwhmraw) < 1 or max(fwhmraw) > 7:
-        sys.exit('IP ERROR 1 {} {} {} {} {}'.format(par[5],par[13],par[14],min(fwhmraw),max(fwhmraw) ))
+    if np.min(fwhmraw) < 1 or np.max(fwhmraw) > 7:
+        sys.exit('IP ERROR 1 {} {} {} {} {}'.format(par[5],par[13],par[14],np.min(fwhmraw),np.max(fwhmraw) ))
         return 1e10
     try:
         spl = splrep(w,fwhmraw)
     except ValueError:
         sys.exit('IP ERROR 2 {} {} {}'.format(par[5],par[13],par[14]))
         return 1e10
-    
+
     fwhm = splev(watm,spl)
 
-    vhwhm = dw*abs(fwhm)/mnw*c/2.
+    vhwhm = dw*np.abs(fwhm)/mnw*c/2.
     nsmod = macbro_dyn(vel,smod,vhwhm)
 
     #Rebin model to observed wavelength scale
@@ -220,13 +220,13 @@ def fmod(par,fitobj):
 
     mask = np.ones_like(smod,dtype=bool)
     mask[(fitobj.s < .0)] = False
-    
+
     if len(fitobj_cp.mask) != 0:
         for maskbounds in fitobj_cp.mask:
             mask[(fitobj_cp.x > maskbounds[0]) & (fitobj_cp.x < maskbounds[1]) ] = False
 
     mask[fitobj_cp.CRmask] = False
-    
+
     chisq = np.sum((fitobj.s[mask] - smod[mask])**2. / fitobj.u[mask]**2.)
     chisq = chisq / (len(smod[mask]) - 15)
 
@@ -275,8 +275,8 @@ def fmod_conti(par,fitobj):
     vel = (watm-mnw)/mnw*c
 
     fwhmraw = par[5] + par[13]*(fitobj.x) + par[14]*(fitobj.x**2)
-    if min(fwhmraw) < 1 or max(fwhmraw) > 7:
-        sys.exit('IP ERROR 1 {} {} {} {} {}'.format(par[5],par[13],par[14],min(fwhmraw),max(fwhmraw) ))
+    if np.min(fwhmraw) < 1 or np.max(fwhmraw) > 7:
+        sys.exit('IP ERROR 1 {} {} {} {} {}'.format(par[5],par[13],par[14],np.min(fwhmraw),np.max(fwhmraw) ))
         return 1e10
     try:
         spl = splrep(w,fwhmraw)
@@ -285,7 +285,7 @@ def fmod_conti(par,fitobj):
         return 1e10
     fwhm = splev(watm,spl)
 
-    vhwhm = dw*abs(fwhm)/mnw*c/2.
+    vhwhm = dw*np.abs(fwhm)/mnw*c/2.
     nsmod = macbro_dyn(vel,smod,vhwhm)
 
     #Rebin model to observed wavelength scale

@@ -40,12 +40,12 @@ def rotint_old(w,s,vsini,eps=None,nr=None,ntheta=None,dif=None):
 
     for j in range(nr):
         r=dr/2.+j*dr # step from dr/2 to 3dr/2, 5dr/2, etc til you hit edge
-        area=((r+dr/2.)**2-(r-dr/2.)**2)/int(ntheta*r)*(1.-eps+eps*np.cos(np.arcsin(r))) # annulus for 0 to r, r to 2r, etc, times (1 - e + e*cos(arcsin(r))) (limb darkening effectively changes area?
+        area=((r+dr/2.)**2-(r-dr/2.)**2)/np.int(ntheta*r)*(1.-eps+eps*np.cos(np.arcsin(r))) # annulus for 0 to r, r to 2r, etc, times (1 - e + e*cos(arcsin(r))) (limb darkening effectively changes area?
         # divide by int(ntheta*r) because about to iterate through ntheta, higher r means a given ntheta corresponds to larger area, so...what
         for k in range(int(ntheta*r)):
             th=np.pi/int(ntheta*r)+k*2.*np.pi/int(ntheta*r)
 
-            if dif != 0:    
+            if dif != 0:
                 vl = vsini*r*np.sin(th)*(1.-dif/2.-dif/2.*np.cos(2.*np.arccos(r*np.cos(th))))
             else:
                 vl=r*vsini*np.sin(th)
@@ -55,8 +55,5 @@ def rotint_old(w,s,vsini,eps=None,nr=None,ntheta=None,dif=None):
             tarea += area
 
     ns /= tarea
-                
+
     return ns
-            
-        
-    

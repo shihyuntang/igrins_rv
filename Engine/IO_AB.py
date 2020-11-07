@@ -61,7 +61,7 @@ def init_fitsread(path,kind,beam,night,order,tag,band,Ncuts=None):
                 ia = np.ones_like(wavelist0,dtype=bool)
                 ia[0:Nstartcut] = False; ia[-Nendcut:len(ia)] = False;
                 wavelist1 = wavelist0[ia]; fluxlist1 = fluxlist0[ia]; s2nlist1 = s2nlist0[ia];
-                xlist = np.arange(len(wavelist1),dtype=float) + float(Nstartcut)
+                xlist = np.arange(len(wavelist1),dtype=float) + np.float(Nstartcut)
             else:
                 wavelist1 = wavelist0; fluxlist1 = fluxlist0; s2nlist1 = s2nlist0;
                 xlist = np.arange(len(wavelist1),dtype=float)
@@ -98,7 +98,7 @@ def init_fitsread(path,kind,beam,night,order,tag,band,Ncuts=None):
             ia = np.ones_like(wavelist0,dtype=bool)
             ia[0:Nstartcut] = False; ia[-Nendcut:len(ia)] = False;
             wavelist = wavelist0[ia]; fluxlist = fluxlist0[ia]; s2nlist = s2nlist0[ia];
-            xlist = np.arange(len(wavelist),dtype=float) + float(Nstartcut)
+            xlist = np.arange(len(wavelist),dtype=float) + np.float(Nstartcut)
         else:
             wavelist = wavelist0; fluxlist = fluxlist0; s2nlist = s2nlist0;
             xlist = np.arange(len(wavelist),dtype=float)
@@ -126,7 +126,7 @@ def init_fitsread(path,kind,beam,night,order,tag,band,Ncuts=None):
         x = x[5:-5]
 
     u = s/s2n
-    u[(s2n < 10)] = 1e3*max(u)
+    u[(s2n < 10)] = 1e3*np.max(u)
     s[(s < 1e-6)] = 1e-6 # Provide absolute floor to flux values of spectra
 
     return x,wave,s,u
@@ -241,8 +241,8 @@ def setup_templates_tel():
 
 
 def stellarmodel_setup(wave,mwave0,mflux0):
-    mflux = mflux0[(mwave0/1e4 >= min(wave) - .003) & (mwave0/1e4 <= max(wave) + .002)]
-    mwave = mwave0[(mwave0/1e4 >= min(wave) - .003) & (mwave0/1e4 <= max(wave) + .002)]
+    mflux = mflux0[(mwave0/1e4 >= np.min(wave) - .003) & (mwave0/1e4 <= np.max(wave) + .002)]
+    mwave = mwave0[(mwave0/1e4 >= np.min(wave) - .003) & (mwave0/1e4 <= np.max(wave) + .002)]
 
     return mwave, mflux
 

@@ -103,8 +103,8 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
         contlevel = np.max(inparam.satm[(inparam.watm > 20000) & (inparam.watm < 24000)])
 
     # Trim telluric template to relevant wavelength range
-    satm_in = inparam.satm[(inparam.watm > min(a0wavelist)*1e4 - 11) & (inparam.watm < max(a0wavelist)*1e4 + 11)]
-    watm_in = inparam.watm[(inparam.watm > min(a0wavelist)*1e4 - 11) & (inparam.watm < max(a0wavelist)*1e4 + 11)]
+    satm_in = inparam.satm[(inparam.watm > np.min(a0wavelist)*1e4 - 11) & (inparam.watm < np.max(a0wavelist)*1e4 + 11)]
+    watm_in = inparam.watm[(inparam.watm > np.min(a0wavelist)*1e4 - 11) & (inparam.watm < np.max(a0wavelist)*1e4 + 11)]
     satm_in /= contlevel
 
 
@@ -154,11 +154,11 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                       0.0])          #23: Continuum hexic component
 
     # Make sure data is within telluric template range (shouldn't do anything)
-    a0fluxlist = a0fluxlist[(a0wavelist*1e4 > min(watm_in)+5) & (a0wavelist*1e4 < max(watm_in)-5)]
-    a0u        = a0u[       (a0wavelist*1e4 > min(watm_in)+5) & (a0wavelist*1e4 < max(watm_in)-5)]
-    a0x        = a0x[       (a0wavelist*1e4 > min(watm_in)+5) & (a0wavelist*1e4 < max(watm_in)-5)]
-    continuum  = continuum[ (a0wavelist*1e4 > min(watm_in)+5) & (a0wavelist*1e4 < max(watm_in)-5)]
-    a0wavelist = a0wavelist[(a0wavelist*1e4 > min(watm_in)+5) & (a0wavelist*1e4 < max(watm_in)-5)]
+    a0fluxlist = a0fluxlist[(a0wavelist*1e4 > np.min(watm_in)+5) & (a0wavelist*1e4 < np.max(watm_in)-5)]
+    a0u        = a0u[       (a0wavelist*1e4 > np.min(watm_in)+5) & (a0wavelist*1e4 < np.max(watm_in)-5)]
+    a0x        = a0x[       (a0wavelist*1e4 > np.min(watm_in)+5) & (a0wavelist*1e4 < np.max(watm_in)-5)]
+    continuum  = continuum[ (a0wavelist*1e4 > np.min(watm_in)+5) & (a0wavelist*1e4 < np.max(watm_in)-5)]
+    a0wavelist = a0wavelist[(a0wavelist*1e4 > np.min(watm_in)+5) & (a0wavelist*1e4 < np.max(watm_in)-5)]
 
     # Define main spectrum
     s = a0fluxlist.copy(); x = a0x.copy(); u = a0u.copy();
@@ -183,9 +183,9 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
 
     # Use quadratic blaze correction for order 13; cubic for orders 6, 14, 21; quartic for orders 16 and 22
     if args.band == 'H':
-        if int(order) in [13]:
+        if np.int(order) in [13]:
             dpars['cont'][20] = 0.; dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
-        elif int(order) in [6,14,21]:
+        elif np.int(order) in [6,14,21]:
             dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
         else:
             pass
@@ -274,7 +274,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                     slopeL = (fitobj.s[gL+1]-fitobj.s[gL])/(fitobj.x[gL+1]-fitobj.x[gL])
                     slopeR = (fitobj.s[gR]-fitobj.s[gR-1])/(fitobj.x[gR]-fitobj.x[gR-1])
                     try:
-                        if (min(slopeL) > 300) and (max(slopeR) < -300) and len(group) < 6:
+                        if (np.min(slopeL) > 300) and (np.max(slopeR) < -300) and len(group) < 6:
                             CRmaskF = np.concatenate((CRmaskF,group))
                     except ValueError:
                         if (slopeL > 300) and (slopeR < -300):
@@ -373,7 +373,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
         fitobj = fitobjs(s, x, u, continuum,watm1,satm1,mflux_in,mwave_in,[], masterbeam, CRmaskF)
 
         cycles = 3
-        
+
         nk = 1
         for nc, cycle in enumerate(np.arange(cycles), start=1):
             if cycle == 0:
@@ -420,7 +420,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                     slopeL = (fitobj.s[gL+1]-fitobj.s[gL])/(fitobj.x[gL+1]-fitobj.x[gL])
                     slopeR = (fitobj.s[gR]-fitobj.s[gR-1])/(fitobj.x[gR]-fitobj.x[gR-1])
                     try:
-                        if (min(slopeL) > 300) and (max(slopeR) < -300) and len(group) < 6:
+                        if (np.min(slopeL) > 300) and (np.max(slopeR) < -300) and len(group) < 6:
                             CRmaskF = np.concatenate((CRmaskF,group))
                     except ValueError:
                         if (slopeL > 300) and (slopeR < -300):
