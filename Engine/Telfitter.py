@@ -3,7 +3,7 @@ import os, nlopt
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
-from   astropy import units
+# from   astropy import units
 from   Engine.rebin_jv import rebin_jv
 from   telfit import TelluricFitter, DataStructures
 
@@ -72,7 +72,8 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
         sys.exit('TELFIT OBSERVATORY ERROR, OLNY SUPPORT DCT & McD IN THIS VERSION!')
 
     # Read in data
-    data = DataStructures.xypoint(x=watm_in*units.angstrom, y=satm_in, cont=None, err=a0ucut)
+    watm_in = watm_in/10 # AA --> nm
+    data = DataStructures.xypoint(x=watm_in, y=satm_in, cont=None, err=a0ucut) # input wavelength in nm
 
     # DCT data has parameters describing night of observation that the McDonald data does not.
     if inparam.zds[night] != 'NOINFO': # If such information is available:
@@ -102,8 +103,8 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
                                 "pressure": pressure,\
                                 "temperature": temperature,\
                                 "resolution": resolution,
-                                "wavestart": data.x[0]-0.01*units.angstrom,\
-                                "waveend": data.x[-1]+0.01*units.angstrom,\
+                                "wavestart": data.x[0]-0.001,\
+                                "waveend": data.x[-1]+0.001,\
                                 "co2": 3.675e2,\
                                 "o3": 7.6e-4,\
                                 "n2o": 5e-2,\
@@ -128,8 +129,8 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
                                 "pressure": pressure,\
                                 "temperature": temperature,\
                                 "resolution": resolution,
-                                "wavestart": data.x[0]-0.01*units.angstrom,\
-                                "waveend": data.x[-1]+0.01*units.angstrom,\
+                                "wavestart": data.x[0]-0.001,\
+                                "waveend": data.x[-1]+0.001,\
                                 "co": 5e-3,\
                                 "o3": 7.6e-4,\
                                 "o2": 2.1e5,\
@@ -153,8 +154,8 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
                                 "pressure": pressure,\
                                 "temperature": temperature,\
                                 "resolution": resolution,
-                                "wavestart": data.x[0]-0.01*units.angstrom,\
-                                "waveend": data.x[-1]+0.01*units.angstrom,\
+                                "wavestart": data.x[0]-0.001,\
+                                "waveend": data.x[-1]+0.001,\
                                 "o3": 7.6e-4,\
                                 "o2": 2.1e5,\
                                 "no": 0.,\
@@ -183,8 +184,8 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
 
             #Adjust parameters that will not be fit, but are important
             fitter.AdjustValue({"resolution": resolution,\
-                                "wavestart": data.x[0]-0.01*units.angstrom,\
-                                "waveend": data.x[-1]+0.01*units.angstrom,\
+                                "wavestart": data.x[0]-0.001,\
+                                "waveend": data.x[-1]+0.001,\
                                 "co2": 3.675e2,\
                                 "o3": 7.6e-4,\
                                 "n2o": 5e-2,\
@@ -211,8 +212,8 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
 
             #Adjust parameters that will not be fit, but are important
             fitter.AdjustValue({"resolution": resolution,\
-                                "wavestart": data.x[0]-0.01*units.angstrom,\
-                                "waveend": data.x[-1]+0.01*units.angstrom,\
+                                "wavestart": data.x[0]-0.001,\
+                                "waveend": data.x[-1]+0.001,\
                                 "co": 5e-3,\
                                 "o3": 7.6e-4,\
                                 "o2": 2.1e5,\
@@ -238,8 +239,8 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
 
             #Adjust parameters that will not be fit, but are important
             fitter.AdjustValue({"resolution": resolution,\
-                                "wavestart": data.x[0]-0.01*units.angstrom,\
-                                "waveend": data.x[-1]+0.01*units.angstrom,\
+                                "wavestart": data.x[0]-0.001,\
+                                "waveend": data.x[-1]+0.001,\
                                 "o3": 7.6e-4,\
                                 "o2": 2.1e5,\
                                 "no": 0.,\
@@ -301,9 +302,9 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
     if args.plotfigs:
         fig, axes = plt.subplots(1, 1, figsize=(6,3), facecolor='white', dpi=300)
 
-        axes.plot(watm_in, satm_in,       color='black',    alpha=.8, label='data',      lw=0.7)
-        axes.plot(model.x, model.y*cont1, color='tab:red',  alpha=.8, label='model fit', lw=0.7)
-        axes.plot(model.x, cont1,         color='tab:blue', alpha=.8, label='blaze fit', lw=0.7)
+        axes.plot(10*watm_in, satm_in,       color='black',    alpha=.8, label='data',      lw=0.7)
+        axes.plot(10*model.x, model.y*cont1, color='tab:red',  alpha=.8, label='model fit', lw=0.7)
+        axes.plot(10*model.x, cont1,         color='tab:blue', alpha=.8, label='blaze fit', lw=0.7)
 
         axes.xaxis.set_minor_locator(AutoMinorLocator(5))
         axes.yaxis.set_minor_locator(AutoMinorLocator(2))
@@ -337,12 +338,12 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
 
     # Compute telluric template with highest resolution of Livingston template.
     # Add extra space at ends to make sure template covers wider range than data.
-    Livingston_minimum_wsep = .035
+    Livingston_minimum_wsep = .035/10
     IGRINS_minimum_wsep     = .130 # <-- This would compute template with IGRINS resolution, sensibly coarser than Livingston
 
-    newwave = np.arange(np.min(watm_in)-25, np.max(watm_in)+25, Livingston_minimum_wsep)
+    newwave = np.arange(np.min(watm_in)-2.5, np.max(watm_in)+2.5, Livingston_minimum_wsep) #in nm
 
-    data2 = DataStructures.xypoint(x=newwave*units.angstrom,
+    data2 = DataStructures.xypoint(x=newwave,
                                    y=None,
                                    cont=None,
                                    err=None)
@@ -350,8 +351,8 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
     for k in range(len(names)):
         params[names[k]] = np.float(parfitted[k])
 
-    params['wavestart'] = data2.x[0] -0.01*units.angstrom
-    params['waveend']   = data2.x[-1]+0.01*units.angstrom
+    params['wavestart'] = data2.x[0] -0.001
+    params['waveend']   = data2.x[-1]+0.001
 
     fitter2.AdjustValue(params)
     fitter2.ImportData(data2)
@@ -365,7 +366,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
         return [np.nan], [np.nan], [np.nan], [np.nan],[np.nan],[np.nan]
 
     watm_save = watm_in.copy(); satm_save = satm_in.copy();
-    newwave1 = newwave[(newwave > watm_in[0]-10) & (newwave < watm_in[-1]+10)]
+    newwave1 = newwave[(newwave > watm_in[0]-1.0) & (newwave < watm_in[-1]+1.0)]
 
     # Parameters for reproducing Livingston template with Telfit
     if args.band == 'K':
@@ -573,15 +574,15 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
     NSO_props = {"latitude": 31.958, "altitude":2.096} #alt in km
     fitterL.SetObservatory(NSO_props)
 
-    dataL = DataStructures.xypoint(x=newwave1*units.angstrom, y=None, cont=None, err=None)
+    dataL = DataStructures.xypoint(x=newwave1, y=None, cont=None, err=None)
 
     parfittedL = telparsdict[str(order)]
     paramsL = {}
     for k in range(len(names)):
         paramsL[names[k]] = np.float(parfittedL[k])
 
-    params['wavestart'] = dataL.x[0]
-    params['waveend']   = dataL.x[-1]
+    params['wavestart'] = dataL.x[0]*10   # nm --> AA
+    params['waveend']   = dataL.x[-1]*10  # nm --> AA
     fitterL.AdjustValue(paramsL)
     fitterL.ImportData(data2)
 
@@ -589,9 +590,9 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
 
     global x, satmLivGen, watm_Liv,satm_Liv;
 
-    satmTel    = rebin_jv(model2.x, model2.y, newwave1,True)
-    satmLivGen = rebin_jv(modelL.x, modelL.y, newwave1,True)
-    watmLivGen = newwave1.copy()
+    satmTel    = rebin_jv(model2.x*10, model2.y, newwave1*10,True) # nm --> AA
+    satmLivGen = rebin_jv(modelL.x*10, modelL.y, newwave1*10,True) # nm --> AA
+    watmLivGen = newwave1.copy() ; watmLivGen*=10 # nm --> AA
 
     # Fit wavelength scale to Telfit'd Livingston
     x = np.arange(len(satmLivGen))
