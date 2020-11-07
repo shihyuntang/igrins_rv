@@ -230,10 +230,11 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                 'twave']
     try:
         
-        go = 1; misfit_flag_low = 0;
-        parstart = par_in.copy()
+        go = 1; misfit_flag_low = 0; restarted = False;
 
         while go == 1:
+
+            parstart = par_in.copy()
 
             if misfit_flag_low == 1:
                 parstart[3] = 0.5
@@ -257,7 +258,8 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                     parstart = parfit_1.copy()
                     nk += 1
 
-                if misfit_flag_low == 1:
+                if misfit_flag_low == 1 and restarted == False:
+                    restarted = True
                     print('alright')
                     break
 
