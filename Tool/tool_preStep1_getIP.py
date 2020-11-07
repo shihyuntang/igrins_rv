@@ -229,10 +229,11 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
 
     try:
         
-        go = 1; misfit_flag_low = 0;
-        parstart = par_in.copy()
+        go = 1; misfit_flag_low = 0; restarted = False;
 
         while go == 1:
+
+            parstart = par_in.copy()
 
             if misfit_flag_low == 1:
                 parstart[3] = 0.5
@@ -250,6 +251,10 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                     if parfit_1[3] < 0.1:
                         misfit_flag_low += 1
                         break
+
+                if misfit_flag_low == 1 and restarted == False:
+                    restarted = True
+                    break
 
                 ## After first cycle, use best fit model to identify CRs/hot pixels
                 if nc == 1:
