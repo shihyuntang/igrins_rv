@@ -4,11 +4,11 @@ import os
 
 from astropy.table import Table
 from astropy.io import fits
-from astropy.coordinates import SkyCoord, solar_system, EarthLocation, ICRS
-from astropy import units
+# from astropy.coordinates import SkyCoord, solar_system, EarthLocation, ICRS
+# from astropy import units
 import os
 from os import listdir
-from os.path import isfile, join, isdir
+from os.path import isfile, join#, isdir
 import re
 import sys
 

@@ -2,7 +2,7 @@
 
 import numpy as np
 from scipy.interpolate import interp1d, splev, splrep
-import time
+# import time
 
 def bin_ndarray(ndarray, new_shape, operation='mean'):
     """

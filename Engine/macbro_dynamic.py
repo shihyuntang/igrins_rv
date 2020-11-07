@@ -1,7 +1,7 @@
 
 import numpy as np
-from scipy.interpolate import interp1d,splev,splrep
-from astropy.convolution import Gaussian1DKernel, convolve
+from scipy.interpolate import splev,splrep#,interp1d
+from astropy.convolution import convolve #, Gaussian1DKernel,
 
 def macbro_dyn(w,s,hwhmlist):
 
