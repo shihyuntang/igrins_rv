@@ -317,7 +317,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
                 # Everywhere where data protrudes high above model, check whether slope surrounding protrusion is /\ and mask if sufficiently steep
                 residual = fitobj.s/fit
-                MAD = np.median(abs(np.median(residual)-residual))
+                MAD = np.median(np.abs(np.median(residual)-residual))
                 CRmask = np.array(np.where(residual > np.median(residual)+2*MAD)[0])
 
                 CRmaskF = []; CRmask = list(CRmask);

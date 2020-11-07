@@ -294,7 +294,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
 
     #Get the improved continuum from the fitter
     cont1  = fitter.data.cont
-    wcont1 = model.x
+    wcont1 = model.x*10 # nm-->AA
 
     # chi_new = np.sum((satm_in - model.y*cont1)**2. / model.u**2.)
     # chi_new = chisq / (len(model.y) - num_fit)
@@ -327,7 +327,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
 
     parfitted = np.ones_like(names, dtype=float)
     for k in range(len(names)):
-        parfitted[k] = float(fitter.GetValue(names[k]) )
+        parfitted[k] = np.float(fitter.GetValue(names[k]) )
 
     fitter2 = TelluricFitter(debug=False)
 
