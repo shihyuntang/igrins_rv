@@ -306,7 +306,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                     continuum    = rebin_jv(w[mask],continuum,w,False)
                     fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam, CRmaskF)
 
-            if misfit_flag_low == 0:
+            if misfit_flag_low == 0 or restarted == True:
 
                 parfit = parfit_1.copy()
 
