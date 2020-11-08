@@ -237,6 +237,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
 
             if misfit_flag_low == 1:
                 parstart[3] = 0.5
+                restarted = True
 
             if misfit_flag_low == 2: 
                 print(breaker) # deliberately throw error to enter except statement
@@ -252,8 +253,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                         misfit_flag_low += 1
                         break
 
-                if misfit_flag_low == 1 and restarted == False:
-                    restarted = True
+                if  ((misfit_flag_low == 1) and (restarted == False)) or ((misfit_flag_low == 2) and (restarted == True)):
                     break
 
                 ## After first cycle, use best fit model to identify CRs/hot pixels
