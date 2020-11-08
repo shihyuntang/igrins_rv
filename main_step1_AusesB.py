@@ -219,7 +219,7 @@ def MPinstB(args, inparam, jerp, orders, i):
     dpars = {'cont' :   np.array([0.0, 0.0, 0.0, 0.0,   0.0,   0.0,    0.0,  0.0, 0.0,        0.,     1e7, 1, 1,    0, 0,     0.0,  0.0, 0.0,  0.0, 0.0,   1.0, 1.0, 1.0, 1.0 ]),
              'twave':   np.array([0.0, 0.0, 0.0, 1.0,   0.0,   0.0,   10.0, 10.0, 5.00000e-5, 1e-7,   0.0, 0, 0,    0, 0,     0.0,  0.0, 0.0,  0.0, 0.0,   0.0, 0.0, 0.0, 0.0 ]),
              'ip'   :   np.array([0.0, 0.0, 0.0, 0.0,   0.0,   0.5,    0.0,  0.0, 0.0,        0.0,    0.0, 0, 0,    0, 0,     0.0,  0.0, 0.0,  0.0, 0.0,   0.0, 0.0, 0.0, 0.0 ])}
-    
+
     #-------------------------------------------------------------------------------
 
     # Use quadratic blaze correction for order 13; cubic for orders 6, 14, 21; quartic for orders 16 and 22
@@ -498,7 +498,7 @@ def MPinstA(args, inparam, jerp, orders, i):
     # Trim stellar template to relevant wavelength range
     mwave_in, mflux_in = stellarmodel_setup(a0wavelist, inparam.mwave0, inparam.mflux0)
 
-    
+
     # Trim telluric template to relevant wavelength range
     # Normalize continuum level of telluric atlas in the given band
     if args.band == 'H':
@@ -556,7 +556,7 @@ def MPinstA(args, inparam, jerp, orders, i):
             hh = fits.open('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band))
             hh.append(hdu_1)
             hh.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band), overwrite=True)
-    
+
     else:
 
         watm = tbdata['WATM'+str(order)]
@@ -647,7 +647,7 @@ def MPinstA(args, inparam, jerp, orders, i):
             parA0[19] = 0.
         #                            |0    1    2    3  |  | 4 |  | 5 |   | 6    7    8           9  |    |10 11 12|  |13 14|    |15    16    17   18    19|  |20   21   22    23 |
             dpars['cont'] = np.array([0.0, 0.0, 0.0, 0.0,   0.0,   0.0,    0.0, 0.0, 0.0,         0.,     1e7, 1, 1,    0, 0,    10.0, 20.0, 0.2, 50.0, 0.0,   1.0, 1.0, 1.0, 1.0  ])
-        
+
         #-------------------------------------------------------------------------------
 
         # Use quadratic blaze correction for order 13; cubic for orders 6, 14, 21; quartic for orders 16 and 22
@@ -662,7 +662,7 @@ def MPinstA(args, inparam, jerp, orders, i):
         # Initialize an array that puts hard bounds on vsini and the instrumental resolution to make sure they do not diverge to unphysical values
         optimize = True
         par_in = parA0.copy()
-        
+
         hardbounds = [par_in[4]  - 0,                 par_in[4]  + 0,
                       par_in[5]  - dpars['ip'][5],    par_in[5]  + dpars['ip'][5],
                       par_in[15] - dpars['cont'][15], par_in[15] + dpars['cont'][15],
@@ -766,7 +766,7 @@ def MPinstA(args, inparam, jerp, orders, i):
             if inparam.plotfigs: # Plot results
                 outplotter_tel(parfit, fitobj, f'BeforeTelFitWithB_Order{order}_{night}_{masterbeam}', inparam, args, order)
 
-            # ------------------------- Now do it again, but with Livingston ------------------------- 
+            # ------------------------- Now do it again, but with Livingston -------------------------
 
             dpars['cont'] = np.array([0.0, 0.0, 0.0, 0.0,   0.0,   0.0,    0.0,  0.0, 0.0,        0.,     1e7, 1, 1,    0, 0,     0.0,  0.0, 0.0,  0.0, 0.0,   1.0, 1.0, 1.0, 1.0  ])
             hardbounds = [par_in[4]  - 0,                 par_in[4]  + 0,
@@ -779,7 +779,7 @@ def MPinstA(args, inparam, jerp, orders, i):
             while go == 1:
 
                 parstart = par_in.copy()
-                parstart[17] = 0.; parstart[19] = 0.; 
+                parstart[17] = 0.; parstart[19] = 0.;
 
                 if misfit_flag_low == 1:
                     parstart[3] = 0.5
@@ -1101,7 +1101,7 @@ if __name__ == '__main__':
     #     orders = np.array([2, 3, 4, 5, 6, 7, 8, 10, 14, 16])
     # elif args.band=='H':
     #     orders = np.array([2, 3, 4, 6, 13, 14, 16, 20, 21, 22])
-    orders = np.array([6])
+    # orders = np.array([6])
     #-------------------------------------------------------------------------------
 
     # Retrieve stellar and telluric templates
