@@ -229,7 +229,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                 'ip', 'twave',  'cont',
                 'twave']
     try:
-        
+
         go = 1; misfit_flag_low = 0; restarted = False;
 
         while go == 1:
@@ -239,7 +239,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
             if misfit_flag_low == 1:
                 parstart[3] = 0.5
 
-            if misfit_flag_low == 2: 
+            if misfit_flag_low == 2:
                 print(breaker) # deliberately throw error to enter except statement
 
             nk = 1
@@ -258,7 +258,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                     parstart = parfit_1.copy()
                     nk += 1
 
-                if misfit_flag_low == 1 and restarted == False:
+                if （misfit_flag_low == 1) and (restarted == False):
                     restarted = True
                     print('alright')
                     break
@@ -315,7 +315,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                     fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam, CRmaskF)
 
             if misfit_flag_low == 0:
-                
+
                 parfit = parfit_1.copy()
 
                 # If dip present, correct it out of data before running Telfit to enable better fit
@@ -333,7 +333,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                     a0fluxlist /= justdip
 
                 go = 0; break;
-                
+
     except:
         pre_err = True
         logger.warning(f'  --> NIGHT {night}, ORDER {order} HIT ERROR DURING PRE_OPT')
