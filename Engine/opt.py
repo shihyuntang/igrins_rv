@@ -103,7 +103,7 @@ def fmodel_chi(par,grad):
     except:
         return 1e10
     fwhm = splev(watm,spl)
-    if np.min(fwhm) < 1 or np.max(fwhm) > 7:
+    if (np.min(fwhm) < 1) or (np.max(fwhm) > 7):
         return 1e10
 
     #Handle instrumental broadening
@@ -228,7 +228,7 @@ def fmod(par,fitobj):
     mask[fitobj_cp.CRmask] = False
 
     chisq = np.sum((fitobj.s[mask] - smod[mask])**2. / fitobj.u[mask]**2.)
-    chisq = chisq / (len(smod[mask]) - 15)
+    chisq = chisq / (len(smod[mask]) - len(par))
 
     return smod,chisq
 
