@@ -258,7 +258,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                     parstart = parfit_1.copy()
                     nk += 1
 
-                if （misfit_flag_low == 1) and (restarted == False):
+                if  (misfit_flag_low == 1) and (restarted == False):
                     restarted = True
                     print('alright')
                     break
