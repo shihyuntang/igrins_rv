@@ -628,8 +628,9 @@ def MPinstA(args, inparam, jerp, orders, i):
         a0fluxlist = a0fluxlist[(a0wavelist*1e4 > np.min(watm_in)+5) & (a0wavelist*1e4 < np.max(watm_in)-5)]
         a0u        = a0u[       (a0wavelist*1e4 > np.min(watm_in)+5) & (a0wavelist*1e4 < np.max(watm_in)-5)]
         a0x        = a0x[       (a0wavelist*1e4 > np.min(watm_in)+5) & (a0wavelist*1e4 < np.max(watm_in)-5)]
-        continuum  = continuum[ (a0wavelist*1e4 > np.min(watm_in)+5) & (a0wavelist*1e4 < np.max(watm_in)-5)]
         a0wavelist = a0wavelist[(a0wavelist*1e4 > np.min(watm_in)+5) & (a0wavelist*1e4 < np.max(watm_in)-5)]
+        
+        continuum_in = rebin_jv(a0contx,continuum,a0x,False)
 
         # Define main spectrum
         s = a0fluxlist.copy(); x = a0x.copy(); u = a0u.copy();
