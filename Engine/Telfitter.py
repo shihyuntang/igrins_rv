@@ -93,10 +93,10 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
         # observed A0 and GJ281 spectra.
 
         # Only 3 molecules present in chosen IGRINS orders' wavelength range are H2O, CH4, and CO.
-        if (order < 9) & (args.band =='K'):
-            num_fit = 3
+        if (3 < order < 9) & (args.band =='K'):
+            num_fit = 4
             # Only 3 molecules present in chosen IGRINS orders' wavelength range are H2O, CH4, and CO.
-            fitter.FitVariable({"h2o": humidity,"ch4": 1.8,"co": 5e-3})
+            fitter.FitVariable({"h2o": humidity,"ch4": 1.8,"co": 5e-3, "n2o":5e-2})
 
             #Adjust parameters that will not be fit, but are important
             fitter.AdjustValue({"angle": angle,\
@@ -107,7 +107,6 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
                                 "waveend": data.x[-1]+0.001,\
                                 "co2": 3.675e2,\
                                 "o3": 7.6e-4,\
-                                "n2o": 5e-2,\
                                 "o2": 2.1e5,\
                                 "no": 0.,\
                                 "so2": 5e-9,\
@@ -118,8 +117,9 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
             #Set bounds on the variables being fit
             fitter.SetBounds({"h2o": [1.0, 99.0],\
                               "ch4": [.1,  10.0],\
+                              "n2o": [1e-5,1e2],\
                               "co": [ 1e-6,1e2]})
-        elif (order >= 9) & (args.band =='K'):
+        elif (order >= 9 or order <= 3) & (args.band =='K'):
             num_fit = 4
             # Only molecules present in chosen IGRINS orders' wavelength range are H2O, CH4, N2O, and CO2.
             fitter.FitVariable({"h2o": humidity,"ch4": 1.8,"co2": 3.675e2, "n2o":5e-2})
@@ -179,7 +179,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
         # Only 3 molecules present in chosen IGRINS orders' wavelength range are H2O, CH4, and CO.
         if (order < 9) & (args.band =='K'):
             num_fit = 6
-            fitter.FitVariable({"h2o": 43.,"ch4": 1.8,"co": 5e-3,
+            fitter.FitVariable({"h2o": 43.,"ch4": 1.8,"co": 5e-3, "n2o":5e-2,
                                 "angle": 39., "pressure":1023., "temperature":280.87})
 
             #Adjust parameters that will not be fit, but are important
@@ -188,7 +188,6 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
                                 "waveend": data.x[-1]+0.001,\
                                 "co2": 3.675e2,\
                                 "o3": 7.6e-4,\
-                                "n2o": 5e-2,\
                                 "o2": 2.1e5,\
                                 "no": 0.,\
                                 "so2": 5e-9,\
@@ -199,12 +198,13 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
             #Set bounds on the variables being fit
             fitter.SetBounds({"h2o": [1.0, 99.0],\
                               "ch4": [.1,10.0],\
+                              "n2o": [1e-5,1e2],\
                               "temperature": [265.,300.],\
                               "angle": [1.,75.],\
                               "pressure": [1010.,1035.],\
                               "co": [ 1e-6,1e2]})
 
-        elif (order >= 9) & (args.band =='K'):
+        elif (order >= 9 or order <= 3) & (args.band =='K'):
             num_fit = 7
             # Only molecules present in chosen IGRINS orders' wavelength range are H2O, CH4, N2O, and CO2.
             fitter.FitVariable({"h2o": 43.,"ch4": 1.8,"co2": 3.675e2, "n2o": 5e-2,
@@ -581,8 +581,8 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
     for k in range(len(names)):
         paramsL[names[k]] = np.float(parfittedL[k])
 
-    params['wavestart'] = dataL.x[0]*10   # nm --> AA
-    params['waveend']   = dataL.x[-1]*10  # nm --> AA
+    paramsL['wavestart'] = dataL.x[0] # nm
+    paramsL['waveend']   = dataL.x[-1] # nm
     fitterL.AdjustValue(paramsL)
     fitterL.ImportData(data2)
 
