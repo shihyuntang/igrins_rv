@@ -44,12 +44,14 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     rvsminibox     = np.ones(len(tagsnight));
     vsiniminibox   = np.ones(len(tagsnight));
     tagsminibox    = np.ones(len(tagsnight));
+    chisminibox    = np.ones(len(tagsnight));
     parfitminibox  = np.ones((len(tagsnight),24)); # need to match the dpar numbers
 
     rvsminibox[:]    = np.nan
     vsiniminibox[:]  = np.nan
     tagsminibox[:]   = np.nan
     parfitminibox[:] = np.nan
+    chisminibox[:] = np.nan
 
     for t in tagsnight:
         nightsout.append(night)
@@ -389,7 +391,17 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         parfitminibox[t]= parfit
         vsiniminibox[t] = parfit[4]
         tagsminibox[t]  = tag
+        fit,chi = fmod(parfit, fitobj)
+        chisminibox[t]  = chi
 
+    # If any tag has a chisq value 10x greater than the best fit, flag it as a misfit and throw out its result
+    for t in np.arange(len(tagsnight)):
+        if np.isnan(chisminibox[t]) == False:
+            if chisminibox[t] > 10.*np.nanmin(chisminibox):
+                logger.warning(f'  --> Chi-squared indicates a misfit for observation {night} {order} {tagsnight[t]}')
+                rvsminibox[t]   = np.nan
+                vsiniminibox[t] = np.nan
+            
     return nightsout,rvsminibox,parfitminibox,vsiniminibox,tagsminibox
 
 #-------------------------------------------------------------------------------
