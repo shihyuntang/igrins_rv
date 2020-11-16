@@ -80,7 +80,7 @@ def fmodel_chi(par,grad):
     vsini = par[4]
 
     # Rotationally broaden stellar template
-    if vsini != 0:
+    if vsini >= 0.5:
         wspot2,rspot2 = rotint(wspot,sspot,vsini)
     else:
         wspot2 = wspot
@@ -172,7 +172,7 @@ def fmod(par,fitobj):
     vsini = par[4]
 
     # Rotationally broaden stellar template
-    if vsini != 0:
+    if vsini >= 0.5:
         wspot2,rspot2 = rotint(wspot,sspot,vsini)
     else:
         wspot2 = wspot
