@@ -42,12 +42,14 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
     nightsout = [];
     rvsminibox     = np.ones(len(tagsnight));
+    rvsminibox2     = np.ones(len(tagsnight));
     vsiniminibox   = np.ones(len(tagsnight));
     tagsminibox    = np.ones(len(tagsnight));
     chisminibox    = np.ones(len(tagsnight));
     parfitminibox  = np.ones((len(tagsnight),24)); # need to match the dpar numbers
 
     rvsminibox[:]    = np.nan
+    rvsminibox2[:]    = np.nan
     vsiniminibox[:]  = np.nan
     tagsminibox[:]   = np.nan
     parfitminibox[:] = np.nan
@@ -63,7 +65,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     elif type(inparam.initguesses) == float:
         initguesses = inparam.initguesses
     else:
-        sys.exit('ERROR! EXPECING SINGAL NUMBER OR FILE FOR INITGUESSES! QUITTING!')
+        sys.exit('ERROR! EXPECING SINGLE NUMBER OR FILE FOR INITGUESSES! QUITTING!')
 
     if np.isnan(initguesses) == True:
         logger.warning(f'  --> Previous run of {night} found it inadequate, skipping...')
@@ -101,11 +103,15 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                       0.0,                                                   #20: Continuum cubic component
                       0.0,                                                   #21: Continuum quartic component
                       0.0,                                                   #22: Continuum pentic component
-                      0.0])                                                  #23: Continuum hexic component
+                      0.0,                                                   #23: Continuum hexic component
+                      np.nan,                                                #24: The shift of the 2nd stellar template (km/s) [assigned later]
+                      0.03,                                                  #25: The scale factor for the 2nd stellar template
+                      inparam.initvsini2])                                   #26: 2nd vsini (km/s)
 
     # This one specific order is small and telluric dominated, start with greater stellar template power to ensure good fits
     if int(order) == 13:
         pars0[1] = 0.8
+        pars0[25] = 0.05
 
     # Iterate over all A/B exposures
     for t in np.arange(len(tagsnight)):
@@ -135,7 +141,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
             hdulist = fits.open(A0loc)
         except IOError:
             logger.warning(f'  --> No A0-fitted template for night {night}, skipping...')
-            return nightsout, rvsminibox, parfitminibox, vsiniminibox, tagsminibox
+            return nightsout, rvsminibox, parfitminibox, vsiniminibox, tagsminibox, rvsminibox2
 
         # Find corresponding table in fits file, given the tables do not go sequentially by order number due to multiprocessing in Step 1
         num_orders = 0
@@ -154,7 +160,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         # Check whether Telfit hit critical error in Step 1 for the chosen order with this night. If so, skip.
         if flag == 1:
             logger.warning(f'  --> TELFIT ENCOUNTERED CRITICAL ERROR IN ORDER: {order} NIGHT: {night}, skipping...')
-            return nightsout, rvsminibox, parfitminibox, vsiniminibox, tagsminibox
+            return nightsout, rvsminibox, parfitminibox, vsiniminibox, tagsminibox, rvsminibox2
 
 
         watm = tbdata['WATM'+str(order)]
@@ -239,18 +245,21 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         par[9] = par9in ; par[8] = par8in ; par[7] = par7in ; par[6] = par6in
 
         par[0] = initguesses-inparam.bvcs[night+tag] # Initial RV with barycentric correction
+        
+        par[24] = float(inparam.initguesses2)-inparam.bvcs[night+tag] # Initial RV with barycentric correction
+        
         par[5] = IPpars[2]; par[13] = IPpars[1]; par[14] = IPpars[0];
 
 
         # Arrays defining parameter variations during optimization steps
         #                            | 0    1    2    3 |  | ------ 4 ------ |  | 5 |   | 6     7     8           9  |  |10  11  12| |13 14|  |15   16   17   18    19 |  |20   21   22   23 |
-        dpars = {'cont' : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    1e7, 1, 1,   0, 0,    10., 20., 0.2, 50.0, 0.2,   1.0, 1.0, 1.0, 1.0 ]),
-                 'twave': np.array([  0.0, 0.0, 0.0, 1.0,   0.0,                 0.0,   10.0, 10.0,  5.00000e-5, 1e-7,   0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ]),
-                 'ip'   : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.5,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ]),
-                 's'    : np.array([  5.0, 1.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ]),
-                 'v'    : np.array([  0.0, 0.0, 0.0, 0.0,   inparam.vsinivary,   0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ])}
+        dpars = {'cont' : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    1e7, 1, 1,   0, 0,    10., 20., 0.2, 50.0, 0.2,   1.0, 1.0, 1.0, 1.0,  0.0, 0.0, 0.0 ]),
+                 'twave': np.array([  0.0, 0.0, 0.0, 1.0,   0.0,                 0.0,   10.0, 10.0,  5.00000e-5, 1e-7,   0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0,  0.0, 0.0, 0.0 ]),
+                 'ip'   : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.5,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0,  0.0, 0.0, 0.0 ]),
+                 's'    : np.array([  5.0, 1.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0,  5.0, 0.2, 0.0 ]),
+                 'v'    : np.array([  0.0, 0.0, 0.0, 0.0,   inparam.vsinivary,   0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0,  0.0, 0.0, inparam.vsinivary2 ])}
         if masterbeam == 'B':
-            dpars['cont'] = np.array([0.0, 0.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    1e7, 1, 1,   0, 0,     0.,  0., 0.0,  0.,  0.0,   1.0, 1.0 , 1.0, 1.0 ])
+            dpars['cont'] = np.array([0.0, 0.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    1e7, 1, 1,   0, 0,     0.,  0., 0.0,  0.,  0.0,   1.0, 1.0 , 1.0, 1.0,  0.0, 0.0, 0.0 ])
 
         # Use quadratic blaze correction for order 13; cubic for orders 6, 14, 21; quartic for orders 16 and 22
         if args.band == 'H':
@@ -386,8 +395,10 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
             outplotter_23(parfit, fitobj,  'parfit_{}_{}_{}'.format(order,night,tag), trk, inparam, args, step2or3,order)
 
         rv0 = parfit[0]
+        rv2 = parfit[24]
 
         rvsminibox[t]   = rv0  + inparam.bvcs[night+tag] + rv0*inparam.bvcs[night+tag]/(2.99792458e5**2) # Barycentric correction
+        rvsminibox2[t]   = rv2  + inparam.bvcs[night+tag] + rv2*inparam.bvcs[night+tag]/(2.99792458e5**2) # Barycentric correction
         parfitminibox[t]= parfit
         vsiniminibox[t] = parfit[4]
         tagsminibox[t]  = tag
@@ -401,8 +412,9 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                 logger.warning(f'  --> Chi-squared indicates a misfit for observation {night} {order} {tagsnight[t]}')
                 rvsminibox[t]   = np.nan
                 vsiniminibox[t] = np.nan
+                rvsminibox2[t]   = np.nan
             
-    return nightsout,rvsminibox,parfitminibox,vsiniminibox,tagsminibox
+    return nightsout,rvsminibox,parfitminibox,vsiniminibox,tagsminibox,rvsminibox2
 
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
