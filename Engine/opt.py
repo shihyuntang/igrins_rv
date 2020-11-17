@@ -221,11 +221,11 @@ def fmod(par,fitobj):
     mask = np.ones_like(smod,dtype=bool)
     mask[(fitobj.s < .0)] = False
 
-    if len(fitobj_cp.mask) != 0:
-        for maskbounds in fitobj_cp.mask:
-            mask[(fitobj_cp.x > maskbounds[0]) & (fitobj_cp.x < maskbounds[1]) ] = False
+    if len(fitobj.mask) != 0:
+        for maskbounds in fitobj.mask:
+            mask[(fitobj.x > maskbounds[0]) & (fitobj.x < maskbounds[1]) ] = False
 
-    mask[fitobj_cp.CRmask] = False
+    mask[fitobj.CRmask] = False
 
     chisq = np.sum((fitobj.s[mask] - smod[mask])**2. / fitobj.u[mask]**2.)
     chisq = chisq / (len(smod[mask]) - len(par))
