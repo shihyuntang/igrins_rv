@@ -389,11 +389,13 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         #-------------------------------------------------------------------------------
 
         if args.plotfigs == True:
-            parfitS = parfit.copy(); parfitS[3] = 0
-            parfitT = parfit.copy(); parfitT[1] = 0
+            parfitS = parfit.copy(); parfitS[3] = 0; parfitS[25] = 0;
+            parfitT = parfit.copy(); parfitT[1] = 0; parfitS[25] = 0;
+            parfitS2 = parfit.copy(); parfitS2[1] = 0; parfitS2[3] = 0;
             outplotter_23(parfitS, fitobj, 'parfitS_{}_{}_{}'.format(order,night,tag), trk, inparam, args, step2or3,order)
             outplotter_23(parfitT, fitobj, 'parfitT_{}_{}_{}'.format(order,night,tag), trk, inparam, args, step2or3,order)
             outplotter_23(parfit, fitobj,  'parfit_{}_{}_{}'.format(order,night,tag), trk, inparam, args, step2or3,order)
+            outplotter_23(parfitS2, fitobj, 'parfitS2_{}_{}_{}'.format(order,night,tag), trk, inparam, args, step2or3,order)
 
         rv0 = parfit[0]
         rv2 = parfit[24]
