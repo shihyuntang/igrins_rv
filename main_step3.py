@@ -802,11 +802,11 @@ Input Parameters:
         # Save results to fits file
         c1    = fits.Column(name='NIGHT'+str(order),  array=nightsbox, format='{}A'.format(len(nights[0])) )
         c2    = fits.Column(name='RV'+str(order),     array=rvbox,     format='D')
-        c2    = fits.Column(name='RV2'+str(order),     array=rvbox2,     format='D')
         c3    = fits.Column(name='PARFIT'+str(order), array=parfitbox, format=str(len(parfitbox[0,:]))+'D', dim=(1,len(parfitbox[0,:])))
         c4    = fits.Column(name='VSINI'+str(order),  array=vsinibox,  format='D')
         c5    = fits.Column(name='TAG'+str(order),    array=tagbox,    format='4A')
-        cols  = fits.ColDefs([c1,c2,c3,c4,c5])
+        c6    = fits.Column(name='RV2'+str(order),     array=rvbox2,     format='D')
+        cols  = fits.ColDefs([c1,c2,c3,c4,c5,c6])
         hdu_1 = fits.BinTableHDU.from_columns(cols)
 
         if jerp == 0: # If first time writing fits file, make up filler primary hdu
