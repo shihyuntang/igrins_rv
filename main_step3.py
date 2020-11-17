@@ -220,6 +220,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
         # Trim stellar template to relevant wavelength range
         mwave_in,mflux_in = stellarmodel_setup(wave_piece,inparam.mwave0,inparam.mflux0)
+        mwave_in2,mflux_in2 = stellarmodel_setup(wave_piece,inparam.mwave02,inparam.mflux02)
 
         # Trim telluric template to relevant wavelength range
         satm_in = satm[(watm > np.min(wave_piece)*1e4 - 11) & (watm < np.max(wave_piece)*1e4 + 11)]
@@ -271,7 +272,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                 pass
 
         continuum_in = rebin_jv(a0contx,continuum,x_piece,False)
-        fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]),masterbeam,np.array([],dtype=int))
+        fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]),masterbeam,np.array([],dtype=int),mwave_in2,mflux_in2)
 
         #-------------------------------------------------------------------------------
 
@@ -363,7 +364,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                         if (slopeL > 300) and (slopeR < -300):
                             CRmaskF = np.concatenate((CRmaskF,group))
 
-                fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]),masterbeam,CRmaskF)
+                fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]),masterbeam,CRmaskF,mwave_in2,mflux_in2)
 
         parfit = parfit_1.copy()
 
@@ -458,6 +459,23 @@ if __name__ == '__main__':
     parser.add_argument('-g',       dest="guesses",           action="store",
                         help="For STD star. Initial RV guess for all nights. Given by Step 2 results (float, km/s)",
                         type=str,   default='' )
+    
+    parser.add_argument('-i2',       dest="initvsini2",        action="store",
+                        help="Initial vsini (float, km/s). If no literature value known, use the value given by Step 2",
+                        type=str,   default='' )
+    parser.add_argument('-v2',       dest="vsinivary2",         action="store",
+                        help="Range of allowed vsini variation during optimization, default = 5.0 km/s. Should be set to 0 for final run.",
+                        type=str, default='5.0' )
+    parser.add_argument('-g2',       dest="initguesses2",           action="store",
+                        help="For STD star. Initial RV guess for all nights. Given by Step 2 results (float, km/s)",
+                        type=str,   default='' )
+    parser.add_argument('-temp2',      dest="temperature2",           action="store",
+                        help="The synthetic template temperature used, e.g., 5000",
+                        type=str,   default='' )
+    parser.add_argument('-logg2',      dest="logg2",           action="store",
+                        help="The synthetic template logg used, e.g., 4.5",
+                        type=str,   default='' )
+    
     parser.add_argument('-gS',       dest="guesses_source",           action="store",
                         help="For TAR star. Source for list of initial RV guesses. 'init' = Initguesser_results_X = past Step 2 result OR 'rvre' = RV_results_X = past Step 3 result",
                         type=str, default='')
@@ -502,6 +520,8 @@ if __name__ == '__main__':
 
     initvsini = float(args.initvsini)
     vsinivary = float(args.vsinivary)
+    initvsini2 = float(args.initvsini2)
+    vsinivary2 = float(args.vsinivary2)
 
     #------------------------------
 
@@ -554,6 +574,7 @@ if __name__ == '__main__':
 
     if args.mode.lower() == 'std': # Specify initial RV guesses as a single value applied to all nights
         initguesses = np.float(args.guesses)
+        initguesses2 = np.float(args.guesses2)
         initguesses_show = initguesses
     else: # Load initial RV guesses from file
         if args.guesses_source == 'init': # From Step 2 results
@@ -687,10 +708,11 @@ Input Parameters:
 
     # Retrieve stellar and telluric templates
     watm,satm, mwave0, mflux0 = setup_templates(logger, args.template, args.band, np.int(args.temperature), np.float(args.logg))
+    watm,satm, mwave02, mflux02 = setup_templates(logger, args.template, args.band, np.int(args.temperature2), np.float(args.logg2))
 
     # Save pars in class for future use
     inparam = inparams(inpath,outpath,initvsini,vsinivary,args.plotfigs,
-                       initguesses,bvcs,tagsA,tagsB,nightsFinal,mwave0,mflux0,None,xbounddict,maskdict)
+                       initguesses,bvcs,tagsA,tagsB,nightsFinal,mwave0,mflux0,None,xbounddict,maskdict,mwave02,mflux02,initvsini2,vsinivary2,initguesses2)
 
     #-------------------------------------------------------------------------------
 
@@ -743,12 +765,14 @@ Input Parameters:
                 parfitbox = outsbox[2]
                 vsinibox  = outsbox[3]
                 tagbox    = outsbox[4]
+                rvbox2    = outsbox[5]
             else:
                 nightsbox = nightsbox + outsbox[0]
                 rvbox     = np.concatenate((rvbox,outsbox[1]))
                 parfitbox = np.vstack((parfitbox,outsbox[2]))
                 vsinibox  = np.concatenate((vsinibox,outsbox[3]))
                 tagbox    = np.concatenate((tagbox,outsbox[4]))
+                rvbo2     = np.concatenate((rvbox2,outsbox[5]))
 
         nightsbox = np.array(nightsbox)
         vsinitags = []
@@ -756,6 +780,7 @@ Input Parameters:
         # Save results to fits file
         c1    = fits.Column(name='NIGHT'+str(order),  array=nightsbox, format='{}A'.format(len(nights[0])) )
         c2    = fits.Column(name='RV'+str(order),     array=rvbox,     format='D')
+        c2    = fits.Column(name='RV2'+str(order),     array=rvbox2,     format='D')
         c3    = fits.Column(name='PARFIT'+str(order), array=parfitbox, format=str(len(parfitbox[0,:]))+'D', dim=(1,len(parfitbox[0,:])))
         c4    = fits.Column(name='VSINI'+str(order),  array=vsinibox,  format='D')
         c5    = fits.Column(name='TAG'+str(order),    array=tagbox,    format='4A')
