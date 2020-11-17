@@ -46,7 +46,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     vsiniminibox   = np.ones(len(tagsnight));
     tagsminibox    = np.ones(len(tagsnight));
     chisminibox    = np.ones(len(tagsnight));
-    parfitminibox  = np.ones((len(tagsnight),24)); # need to match the dpar numbers
+    parfitminibox  = np.ones((len(tagsnight),27)); # need to match the dpar numbers
 
     rvsminibox[:]    = np.nan
     rvsminibox2[:]    = np.nan
@@ -104,14 +104,13 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                       0.0,                                                   #21: Continuum quartic component
                       0.0,                                                   #22: Continuum pentic component
                       0.0,                                                   #23: Continuum hexic component
-                      np.nan,                                                #24: The shift of the 2nd stellar template (km/s) [assigned later]
-                      0.03,                                                  #25: The scale factor for the 2nd stellar template
-                      inparam.initvsini2])                                   #26: 2nd vsini (km/s)
+                      0.0,                                                   #24: The shift of the 2nd stellar template (km/s) [assigned later]
+                      0.0,                                                   #25: The scale factor for the 2nd stellar template
+                      0.0])                                                  #26: 2nd vsini (km/s)
 
     # This one specific order is small and telluric dominated, start with greater stellar template power to ensure good fits
     if int(order) == 13:
         pars0[1] = 0.8
-        pars0[25] = 0.05
 
     # Iterate over all A/B exposures
     for t in np.arange(len(tagsnight)):
@@ -247,7 +246,6 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
         par[0] = initguesses-inparam.bvcs[night+tag] # Initial RV with barycentric correction
         
-        par[24] = float(inparam.initguesses2)-inparam.bvcs[night+tag] # Initial RV with barycentric correction
         
         par[5] = IPpars[2]; par[13] = IPpars[1]; par[14] = IPpars[0];
 
@@ -257,8 +255,10 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         dpars = {'cont' : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    1e7, 1, 1,   0, 0,    10., 20., 0.2, 50.0, 0.2,   1.0, 1.0, 1.0, 1.0,  0.0, 0.0, 0.0 ]),
                  'twave': np.array([  0.0, 0.0, 0.0, 1.0,   0.0,                 0.0,   10.0, 10.0,  5.00000e-5, 1e-7,   0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0,  0.0, 0.0, 0.0 ]),
                  'ip'   : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.5,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0,  0.0, 0.0, 0.0 ]),
-                 's'    : np.array([  5.0, 1.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0,  5.0, 0.2, 0.0 ]),
-                 'v'    : np.array([  0.0, 0.0, 0.0, 0.0,   inparam.vsinivary,   0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0,  0.0, 0.0, inparam.vsinivary2 ])}
+                 's'    : np.array([  5.0, 1.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0,  0.0, 0.0, 0.0 ]),
+                 's2'    : np.array([  5.0, 1.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0,  5.0, 0.2, 0.0 ]),
+                 'v'    : np.array([  0.0, 0.0, 0.0, 0.0,   inparam.vsinivary,   0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0,  0.0, 0.0, 0.0]),
+                 'v2'    : np.array([  0.0, 0.0, 0.0, 0.0,   inparam.vsinivary,   0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0,  0.0, 0.0, inparam.vsinivary2 ])}
         if masterbeam == 'B':
             dpars['cont'] = np.array([0.0, 0.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    1e7, 1, 1,   0, 0,     0.,  0., 0.0,  0.,  0.0,   1.0, 1.0 , 1.0, 1.0,  0.0, 0.0, 0.0 ])
 
@@ -313,6 +313,23 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         for nc, cycle in enumerate(np.arange(cycles), start=1):
             if cycle == 0:
                 parstart = par_in.copy()
+
+            if nc == 3:
+
+                parstart[24] = float(inparam.initguesses2)-inparam.bvcs[night+tag] # Initial RV with barycentric correction
+                if order == 13:
+                    parstart[25] = 0.05
+                else:
+                    parstart[25] = 0.03
+                parstart[26] = inparam.initvsini2
+
+                optgroup = ['cont', 'twave', 'cont', 's2',
+                            'cont', 'twave', 's2', 'cont',
+                            'twave',
+                            'ip', 'v2',
+                            'ip', 'v2',
+                            'twave',  's2',
+                            'twave',  's2']
 
             for optkind in optgroup:
                 parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize)
@@ -741,6 +758,9 @@ Input Parameters:
         nightscomblist = [nightsT,nightsL]
     else:
         nightscomblist = [nightsT]
+
+    #rv_MPinst(args, inparam, orders, 3, trk, step2or3, 0)
+    #print(breaker)
 
     # orders = np.array([5])
     # print('ONLY process order 5')
