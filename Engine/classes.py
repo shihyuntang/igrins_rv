@@ -38,8 +38,8 @@ class inparams:
         self.tagsB       = tagsB
         self.mwave0      = mwave
         self.mflux0      = mflux
-        self.mwave02      = mwave2
-        self.mflux02      = mflux2
+        self.mwave02      = mwave02
+        self.mflux02      = mflux02
         self.nights      = nights
         self.a0dict      = a0dict
         self.xbounddict  = xbounddict
