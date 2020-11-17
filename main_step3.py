@@ -468,7 +468,7 @@ if __name__ == '__main__':
     parser.add_argument('-v2',       dest="vsinivary2",         action="store",
                         help="Range of allowed vsini variation during optimization, default = 5.0 km/s. Should be set to 0 for final run.",
                         type=str, default='5.0' )
-    parser.add_argument('-g2',       dest="initguesses2",           action="store",
+    parser.add_argument('-g2',       dest="guesses2",           action="store",
                         help="For STD star. Initial RV guess for all nights. Given by Step 2 results (float, km/s)",
                         type=str,   default='' )
     parser.add_argument('-temp2',      dest="temperature2",           action="store",
@@ -576,7 +576,6 @@ if __name__ == '__main__':
 
     if args.mode.lower() == 'std': # Specify initial RV guesses as a single value applied to all nights
         initguesses = np.float(args.guesses)
-        initguesses2 = np.float(args.guesses2)
         initguesses_show = initguesses
     else: # Load initial RV guesses from file
         if args.guesses_source == 'init': # From Step 2 results
@@ -603,6 +602,7 @@ if __name__ == '__main__':
             for hrt in range(len(initnights)):
                 initguesses[str(initnights[hrt])] = np.float(initrvs[hrt])
 
+    initguesses2 = np.float(args.guesses2)
     #-------------------------------------------------------------------------------
 
     start_time = datetime.now()
