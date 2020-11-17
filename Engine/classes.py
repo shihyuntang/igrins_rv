@@ -6,7 +6,7 @@ import numpy as np
 class fitobjs:
 
 
-    def __init__(self,s, x, u,continuum,watm_in,satm_in,mflux_in,mwave_in,mask,masterbeam,CRmask):
+    def __init__(self,s, x, u,continuum,watm_in,satm_in,mflux_in,mwave_in,mask,masterbeam,CRmask,mwave_in2,mflux_in2):
         self.s = s
         self.x = x
         self.u = u
@@ -15,24 +15,31 @@ class fitobjs:
         self.satm_in = satm_in
         self.mflux_in = mflux_in
         self.mwave_in = mwave_in
+        self.mflux_in2 = mflux_in2
+        self.mwave_in2 = mwave_in2
         self.mask = mask
         self.masterbeam = masterbeam
         self.CRmask = CRmask
 
 class inparams:
 
-    def __init__(self,inpath,outpath,initvsini,vsinivary,plotfigs,initguesses,bvcs,tagsA,tagsB,nights,mwave,mflux,a0dict,xbounddict,maskdict):
+    def __init__(self,inpath,outpath,initvsini,vsinivary,plotfigs,initguesses,bvcs,tagsA,tagsB,nights,mwave,mflux,a0dict,xbounddict,maskdict,mwave02,mflux02,initvsini2,vsinivary2,initguesses2):
         self.inpath      = inpath
         self.outpath     = outpath
         self.initvsini   = initvsini
         self.vsinivary   = vsinivary
         self.plotfigs    = plotfigs
         self.initguesses = initguesses
+        self.initvsini2   = initvsini2
+        self.vsinivary2   = vsinivary2
+        self.initguesses2 = initguesses2
         self.bvcs        = bvcs
         self.tagsA       = tagsA
         self.tagsB       = tagsB
         self.mwave0      = mwave
         self.mflux0      = mflux
+        self.mwave02      = mwave2
+        self.mflux02      = mflux2
         self.nights      = nights
         self.a0dict      = a0dict
         self.xbounddict  = xbounddict
