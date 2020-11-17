@@ -39,6 +39,9 @@ def fmodel_chi(par,grad):
           21: Continuum quartic component     |  <-- Only enabled for some orders, depending on size of region being fit
           22: Continuum pentic component      |
           23: Continuum hexic component      /
+          24: The shift of the 2nd sunspot spectrum (km/s)
+          25: The scale factor for the 2nd sunspot spectrum
+          26: 2nd vsini (km/s)
 
      OUTPUTS:
        The model spectrum on the observed wavelength scale.
@@ -54,6 +57,8 @@ def fmodel_chi(par,grad):
     satm = fitobj_cp.satm_in;
     mwave = fitobj_cp.mwave_in;
     mflux = fitobj_cp.mflux_in;
+    mwave2 = fitobj_cp.mwave_in2;
+    mflux2 = fitobj_cp.mflux_in2;
 
     #Make the wavelength scale
     w = par[6] + par[7]*fitobj_cp.x + par[8]*(fitobj_cp.x**2.) + par[9]*(fitobj_cp.x**3.)
@@ -69,6 +74,8 @@ def fmodel_chi(par,grad):
     # Apply velocity shifts and scale
     wspot = mwave*(1.+par[0]/c)
     sspot = mflux**par[1]
+    wspot4 = mwave2*(1.+par[24]/c)
+    sspot4 = mflux2**par[25]
     watm = watm*(1.+par[2]/c)
     satm = satm**par[3]
 
@@ -78,6 +85,7 @@ def fmodel_chi(par,grad):
         return 1e10
 
     vsini = par[4]
+    vsini2 = par[26]
 
     # Rotationally broaden stellar template
     if vsini >= 0.5:
@@ -86,11 +94,18 @@ def fmodel_chi(par,grad):
         wspot2 = wspot
         rspot2 = sspot
 
+    if vsini2 >= 0.5:
+        wspot8,rspot8 = rotint(wspot4,sspot4,vsini2)
+    else:
+        wspot8 = wspot4
+        rspot8 = sspot4
+        
     #Now rebin the spot spectrum onto the telluric wavelength scale
     sspot2 = rebin_jv(wspot2,rspot2,watm,False)
+    sspot8 = rebin_jv(wspot8,rspot8,watm,False)
 
     #Mutliply rotationally broadened spot by telluric to create total spectrum
-    smod = sspot2*satm
+    smod = sspot2*sspot8*satm
 
     #Find mean observed wavelength and create a telluric velocity scale
     mnw = np.mean(w)
@@ -150,6 +165,8 @@ def fmod(par,fitobj):
     satm = fitobj.satm_in;
     mwave = fitobj.mwave_in;
     mflux = fitobj.mflux_in;
+    mwave2 = fitobj.mwave_in2;
+    mflux2 = fitobj.mflux_in2;
 
     w = par[6] + par[7]*fitobj.x + par[8]*(fitobj.x**2.) + par[9]*(fitobj.x**3.)
 
@@ -162,6 +179,8 @@ def fmod(par,fitobj):
 
     wspot = mwave*(1.+par[0]/c)
     sspot = mflux**par[1]
+    wspot4 = mwave2*(1.+par[24]/c)
+    sspot4 = mflux2**par[25]
     watm = watm*(1.+par[2]/c)
     satm = satm**par[3]
 
@@ -170,6 +189,7 @@ def fmod(par,fitobj):
         return 1e10
 
     vsini = par[4]
+    vsini2 = par[26]
 
     # Rotationally broaden stellar template
     if vsini >= 0.5:
@@ -178,9 +198,18 @@ def fmod(par,fitobj):
         wspot2 = wspot
         rspot2 = sspot
 
+    if vsini2 >= 0.5:
+        wspot8,rspot8 = rotint(wspot4,sspot4,vsini2)
+    else:
+        wspot8 = wspot4
+        rspot8 = sspot4
+        
+    #Now rebin the spot spectrum onto the telluric wavelength scale
     sspot2 = rebin_jv(wspot2,rspot2,watm,False)
+    sspot8 = rebin_jv(wspot8,rspot8,watm,False)
 
-    smod = sspot2*satm
+    #Mutliply rotationally broadened spot by telluric to create total spectrum
+    smod = sspot2*sspot8*satm
 
     #Find mean observed wavelength and create a telluric velocity scale
     mnw = np.mean(w)
@@ -232,82 +261,6 @@ def fmod(par,fitobj):
 
     return smod,chisq
 
-def fmod_conti(par,fitobj):
-
-    watm = fitobj.watm_in;
-    satm = fitobj.satm_in;
-    mwave = fitobj.mwave_in;
-    mflux = fitobj.mflux_in;
-
-    w = par[6] + par[7]*fitobj.x + par[8]*(fitobj.x**2.) + par[9]*(fitobj.x**3.)
-
-    if w[-1] < w[0]:
-        sys.exit('WAVE ERROR 1 {}'.format(par[6:10]))
-        return 1e10
-
-    c = 2.99792458e5
-    npts = len(w)
-
-    wspot = mwave*(1.+par[0]/c)
-    sspot = mflux**par[1]
-    watm = watm*(1.+par[2]/c)
-    satm = satm**par[3]
-
-    if (w[0] < watm[0]) or (w[-1] > watm[-1]):
-        return 1e10
-
-    vsini = par[4]
-
-    # Rotationally broaden stellar template
-    if vsini != 0:
-        wspot2,rspot2 = rotint(wspot,sspot,vsini)
-    else:
-        wspot2 = wspot
-        rspot2 = sspot
-
-    sspot2 = rebin_jv(wspot2,rspot2,watm,False)
-
-    smod = sspot2*satm
-
-    #Find mean observed wavelength and create a telluric velocity scale
-    mnw = np.mean(w)
-    dw = (w[-1] - w[0])/(npts-1.)
-    vel = (watm-mnw)/mnw*c
-
-    fwhmraw = par[5] + par[13]*(fitobj.x) + par[14]*(fitobj.x**2)
-    if np.min(fwhmraw) < 1 or np.max(fwhmraw) > 7:
-        sys.exit('IP ERROR 1 {} {} {} {} {}'.format(par[5],par[13],par[14],np.min(fwhmraw),np.max(fwhmraw) ))
-        return 1e10
-    try:
-        spl = splrep(w,fwhmraw)
-    except ValueError:
-        sys.exit('IP ERROR 2 {} {} {}'.format(par[5],par[13],par[14]))
-        return 1e10
-    fwhm = splev(watm,spl)
-
-    vhwhm = dw*np.abs(fwhm)/mnw*c/2.
-    nsmod = macbro_dyn(vel,smod,vhwhm)
-
-    #Rebin model to observed wavelength scale
-    smod = rebin_jv(watm,nsmod,w,False)
-
-    # Load saved continuum
-    c2 = fitobj.continuum
-    smod *= c2
-
-    # Apply continuum adjustment
-    cont = par[10] + par[11]*fitobj.x+ par[12]*(fitobj.x**2) + par[20]*(fitobj.x**3) + par[21]*(fitobj.x**4) + par[22]*(fitobj.x**5) + par[23]*(fitobj.x**6)
-    if fitobj.masterbeam == 'A':
-        bucket = np.zeros_like(cont)
-        bucket[(fitobj.x >= (par[15]-par[16]/2)) & (fitobj.x <= (par[15]+par[16]/2))] = par[17]
-        bucket[(fitobj.x >= (par[15]+par[16]/2-par[18])) & (fitobj.x <= (par[15]+par[16]/2))] += par[19]
-        cont -= bucket
-    smod *= cont
-
-    mask = np.ones_like(smod,dtype=bool)
-    mask[(fitobj.s < .05)] = False
-
-    return w, smod, cont, c2
 
 
 # def optimizer(par0,dpar0, hardbounds_v_ip, fitobj, optimize, logger, night, order, tag, optkind, nc, nk):
@@ -317,12 +270,12 @@ def optimizer(par0,dpar0, hardbounds_v_ip, fitobj, optimize):
     fitobj_cp   = fitobj
     optimize_cp = optimize
 
-    opt = nlopt.opt(nlopt.LN_NELDERMEAD, 24)
+    opt = nlopt.opt(nlopt.LN_NELDERMEAD, 27)
     opt.set_min_objective(fmodel_chi)
     lows  = par0-dpar0
     highs = par0+dpar0
 
-    for frg in [1,3]:
+    for frg in [1,3,25]:
         if dpar0[frg] != 0 and lows[frg] < 0:
             lows[frg] = 0
 
