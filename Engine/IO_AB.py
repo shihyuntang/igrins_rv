@@ -172,6 +172,8 @@ def setup_templates(logger, kind='synthetic', band='K', temperature=5000, logg=4
             print('not doing: airtovac(mwave0)')
         elif (band == 'H') & (temperature == 6200) & (logg==3.5):
             print('not doing: airtovac(mwave0)')
+        elif (band == 'H') & (temperature == 3500) & (logg==4.5):
+            print('not doing: airtovac(mwave0)')
         else:
             mwave0 = airtovac(mwave0)
     elif kind == 'livingston' and band == 'K':
