@@ -15,6 +15,51 @@ from Engine.detect_peaks import detect_peaks
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 
+def CRmasker(parfit,fitobj):
+
+    fit,chi = fmod(parfit, fitobj)
+
+    # Everywhere where data protrudes high above model, check whether slope surrounding protrusion is /\ and mask if sufficiently steep
+    residual = fitobj.s/fit
+    MAD = np.median(np.abs(np.median(residual)-residual))
+    CRmask = np.array(np.where(residual > np.median(residual)+2*MAD)[0])
+
+    CRmaskF = []; CRmask = list(CRmask);
+
+    for hit in [0,len(fitobj.x)-1]:
+        if hit in CRmask:
+            CRmaskF.append(hit)
+            CRmask.remove(hit)
+    CRmask = np.array(CRmask, dtype=np.int); CRmaskF = np.array(CRmaskF, dtype=np.int);
+
+    for group in mit.consecutive_groups(CRmask):
+        group = np.array(list(group))
+        if len(group) == 1:
+            gL = group-1; gR = group+1;
+        else:
+            peaks = detect_peaks(fitobj.s[group])
+            if len(peaks) < 1:
+                group = np.concatenate((np.array([group[0]-1]),group,np.array([group[-1]+1])))
+                peaks = detect_peaks(fitobj.s[group])
+                if len(peaks) < 1:
+                    continue
+            if len(peaks) > 1:
+                continue
+            gL = group[:peaks[0]]; gR = group[peaks[0]+1:];
+
+        slopeL = (fitobj.s[gL+1]-fitobj.s[gL])/(fitobj.x[gL+1]-fitobj.x[gL])
+        slopeR = (fitobj.s[gR]-fitobj.s[gR-1])/(fitobj.x[gR]-fitobj.x[gR-1])
+        try:
+            if (np.min(slopeL) > 300) and (np.max(slopeR) < -300) and len(group) < 6:
+                CRmaskF = np.concatenate((CRmaskF,group))
+        except ValueError:
+            if (slopeL > 300) and (slopeR < -300):
+                CRmaskF = np.concatenate((CRmaskF,group))
+
+    return CRmaskF
+
+
+
 def MPinst(args, inparam, jerp, orders, masterbeam, i):
     # Main function for A0 fitting that will be threaded over by multiprocessing
 
@@ -176,9 +221,9 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                  'twave':np.array([0.0, 0.0, 0.0, 3.0,   0.0,   0.0,   10.0, 10.0, 5e-5,    1e-7,        0, 0, 0,      0,    0,    0,    0.,  0.,  0.0, 0.0,  0.0, 0.0, 0.0, 0.0 ]),
                  'ip'   :np.array([0.0, 0.0, 0.0, 0.0,   0.0,   4.0,    0.0,  0.0, 0.0,        0,      1e4, 1, 1,   1e-2, 1e-5,    0.,   0.,  0.,  0.0, 0.0,  0.0, 0.0, 0.0, 0.0 ])}
     else:
-        if (args.band == 'K') and (order == 3):
-            parA0[19] = 0.
-            dpars['cont']=np.array([0.0,0.0, 0.0, 0.0,   0.0,   0.0,    0.0,  0.0, 0.0,        0.,     1e7, 1, 1,      0,    0,   10.,  20.,0.2,  50.0, 0.0,  1.0, 1.0, 1.0, 1.0 ])
+        if (args.band == 'K') and (order == 3 or order == 4):
+            parA0[19] = 0.; parA0[17] = 0.;
+            dpars['cont']=np.array([0.0,0.0, 0.0, 0.0,   0.0,   0.0,    0.0,  0.0, 0.0,        0.,     1e7, 1, 1,      0,    0,   0.,  0., 0.,  0.0, 0.0,  1.0, 1.0, 1.0, 1.0 ])
     #-------------------------------------------------------------------------------
 
     # Use quadratic blaze correction for order 13; cubic for orders 6, 14, 21; quartic for orders 16 and 22
@@ -266,45 +311,8 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                 ## After first cycle, use best fit model to identify CRs/hot pixels
                 if nc == 1:
                     parfit = parfit_1.copy()
-                    fit,chi = fmod(parfit, fitobj)
-
-                    # Everywhere where data protrudes high above model, check whether slope surrounding protrusion is /\ and mask if sufficiently steep
-                    residual = fitobj.s/fit
-                    MAD = np.median(np.abs(np.median(residual)-residual))
-                    CRmask = np.array(np.where(residual > np.median(residual)+2*MAD)[0])
-
-                    CRmaskF = []; CRmask = list(CRmask);
-
-                    for hit in [0,len(fitobj.x)-1]:
-                        if hit in CRmask:
-                            CRmaskF.append(hit)
-                            CRmask.remove(hit)
-                    CRmask = np.array(CRmask, dtype=np.int); CRmaskF = np.array(CRmaskF, dtype=np.int);
-
-                    for group in mit.consecutive_groups(CRmask):
-                        group = np.array(list(group))
-                        if len(group) == 1:
-                            gL = group-1; gR = group+1;
-                        else:
-                            peaks = detect_peaks(fitobj.s[group])
-                            if len(peaks) < 1:
-                                group = np.concatenate((np.array([group[0]-1]),group,np.array([group[-1]+1])))
-                                peaks = detect_peaks(fitobj.s[group])
-                                if len(peaks) < 1:
-                                    continue
-                            if len(peaks) > 1:
-                                continue
-                            gL = group[:peaks[0]]; gR = group[peaks[0]+1:];
-
-                        slopeL = (fitobj.s[gL+1]-fitobj.s[gL])/(fitobj.x[gL+1]-fitobj.x[gL])
-                        slopeR = (fitobj.s[gR]-fitobj.s[gR-1])/(fitobj.x[gR]-fitobj.x[gR-1])
-                        try:
-                            if (np.min(slopeL) > 300) and (np.max(slopeR) < -300) and len(group) < 6:
-                                CRmaskF = np.concatenate((CRmaskF,group))
-                        except ValueError:
-                            if (slopeL > 300) and (slopeR < -300):
-                                CRmaskF = np.concatenate((CRmaskF,group))
-
+                    CRmaskF = CRmasker(parfit,fitobj)
+                    
                     # Redo rough blaze fit in case hot pixels were throwing it off
                     w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
                     mask = np.ones_like(w,dtype=bool)
@@ -416,45 +424,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
             ## After first cycle, use best fit model to identify CRs/hot pixels
             if nc == 1:
                 parfit = parfit_1.copy()
-                fit,chi = fmod(parfit, fitobj)
-
-                # Everywhere where data protrudes high above model, check whether slope surrounding protrusion is /\ and mask if sufficiently steep
-                residual = fitobj.s/fit
-                MAD = np.median(np.abs(np.median(residual)-residual))
-                CRmask = np.array(np.where(residual > np.median(residual)+2*MAD)[0])
-
-                CRmaskF = []; CRmask = list(CRmask);
-
-                for hit in [0,len(fitobj.x)-1]:
-                    if hit in CRmask:
-                        CRmaskF.append(hit)
-                        CRmask.remove(hit)
-                CRmask = np.array(CRmask, dtype=np.int); CRmaskF = np.array(CRmaskF, dtype=np.int);
-
-                for group in mit.consecutive_groups(CRmask):
-                    group = np.array(list(group))
-                    if len(group) == 1:
-                        gL = group-1; gR = group+1;
-                    else:
-                        peaks = detect_peaks(fitobj.s[group])
-                        if len(peaks) < 1:
-                            group = np.concatenate((np.array([group[0]-1]),group,np.array([group[-1]+1])))
-                            peaks = detect_peaks(fitobj.s[group])
-                            if len(peaks) < 1:
-                                continue
-                        if len(peaks) > 1:
-                            continue
-                        gL = group[:peaks[0]]; gR = group[peaks[0]+1:];
-
-                    slopeL = (fitobj.s[gL+1]-fitobj.s[gL])/(fitobj.x[gL+1]-fitobj.x[gL])
-                    slopeR = (fitobj.s[gR]-fitobj.s[gR-1])/(fitobj.x[gR]-fitobj.x[gR-1])
-                    try:
-                        if (np.min(slopeL) > 300) and (np.max(slopeR) < -300) and len(group) < 6:
-                            CRmaskF = np.concatenate((CRmaskF,group))
-                    except ValueError:
-                        if (slopeL > 300) and (slopeR < -300):
-                            CRmaskF = np.concatenate((CRmaskF,group))
-
+                CRmaskF = CRmasker(parfit,fitobj)
                 fitobj = fitobjs(s, x, u, continuum, watm1, satm1, mflux_in, mwave_in, [], masterbeam, CRmaskF)
 
         parfit = parfit_1.copy()
