@@ -1,3 +1,6 @@
+import sys
+sys.path.append("..") # Adds higher directory to python modules path.
+
 from Engine.importmodule import *
 
 from Engine.IO_AB     import setup_templates_tel, init_fitsread, stellarmodel_setup, setup_outdir
@@ -234,7 +237,7 @@ def MPinstB(args, inparam, jerp, orders, i):
             dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
         else:
             pass
-        
+
     # Initialize an array that puts hard bounds on vsini and the instrumental resolution to make sure they do not diverge to unphysical values
     optimize = True
     par_in = parA0.copy()
@@ -706,7 +709,7 @@ def MPinstA(args, inparam, jerp, orders, i):
                 dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
             else:
                 pass
-            
+
         # Initialize an array that puts hard bounds on vsini and the instrumental resolution to make sure they do not diverge to unphysical values
         optimize = True
         par_in = parA0.copy()
@@ -937,7 +940,7 @@ def MPinstA(args, inparam, jerp, orders, i):
                         'ip', 'twave',  'cont',
                         'ip', 'twave',  'cont',
                         'twave','ip']
-            
+
             nk = 1
             for nc, cycle in enumerate(np.arange(cycles), start=1):
                 if cycle == 0:
