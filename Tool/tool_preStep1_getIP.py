@@ -189,6 +189,13 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
             dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
         else:
             pass
+    else:
+        if np.int(order) in [4,5]:
+            dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
+        elif np.int(order) in [3,6]:
+            dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
+        else:
+            pass
 
     # Initialize an array that puts hard bounds on vsini and the instrumental resolution to make sure they do not diverge to unphysical values
     optimize = True
