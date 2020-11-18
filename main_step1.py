@@ -230,7 +230,14 @@ def MPinstB(args, inparam, jerp, orders, i):
             dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
         else:
             pass
-
+    else:
+        if np.int(order) in [4,5]:
+            dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
+        elif np.int(order) in [3,6]:
+            dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
+        else:
+            pass
+        
     # Initialize an array that puts hard bounds on vsini and the instrumental resolution to make sure they do not diverge to unphysical values
     optimize = True
     par_in = parA0.copy()
@@ -644,10 +651,10 @@ def MPinstA(args, inparam, jerp, orders, i):
                  'twave':   np.array([0.0, 0.0, 0.0, 1.0,   0.0,   0.0,   10.0, 10.0, 5.00000e-5, 1e-7,   0.0, 0, 0,    0, 0,     0.0,  0.0, 0.0,  0.0, 0.0,   0.0, 0.0, 0.0, 0.0 ]),
                  'ip'   :   np.array([0.0, 0.0, 0.0, 0.0,   0.0,   0.5,    0.0,  0.0, 0.0,        0.0,    0.0, 0, 0,    0, 0,     0.0,  0.0, 0.0,  0.0, 0.0,   0.0, 0.0, 0.0, 0.0 ])}
 
-        if (args.band == 'K') and (order == 3):
-            parA0[19] = 0.
+        if (args.band == 'K') and (order == 3 or order == 4):
+            parA0[19] = 0.;  parA0[17] = 0.;
         #                            |0    1    2    3  |  | 4 |  | 5 |   | 6    7    8           9  |    |10 11 12|  |13 14|    |15    16    17   18    19|  |20   21   22    23 |
-            dpars['cont'] = np.array([0.0, 0.0, 0.0, 0.0,   0.0,   0.0,    0.0, 0.0, 0.0,         0.,     1e7, 1, 1,    0, 0,    10.0, 20.0, 0.2, 50.0, 0.0,   1.0, 1.0, 1.0, 1.0  ])
+            dpars['cont'] = np.array([0.0, 0.0, 0.0, 0.0,   0.0,   0.0,    0.0, 0.0, 0.0,         0.,     1e7, 1, 1,    0, 0,     0.0,  0.0, 0.0,  0.0, 0.0,   1.0, 1.0, 1.0, 1.0  ])
 
         #-------------------------------------------------------------------------------
 
@@ -659,7 +666,14 @@ def MPinstA(args, inparam, jerp, orders, i):
                 dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
             else:
                 pass
-
+        else:
+            if np.int(order) in [4,5]:
+                dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
+            elif np.int(order) in [3,6]:
+                dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
+            else:
+                pass
+            
         # Initialize an array that puts hard bounds on vsini and the instrumental resolution to make sure they do not diverge to unphysical values
         optimize = True
         par_in = parA0.copy()
