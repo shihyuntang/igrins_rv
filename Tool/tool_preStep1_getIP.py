@@ -1116,8 +1116,8 @@ if __name__ == '__main__':
     cdbs_loc = '~/cdbs/'
 #-------------------------------------------------------------------------------
     # Create output directories as needed
-    if not os.path.isdir('./Output'):
-        os.mkdir('./Output')
+    if not os.path.isdir('../Output'):
+        os.mkdir('../Output')
 
     if not os.path.isdir(f'../Output/{args.targname}_tool'):
         os.mkdir(f'../Output/{args.targname}_tool')
