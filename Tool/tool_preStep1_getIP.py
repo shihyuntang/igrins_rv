@@ -1112,7 +1112,7 @@ if __name__ == '__main__':
                         help="If set, DeBug logging will be output, as well as (lots of) extra plots under ./Temp/Debug/*target_*band/main_step1")
     parser.add_argument('--version',                         action='version',  version='%(prog)s 0.9')
     args = parser.parse_args()
-    inpath   = './Input/{}/'.format(args.targname)
+    inpath   = '../Input/{}/'.format(args.targname)
     cdbs_loc = '~/cdbs/'
 #-------------------------------------------------------------------------------
     # Create output directories as needed
