@@ -1031,13 +1031,13 @@ def mp_run(args, inparam, Nthreads, jerp, orders, nights, masterbeam):
 def use_w(args):
     # Load wavelength regions list file
     try:
-        bounddata = Table.read(f'./Input/UseWv/WaveRegions_{args.WRegion}_{args.band}.csv', format='csv')
+        bounddata = Table.read(f'../Input/UseWv/WaveRegions_{args.WRegion}_{args.band}.csv', format='csv')
     except IOError:
-        sys.exit(f'WaveRegions FILE "./Input/UseWv/WaveRegions_{args.WRegion}_{args.band}.csv" NOT FOUND!')
+        sys.exit(f'WaveRegions FILE "../Input/UseWv/WaveRegions_{args.WRegion}_{args.band}.csv" NOT FOUND!')
 
-    wavesols = pd.read_csv(f'./Input/UseWv/WaveSolns_{args.band}.csv')
+    wavesols = pd.read_csv(f'../Input/UseWv/WaveSolns_{args.band}.csv')
 #-------------------------------------------------------------------------------
-    with open(f'./Input/UseWv/XRegions_{args.WRegion}_{args.band}.csv','w') as filew:
+    with open(f'../Input/UseWv/XRegions_{args.WRegion}_{args.band}.csv','w') as filew:
         filew.write('order, start,  end, masks\n')
 
         m_order  = np.array(bounddata['order'])
@@ -1157,7 +1157,7 @@ if __name__ == '__main__':
     use_w(args)
 
     print('Fetching Done!')
-    print(f'File "XRegions_{args.WRegion}_{args.band}.csv" saved under "./Input/UseWv/"')
+    print(f'File "XRegions_{args.WRegion}_{args.band}.csv" saved under "../Input/UseWv/"')
     #time.sleep(5)
 
     #-------------------------------------------------------------------------------
@@ -1170,14 +1170,14 @@ if __name__ == '__main__':
     # Read in newly created pixel regions file to get list of orders to analyze.
     # Note that only target star observations will have their fits limited to the wavelength regions specified.
     # For A0 observations, only the orders specified will be analyzed, but each order will be fit as far as there is significant telluric absoprtion.
-    bounddata = Table.read(f'./Input/UseWv/XRegions_{args.WRegion}_{args.band}.csv', format='csv')
+    bounddata = Table.read(f'../Input/UseWv/XRegions_{args.WRegion}_{args.band}.csv', format='csv')
     starts  = np.array(bounddata['start'])
     ends    = np.array(bounddata['end'])
     orders  = np.array(bounddata['order'], dtype=int)
     xbounddict = {orders[i]:np.array([starts[i],ends[i]]) for i in range(len(starts))}
 
     ## Collect relevant file information from Predata files
-    A0data = Table.read(f'./Input/Prepdata/Prepdata_A0_{args.targname}.txt', format='ascii')
+    A0data = Table.read(f'../Input/Prepdata/Prepdata_A0_{args.targname}.txt', format='ascii')
 
     ind    = [i != 'NA' for i in A0data['humid']]
     humids = {str(k):str(v) for k,v in zip(A0data[ind]['night'],A0data[ind]['humid'])}
