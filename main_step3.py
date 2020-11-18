@@ -794,7 +794,7 @@ Input Parameters:
                 parfitbox = np.vstack((parfitbox,outsbox[2]))
                 vsinibox  = np.concatenate((vsinibox,outsbox[3]))
                 tagbox    = np.concatenate((tagbox,outsbox[4]))
-                rvbo2     = np.concatenate((rvbox2,outsbox[5]))
+                rvbox2     = np.concatenate((rvbox2,outsbox[5]))
 
         nightsbox = np.array(nightsbox)
         vsinitags = []
