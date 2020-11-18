@@ -248,7 +248,8 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                  'twave': np.array([  0.0, 0.0, 0.0, 1.0,   0.0,                 0.0,   10.0, 10.0,  5.00000e-5, 1e-7,   0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ]),
                  'ip'   : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.5,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ]),
                  's'    : np.array([  5.0, 1.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ]),
-                 'v'    : np.array([  0.0, 0.0, 0.0, 0.0,   inparam.vsinivary,   0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ])}
+                 'v'    : np.array([  0.0, 0.0, 0.0, 0.0,   inparam.vsinivary,   0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ]),
+                 'ts'   : np.array([  5.0, 1.0, 0.0, 1.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ])}
         if masterbeam == 'B':
             dpars['cont'] = np.array([0.0, 0.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    1e7, 1, 1,   0, 0,     0.,  0., 0.0,  0.,  0.0,   1.0, 1.0 , 1.0, 1.0 ])
 
@@ -291,13 +292,13 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
         cycles = 4
 
-        optgroup = ['cont', 'twave', 'cont', 's',
+        optgroup = ['cont', 'twave', 'cont', 'ts',
                     'cont', 'twave', 's', 'cont',
                     'twave',
                     'ip', 'v',
                     'ip', 'v',
                     'twave',  's',
-                    'twave',  's']
+                    'twave',  'ts']
 
         nk = 1
         for nc, cycle in enumerate(np.arange(cycles), start=1):
@@ -401,7 +402,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                 logger.warning(f'  --> Chi-squared indicates a misfit for observation {night} {order} {tagsnight[t]}')
                 rvsminibox[t]   = np.nan
                 vsiniminibox[t] = np.nan
-            
+
     return nightsout,rvsminibox,parfitminibox,vsiniminibox,tagsminibox
 
 #-------------------------------------------------------------------------------
