@@ -705,6 +705,7 @@ def MPinstA(args, inparam, jerp, orders, i):
                 dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
             else:
                 pass
+            
 
         # Initialize an array that puts hard bounds on vsini and the instrumental resolution to make sure they do not diverge to unphysical values
         optimize = True
@@ -723,6 +724,9 @@ def MPinstA(args, inparam, jerp, orders, i):
             hardbounds[0] = 0
         if hardbounds[2] < 0:
             hardbounds[2] = 1
+            
+        dpar_cont_save = dpars['cont'].copy()
+        hardbounds_save = np.array(hardbounds).copy()
 
         # Begin optimization.
         # For every pre-Telfit spectral fit, first fit just template strength/rv/continuum, then just wavelength solution, then template/continuum again, then ip,
@@ -926,7 +930,10 @@ def MPinstA(args, inparam, jerp, orders, i):
             continuum = rebin_jv(a0contwave,continuum,a0wavelist,False)
 
             # Fit the A0 again using the new synthetic telluric template.
-            # This allows for any tweaks to the blaze function fit that may be necessary.
+
+            dpars['cont'] = dpar_cont_save
+            hardbounds = hardbounds_save.copy()
+            
             fitobj = fitobjs(s, x, u, continuum,watm1,satm1,mflux_in,mwave_in,[], masterbeam, CRmaskF)
 
             optgroup2 = ['t',
