@@ -430,14 +430,10 @@ def MPinstB(args, inparam, jerp, orders, i):
 
         # Save slightly better wavelength and blaze function solution
         a0w_out  = parfit[6] + parfit[7]*x + parfit[8]*(x**2.) + parfit[9]*(x**3.)
-        cont_adj = parfit[10] + parfit[11]*x + parfit[12]*(x**2.)
-
-        continuum /= np.median(continuum)
-        cont_save = continuum*cont_adj
 
         # Write out table to fits file with errorflag = 0
         c0  = fits.Column(name='ERRORFLAG'+str(order),      array=np.array([0]),            format='K')
-        c1  = fits.Column(name='WAVE'+str(order),           array=a0w_out_fit,              format='D')
+        c1  = fits.Column(name='WAVE'+str(order),           array=a0w_out,                  format='D')
         c2  = fits.Column(name='BLAZE'+str(order),          array=continuum,                format='D')
         c3  = fits.Column(name='X'+str(order),              array=a0x,                      format='D')
         c4  = fits.Column(name='INTENS'+str(order),         array=a0fluxlist,               format='D')
@@ -979,14 +975,10 @@ def MPinstA(args, inparam, jerp, orders, i):
 
             # Save slightly better wavelength and blaze function solution
             a0w_out  = parfit[6] + parfit[7]*x + parfit[8]*(x**2.) + parfit[9]*(x**3.)
-            cont_adj = parfit[10] + parfit[11]*x + parfit[12]*(x**2.)
-
-            continuum /= np.median(continuum)
-            cont_save = continuum*cont_adj
 
             # Write out table to fits file with errorflag = 0
             c0  = fits.Column(name='ERRORFLAG'+str(order),      array=np.array([0]),            format='K')
-            c1  = fits.Column(name='WAVE'+str(order),           array=a0w_out_fit,              format='D')
+            c1  = fits.Column(name='WAVE'+str(order),           array=a0w_out,                  format='D')
             c2  = fits.Column(name='BLAZE'+str(order),          array=continuum,                format='D')
             c3  = fits.Column(name='X'+str(order),              array=a0x,                      format='D')
             c4  = fits.Column(name='INTENS'+str(order),         array=a0fluxlist,               format='D')
