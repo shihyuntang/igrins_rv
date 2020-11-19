@@ -749,13 +749,6 @@ def MPinstA(args, inparam, jerp, orders, i):
                     if nc == 1:
                         parfit = parfit_1.copy()
                         CRmaskF = CRmasker(parfit,fitobj)
-
-                        # Redo rough blaze fit in case hot pixels were throwing it off
-                        w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
-                        mask = np.ones_like(w,dtype=bool)
-                        mask[CRmaskF] = False
-                        continuum    = A0cont(w[mask]/1e4,s[mask],night,order,args.band)
-                        continuum    = rebin_jv(w[mask],continuum,w,False)
                         fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam, CRmaskF)
 
                 if misfit_flag_low == 0 or restarted == True:
