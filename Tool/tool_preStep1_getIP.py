@@ -557,7 +557,7 @@ def MPinstA(args, inparam, jerp, orders, i):
     watm_inLIV = inparam.watm[(inparam.watm > np.min(a0wavelist)*1e4 - 11) & (inparam.watm < np.max(a0wavelist)*1e4 + 11)]
     satm_inLIV /= contlevel
 
-    A0loc = f'./Output/{args.targname}_{args.band}/A0Fits/{night[:8]}A0_Btreated_{args.band}.fits'
+    A0loc = f'../Output/{args.targname}_tool/A0Fits_IP/{night[:8]}A0_Btreated_{args.band}.fits'
     B_err = False
 
     try:
