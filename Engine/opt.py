@@ -188,7 +188,7 @@ def fmod(par,fitobj):
     vel = (watm-mnw)/mnw*c
 
     fwhmraw = par[5] + par[13]*(fitobj.x) + par[14]*(fitobj.x**2)
-    if round(np.min(fwhmraw),5) < 1 or round(np.max(fwhmraw),5) > 7:
+    if np.round(np.min(fwhmraw),5) < 1 or np.round(np.max(fwhmraw),5) > 7:
         sys.exit('IP ERROR 1 {} {} {} {} {}'.format(par[5],par[13],par[14],np.min(fwhmraw),np.max(fwhmraw) ))
         return 1e10
     try:
