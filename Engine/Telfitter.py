@@ -82,7 +82,11 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
         pressure    = np.float(inparam.press[night])         #Pressure, in hPa
         humidity    = np.float(inparam.humids[night])        #Percent humidity, at the observatory altitude
         temperature = np.float(inparam.temps[night])+273.15  #Temperature in Kelvin
-        resolution  = 45000.0                             #Resolution lambda/delta-lambda
+
+        if (order <= 4) & (args.band =='K')
+            resolution  = 55000.0                             #Resolution lambda/delta-lambda
+        else:
+            resolution  = 45000.0                             #Resolution lambda/delta-lambda
 
         # Ideally, we'd fit resolution as well since that varies across the detector.
         # But in practice the Telfit's resolution fits often diverge to unphysically high values.
@@ -174,7 +178,10 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
     else: # If parameters are not in fits file, use initial guesses and letting them vary.
           # Guesses are taken from mean of parameters from DCT GJ281 data.
 
-        resolution = 45000.0                          #Resolution lambda/delta-lambda
+        if (order <= 4) & (args.band =='K')
+            resolution  = 55000.0                             #Resolution lambda/delta-lambda
+        else:
+            resolution  = 45000.0                             #Resolution lambda/delta-lambda
 
         # Only 3 molecules present in chosen IGRINS orders' wavelength range are H2O, CH4, and CO.
         if (order < 9) & (args.band =='K'):
