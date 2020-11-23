@@ -184,7 +184,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
             resolution  = 45000.0                             #Resolution lambda/delta-lambda
 
         # Only 3 molecules present in chosen IGRINS orders' wavelength range are H2O, CH4, and CO.
-        if (order < 9) & (args.band =='K'):
+        if (3 < order < 9) & (args.band =='K'):
             num_fit = 6
             fitter.FitVariable({"h2o": 43.,"ch4": 1.8,"co": 5e-3, "n2o":5e-2,
                                 "angle": 39., "pressure":1023., "temperature":280.87})
