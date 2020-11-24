@@ -596,7 +596,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
     try:
         modelL = fitterL.GenerateModel(parfittedL,nofit=True)
     except TypeError:
-        return [np.nan], [np.nan], [np.nan], [np.nan],[np.nan],[np.nan]L
+        return [np.nan], [np.nan], [np.nan], [np.nan],[np.nan],[np.nan]
 
     global x, satmLivGen, watm_Liv,satm_Liv;
 
