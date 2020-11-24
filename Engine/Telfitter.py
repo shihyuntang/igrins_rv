@@ -593,7 +593,10 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
     fitterL.AdjustValue(paramsL)
     fitterL.ImportData(data2)
 
-    modelL = fitterL.GenerateModel(parfittedL,nofit=True)
+    try:
+        modelL = fitterL.GenerateModel(parfittedL,nofit=True)
+    except TypeError:
+        return [np.nan], [np.nan], [np.nan], [np.nan],[np.nan],[np.nan]L
 
     global x, satmLivGen, watm_Liv,satm_Liv;
 
