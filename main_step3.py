@@ -454,7 +454,7 @@ if __name__ == '__main__':
                         help="For TAR star. The number, X, under ./*targname/Initguesser_results_X or ./*targname/RV_results_X, that you wish to use. Prefix determined by -gS",
                         type=str, default='')
     parser.add_argument('-t',       dest="template",         action="store",
-                        help="Stellar template. Pick from 'synthetic' or 'livingston'. Default = 'synthetic'",
+                        help="Stellar template. Pick from 'synthetic', 'PHOENIX', or 'livingston'. Default = 'synthetic'",
                         type=str,   default='synthetic' )
     parser.add_argument('-temp',      dest="temperature",           action="store",
                         help="The synthetic template temperature used, e.g., 5000",

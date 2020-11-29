@@ -158,10 +158,8 @@ def setup_templates(logger, kind='synthetic', band='K', temperature=5000, logg=4
 
         if os.getcwd()[-1]=='v':
             stelldata = Table.read(f'./Engine/syn_template/syntheticstellar_{band.lower()}band_T{temperature}_logg{logg}.txt',format='ascii')
-            # stelldata = Table.read('./Engine/PHOENIX-lte06200-4.50-0.0_contadjH.txt',format='ascii')
         else:
             stelldata = Table.read(f'../Engine/syn_template/syntheticstellar_{band.lower()}band_T{temperature}_logg{logg}.txt',format='ascii')
-            # stelldata = Table.read('../Engine/PHOENIX-lte06200-4.50-0.0_contadjH.txt',format='ascii')
 
         mwave0 = np.array(stelldata['wave'])#*10000.0
         mflux0 = np.array(stelldata['flux'])
@@ -169,7 +167,22 @@ def setup_templates(logger, kind='synthetic', band='K', temperature=5000, logg=4
         mflux0 = mflux0[(np.isfinite(mflux0))]
         mflux0[(mflux0 < 0)] = 0
 
-            
+    elif (kind == 'PHOENIX'):
+        logger.info(f'Using {band}-band PHOENIX stellar template...')
+        logger.info(f'PHOENIX stellar template with T{temperature} logg{logg}!!!!!')
+
+        if os.getcwd()[-1]=='v':
+            stelldata = Table.read(f'./Engine/PHOENIX-lte0{temperature}-{logg}0-0.0_contadj{band}.txt',format='ascii')
+        else:
+            stelldata = Table.read(f'../Engine/PHOENIX-lte0{temperature}-{logg}0-0.0_contadj{band}.txt',format='ascii')
+
+        mwave0 = np.array(stelldata['wave'])#*10000.0
+        mflux0 = np.array(stelldata['flux'])
+        mwave0 = mwave0[(np.isfinite(mflux0))]
+        mflux0 = mflux0[(np.isfinite(mflux0))]
+        mflux0[(mflux0 < 0)] = 0
+
+
     elif kind == 'livingston' and band == 'K':
         if sptype not in ['K','M']:
             sys.exit('Pipeline does not have a stellar template for early type stars in K band! Upload your own?')

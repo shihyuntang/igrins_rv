@@ -371,7 +371,7 @@ if __name__ == '__main__':
                         help="The number, X, that refers to the ./*targname/Initguesser_results_X file you wish to use for initial RV guesses",
                         type=str,   default='')
     parser.add_argument('-t',       dest="template",         action="store",
-                        help="Stellar template. Pick from 'synthetic' or 'livingston'. Default = 'synthetic'",
+                        help="Stellar template. Pick from 'synthetic', 'PHOENIX', or 'livingston'. Default = 'synthetic'",
                         type=str,   default='synthetic' )
     parser.add_argument('-temp',      dest="temperature",           action="store",
                         help="The synthetic template temperature used, e.g., 5000",
