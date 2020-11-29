@@ -172,9 +172,9 @@ def setup_templates(logger, kind='synthetic', band='K', temperature=5000, logg=4
         logger.info(f'PHOENIX stellar template with T{temperature} logg{logg}!!!!!')
 
         if os.getcwd()[-1]=='v':
-            stelldata = Table.read(f'./Engine/PHOENIX-lte0{temperature}-{logg}0-0.0_contadj{band}.txt',format='ascii')
+            stelldata = Table.read(f'./Engine/syn_template/PHOENIX-lte0{temperature}-{logg}0-0.0_contadj{band}.txt',format='ascii')
         else:
-            stelldata = Table.read(f'../Engine/PHOENIX-lte0{temperature}-{logg}0-0.0_contadj{band}.txt',format='ascii')
+            stelldata = Table.read(f'../Engine/syn_template/PHOENIX-lte0{temperature}-{logg}0-0.0_contadj{band}.txt',format='ascii')
 
         mwave0 = np.array(stelldata['wave'])#*10000.0
         mflux0 = np.array(stelldata['flux'])
