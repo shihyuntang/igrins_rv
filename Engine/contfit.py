@@ -34,7 +34,7 @@ def A0cont(a0wavecut,a0vcut,night,order,band):
         plt.close()
         '''
 
-        mask[(a0vcut[peaks] < .1)] = False
+        mask[(a0vcut[peaks]/np.nanmedian(a0vcut) < .1)] = False
         mask[(a0vcut[peaks] < q(x[peaks])-5*MAD)] = False
         mask[(a0vcut[peaks] > q(x[peaks])+3*MAD)] = False
         peaks = peaks[mask]
