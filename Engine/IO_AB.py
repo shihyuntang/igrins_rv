@@ -167,7 +167,7 @@ def setup_templates(logger, kind='synthetic', band='K', temperature=5000, logg=4
         mflux0 = mflux0[(np.isfinite(mflux0))]
         mflux0[(mflux0 < 0)] = 0
 
-    elif (kind == 'PHOENIX'):
+    elif (kind.lower() == 'phoenix'):
         logger.info(f'Using {band}-band PHOENIX stellar template...')
         logger.info(f'PHOENIX stellar template with T{temperature} logg{logg}!!!!!')
 
