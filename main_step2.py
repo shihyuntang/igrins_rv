@@ -408,7 +408,7 @@ if __name__ == '__main__':
 
     #------------------------------
 
-    if args.template.lower() not in ['synthetic', 'livingston']:
+    if args.template.lower() not in ['synthetic', 'livingston', 'PHOENIX']:
         sys.exit('ERROR: UNEXPECTED STELLAR TEMPLATE FOR "-t" INPUT!')
 
     #------------------------------
