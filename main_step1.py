@@ -231,9 +231,11 @@ def MPinstB(args, inparam, jerp, orders, i):
         else:
             pass
     else:
-        if np.int(order) in [4,5]:
+        if np.int(order) in [3]:
+            dpars['cont'][20] = 0.; dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
+        elif np.int(order) in [4,5]:
             dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
-        elif np.int(order) in [3,6]:
+        elif np.int(order) in [6]:
             dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
         else:
             pass
@@ -667,9 +669,11 @@ def MPinstA(args, inparam, jerp, orders, i):
             else:
                 pass
         else:
-            if np.int(order) in [4,5]:
+            if np.int(order) in [3]:
+                dpars['cont'][20] = 0.; dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
+            elif np.int(order) in [4,5]:
                 dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
-            elif np.int(order) in [3,6]:
+            elif np.int(order) in [6]:
                 dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
             else:
                 pass
