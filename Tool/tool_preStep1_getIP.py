@@ -231,9 +231,11 @@ def MPinstB(args, inparam, jerp, orders, i):
         else:
             pass
     else:
-        if np.int(order) in [4,5]:
+        if np.int(order) in [3]:
+            dpars['cont'][20] = 0.; dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
+        elif np.int(order) in [4,5]:
             dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
-        elif np.int(order) in [3,6]:
+        elif np.int(order) in [6]:
             dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
         else:
             pass
@@ -482,7 +484,7 @@ def MPinstA(args, inparam, jerp, orders, i):
     # Retrieve pixel bounds for where within each other significant telluric absorption is present.
     # If these bounds were not applied, analyzing some orders would give garbage fits.
     if args.band=='K':
-        if int(order) in [3,13, 14]:
+        if int(order) in [3, 13, 14]:
             bound_cut = inparam.bound_cut_dic[args.band][order]
         else:
             bound_cut = [150, 150]
@@ -704,9 +706,11 @@ def MPinstA(args, inparam, jerp, orders, i):
             else:
                 pass
         else:
-            if np.int(order) in [4,5]:
+            if np.int(order) in [3]:
+                dpars['cont'][20] = 0.; dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
+            elif np.int(order) in [4,5]:
                 dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
-            elif np.int(order) in [3,6]:
+            elif np.int(order) in [6]:
                 dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
             else:
                 pass
