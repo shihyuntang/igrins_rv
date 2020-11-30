@@ -3,35 +3,20 @@ sys.path.append("..") # Adds higher directory to python modules path.
 
 from Engine.importmodule import *
 from Engine.rebin_jv import rebin_jv
+from Engine.classes   import inparamsA0,orderdict_cla
+
 #-------------------------------------------------------------------------------
 
 def IPval(tar,band,args):
+    
+    inparam = inparamsA0(None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None)
+    xbounddict = inparam.bound_cut_dic[args.band]
 
-    xbounddict_special = { 'H':{
-                                10: [250, 150],
-                                11: [600, 150],
-                                13: [200, 600],
-                                14: [700, 100],
-                                16: [400, 100],
-                                17: [1000,100],
-                                20: [500, 150]},
-                           'K':{
-                                13: [200, 400],
-                                14: [200, 400]}
-                                }
-
-    xbounddict_default = { 'H':{},'K':{}}
     for a in range(27):
-        if a in [13, 14, 16, 20]:
-            xbounddict_default['H'][a] = np.array(xbounddict_special['H'][a])
-        else:
-            xbounddict_default['H'][a] = np.array([150,150])
-        if a in [14]:
-            xbounddict_default['K'][a] = np.array(xbounddict_special['K'][a])
-        else:
-            xbounddict_default['K'][a] = np.array([150,150])
-
-    xbounddict = xbounddict_default[band]
+        try:
+            xbounddict[a]
+        except KeyError:
+            xbounddict[a] = np.array([150,150])
 
     TdirsA = np.array([]) ; TdirsB = np.array([])
     LdirsA = np.array([]) ; LdirsB = np.array([])
