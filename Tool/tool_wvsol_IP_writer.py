@@ -8,9 +8,9 @@ from Engine.classes   import inparamsA0,orderdict_cla
 #-------------------------------------------------------------------------------
 
 def IPval(tar,band,args):
-    
+
     inparam = inparamsA0(None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None)
-    xbounddict = inparam.bound_cut_dic[args.band]
+    xbounddict = inparam.bound_cut_dic[band]
 
     for a in range(27):
         try:
