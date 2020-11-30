@@ -139,6 +139,7 @@ def IPval(tar,band,args):
                     f = np.polyfit(xorder,ipmedian,1)
                 else:
                     f = np.polyfit(xorder,ipmedian,2)
+                q = np.poly1d(f)
 
                 axes.plot(xorder,q(xorder),alpha=0.75,color='blue')
                 fig.savefig('./Tool_output/Loose_{}_IPs_{}_{}.png'.format(nodd,order,band))
