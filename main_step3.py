@@ -261,7 +261,16 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                 dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
             else:
                 pass
-
+        else:
+            if np.int(order) in [3]:
+                dpars['cont'][20] = 0.; dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
+            elif np.int(order) in [4,5]:
+                dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
+            elif np.int(order) in [6]:
+                dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
+            else:
+                pass
+            
         continuum_in = rebin_jv(a0contx,continuum,x_piece,False)
         fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]),masterbeam,np.array([],dtype=int))
 
