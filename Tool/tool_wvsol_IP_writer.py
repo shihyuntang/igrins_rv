@@ -83,7 +83,10 @@ def IPval(tar,band,args):
                 ipmedian = [np.median(ipmaster[order][:,i]) for i in range(len(ipmaster[order][0,:]))]
                 axes.plot(xorder,ipmedian,alpha=0.75,color='red')
 
-                f = np.polyfit(xorder,ipmedian,2)
+                if order == 3 and band == 'K':
+                    f = np.polyfit(xorder,ipmedian,1)
+                else:
+                    f = np.polyfit(xorder,ipmedian,2)
                 q = np.poly1d(f)
 
                 axes.plot(xorder,q(xorder),alpha=0.75,color='blue')
@@ -132,8 +135,10 @@ def IPval(tar,band,args):
                 ipmedian = [np.median(ipmaster[order][:,i]) for i in range(len(ipmaster[order][0,:]))]
                 axes.plot(xorder,ipmedian,alpha=0.75,color='red')
 
-                f = np.polyfit(xorder,ipmedian,2)
-                q = np.poly1d(f)
+                if order == 3 and band == 'K':
+                    f = np.polyfit(xorder,ipmedian,1)
+                else:
+                    f = np.polyfit(xorder,ipmedian,2)
 
                 axes.plot(xorder,q(xorder),alpha=0.75,color='blue')
                 fig.savefig('./Tool_output/Loose_{}_IPs_{}_{}.png'.format(nodd,order,band))
