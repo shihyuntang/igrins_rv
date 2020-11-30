@@ -136,7 +136,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         else:
             sys.exit('uhoh')
 
-        A0loc = f'./Output/{args.targname}_{args.band}/A0Fits/{night[:8]}A0_{beam}treated_{args.band}.fits'
+        A0loc = f'../Output/{args.targname}_{args.band}/A0Fits/{night[:8]}A0_{beam}treated_{args.band}.fits'
 
         try:
             hdulist = fits.open(A0loc)
@@ -527,7 +527,7 @@ if __name__ == '__main__':
                         help="If set, will skip the input parameters check. Handy when running mutiple targets line by line")
     parser.add_argument('--version',                          action='version',  version='%(prog)s 0.9')
     args = parser.parse_args()
-    inpath   = './Input/{}/'.format(args.targname)
+    inpath   = '../Input/{}/'.format(args.targname)
     cdbs_loc = '~/cdbs/'
 
     #-------------------------------------------------------------------------------
@@ -544,7 +544,7 @@ if __name__ == '__main__':
 
     #------------------------------
 
-    syntemp = os.listdir(f'./Engine/syn_template')
+    syntemp = os.listdir(f'../Engine/syn_template')
     syntemp = [i for i in syntemp if i[:3] == 'syn'] #list of all syntheticstellar
 
     synT    = [ i.split('_')[2][1:]  for i in syntemp ]
@@ -591,7 +591,7 @@ if __name__ == '__main__':
         initguesses_show = initguesses
     else: # Load initial RV guesses from file
         if args.guesses_source == 'init': # From Step 2 results
-            guesses = './Output/{}_{}/Initguesser_results_{}.csv'.format(args.targname,
+            guesses = '../Output/{}_{}/Initguesser_results_{}.csv'.format(args.targname,
                                                                          args.band,
                                                                          int(args.guessesX))
             guessdata  = Table.read(guesses, format='csv')
@@ -603,7 +603,7 @@ if __name__ == '__main__':
                 initguesses[str(initnights[hrt])] = float(initrvs[hrt])
 
         elif args.guesses_source == 'rvre': # From Step 3 results
-            guesses = './Output/{}_{}/RVresultsSummary_{}.csv'.format(args.targname,
+            guesses = '../Output/{}_{}/RVresultsSummary_{}.csv'.format(args.targname,
                                                                       args.band,
                                                                       int(args.guessesX))
             guessdata  = Table.read(guesses, format='csv')
@@ -654,8 +654,8 @@ Input Parameters:
 
     #-------------------------------------------------------------------------------
 
-    if not os.path.isdir('./Output'):
-        os.mkdir('./Output')
+    if not os.path.isdir('../Output'):
+        os.mkdir('../Output')
 
     if not os.path.isdir(f'../Output/{args.targname}_{args.band}_tool'):
         os.mkdir(f'../Output/{args.targname}_{args.band}_tool')
@@ -688,11 +688,11 @@ Input Parameters:
     logger.addHandler(file_hander)
     logger.addHandler(stream_hander)
 #-------------------------------------------------------------------------------
-    logger.info(f'Writing output to ./Output/{args.targname}_{args.band}_tool/{name}')
+    logger.info(f'Writing output to ../Output/{args.targname}_{args.band}_tool/{name}')
 
     #-------------------------------------------------------------------------------
 
-    # Read in the Prepdata under ./Input/Prpedata/
+    # Read in the Prepdata under ../Input/Prpedata/
     xbounddict, maskdict, tagsA, tagsB, mjds, bvcs, nightsFinal, orders, obs = read_prepdata(args)
 
     # Use subset of nights if specified
@@ -700,7 +700,7 @@ Input Parameters:
         nightstemp = np.array(ast.literal_eval(args.nights_use), dtype=str)
         for nnn in nightstemp:
             if nnn not in nightsFinal:
-                sys.exit('NIGHT {} NOT FOUND UNDER ./Input_Data/{}'.format(nnn, args.targname))
+                sys.exit('NIGHT {} NOT FOUND UNDER ../Input_Data/{}'.format(nnn, args.targname))
         nightsFinal = nightstemp
         print('Only processing nights: {}'.format(nightsFinal))
 
@@ -724,7 +724,7 @@ Input Parameters:
     # orders = np.array([5])
     # print('ONLY process order 5')
     #-------------------------------------------------------------------------------
-
+    step2or3 = 3
     # Run order by order, multiprocessing over nights within an order
     for jerp in range(len(orders)):
         pool = mp.Pool(processes = args.Nthreads)
