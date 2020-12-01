@@ -155,7 +155,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     # Retrieve pixel bounds for where within each other significant telluric absorption is present.
     # If these bounds were not applied, analyzing some orders would give garbage fits.
     if args.band=='K':
-        if int(order) in [13, 14]:
+        if int(order) in [3, 13, 14]:
             bound_cut = inparam.bound_cut_dic[args.band][order]
         else:
             bound_cut = [150, 150]
@@ -256,7 +256,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
             dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
         else:
             pass
-        
+
     continuum_in = rebin_jv(a0contx,continuum,x_piece,False)
     fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]),masterbeam,np.array([],dtype=int))
 
