@@ -113,6 +113,9 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         beam = beamsnight[t]
         masterbeam = beam
 
+        if np.int(night[:8]) == 20170216 and args.targname == 'GJ281' and np.float(tag) == 63:
+            continue
+            
         # Load synthetic telluric template generated during Step 1
         # [:8] here is to ensure program works under Night_Split mode
 
