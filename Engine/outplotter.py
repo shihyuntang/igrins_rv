@@ -16,14 +16,20 @@ def outplotter_tel(parfit, fitobj, title, inparam, args, order):
     mask[fitobj.CRmask] = False
 
     if args.band == 'H':
-        if int(order) in [13]:
+        if np.int(order) in [13]:
             npars -= 4
-        elif int(order) in [6,14,21]:
+        elif np.int(order) in [6,14,21]:
             npars -= 3
         else:
             pass
     else:
-        print("We haven't determined what polynomial orders for K band yet and hardcoded this!")
+        # print("We haven't determined what polynomial orders for K band yet and hardcoded this!")
+        if np.int(order) in [3]:
+            npars -= 4
+        elif np.int(order) in [4,5]:
+            npars -= 3
+        else:
+            pass
 
     if fitobj.masterbeam == 'B':
         npars -= 5
@@ -95,14 +101,20 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3, order):
     mask[fitobj.CRmask] = False
 
     if args.band == 'H':
-        if int(order) in [13]:
+        if np.int(order) in [13]:
             npars -= 4
-        elif int(order) in [6,14,21]:
+        elif np.int(order) in [6,14,21]:
             npars -= 3
         else:
             pass
     else:
-        print("We haven't determined what polynomial orders for K band yet and hardcoded this!")
+        # print("We haven't determined what polynomial orders for K band yet and hardcoded this!")
+        if np.int(order) in [3]:
+            npars -= 4
+        elif np.int(order) in [4,5]:
+            npars -= 3
+        else:
+            pass
 
     if fitobj.masterbeam == 'B':
         npars -= 5
