@@ -799,7 +799,10 @@ Input Parameters:
                         stdmasterboxT[i,jerp] = np.nanstd(rvtags)/np.sqrt(len(rvtags[np.isnan(rvtags) == False]))
 
                 else:
-                    vsinisL[i,jerp] = np.nanmean(vsinitags)
+                    if order == 3 and args.band == 'K': # Don't use vsini estimates from this order during loose epoch
+                        vsinisL[i,jerp] = np.nan
+                    else:
+                        vsinisL[i,jerp] = np.nanmean(vsinitags)
 
                     if (np.sum(~np.isnan(rvtags)) < nAB ):
                         rvmasterboxL[i,jerp]  = np.nan
