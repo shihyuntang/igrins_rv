@@ -939,6 +939,10 @@ Input Parameters:
             if boxind == 0:
                 rvMeanTight = np.nanmean(rvfinal)
             else: 
+                logger.info('Mean RV during the Loose mounting period, before subtraction = {:1.4f} km/s'.format(np.nanmean(rvfinal)))
+                logger.info('Mean RV during the Normal mounting period, before subtraction = {:1.4f} km/s'.format(rvMeanTight))
+                logger.info('Value used to correct for this = {:1.4f} km/s'.format(np.nanmean(rvfinal) - rvMeanTight))
+                
                 rvfinal -= np.nanmean(rvfinal) - rvMeanTight
                 
         # Plot results
