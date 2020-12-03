@@ -931,7 +931,13 @@ Input Parameters:
 
         if args.abs.lower() == 'abs':
             stdfinal = np.sqrt(stdfinal**2 + sigma_order_to_order**2)
-
+        else:
+            # Correct for zero-point offset between loose and tight epochs
+            if boxind == 0:
+                rvMeanTight = np.nanmean(rvfinal)
+            else: 
+                rvfinal -= np.nanmean(rvfinal) - rvMeanTight
+                
         # Plot results
         f, axes = plt.subplots(1, 1, figsize=(5,3), facecolor='white', dpi=300)
 
