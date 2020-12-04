@@ -115,7 +115,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
         if np.int(night[:8]) == 20170216 and args.targname == 'GJ281' and np.float(tag) == 63:
             continue
-            
+
         # Load synthetic telluric template generated during Step 1
         # [:8] here is to ensure program works under Night_Split mode
 
@@ -489,7 +489,7 @@ if __name__ == '__main__':
                         help="If you don't want to process all nights under the ./Input/*target/ folder, specify an array of night you wish to process here. e.g., [20181111,20181112]",
                         type=str,   default='')
     parser.add_argument('-DeBug',    dest="debug",           action="store_true",
-                        help="If set, DeBug logging will be output, as well as (lots of) extra plots under ./Temp/Debug/*target_*band/main_step3")
+                        help="If set, DeBug logging will be output, as well as (lots of) extra plots.")
     parser.add_argument('-sk_check', dest="skip",           action="store_true",
                         help="If set, will skip the input parameters check. Handy when running mutiple targets line by line")
     parser.add_argument('--version',                          action='version',  version='%(prog)s 0.9')
@@ -938,13 +938,13 @@ Input Parameters:
             # Correct for zero-point offset between loose and tight epochs
             if boxind == 0:
                 rvMeanTight = np.nanmean(rvfinal)
-            else: 
+            else:
                 logger.info('Mean RV during the Loose mounting period, before subtraction = {:1.4f} km/s'.format(np.nanmean(rvfinal)))
                 logger.info('Mean RV during the Normal mounting period, before subtraction = {:1.4f} km/s'.format(rvMeanTight))
                 logger.info('Value used to correct for this = {:1.4f} km/s'.format(np.nanmean(rvfinal) - rvMeanTight))
-                
+
                 rvfinal -= np.nanmean(rvfinal) - rvMeanTight
-                
+
         # Plot results
         f, axes = plt.subplots(1, 1, figsize=(5,3), facecolor='white', dpi=300)
 

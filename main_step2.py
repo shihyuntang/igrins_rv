@@ -405,7 +405,7 @@ if __name__ == '__main__':
                         help="If you don't want to process all nights under the ./Input/*target/ folder, specify an array of night you wish to process here. e.g., [20181111,20181112]",
                         type=str,   default='')
     parser.add_argument('-DeBug',    dest="debug",           action="store_true",
-                        help="If set, DeBug logging will be output, as well as (lots of) extra plots under ./Temp/Debug/*target_*band/main_step2")
+                        help="If set, DeBug logging will be output, as well as (lots of) extra plots.")
     parser.add_argument('-sk_check', dest="skip",           action="store_true",
                         help="If set, will skip the input parameters check. Handy when running mutiple targets line by line")
     parser.add_argument('--version',                          action='version',  version='%(prog)s 0.9')

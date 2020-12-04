@@ -239,7 +239,7 @@ def MPinstB(args, inparam, jerp, orders, i):
             dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
         else:
             pass
-        
+
     # Initialize an array that puts hard bounds on vsini and the instrumental resolution to make sure they do not diverge to unphysical values
     optimize = True
     par_in = parA0.copy()
@@ -677,7 +677,7 @@ def MPinstA(args, inparam, jerp, orders, i):
                 dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
             else:
                 pass
-            
+
         # Initialize an array that puts hard bounds on vsini and the instrumental resolution to make sure they do not diverge to unphysical values
         optimize = True
         par_in = parA0.copy()
@@ -1014,7 +1014,7 @@ if __name__ == '__main__':
                         help="If you don't want to process all nights under the ./Input/*target/ folder, specify an array of night you wish to process here. e.g., [20181111,20181112]",
                         type=str,   default='')
     parser.add_argument('-DeBug',    dest="debug",           action="store_true",
-                        help="If set, DeBug logging will be output, as well as (lots of) extra plots under ./Temp/Debug/*target_*band/main_step1")
+                        help="If set, DeBug logging will be output, as well as (lots of) extra plots.")
     parser.add_argument('--version',                         action='version',  version='%(prog)s 0.9')
     args = parser.parse_args()
     inpath   = './Input/{}/'.format(args.targname)
