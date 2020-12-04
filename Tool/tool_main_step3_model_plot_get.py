@@ -439,7 +439,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     cols = fits.ColDefs([c1, c2, c3, c4, c5, c6])
     hdu_1 = fits.BinTableHDU.from_columns(cols)
 
-    if order == firstorder::  # If first time writing fits file, make up filler primary hdu
+    if order == firstorder:  # If first time writing fits file, make up filler primary hdu
         bleh = np.ones((3, 3))
         primary_hdu1 = fits.PrimaryHDU(bleh)
         hdul = fits.HDUList([primary_hdu1, hdu_1])
