@@ -102,7 +102,7 @@ class inparams:
         #                                                6           14          16         21          22
         self.methodvariance_tight = { 'H': np.array([0.01145274, 0.00897732, 0.00569098, 0.05562397, 0.0049196]),
         #                                                 3          4           5           6
-                                      'K': np.array([0.00184696, 0.0016166, 0.00291516, 0.00139631)
+                                      'K': np.array([0.00184696, 0.0016166, 0.00291516, 0.00139631])
                                     }
         self.methodvariance_loose = { 'H': np.array([np.nan    , np.nan    , np.nan    , np.nan    ]),
                                       'K': np.array([0.0110391, 0.02206625, 0.00439241, 0.00070363])
