@@ -44,7 +44,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         beamsnight.append('B')
 
     nightsout = [];
-    
+
     wminibox      = np.ones(2048)
     sminibox      = np.ones(2048)
     flminibox_tel = np.ones(2048)
@@ -277,7 +277,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                 dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
             else:
                 pass
-            
+
         continuum_in = rebin_jv(a0contx,continuum,x_piece,False)
         fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]),masterbeam,np.array([],dtype=int))
 
@@ -721,8 +721,12 @@ Input Parameters:
     # All statistical analysis will be performed separately for these two datasets.
     nights    = inparam.nights
 
-    # orders = np.array([5])
-    # print('ONLY process order 5')
+    print('For paper plot!')
+    if args.band == 'K':
+        orders = np.array([3, 4, 5, 6, 8, 10])
+    elif args.band=='H':
+        orders = np.array([6, 13, 14, 16, 21, 22])
+    # orders = np.array([6])
     #-------------------------------------------------------------------------------
     step2or3 = 3
     # Run order by order, multiprocessing over nights within an order
