@@ -10,6 +10,7 @@ from Engine.rotint     import rotint
 from Engine.opt import optimizer, fmod, fmod_conti
 from Engine.outplotter import outplotter_23
 from Engine.detect_peaks import detect_peaks
+from Engine.crmask    import CRmasker
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
