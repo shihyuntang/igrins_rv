@@ -8,7 +8,8 @@
 If you wish to join the internal review and testing, please contact us (asa.stahl@rice.edu or sytang@lowell.edu).
 
 News:\
-**2020/08/04: igrins_rv v0.9-beta.1 public beta is under internal review and testing!!**\
+**2020/12/05: igrins_rv v0.9.5-beta.1 public beta is under internal review and testing!!**\
+2020/08/04: igrins_rv v0.9-beta.1 public beta is under internal review and testing!!\
 2020/06/23: igrins_rv v0.85 is under internal review.. will come to public soon!!
 
 ***
