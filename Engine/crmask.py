@@ -1,6 +1,7 @@
 
 from Engine.opt       import fmod
 from Engine.importmodule import *
+from Engine.detect_peaks import detect_peaks
 
 
 def CRmasker(parfit,fitobj):
@@ -45,5 +46,3 @@ def CRmasker(parfit,fitobj):
                 CRmaskF = np.concatenate((CRmaskF,group))
 
     return CRmaskF
-    
-    
