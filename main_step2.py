@@ -53,7 +53,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     try:
         tag  = tagsnight[0]
     except IndexError:
-        logger.warning(f'  --> No B nodding(fram) for night {night}, skipping...')
+        logger.warning(f'  --> No B nodding(frame) for night {night}, skipping...')
         return night, np.nan, np.nan
 
 
