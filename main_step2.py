@@ -50,7 +50,12 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
     # Only do B exposures, and just use first B nodding
     masterbeam = 'B'; beam = 'B';
-    tag  = tagsnight[0]
+    try:
+        tag  = tagsnight[0]
+    except IndexError:
+        logger.warning(f'  --> No B nodding(fram) for night {night}, skipping...')
+        return night, np.nan, np.nan
+
 
     #-------------------------------------------------------------------------------
     ### Initialize parameter array for optimization as well as half-range values for each parameter during the various steps of the optimization.
