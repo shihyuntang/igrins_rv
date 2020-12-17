@@ -31,21 +31,13 @@ def outplotter_tel(parfit, fitobj, title, inparam, args, order):
         else:
             pass
 
-    if fitobj.masterbeam == 'B':
-        npars -= 5
-
     npars -= 6 # subtract 6 from npars total: 2 for linear/quadratic IP, 1 for RV_telluric, 2 fot stellar template power and RV, 1 for vsini
 
     chi_new = chi*(len(fitobj.s[mask]) - len(parfit))/(len(fitobj.s[mask]) - npars) # correct reduce chisq
 
     w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
 
-    cont = parfit[10] + parfit[11]*fitobj.x+ parfit[12]*(fitobj.x**2) + parfit[20]*(fitobj.x**3) + parfit[21]*(fitobj.x**4) + parfit[22]*(fitobj.x**5) + parfit[23]*(fitobj.x**6)
-    if fitobj.masterbeam == 'A':
-        bucket = np.zeros_like(cont)
-        bucket[(fitobj.x >= (parfit[15]-parfit[16]/2)) & (fitobj.x <= (parfit[15]+parfit[16]/2))] = parfit[17]
-        bucket[(fitobj.x >= (parfit[15]+parfit[16]/2-parfit[18])) & (fitobj.x <= (parfit[15]+parfit[16]/2))] += parfit[19]
-        cont -= bucket
+    cont = parfit[10] + parfit[11]*fitobj.x+ parfit[12]*(fitobj.x**2) + parfit[15]*(fitobj.x**3) + parfit[16]*(fitobj.x**4) + parfit[17]*(fitobj.x**5) + parfit[18]*(fitobj.x**6)
     cont *= fitobj.continuum
 
     mask2 = np.ones_like(fitobj.x,dtype=bool)
@@ -116,21 +108,13 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3, order):
         else:
             pass
 
-    if fitobj.masterbeam == 'B':
-        npars -= 5
-
     npars -= 3 # subtract 3 from npars total, 2 for linear/quadratic IP and 1 for RV_telluric
 
     chi_new = chi*(len(fitobj.s[mask]) - len(parfit))/(len(fitobj.s[mask]) - npars)
 
     w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
 
-    cont = parfit[10] + parfit[11]*fitobj.x+ parfit[12]*(fitobj.x**2) + parfit[20]*(fitobj.x**3) + parfit[21]*(fitobj.x**4) + parfit[22]*(fitobj.x**5) + parfit[23]*(fitobj.x**6)
-    if fitobj.masterbeam == 'A':
-        bucket = np.zeros_like(cont)
-        bucket[(fitobj.x >= (parfit[15]-parfit[16]/2)) & (fitobj.x <= (parfit[15]+parfit[16]/2))] = parfit[17]
-        bucket[(fitobj.x >= (parfit[15]+parfit[16]/2-parfit[18])) & (fitobj.x <= (parfit[15]+parfit[16]/2))] += parfit[19]
-        cont -= bucket
+    cont = parfit[10] + parfit[11]*fitobj.x+ parfit[12]*(fitobj.x**2) + parfit[15]*(fitobj.x**3) + parfit[16]*(fitobj.x**4) + parfit[17]*(fitobj.x**5) + parfit[18]*(fitobj.x**6)
     cont *= fitobj.continuum
 
     fig, axes = plt.subplots(1, 1, figsize=(6,3), facecolor='white', dpi=300)
