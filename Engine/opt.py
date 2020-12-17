@@ -30,15 +30,10 @@ def fmodel_chi(par,grad):
           12: Continuum quadratic component
           13: IP linear component
           14: IP quadratic component
-          15: Blaze dip center location        \
-          16: Blaze dip full width              |
-          17: Blaze dip depth                   | <-- If beam is A
-          18: Secondary blaze dip full width    |
-          19: Blaze dip depth                  /
-          20: Continuum cubic component      \
-          21: Continuum quartic component     |  <-- Only enabled for some orders, depending on size of region being fit
-          22: Continuum pentic component      |
-          23: Continuum hexic component      /
+          15: Continuum cubic component      \
+          16: Continuum quartic component     |  <-- Only enabled for some orders, depending on size of region being fit
+          17: Continuum pentic component      |
+          18: Continuum hexic component      /
 
      OUTPUTS:
        The model spectrum on the observed wavelength scale.
@@ -118,12 +113,7 @@ def fmodel_chi(par,grad):
     smod *= c2
 
     # Apply continuum adjustment
-    cont = par[10] + par[11]*fitobj_cp.x+ par[12]*(fitobj_cp.x**2) + par[20]*(fitobj_cp.x**3) + par[21]*(fitobj_cp.x**4) + par[22]*(fitobj_cp.x**5) + par[23]*(fitobj_cp.x**6)
-    if fitobj_cp.masterbeam == 'A':
-        bucket = np.zeros_like(cont)
-        bucket[(fitobj_cp.x >= (par[15]-par[16]/2))         & (fitobj_cp.x <= (par[15]+par[16]/2))] = par[17]
-        bucket[(fitobj_cp.x >= (par[15]+par[16]/2-par[18])) & (fitobj_cp.x <= (par[15]+par[16]/2))] += par[19]
-        cont -= bucket
+    cont = par[10] + par[11]*fitobj_cp.x+ par[12]*(fitobj_cp.x**2) + par[15]*(fitobj_cp.x**3) + par[16]*(fitobj_cp.x**4) + par[17]*(fitobj_cp.x**5) + par[18]*(fitobj_cp.x**6)
     smod *= cont
 
     mask = np.ones_like(smod,dtype=bool)
@@ -210,12 +200,7 @@ def fmod(par,fitobj):
     smod *= c2#/np.median(c2)
 
     # Apply continuum adjustment
-    cont = par[10] + par[11]*fitobj.x+ par[12]*(fitobj.x**2) + par[20]*(fitobj.x**3) + par[21]*(fitobj.x**4) + par[22]*(fitobj.x**5) + par[23]*(fitobj.x**6)
-    if fitobj.masterbeam == 'A':
-        bucket = np.zeros_like(cont)
-        bucket[(fitobj.x >= (par[15]-par[16]/2)) & (fitobj.x <= (par[15]+par[16]/2))] = par[17]
-        bucket[(fitobj.x >= (par[15]+par[16]/2-par[18])) & (fitobj.x <= (par[15]+par[16]/2))] += par[19]
-        cont -= bucket
+    cont = par[10] + par[11]*fitobj.x+ par[12]*(fitobj.x**2) + par[15]*(fitobj.x**3) + par[16]*(fitobj.x**4) + par[17]*(fitobj.x**5) + par[18]*(fitobj.x**6)
     smod *= cont
 
     mask = np.ones_like(smod,dtype=bool)
@@ -296,12 +281,7 @@ def fmod_conti(par,fitobj):
     smod *= c2
 
     # Apply continuum adjustment
-    cont = par[10] + par[11]*fitobj.x+ par[12]*(fitobj.x**2) + par[20]*(fitobj.x**3) + par[21]*(fitobj.x**4) + par[22]*(fitobj.x**5) + par[23]*(fitobj.x**6)
-    if fitobj.masterbeam == 'A':
-        bucket = np.zeros_like(cont)
-        bucket[(fitobj.x >= (par[15]-par[16]/2)) & (fitobj.x <= (par[15]+par[16]/2))] = par[17]
-        bucket[(fitobj.x >= (par[15]+par[16]/2-par[18])) & (fitobj.x <= (par[15]+par[16]/2))] += par[19]
-        cont -= bucket
+    cont = par[10] + par[11]*fitobj.x+ par[12]*(fitobj.x**2) + par[15]*(fitobj.x**3) + par[16]*(fitobj.x**4) + par[17]*(fitobj.x**5) + par[18]*(fitobj.x**6)
     smod *= cont
 
     mask = np.ones_like(smod,dtype=bool)
@@ -317,7 +297,7 @@ def optimizer(par0,dpar0, hardbounds_v_ip, fitobj, optimize):
     fitobj_cp   = fitobj
     optimize_cp = optimize
 
-    opt = nlopt.opt(nlopt.LN_NELDERMEAD, 24)
+    opt = nlopt.opt(nlopt.LN_NELDERMEAD, 19)
     opt.set_min_objective(fmodel_chi)
     lows  = par0-dpar0
     highs = par0+dpar0
@@ -339,42 +319,6 @@ def optimizer(par0,dpar0, hardbounds_v_ip, fitobj, optimize):
             par0[5] = par0[5] - 1e-4
         if par0[5] -lows[5] < 1e-4:
             par0[5] = par0[5] + 1e-4
-
-    if fitobj_cp.masterbeam == 'A':
-        if dpar0[15] != 0:
-            lows[15] = hardbounds_v_ip[4]; highs[15] = hardbounds_v_ip[5];
-            if highs[15]-par0[15] < 1e-4:
-                par0[15] = par0[15] - 1e-4
-            if par0[15] -lows[15] < 1e-4:
-                par0[15] = par0[15] + 1e-4
-
-        if dpar0[16] != 0:
-            lows[16] = hardbounds_v_ip[6]; highs[16] = hardbounds_v_ip[7];
-            if highs[16]-par0[16] < 1e-4:
-                par0[16] = par0[16] - 1e-4
-            if par0[16] -lows[16] < 1e-4:
-                par0[16] = par0[16] + 1e-4
-
-        if dpar0[17] != 0:
-            lows[17] = hardbounds_v_ip[8]; highs[17] = hardbounds_v_ip[9];
-            if highs[17]-par0[17] < 1e-4:
-                par0[17] = par0[17] - 1e-4
-            if par0[17] -lows[17] < 1e-4:
-                par0[17] = par0[17] + 1e-4
-
-        if dpar0[18] != 0:
-            lows[18] = hardbounds_v_ip[10]; highs[18] = hardbounds_v_ip[11];
-            if highs[18]-par0[18] < 1e-4:
-                par0[18] = par0[18] - 1e-4
-            if par0[18] -lows[18] < 1e-4:
-                par0[18] = par0[18] + 1e-4
-
-        if dpar0[19] != 0:
-            lows[19] = hardbounds_v_ip[12]; highs[19] = hardbounds_v_ip[13];
-            if highs[19]-par0[19] < 1e-4:
-                par0[19] = par0[19] - 1e-4
-            if par0[19] -lows[19] < 1e-4:
-                par0[19] = par0[19] + 1e-4
 
     opt.set_lower_bounds(lows)
     opt.set_upper_bounds(highs)
