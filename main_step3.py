@@ -47,7 +47,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     vsiniminibox   = np.ones(len(tagsnight));
     tagsminibox    = np.ones(len(tagsnight));
     chisminibox    = np.ones(len(tagsnight));
-    parfitminibox  = np.ones((len(tagsnight),24)); # need to match the dpar numbers
+    parfitminibox  = np.ones((len(tagsnight),19)); # need to match the dpar numbers
 
     rvsminibox[:]    = np.nan
     vsiniminibox[:]  = np.nan
@@ -71,12 +71,6 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         logger.warning(f'  --> Previous run of {night} found it inadequate, skipping...')
         return nightsout, rvsminibox, parfitminibox, vsiniminibox, tagsminibox
 
-    # start at bucket loc = 1250 +- 100, width = 250 +- 100, depth = 100 +- 5000 but floor at 0
-    if args.band == 'H':
-        centerloc = 1250
-    else:
-        centerloc = 1180
-
 #-------------------------------------------------------------------------------
     ### Initialize parameter array for optimization as well as half-range values for each parameter during the various steps of the optimization.
     ### Many of the parameters initialized here will be changed throughout the code before optimization and in between optimization steps.
@@ -95,19 +89,78 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                       0.,                                                    #12: Continuum quadratic component
                       np.nan,                                                #13: Instrumental resolution linear component
                       np.nan,                                                #14: Instrumental resolution quadratic component
-                      centerloc,                                             #15: Blaze dip center location
-                      330,                                                   #16: Blaze dip full width
-                      0.05,                                                  #17: Blaze dip depth
-                      90,                                                    #18: Secondary blaze dip full width
-                      0.05,                                                  #19: Blaze dip depth
-                      0.0,                                                   #20: Continuum cubic component
-                      0.0,                                                   #21: Continuum quartic component
-                      0.0,                                                   #22: Continuum pentic component
-                      0.0])                                                  #23: Continuum hexic component
+                      0.0,                                                   #15: Continuum cubic component
+                      0.0,                                                   #16: Continuum quartic component
+                      0.0,                                                   #17: Continuum pentic component
+                      0.0])                                                  #18: Continuum hexic component
 
     # This one specific order is small and telluric dominated, start with greater stellar template power to ensure good fits
     if int(order) == 13:
         pars0[1] = 0.8
+
+    # Load synthetic telluric template generated during Step 1
+    # [:8] here is to ensure program works under Night_Split mode
+
+    # Use instrumental profile dictionary corresponding to whether IGRINS mounting was loose or not
+    if np.int(night[:8]) < 20180401 or np.int(night[:8]) > 20190531:
+        IPpars = inparam.ips_tightmount_pars[args.band][order]
+    else:
+        IPpars = inparam.ips_loosemount_pars[args.band][order]
+
+    A0loc = f'./Output/{args.targname}_{args.band}/A0Fits/{night[:8]}A0_treated_{args.band}.fits'
+
+    try:
+        hdulist = fits.open(A0loc)
+    except IOError:
+        logger.warning(f'  --> No A0-fitted template for night {night}, skipping...')
+        return nightsout, rvsminibox, parfitminibox, vsiniminibox, tagsminibox
+
+    # Find corresponding table in fits file, given the tables do not go sequentially by order number due to multiprocessing in Step 1
+    num_orders = 0
+    for i in range(25):
+        try:
+            hdulist[i].columns[0].name[9:]
+            num_orders += 1
+        except:
+            continue
+
+    fits_layer = [ i for i in np.arange(num_orders)+1 if np.int(hdulist[i].columns[0].name[9:]) == order ][0]
+
+    tbdata = hdulist[ fits_layer ].data
+    flag = np.array(tbdata[f'ERRORFLAG{order}'])[0]
+
+    # Check whether Telfit hit critical error in Step 1 for the chosen order with this night. If so, skip.
+    if flag == 1:
+        logger.warning(f'  --> TELFIT ENCOUNTERED CRITICAL ERROR IN ORDER: {order} NIGHT: {night}, skipping...')
+        return nightsout, rvsminibox, parfitminibox, vsiniminibox, tagsminibox
+
+    watm = tbdata['WATM'+str(order)]
+    satm = tbdata['SATM'+str(order)]
+    a0contx_save    = tbdata['X'+str(order)]
+    continuum_save  = tbdata['BLAZE'+str(order)]
+
+    # Remove extra rows leftover from having columns of unequal length
+    satm = satm[(watm != 0)]
+    watm = watm[(watm != 0)]
+    satm[(satm < 1e-4)] = 0. # set very low points to zero so that they don't go to NaN when taken to an exponent by template power in fmodel_chi
+    a0contx_save   =   a0contx_save[(continuum_save != 0)]
+    continuum_save = continuum_save[(continuum_save != 0)]
+    
+    continuum_save /= np.nanmedian(continuum_save)
+
+    # Retrieve pixel bounds for where within each other significant telluric absorption is present.
+    # If these bounds were not applied, analyzing some orders would give garbage fits.
+    if args.band=='K':
+        if int(order) in [3, 13, 14]:
+            bound_cut = inparam.bound_cut_dic[args.band][order]
+        else:
+            bound_cut = [150, 150]
+
+    elif args.band=='H':
+        if int(order) in [6, 10, 11, 13, 14, 16, 17, 20, 21, 22]:
+            bound_cut = inparam.bound_cut_dic[args.band][order]
+        else:
+            bound_cut = [150, 150]
 
     # Iterate over all A/B exposures
     for t in np.arange(len(tagsnight)):
@@ -117,76 +170,6 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
         if np.int(night[:8]) == 20170216 and args.targname == 'GJ281' and np.float(tag) == 63:
             continue
-
-        # Load synthetic telluric template generated during Step 1
-        # [:8] here is to ensure program works under Night_Split mode
-
-        # Use instrumental profile dictionary corresponding to whether IGRINS mounting was loose or not
-        if np.int(night[:8]) < 20180401 or np.int(night[:8]) > 20190531:
-            IPpars = inparam.ips_tightmount_pars[args.band][masterbeam][order]
-        else:
-            IPpars = inparam.ips_loosemount_pars[args.band][masterbeam][order]
-
-        if beam == 'A':
-            antibeam = 'B'
-        elif beam == 'B':
-            antibeam = 'A'
-        else:
-            sys.exit('uhoh')
-
-        A0loc = f'./Output/{args.targname}_{args.band}/A0Fits/{night[:8]}A0_{beam}treated_{args.band}.fits'
-
-        try:
-            hdulist = fits.open(A0loc)
-        except IOError:
-            logger.warning(f'  --> No A0-fitted template for night {night}, skipping...')
-            return nightsout, rvsminibox, parfitminibox, vsiniminibox, tagsminibox
-
-        # Find corresponding table in fits file, given the tables do not go sequentially by order number due to multiprocessing in Step 1
-        num_orders = 0
-        for i in range(25):
-            try:
-                hdulist[i].columns[0].name[9:]
-                num_orders += 1
-            except:
-                continue
-
-        fits_layer = [ i for i in np.arange(num_orders)+1 if np.int(hdulist[i].columns[0].name[9:]) == order ][0]
-
-        tbdata = hdulist[ fits_layer ].data
-        flag = np.array(tbdata[f'ERRORFLAG{order}'])[0]
-
-        # Check whether Telfit hit critical error in Step 1 for the chosen order with this night. If so, skip.
-        if flag == 1:
-            logger.warning(f'  --> TELFIT ENCOUNTERED CRITICAL ERROR IN ORDER: {order} NIGHT: {night}, skipping...')
-            return nightsout, rvsminibox, parfitminibox, vsiniminibox, tagsminibox
-
-
-        watm = tbdata['WATM'+str(order)]
-        satm = tbdata['SATM'+str(order)]
-        a0contx    = tbdata['X'+str(order)]
-        continuum  = tbdata['BLAZE'+str(order)]
-
-        # Remove extra rows leftover from having columns of unequal length
-        satm = satm[(watm != 0)]
-        watm = watm[(watm != 0)]
-        satm[(satm < 1e-4)] = 0. # set very low points to zero so that they don't go to NaN when taken to an exponent by template power in fmodel_chi
-        a0contx = a0contx[(continuum != 0)]
-        continuum = continuum[(continuum != 0)]
-
-        # Retrieve pixel bounds for where within each other significant telluric absorption is present.
-        # If these bounds were not applied, analyzing some orders would give garbage fits.
-        if args.band=='K':
-            if int(order) in [3, 13, 14]:
-                bound_cut = inparam.bound_cut_dic[args.band][order]
-            else:
-                bound_cut = [150, 150]
-
-        elif args.band=='H':
-            if int(order) in [6, 10, 11, 13, 14, 16, 17, 20, 21, 22]:
-                bound_cut = inparam.bound_cut_dic[args.band][order]
-            else:
-                bound_cut = [150, 150]
 
         # Load target spectrum
         x,wave,s,u = init_fitsread(f'{inparam.inpath}/{night}/{beam}/',
@@ -231,8 +214,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         wave_piece = wave_piece[(wave_piece*1e4 > np.min(watm_in)+5) & (wave_piece*1e4 < np.max(watm_in)-5)]
 
         # Normalize continuum from A0 to flux scale of data
-        continuum /= np.nanmedian(continuum)
-        continuum *= np.nanpercentile(s_piece,99)
+        continuum = continuum_save*np.nanpercentile(s_piece,99)
 
         # --------------------------------------------------------------
 
@@ -248,54 +230,42 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
 
         # Arrays defining parameter variations during optimization steps
-        #                            | 0    1    2    3 |  | ------ 4 ------ |  | 5 |   | 6     7     8           9  |  |10  11  12| |13 14|  |15   16   17   18    19 |  |20   21   22   23 |
-        dpars = {'cont' : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    1e7, 1, 1,   0, 0,    10., 20., 0.2, 50.0, 0.2,   1.0, 1.0, 1.0, 1.0 ]),
-                 'twave': np.array([  0.0, 0.0, 0.0, 1.0,   0.0,                 0.0,   10.0, 10.0,  5.00000e-5, 1e-7,   0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ]),
-                 'ip'   : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.5,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ]),
-                 's'    : np.array([  5.0, 1.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ]),
-                 'v'    : np.array([  0.0, 0.0, 0.0, 0.0,   inparam.vsinivary,   0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ]),
-                 'ts'   : np.array([  5.0, 1.0, 0.0, 1.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ])}
-        if masterbeam == 'B':
-            dpars['cont'] = np.array([0.0, 0.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    1e7, 1, 1,   0, 0,     0.,  0., 0.0,  0.,  0.0,   1.0, 1.0 , 1.0, 1.0 ])
+        #                            | 0    1    2    3 |  | ------ 4 ------ |  | 5 |   | 6     7     8           9  |  |10  11  12| |13 14|  |15   16   17   18  |
+        dpars = {'cont' : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    1e7, 1, 1,   0, 0,   1.0, 1.0, 1.0, 1.0 ]),
+                 'twave': np.array([  0.0, 0.0, 0.0, 1.0,   0.0,                 0.0,   10.0, 10.0,  5.00000e-5, 1e-7,   0,   0, 0,   0, 0,   0.0, 0.0, 0.0, 0.0 ]),
+                 'ip'   : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.5,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,   0.0, 0.0, 0.0, 0.0 ]),
+                 's'    : np.array([  5.0, 1.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,   0.0, 0.0, 0.0, 0.0 ]),
+                 'v'    : np.array([  0.0, 0.0, 0.0, 0.0,   inparam.vsinivary,   0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,   0.0, 0.0, 0.0, 0.0 ]),
+                 'ts'   : np.array([  5.0, 1.0, 0.0, 1.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,   0.0, 0.0, 0.0, 0.0 ])}
 
         # Use quadratic blaze correction for order 13; cubic for orders 6, 14, 21; quartic for orders 16 and 22
         if args.band == 'H':
             if np.int(order) in [13]:
-                dpars['cont'][20] = 0.; dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
+                dpars['cont'][15] = 0.; dpars['cont'][16] = 0.; dpars['cont'][17] = 0.; dpars['cont'][18] = 0.;
             elif np.int(order) in [6,14,21]:
-                dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
+                dpars['cont'][16] = 0.; dpars['cont'][17] = 0.; dpars['cont'][18] = 0.;
             else:
                 pass
         else:
             if np.int(order) in [3]:
-                dpars['cont'][20] = 0.; dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
+                dpars['cont'][15] = 0.; dpars['cont'][16] = 0.; dpars['cont'][17] = 0.; dpars['cont'][18] = 0.;
             elif np.int(order) in [4,5]:
-                dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
+                dpars['cont'][16] = 0.; dpars['cont'][17] = 0.; dpars['cont'][18] = 0.;
             elif np.int(order) in [6]:
-                dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
+                dpars['cont'][17] = 0.; dpars['cont'][18] = 0.;
             else:
                 pass
 
-        continuum_in = rebin_jv(a0contx,continuum,x_piece,False)
-        fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]),masterbeam,np.array([],dtype=int))
+        continuum_in = rebin_jv(a0contx_save,continuum,x_piece,False)
+        fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]),np.array([],dtype=int))
 
         #-------------------------------------------------------------------------------
 
         # Initialize an array that puts hard bounds on vsini and the instrumental resolution to make sure they do not diverge to unphysical values
         optimize = True
         par_in = par.copy()
-        if masterbeam == 'B':
-            hardbounds = [par_in[4] - dpars['v'][4],      par_in[4] + dpars['v'][4],
-                          par_in[5] - dpars['ip'][5],     par_in[5]+dpars['ip'][5]]
-        else:
-            hardbounds = [par_in[4] - dpars['v'][4],      par_in[4] + dpars['v'][4],
-                          par_in[5]  - dpars['ip'][5],    par_in[5] + dpars['ip'][5],
-                          par_in[15] - dpars['cont'][15], par_in[15] + dpars['cont'][15],
-                          par_in[16] - dpars['cont'][16], par_in[16] + dpars['cont'][16],
-                          0.,                             par_in[17] + dpars['cont'][17],
-                          par_in[18] - dpars['cont'][18], par_in[18] + dpars['cont'][18],
-                          0.,                             par_in[19] + dpars['cont'][19]
-                          ]
+        hardbounds = [par_in[4] - dpars['v'][4],      par_in[4] + dpars['v'][4],
+                      par_in[5] - dpars['ip'][5],     par_in[5]+dpars['ip'][5]]
         if hardbounds[0] < 0.5:
             hardbounds[0] = 0.5
         if hardbounds[2] < 1:
@@ -331,7 +301,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
             if nc == 1:
                 parfit = parfit_1.copy()
                 CRmaskF = CRmasker(parfit,fitobj)
-                fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]),masterbeam,CRmaskF)
+                fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]),CRmaskF)
 
         parfit = parfit_1.copy()
 
