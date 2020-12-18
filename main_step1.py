@@ -61,7 +61,7 @@ def MPinst(args, inparam, jerp, orders, i):
     try:
         s2n = a0fluxlist/u
         if np.nanmedian(s2n) < float(args.SN_cut):
-            logger.warning('  --> Bad S/N {:1.3f} < {} for {}{}, SKIP'.format( np.nanmedian(s2n), args.SN_cut, night, masterbeam))
+            logger.warning('  --> Bad S/N {:1.3f} < {} for {}, SKIP'.format( np.nanmedian(s2n), args.SN_cut, night))
 
             pre_err = True
             logger.warning(f'  --> NIGHT {night}, ORDER {order} HIT ERROR DURING PRE_OPT')
@@ -84,7 +84,7 @@ def MPinst(args, inparam, jerp, orders, i):
             return
 
     except ZeroDivisionError:
-        logger.warning('  --> There must be something wrong woth flux error = 0 for {}{}, SKIP'.format(night, masterbeam))
+        logger.warning('  --> Spectral flux cannot equal 0, for {}, SKIP'.format(night))
 
         pre_err = True
         logger.warning(f'  --> NIGHT {night}, ORDER {order} HIT ERROR (flux error = 0) DURING PRE_OPT')
@@ -183,7 +183,7 @@ def MPinst(args, inparam, jerp, orders, i):
     s = a0fluxlist.copy(); x = a0x.copy(); u = a0u.copy();
 
     # Collect all fit variables into one class
-    fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam, np.array([],dtype=int))
+    fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], np.array([],dtype=int))
 
     #                            |0    1    2    3  |  | 4 |  | 5 |   | 6    7    8           9  |    |10 11 12|  |13 14|    |15   16   17   18 |
     dpars = {'cont' :   np.array([0.0, 0.0, 0.0, 0.0,   0.0,   0.0,    0.0,  0.0, 0.0,        0.,     1e7, 1, 1,    0, 0,    1.0, 1.0, 1.0, 1.0 ]),
@@ -282,7 +282,7 @@ def MPinst(args, inparam, jerp, orders, i):
                     mask[CRmaskF] = False
                     continuum    = A0cont(w[mask]/1e4,s[mask],night,order,args.band)
                     continuum    = rebin_jv(w[mask],continuum,w,False)
-                    fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam, CRmaskF)
+                    fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], CRmaskF)
 
             if misfit_flag_low == 0 or restarted == True:
 
