@@ -65,7 +65,7 @@ def MPinst(args, inparam, jerp, orders, i):
 
     s2n = a0fluxlist/u
     if np.nanmedian(s2n) < float(args.SN_cut):
-        logger.warning('  --> Bad S/N {:1.3f} < {} for {}{}, SKIP'.format( np.nanmedian(s2n), args.SN_cut, night, masterbeam))
+        logger.warning('  --> Bad S/N {:1.3f} < {} for {}, SKIP'.format( np.nanmedian(s2n), args.SN_cut, night))
 
         pre_err = True
         logger.warning(f'  --> NIGHT {night}, ORDER {order} HIT ERROR DURING PRE_OPT')
