@@ -14,5 +14,6 @@ dependencies:
   - cython
   - requests
   - nlopt
+  - pip
   - pip:
     - pysynphot
