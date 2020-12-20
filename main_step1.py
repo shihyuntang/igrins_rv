@@ -587,7 +587,8 @@ if __name__ == '__main__':
     #-------------------------------------------------------------------------------
 
     # Run order by order, multiprocessing over nights within an order
-    outs = mp_run(args, inparam, args.Nthreads, jerp, orders, nightsFinal)
+    for jerp in range(len(orders)):
+        outs = mp_run(args, inparam, args.Nthreads, jerp, orders, nightsFinal)
 
     print('\n')
     logger.info('A0 Fitting Done!')
