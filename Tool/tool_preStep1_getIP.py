@@ -62,13 +62,36 @@ def MPinst(args, inparam, jerp, orders, i):
                                                  args.band,
                                                  bound_cut)
     #-------------------------------------------------------------------------------
+    try:
+        s2n = a0fluxlist/u
+        if np.nanmedian(s2n) < float(args.SN_cut):
+            logger.warning('  --> Bad S/N {:1.3f} < {} for {}, SKIP'.format( np.nanmedian(s2n), args.SN_cut, night))
 
-    s2n = a0fluxlist/u
-    if np.nanmedian(s2n) < float(args.SN_cut):
-        logger.warning('  --> Bad S/N {:1.3f} < {} for {}, SKIP'.format( np.nanmedian(s2n), args.SN_cut, night))
+            pre_err = True
+            logger.warning(f'  --> NIGHT {night}, ORDER {order} HIT ERROR DURING PRE_OPT')
+            # Write out table to fits header with errorflag = 1
+            c0    = fits.Column(name=f'ERRORFLAG{order}', array=np.array([1]), format='K')
+            cols  = fits.ColDefs([c0])
+            hdu_1 = fits.BinTableHDU.from_columns(cols)
+
+            # If first time writing fits file, make up filler primary hdu
+            if order == firstorder: # If first time writing fits file, make up filler primary hdu
+                bleh = np.ones((3,3))
+                primary_hdu = fits.PrimaryHDU(bleh)
+                hdul = fits.HDUList([primary_hdu,hdu_1])
+                hdul.writeto('{}/{}A0_treated_{}.fits'.format(inparam.outpath, night, args.band), overwrite=True)
+            else:
+                hh = fits.open('{}/{}A0_treated_{}.fits'.format(inparam.outpath, night, args.band))
+                hh.append(hdu_1)
+                hh.writeto('{}/{}A0_treated_{}.fits'.format(inparam.outpath, night, args.band), overwrite=True)
+
+            return
+
+    except ZeroDivisionError:
+        logger.warning('  --> Spectral flux cannot equal 0, for {}, SKIP'.format(night))
 
         pre_err = True
-        logger.warning(f'  --> NIGHT {night}, ORDER {order} HIT ERROR DURING PRE_OPT')
+        logger.warning(f'  --> NIGHT {night}, ORDER {order} HIT ERROR (flux error = 0) DURING PRE_OPT')
         # Write out table to fits header with errorflag = 1
         c0    = fits.Column(name=f'ERRORFLAG{order}', array=np.array([1]), format='K')
         cols  = fits.ColDefs([c0])
