@@ -73,7 +73,7 @@ np.seterr(divide='ignore', invalid='ignore')
 # -------------------------------------------------------------
 def read_prepdata(args):
         ## Collect relevant file information from Predata files
-        if os.getcwd()[-1]=='v':
+        if 'igrins' in os.getcwd().split('/')[-1]:
             A0data   = Table.read('./Input/Prepdata/Prepdata_A0_{}.txt'.format(args.targname), format='ascii')
         else:
             A0data   = Table.read('../Input/Prepdata/Prepdata_A0_{}.txt'.format(args.targname), format='ascii')
@@ -81,7 +81,7 @@ def read_prepdata(args):
         ams0     = np.array(A0data['airmass'])
         obs0     = {str(k):str(v) for k,v in zip(A0data['night'],A0data['obs'])}
 
-        if os.getcwd()[-1]=='v':
+        if 'igrins' in os.getcwd().split('/')[-1]:
             targdata = Table.read('./Input/Prepdata/Prepdata_targ_{}.txt'.format(args.targname), format='ascii')
         else:
             targdata = Table.read('../Input/Prepdata/Prepdata_targ_{}.txt'.format(args.targname), format='ascii')
@@ -92,7 +92,7 @@ def read_prepdata(args):
         bvcs0   = np.array(targdata['bvc'])
         ams     = np.array(targdata['airmass'])
 
-        if os.getcwd()[-1]=='v':
+        if 'igrins' in os.getcwd().split('/')[-1]:
             bounddata = Table.read('./Input/UseWv/XRegions_{}_{}.csv'.format(args.WRegion, args.band), format='csv')
         else:
             bounddata = Table.read('../Input/UseWv/XRegions_{}_{}.csv'.format(args.WRegion, args.band), format='csv')

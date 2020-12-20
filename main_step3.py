@@ -468,6 +468,14 @@ if __name__ == '__main__':
     initvsini = float(args.initvsini)
     vsinivary = float(args.vsinivary)
 
+    if args.initvsini == '':
+        sys.exit('ERROR: YOU MUST PROVIDE AN INITIAL GUESS FOR VSINI VALUE, "-i"')
+
+    if (args.guesses == '') & (args.guessesX == ''):
+        sys.exit('ERROR: YOU MUST PROVIDE AN INITIAL GUESS FOR RV VALUE(S) BY USING "-g" OR "-gX"')
+
+    if (args.temperature == '') & (args.logg == ''):
+        sys.exit('ERROR: YOU MUST PROVIDE THE TEMPERATURE AND LOGG VALUE FOR STELLAR TEMPLATE. GO TO "./Engine/syn_template/" TO SEE AVAILABLE TEMPLATES')
     #------------------------------
 
     if args.template.lower() not in ['synthetic', 'livingston', 'phoenix']:

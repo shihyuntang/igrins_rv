@@ -156,7 +156,7 @@ def setup_templates(logger, kind='synthetic', band='K', temperature=5000, logg=4
         logger.info(f'Using {band}-band synthetic stellar template...')
         logger.info(f'synthetic stellar template with T{temperature} logg{logg}!!!!!')
 
-        if os.getcwd()[-1]=='v':
+        if 'igrins' in os.getcwd().split('/')[-1]:
             stelldata = Table.read(f'./Engine/syn_template/syntheticstellar_{band.lower()}band_T{temperature}_logg{logg}.txt',format='ascii')
         else:
             stelldata = Table.read(f'../Engine/syn_template/syntheticstellar_{band.lower()}band_T{temperature}_logg{logg}.txt',format='ascii')
@@ -171,7 +171,7 @@ def setup_templates(logger, kind='synthetic', band='K', temperature=5000, logg=4
         logger.info(f'Using {band}-band PHOENIX stellar template...')
         logger.info(f'PHOENIX stellar template with T{temperature} logg{logg}!!!!!')
 
-        if os.getcwd()[-1]=='v':
+        if 'igrins' in os.getcwd():.split('/')[-1]
             stelldata = Table.read(f'./Engine/syn_template/PHOENIX-lte0{temperature}-{logg}0-0.0_contadj{band}.txt',format='ascii')
         else:
             stelldata = Table.read(f'../Engine/syn_template/PHOENIX-lte0{temperature}-{logg}0-0.0_contadj{band}.txt',format='ascii')
@@ -187,7 +187,7 @@ def setup_templates(logger, kind='synthetic', band='K', temperature=5000, logg=4
         if sptype not in ['K','M']:
             sys.exit('Pipeline does not have a stellar template for early type stars in K band! Upload your own?')
         logger.info('Using sunspot for stellar template...')
-        if os.getcwd()[-1]=='v':
+        if 'igrins' in os.getcwd().split('/')[-1]:
             stelldata = Table.read('./Engine/SpotAtl_contadjusted.txt',format='ascii')
         else:
             stelldata = Table.read('../Engine/SpotAtl_contadjusted.txt',format='ascii')
@@ -201,7 +201,7 @@ def setup_templates(logger, kind='synthetic', band='K', temperature=5000, logg=4
         if sptype not in ['F','G','K']:
             sys.exit('Pipeline does not have a stellar template for late type stars in H band! Upload your own?')
         logger.info('Using quiet sun for stellar template...')
-        if os.getcwd()[-1]=='v':
+        if 'igrins' in os.getcwd().split('/')[-1]:
             spotdata = Table.read('./Engine/PhotoAtl_Solar_contadjusted.txt',format='ascii')
         else:
             spotdata = Table.read('../Engine/PhotoAtl_Solar_contadjusted.txt',format='ascii')
@@ -211,7 +211,7 @@ def setup_templates(logger, kind='synthetic', band='K', temperature=5000, logg=4
         mflux0 = mflux0[(np.isfinite(mflux0))]
         mflux0[(mflux0 < 0)] = 0
 
-    if os.getcwd()[-1]=='v':
+    if 'igrins' in os.getcwd().split('/')[-1]:
         telluricdata = Table.read('./Engine/PhotoAtl Organized.txt',format='ascii')
     else:
         telluricdata = Table.read('../Engine/PhotoAtl Organized.txt',format='ascii')
@@ -225,7 +225,7 @@ def setup_templates(logger, kind='synthetic', band='K', temperature=5000, logg=4
 
 def setup_templates_tel():
 
-    if os.getcwd()[-1]=='v':
+    if 'igrins' in os.getcwd().split('/')[-1]:
         spotdata = Table.read('./Engine/SpotAtl Organized.txt',format='ascii')
     else:
         spotdata = Table.read('../Engine/SpotAtl Organized.txt',format='ascii')
@@ -236,7 +236,7 @@ def setup_templates_tel():
     mflux0 = mflux0[(np.isfinite(mflux0))]
     mflux0[(mflux0 < 0)] = 0
 
-    if os.getcwd()[-1]=='v':
+    if 'igrins' in os.getcwd().split('/')[-1]:
         telluricdata = Table.read('./Engine/PhotoAtl Organized.txt',format='ascii')
     else:
         telluricdata = Table.read('../Engine/PhotoAtl Organized.txt',format='ascii')
