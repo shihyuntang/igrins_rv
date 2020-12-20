@@ -468,6 +468,9 @@ if __name__ == '__main__':
     initvsini = float(args.initvsini)
     vsinivary = float(args.vsinivary)
 
+    if args.mode == '':
+        sys.exit('ERROR: YOU MUST CHOOSE A MODE, "STD" OR "TAR", for "-mode"')
+
     if args.initvsini == '':
         sys.exit('ERROR: YOU MUST PROVIDE AN INITIAL GUESS FOR VSINI VALUE, "-i"')
 
