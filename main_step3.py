@@ -145,7 +145,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     satm[(satm < 1e-4)] = 0. # set very low points to zero so that they don't go to NaN when taken to an exponent by template power in fmodel_chi
     a0contx_save   =   a0contx_save[(continuum_save != 0)]
     continuum_save = continuum_save[(continuum_save != 0)]
-    
+
     continuum_save /= np.nanmedian(continuum_save)
 
     # Retrieve pixel bounds for where within each other significant telluric absorption is present.
@@ -438,6 +438,14 @@ if __name__ == '__main__':
     initvsini = float(args.initvsini)
     vsinivary = float(args.vsinivary)
 
+    if args.initvsini == '':
+        sys.exit('ERROR: YOU MUST PROVIDE AN INITIAL GUESS FOR VSINI VALUE, "-i"')
+
+    if (args.guesses == '') & (args.guessesX == ''):
+        sys.exit('ERROR: YOU MUST PROVIDE AN INITIAL GUESS FOR RV VALUE(S) BY USING "-g" OR "-gX"')
+
+    if (args.temperature == '') & (args.logg == ''):
+        sys.exit('ERROR: YOU MUST PROVIDE THE TEMPERATURE AND LOGG VALUE FOR STELLAR TEMPLATE. GO TO "./Engine/syn_template/" TO SEE AVAILABLE TEMPLATES')
     #------------------------------
 
     if args.template.lower() not in ['synthetic', 'livingston', 'phoenix']:
