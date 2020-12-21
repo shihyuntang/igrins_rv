@@ -55,7 +55,7 @@ def MPinst(args, inparam, jerp, orders, i):
     ### Load relevant A0 spectrum
     x, a0wavelist, a0fluxlist, u = init_fitsread(inparam.inpath,
                                                  'A0',
-                                                 'combined',
+                                                 'separate',
                                                  night,
                                                  order,
                                                  f'{int(inparam.tags[night]):04d}',
