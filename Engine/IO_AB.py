@@ -201,7 +201,7 @@ def setup_templates(logger, kind='synthetic', band='K', temperature=5000, logg=4
         mflux0[(mflux0 < 0)] = 0
         
     else:
-        logger.info(f'Input kind is {kind}, but must be either "synthetic", "phoenix" (for IGRINS RV team usage only), or "user"!)
+        logger.info(f'Input kind is {kind}, but must be either "synthetic", "phoenix" (for IGRINS RV team usage only), or "user"!')
             
     if 'igrins' in os.getcwd().split('/')[-1]:
         telluricdata = Table.read('./Engine/PhotoAtl Organized.txt',format='ascii')
