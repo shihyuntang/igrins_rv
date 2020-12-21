@@ -61,15 +61,10 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                       0.,                                                    #12: Continuum quadratic component
                       np.nan,                                                #13: Instrumental resolution linear component
                       np.nan,                                                #14: Instrumental resolution quadratic component
-                      0,                                                     #15: Blaze dip center location
-                      0,                                                     #16: Blaze dip full width
-                      0,                                                     #17: Blaze dip depth
-                      0,                                                     #18: Secondary blaze dip full width
-                      0,                                                     #19: Blaze dip depth
-                      0.0,                                                   #20: Continuum cubic component
-                      0.0,                                                   #21: Continuum quartic component
-                      0.0,                                                   #22: Continuum pentic component
-                      0.0])                                                  #23: Continuum hexic component
+                      0.0,                                                   #15: Continuum cubic component
+                      0.0,                                                   #16: Continuum quartic component
+                      0.0,                                                   #17: Continuum pentic component
+                      0.0])                                                  #18: Continuum hexic component
 
 
     # This one specific order is small and telluric dominated, start with greater stellar template power to ensure good fits
@@ -140,9 +135,9 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
     # Use instrumental profile dictionary corresponding to whether IGRINS mounting was loose or not
     if (np.int(night[:8]) < 20180401) or (np.int(night[:8]) > 20190531):
-        IPpars = inparam.ips_tightmount_pars[args.band][masterbeam][order]
+        IPpars = inparam.ips_tightmount_pars[args.band][order]
     else:
-        IPpars = inparam.ips_loosemount_pars[args.band][masterbeam][order]
+        IPpars = inparam.ips_loosemount_pars[args.band][order]
 
     # Retrieve pixel bounds for where within each other significant telluric absorption is present.
     # If these bounds were not applied, analyzing some orders would give garbage fits.
@@ -218,44 +213,45 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
     # Arrays defining parameter variations during optimization steps
     # Optimization will cycle twice. In the first cycle, the RVs can vary more than in the second.
-    #                             | 0    1    2    3 |  | ------ 4 ------ |  | 5 |   | 6     7     8           9  |  |10  11  12| |13 14|  |15  16  17  18  19|  |20   21   22   23 |
-    dpars1 = {'cont' : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    1e7, 1, 1,   0, 0,    0., 0., 0., 0., 0.,   1.0, 1.0, 1.0, 1.0  ]),
-              'twave': np.array([  0.0, 0.0, 0.0, 1.0,   0.0,                 0.0,   10.0, 10.0,  5.00000e-5, 1e-7,   0,   0, 0,   0, 0,    0., 0., 0., 0., 0.,   0.0, 0.0, 0.0, 0.0 ]),
-              'ip'   : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.5,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,    0., 0., 0., 0., 0.,   0.0, 0.0, 0.0, 0.0 ]),
-              's'    : np.array([ 20.0, 2.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,    0., 0., 0., 0., 0.,   0.0, 0.0, 0.0, 0.0 ]),
-              'v'    : np.array([  0.0, 0.0, 0.0, 0.0,   inparam.vsinivary,   0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,    0., 0., 0., 0., 0.,   0.0, 0.0, 0.0, 0.0 ])}
+    #                             | 0    1    2    3 |  | ------ 4 ------ |  | 5 |   | 6     7     8           9  |  |10  11  12| |13 14|  |15   16    17  18  |
+    dpars1 = {'cont' : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    1e7, 1, 1,   0, 0,    1.0, 1.0, 1.0, 1.0 ]),
+              'twave': np.array([  0.0, 0.0, 0.0, 1.0,   0.0,                 0.0,   10.0, 10.0,  5.00000e-5, 1e-7,   0,   0, 0,   0, 0,    0.0, 0.0, 0.0, 0.0 ]),
+              'ip'   : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.5,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,    0.0, 0.0, 0.0, 0.0 ]),
+              's'    : np.array([ 20.0, 2.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,    0.0, 0.0, 0.0, 0.0 ]),
+              'v'    : np.array([  0.0, 0.0, 0.0, 0.0,   inparam.vsinivary,   0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,    0.0, 0.0, 0.0, 0.0 ])}
 
-    dpars2 = {'cont' : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    1e7, 1, 1,   0, 0,    0., 0., 0., 0., 0.,  1.0, 1.0, 1.0, 1.0  ]),
-              'twave': np.array([  0.0, 0.0, 0.0, 1.0,   0.0,                 0.0,   10.0, 10.0,  5.00000e-5, 1e-7,   0,   0, 0,   0, 0,    0., 0., 0., 0., 0.,   0.0, 0.0, 0.0, 0.0 ]),
-              'ip'   : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.5,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,    0., 0., 0., 0., 0.,   0.0, 0.0, 0.0, 0.0 ]),
-              's'    : np.array([  5.0, 2.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,    0., 0., 0., 0., 0.,   0.0, 0.0, 0.0, 0.0 ]),
-              'v'    : np.array([  0.0, 0.0, 0.0, 0.0,   inparam.vsinivary,   0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,    0., 0., 0., 0., 0.,   0.0, 0.0, 0.0, 0.0 ])}
+    dpars2 = {'cont' : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    1e7, 1, 1,   0, 0,    1.0, 1.0, 1.0, 1.0 ]),
+              'twave': np.array([  0.0, 0.0, 0.0, 1.0,   0.0,                 0.0,   10.0, 10.0,  5.00000e-5, 1e-7,   0,   0, 0,   0, 0,    0.0, 0.0, 0.0, 0.0 ]),
+              'ip'   : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.5,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,    0.0, 0.0, 0.0, 0.0 ]),
+              's'    : np.array([  5.0, 2.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,    0.0, 0.0, 0.0, 0.0 ]),
+              'v'    : np.array([  0.0, 0.0, 0.0, 0.0,   inparam.vsinivary,   0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,    0.0, 0.0, 0.0, 0.0 ])}
 
     # Use quadratic blaze correction for order 13; cubic for orders 6, 14, 21; quartic for orders 16 and 22
     if args.band == 'H':
-        if int(order) in [13]:
-            dpars1['cont'][20] = 0.; dpars1['cont'][21] = 0.; dpars1['cont'][22] = 0.; dpars1['cont'][23] = 0.;
-            dpars2['cont'][20] = 0.; dpars2['cont'][21] = 0.; dpars2['cont'][22] = 0.; dpars2['cont'][23] = 0.;
-        elif int(order) in [6,14,21]:
-            dpars1['cont'][21] = 0.; dpars1['cont'][22] = 0.; dpars1['cont'][23] = 0.;
-            dpars2['cont'][21] = 0.; dpars2['cont'][22] = 0.; dpars2['cont'][23] = 0.;
+            if np.int(order) in [13]:
+                dpars1['cont'][15] = 0.; dpars1['cont'][16] = 0.; dpars1['cont'][17] = 0.; dpars1['cont'][18] = 0.;
+                dpars2['cont'][15] = 0.; dpars2['cont'][16] = 0.; dpars2['cont'][17] = 0.; dpars2['cont'][18] = 0.;
+            elif np.int(order) in [6,14,21]:
+                dpars1['cont'][16] = 0.; dpars1['cont'][17] = 0.; dpars1['cont'][18] = 0.;
+                dpars2['cont'][16] = 0.; dpars2['cont'][17] = 0.; dpars2['cont'][18] = 0.;
+            else:
+                pass
         else:
-            pass
-    else:
-        if np.int(order) in [3]:
-            dpars1['cont'][20] = 0.; dpars1['cont'][21] = 0.; dpars1['cont'][22] = 0.; dpars1['cont'][23] = 0.;
-            dpars2['cont'][20] = 0.; dpars2['cont'][21] = 0.; dpars2['cont'][22] = 0.; dpars2['cont'][23] = 0.;
-        elif np.int(order) in [4,5]:
-            dpars1['cont'][21] = 0.; dpars1['cont'][22] = 0.; dpars1['cont'][23] = 0.;
-            dpars2['cont'][21] = 0.; dpars2['cont'][22] = 0.; dpars2['cont'][23] = 0.;
-        elif np.int(order) in [6]:
-            dpars1['cont'][22] = 0.; dpars1['cont'][23] = 0.;
-            dpars2['cont'][22] = 0.; dpars2['cont'][23] = 0.;
-        else:
-            pass
+            if np.int(order) in [3]:
+                dpars1['cont'][15] = 0.; dpars1['cont'][16] = 0.; dpars1['cont'][17] = 0.; dpars1['cont'][18] = 0.;
+                dpars2['cont'][15] = 0.; dpars2['cont'][16] = 0.; dpars2['cont'][17] = 0.; dpars2['cont'][18] = 0.;
+            elif np.int(order) in [4,5]:
+                dpars1['cont'][16] = 0.; dpars1['cont'][17] = 0.; dpars1['cont'][18] = 0.;
+                dpars2['cont'][16] = 0.; dpars2['cont'][17] = 0.; dpars2['cont'][18] = 0.;
+            elif np.int(order) in [6]:
+                dpars1['cont'][17] = 0.; dpars1['cont'][18] = 0.;
+                dpars2['cont'][17] = 0.; dpars2['cont'][18] = 0.;
+            else:
+                pass
+            
 
     continuum_in = rebin_jv(a0contx,continuum,x_piece,False)
-    fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]),masterbeam,np.array([],dtype=int))
+    fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]),np.array([],dtype=int))
 
     #-------------------------------------------------------------------------------
 
