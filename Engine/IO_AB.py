@@ -34,57 +34,60 @@ def init_fitsread(path,kind,beam,night,order,tag,band,Ncuts=None):
         print('kind MUST BE "target" OR "A0", FORCE QUITTING!')
         print(breaker)
 
-    # Initguesser takes combined AB versions of target spectra, of which there may be multiple, and combines /those/ together.
-    if beam[:8] == 'combined':
+    # Initguesser takes A and Bs of target spectra and combines them together.
+    if beam == 'combine':
 
         if kind == 'target':
-            subpath        = '{}{}/{}/'.format(path, night,beam[8:])
+            subpaths        = ['{}{}/A/'.format(path, night),'{}{}/B/'.format(path, night)]
         else:
-            subpath        = '{}std/{}/{}/'.format(path, night,beam[8:])
+            print("Shouldn't be combining A0s!")
+            print(breaker)
 
-        fullpathprefix = '{}SDC{}_{}_'.format(subpath, band, night[:8])
+        for subpath in subpaths:
+            
+            fullpathprefix = '{}SDC{}_{}_'.format(subpath, band, night[:8])
 
-        onlyfiles = [f for f in listdir(subpath) if isfile(join(subpath, f))]
-        contmeds = []
-        for f in onlyfiles:
-            q = re.split('_', f)
-            if q[0] != 'SDC{}'.format(band):
-                continue
-            qr = re.split('\.', q[2])
-            tag = qr[0]
+            onlyfiles = [f for f in listdir(subpath) if isfile(join(subpath, f))]
+            contmeds = []
+            for f in onlyfiles:
+                q = re.split('_', f)
+                if q[0] != 'SDC{}'.format(band):
+                    continue
+                qr = re.split('\.', q[2])
+                tag = qr[0]
 
-            # Readin fits
-            wavelist0, fluxlist0, s2nlist0 = partial_loader(fullpathprefix+tag,order)
+                # Readin fits
+                wavelist0, fluxlist0, s2nlist0 = partial_loader(fullpathprefix+tag,order)
 
-            if Ncuts != None:
-                Nstartcut = Ncuts[0]; Nendcut = Ncuts[-1];
-                ia = np.ones_like(wavelist0,dtype=bool)
-                ia[0:Nstartcut] = False; ia[-Nendcut:len(ia)] = False;
-                wavelist1 = wavelist0[ia]; fluxlist1 = fluxlist0[ia]; s2nlist1 = s2nlist0[ia];
-                xlist = np.arange(len(wavelist1),dtype=float) + np.float(Nstartcut)
-            else:
-                wavelist1 = wavelist0; fluxlist1 = fluxlist0; s2nlist1 = s2nlist0;
-                xlist = np.arange(len(wavelist1),dtype=float)
+                if Ncuts != None:
+                    Nstartcut = Ncuts[0]; Nendcut = Ncuts[-1];
+                    ia = np.ones_like(wavelist0,dtype=bool)
+                    ia[0:Nstartcut] = False; ia[-Nendcut:len(ia)] = False;
+                    wavelist1 = wavelist0[ia]; fluxlist1 = fluxlist0[ia]; s2nlist1 = s2nlist0[ia];
+                    xlist = np.arange(len(wavelist1),dtype=float) + np.float(Nstartcut)
+                else:
+                    wavelist1 = wavelist0; fluxlist1 = fluxlist0; s2nlist1 = s2nlist0;
+                    xlist = np.arange(len(wavelist1),dtype=float)
+
+                try:
+                    fluxstack = np.vstack((fluxstack,fluxlist1))
+                    wavestack = np.vstack((wavestack,wavelist1))
+                    s2nstack    = np.vstack((s2nstack,s2nlist1))
+                except UnboundLocalError:
+                    fluxstack = fluxlist1.copy()
+                    wavestack = wavelist1.copy()
+                    s2nstack     = s2nlist1.copy()
 
             try:
-                fluxstack = np.vstack((fluxstack,fluxlist1))
-                wavestack = np.vstack((wavestack,wavelist1))
-                s2nstack    = np.vstack((s2nstack,s2nlist1))
+                wavelist = np.array([np.nanmean(wavestack[:,i]) for i in range(len(wavelist1))])
+                fluxlist = np.array([np.nanmean(fluxstack[:,i]) for i in range(len(wavelist1))])
+                s2nlist = np.array([np.sqrt(np.nansum(s2nstack[:,i]**2)) for i in range(len(wavelist1))])
+                #ulist    = np.array([1/np.sqrt(np.nansum(1/(ustack[:,i]**2))) for i in range(len(wavelist1))])
             except UnboundLocalError:
-                fluxstack = fluxlist1.copy()
-                wavestack = wavelist1.copy()
-                s2nstack     = s2nlist1.copy()
+                return 0,0,0,0
 
-        try:
-            wavelist = np.array([np.nanmean(wavestack[:,i]) for i in range(len(wavelist1))])
-            fluxlist = np.array([np.nanmean(fluxstack[:,i]) for i in range(len(wavelist1))])
-            s2nlist = np.array([np.sqrt(np.nansum(s2nstack[:,i]**2)) for i in range(len(wavelist1))])
-            #ulist    = np.array([1/np.sqrt(np.nansum(1/(ustack[:,i]**2))) for i in range(len(wavelist1))])
-        except UnboundLocalError:
-            return 0,0,0,0
-
-    # For A0 loading, use combined AB and load from AB/ folder. Shouldn't be more than one AB file, so shouldn't need to do any extra combining, unlike above.
-    # For RVProc procedure, use As and Bs separately and load from A/ or B/ folders.
+    # For step1 A0 loading, use combined AB and load from AB/ folder. Shouldn't be more than one AB file, so shouldn't need to do any extra combining, unlike above.
+    # For step3 science target loading, use As and Bs separately and load from A/ or B/ folders.
     else: # if separate beams
         if kind == 'target':
             pass
@@ -151,8 +154,6 @@ def airtovac(wave):
 
 def setup_templates(logger, kind='synthetic', band='K', temperature=5000, logg=4.5):
     if (kind == 'synthetic'):
-        # if sptype not in ['K','M']:
-        #     sys.exit('Pipeline does not have a stellar template for early type stars in K band! Upload your own?')
         logger.info(f'Using {band}-band synthetic stellar template...')
         logger.info(f'synthetic stellar template with T{temperature} logg{logg}!!!!!')
 
@@ -181,36 +182,27 @@ def setup_templates(logger, kind='synthetic', band='K', temperature=5000, logg=4
         mwave0 = mwave0[(np.isfinite(mflux0))]
         mflux0 = mflux0[(np.isfinite(mflux0))]
         mflux0[(mflux0 < 0)] = 0
-
-
-    elif kind == 'livingston' and band == 'K':
-        if sptype not in ['K','M']:
-            sys.exit('Pipeline does not have a stellar template for early type stars in K band! Upload your own?')
-        logger.info('Using sunspot for stellar template...')
+        
+    elif (kind.lower() == 'user'):
+        logger.info(f'Using user-provided stellar template with T{temperature} logg{logg}...')
+        logger.info(f'WARNING! PRECISION AND ACCURACY OF THIS PIPELINE IS NOT GUARANTEED WITH USER-PROVIDED STELLAR TEMPLATES!!!!!')
+        logger.info(f'Make sure to characterize your errors appropriately - see IGRINS RV paper for details.')
+        logger.info(f'Also be sure your templates follow the naming and formatting conventions described in the github wiki AND are placed under ./Engine/user_templates.')
+        
         if 'igrins' in os.getcwd().split('/')[-1]:
-            stelldata = Table.read('./Engine/SpotAtl_contadjusted.txt',format='ascii')
+            stelldata = Table.read(f'./Engine/user_templates/user_T{temperature}_logg{logg}_{band}band.txt',format='ascii')
         else:
-            stelldata = Table.read('../Engine/SpotAtl_contadjusted.txt',format='ascii')
-        mwave0 = np.array(stelldata['wave'])*10000.0
+            stelldata = Table.read(f'../Engine/user_templates/user_T{temperature}_logg{logg}_{band}band.txt',format='ascii')
+
+        mwave0 = np.array(stelldata['wave'])#*10000.0
         mflux0 = np.array(stelldata['flux'])
         mwave0 = mwave0[(np.isfinite(mflux0))]
         mflux0 = mflux0[(np.isfinite(mflux0))]
         mflux0[(mflux0 < 0)] = 0
-
-    elif kind == 'livingston' and band == 'H':
-        if sptype not in ['F','G','K']:
-            sys.exit('Pipeline does not have a stellar template for late type stars in H band! Upload your own?')
-        logger.info('Using quiet sun for stellar template...')
-        if 'igrins' in os.getcwd().split('/')[-1]:
-            spotdata = Table.read('./Engine/PhotoAtl_Solar_contadjusted.txt',format='ascii')
-        else:
-            spotdata = Table.read('../Engine/PhotoAtl_Solar_contadjusted.txt',format='ascii')
-        mwave0 = np.array(spotdata['wave'])*10000.0
-        mflux0 = np.array(spotdata['flux'])
-        mwave0 = mwave0[(np.isfinite(mflux0))]
-        mflux0 = mflux0[(np.isfinite(mflux0))]
-        mflux0[(mflux0 < 0)] = 0
-
+        
+    else:
+        logger.info(f'Input kind is {kind}, but must be either "synthetic", "phoenix" (for IGRINS RV team usage only), or "user"!)
+            
     if 'igrins' in os.getcwd().split('/')[-1]:
         telluricdata = Table.read('./Engine/PhotoAtl Organized.txt',format='ascii')
     else:
