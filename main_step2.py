@@ -42,20 +42,6 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         logger.warning(f'  --> Previous run of {night} found it inadequate, skipping...')
         return night, np.nan, np.nan
 
-    # Collect relevant beam and filenum info
-    tagsnight = []; beamsnight = np.array([]);
-    for tag in inparam.tagsB[night]:
-        tagsnight.append(tag)
-        beamsnight = np.append(beamsnight, 'B')
-
-    # Only do B exposures, and just use first B nodding
-    masterbeam = 'B'; beam = 'B';
-    try:
-        tag  = tagsnight[0]
-    except IndexError:
-        logger.warning(f'  --> No B nodding(frame) for night {night}, skipping...')
-        return night, np.nan, np.nan
-
 
     #-------------------------------------------------------------------------------
     ### Initialize parameter array for optimization as well as half-range values for each parameter during the various steps of the optimization.
@@ -175,10 +161,10 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     # Load target spectrum
     x,wave,s,u = init_fitsread(f'{inparam.inpath}/',
                                 'target',
-                                'combined'+str(masterbeam),
+                                'combine',
                                 night,
                                 order,
-                                inparam.tagsB[night][0],
+                                None,
                                 args.band,
                                 bound_cut)
 
@@ -391,7 +377,7 @@ if __name__ == '__main__':
                         help="The number, X, that refers to the ./*targname/Initguesser_results_X file you wish to use for initial RV guesses",
                         type=str,   default='')
     parser.add_argument('-t',       dest="template",         action="store",
-                        help="Stellar template. Pick from 'synthetic', 'PHOENIX', or 'livingston'. Default = 'synthetic'",
+                        help="Stellar template. Pick from 'synthetic', 'PHOENIX', or 'user' (which then needs to be supplied in ./Engine/user_templates). Default = 'synthetic'",
                         type=str,   default='synthetic' )
     parser.add_argument('-temp',      dest="temperature",           action="store",
                         help="The synthetic template temperature used, e.g., 5000",
