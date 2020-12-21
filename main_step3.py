@@ -400,7 +400,7 @@ if __name__ == '__main__':
                         help="For TAR star. The number, X, under ./*targname/Initguesser_results_X or ./*targname/RV_results_X, that you wish to use. Prefix determined by -gS",
                         type=str, default='')
     parser.add_argument('-t',       dest="template",         action="store",
-                        help="Stellar template. Pick from 'synthetic', 'PHOENIX', or 'livingston'. Default = 'synthetic'",
+                        help="Stellar template. Pick from 'synthetic', 'PHOENIX', or 'user' (which then needs to be supplied in ./Engine/user_templates). Default = 'synthetic'",
                         type=str,   default='synthetic' )
     parser.add_argument('-temp',      dest="temperature",           action="store",
                         help="The synthetic template temperature used, e.g., 5000",
@@ -451,22 +451,32 @@ if __name__ == '__main__':
         sys.exit('ERROR: YOU MUST PROVIDE THE TEMPERATURE AND LOGG VALUE FOR STELLAR TEMPLATE. GO TO "./Engine/syn_template/" TO SEE AVAILABLE TEMPLATES')
     #------------------------------
 
-    if args.template.lower() not in ['synthetic', 'livingston', 'phoenix']:
+    if args.template.lower() not in ['synthetic', 'user', 'phoenix']:
         sys.exit('ERROR: UNEXPECTED STELLAR TEMPLATE FOR "-t" INPUT!')
 
     #------------------------------
 
-    syntemp = os.listdir(f'./Engine/syn_template')
-    syntemp = [i for i in syntemp if i[:3] == 'syn'] #list of all syntheticstellar
+    if args.template.lower() == 'synthetic':
+        loc = 'syn_template'
+        checkteffs = True
+    elif args.template.lower() == 'user':
+        loc = 'user_template'
+        checkteffs = True
+    else:
+        checkteffs = False
+        
+    if checkteffs == True:
+        templates = os.listdir(f'./Engine/{loc}')
+        templates = [i for i in templates if i[:3] == loc[:3]] #list all templates in folder
 
-    synT    = [ i.split('_')[2][1:]  for i in syntemp ]
-    synlogg = [ i.split('_')[3][4:7] for i in syntemp ]
+        synT    = [ i.split('_')[2][1:]  for i in templates ]
+        synlogg = [ i.split('_')[3][4:7] for i in templates ]
 
-    if args.temperature not in synT:
-        sys.exit(f'ERROR: UNEXPECTED STELLAR TEMPERATURE FOR "-temp" INPUT! {syntemp} AVALIABLE UNDER ./Engine/syn_template/')
+        if args.temperature not in synT:
+            sys.exit(f'ERROR: UNEXPECTED STELLAR TEMPERATURE FOR "-temp" INPUT! {templates} AVALIABLE UNDER ./Engine/{loc}/')
 
-    if args.logg not in synlogg:
-        sys.exit(f'ERROR: UNEXPECTED STELLAR LOGG FOR "-logg" INPUT! {syntemp} AVALIABLE UNDER ./Engine/syn_template/')
+        if args.logg not in synlogg:
+            sys.exit(f'ERROR: UNEXPECTED STELLAR LOGG FOR "-logg" INPUT! {templates} AVALIABLE UNDER ./Engine/{loc}/')
 
     #------------------------------
 
