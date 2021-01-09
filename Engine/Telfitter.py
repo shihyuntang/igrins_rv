@@ -62,14 +62,18 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
     fitter = TelluricFitter(debug=False)
 
     #Set the observatory location with a keyword
-    DCT_props = {"latitude": 34.744, "altitude": 2.36} #altitude in km
-    McD_props = {"latitude": 30.710, "altitude": 2.07}
+    DCT_props     = {"latitude": 34.744, "altitude": 2.36} #altitude in km
+    McD_props     = {"latitude": 30.710, "altitude": 2.07}
+    GaminiS_props = {"latitude": -30.241, "altitude": 2.72}
+
     if inparam.obses[night] == 'DCT':
         fitter.SetObservatory(DCT_props)
     elif inparam.obses[night] == 'McD':
         fitter.SetObservatory(McD_props)
+    elif inparam.obses[night] == 'GeminiS':
+        fitter.SetObservatory(GaminiS_props)
     else:
-        sys.exit('TELFIT OBSERVATORY ERROR, OLNY SUPPORT DCT & McD IN THIS VERSION!')
+        sys.exit('TELFIT OBSERVATORY ERROR, OLNY SUPPORT DCT, McD & GeminiS IN THIS VERSION!')
 
     # Read in data
     watm_in = watm_in/10 # AA --> nm
@@ -342,6 +346,8 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
         fitter2.SetObservatory(DCT_props)
     elif inparam.obses[night] == 'McD':
         fitter2.SetObservatory(McD_props)
+    elif inparam.obses[night] == 'GeminiS':
+        fitter2.SetObservatory(GaminiS_props)
 
     # Compute telluric template with highest resolution of Livingston template.
     # Add extra space at ends to make sure template covers wider range than data.
