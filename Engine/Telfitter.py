@@ -80,7 +80,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
     data = DataStructures.xypoint(x=watm_in, y=satm_in, cont=None, err=a0ucut) # input wavelength in nm
 
     # DCT data has parameters describing night of observation that the McDonald data does not.
-    if inparam.zds[night] != 'NOINFO': # If such information is available:
+    if inparam.temps[night] != 'NOINFO': # If such information is available:
 
         angle       = np.float(inparam.zds[night])           #Zenith distance
         pressure    = np.float(inparam.press[night])         #Pressure, in hPa
@@ -155,7 +155,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
                               "co2": [1.0, 1e4]})
         elif args.band =='H':
             num_fit = 3
-            fitter.FitVariable({"h2o": humidity,"ch4": 1.8,"co": 5e-3,"co2": 3.675e2,"n2o" : 5e-2,})
+            fitter.FitVariable({"h2o": humidity,"ch4": 1.8,"co": 5e-3,"co2": 3.675e2,"n2o" : 5e-2})
 
             #Adjust parameters that will not be fit, but are important
             fitter.AdjustValue({"angle": angle,\
@@ -179,6 +179,98 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
                               "co": [1e-6,1e2],\
                               "co2": [1.0, 1e4]})
 
+    elif inparam.zds[night] != 'NOINFO': # If GeminiS data, some but not all parameters are in fits file. 
+          # If parameters are not in fits file, use initial guesses and letting them vary.
+          # Guesses are taken from mean of parameters from DCT GJ281 data.
+        
+        angle       = np.float(inparam.zds[night])           #Zenith distance
+        humidity    = np.float(inparam.humids[night])        #Percent humidity, at the observatory altitude
+
+        if (order <= 4):
+            resolution  = 55000.0                             #Resolution lambda/delta-lambda
+        else:
+            resolution  = 45000.0                             #Resolution lambda/delta-lambda
+
+        # Only 3 molecules present in chosen IGRINS orders' wavelength range are H2O, CH4, and CO.
+        if (3 < order < 9) & (args.band =='K'):
+            num_fit = 4
+            # Only 3 molecules present in chosen IGRINS orders' wavelength range are H2O, CH4, and CO.
+            fitter.FitVariable({"h2o": humidity,"ch4": 1.8,"co": 5e-3, "n2o":5e-2, "pressure":1023., "temperature":280.87})
+
+            #Adjust parameters that will not be fit, but are important
+            fitter.AdjustValue({"angle": angle,\
+                                "resolution": resolution,
+                                "wavestart": data.x[0]-0.001,\
+                                "waveend": data.x[-1]+0.001,\
+                                "co2": 3.675e2,\
+                                "o3": 7.6e-4,\
+                                "o2": 2.1e5,\
+                                "no": 0.,\
+                                "so2": 5e-9,\
+                                "no2": 5e-9,\
+                                "nh3": 5e-9,\
+                                "hno3": 1.56e-7})
+
+            #Set bounds on the variables being fit
+            fitter.SetBounds({"h2o": [1.0, 99.0],\
+                              "ch4": [.1,  10.0],\
+                              "n2o": [1e-5,1e2],\
+                              "temperature": [265.,300.],\
+                              "pressure": [1010.,1035.],\
+                              "co": [ 1e-6,1e2]})
+            
+        elif (order >= 9 or order <= 3) & (args.band =='K'):
+            num_fit = 4
+            # Only molecules present in chosen IGRINS orders' wavelength range are H2O, CH4, N2O, and CO2.
+            fitter.FitVariable({"h2o": humidity,"ch4": 1.8,"co2": 3.675e2, "n2o":5e-2, "pressure":1023., "temperature":280.87})
+
+            #Adjust parameters that will not be fit, but are important
+            fitter.AdjustValue({"angle": angle,\
+                                "resolution": resolution,
+                                "wavestart": data.x[0]-0.001,\
+                                "waveend": data.x[-1]+0.001,\
+                                "co": 5e-3,\
+                                "o3": 7.6e-4,\
+                                "o2": 2.1e5,\
+                                "no": 0.,\
+                                "so2": 5e-9,\
+                                "no2": 5e-9,\
+                                "nh3": 5e-9,\
+                                "hno3": 1.56e-7})
+
+            #Set bounds on the variables being fit
+            fitter.SetBounds({"h2o": [1.0, 99.0],\
+                              "ch4": [.1,  10.0],\
+                              "n2o": [1e-5,1e2],\
+                              "temperature": [265.,300.],\
+                              "pressure": [1010.,1035.],\
+                              "co2": [1.0, 1e4]})
+        elif args.band =='H':
+            num_fit = 3
+            fitter.FitVariable({"h2o": humidity,"ch4": 1.8,"co": 5e-3,"co2": 3.675e2,"n2o" : 5e-2, "pressure":1023., "temperature":280.87})
+
+            #Adjust parameters that will not be fit, but are important
+            fitter.AdjustValue({"angle": angle,\
+                                "resolution": resolution,
+                                "wavestart": data.x[0]-0.001,\
+                                "waveend": data.x[-1]+0.001,\
+                                "o3": 7.6e-4,\
+                                "o2": 2.1e5,\
+                                "no": 0.,\
+                                "so2": 5e-9,\
+                                "no2": 5e-9,\
+                                "nh3": 5e-9,\
+                                "hno3": 1.56e-7})
+
+            #Set bounds on the variables being fit
+            fitter.SetBounds({"h2o": [1.0, 99.0],\
+                              "ch4": [.1,  10.0],\
+                              "n2o": [1e-6,1e2],\
+                              "co": [1e-6,1e2],\
+                              "temperature": [265.,300.],\
+                              "pressure": [1010.,1035.],\
+                              "co2": [1.0, 1e4]})
+            
     else: # If parameters are not in fits file, use initial guesses and letting them vary.
           # Guesses are taken from mean of parameters from DCT GJ281 data.
 
