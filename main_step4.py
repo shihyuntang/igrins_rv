@@ -81,7 +81,7 @@ Input Parameters:
     # Set up logger
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.INFO)
-    
+
     formatter = logging.Formatter('%(asctime)s: %(module)s.py: %(levelname)s--> %(message)s')
 
     file_hander  = logging.FileHandler(f'{outpath}/{args.targname}_{args.band}.log')

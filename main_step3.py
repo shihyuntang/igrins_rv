@@ -646,7 +646,7 @@ Input Parameters:
     #-------------------------------------------------------------------------------
 
     # Read in the Prepdata under ./Input/Prpedata/
-    xbounddict, maskdict, tagsA, tagsB, mjds, bvcs, nightsFinal, orders, obs = read_prepdata(args)
+    xbounddict, maskdict, tagsA, tagsB, jds, bvcs, nightsFinal, orders, obs = read_prepdata(args)
 
     # Use subset of nights if specified
     if args.nights_use != '':
@@ -798,7 +798,7 @@ Input Parameters:
     #-------------------------------------------------------------------------------
 
     # Don't combine Loose and Tight datasets, but make them both easily referenceable
-    nightsCombined  = np.array([]); mjdsCombined = np.array([]);
+    nightsCombined  = np.array([]); jdsCombined = np.array([]);
     rvfinalCombined = np.array([]); stdfinalCombined = np.array([]); vsinifinalCombined = np.array([]);
 
     if len(nightsL) > 0:
@@ -881,7 +881,7 @@ Input Parameters:
         rvfinal    = np.ones(Nnights, dtype=np.float64)
         stdfinal   = np.ones(Nnights, dtype=np.float64)
         vsinifinal = np.ones(Nnights, dtype=np.float64)
-        mjds_out   = np.ones(Nnights, dtype=np.float64)
+        jds_out   = np.ones(Nnights, dtype=np.float64)
 
         if boxind == 0:
             nights_use = nightsT.copy(); kind = 'Tight';
@@ -898,7 +898,7 @@ Input Parameters:
             stdfinal[n] = 1/np.sqrt(np.nansum(stdspre))
 
             vsinifinal[n] = np.nansum(weights*vsinibox[n,:])
-            mjds_out[n]   = mjds[nights_use[n]]
+            jds_out[n]   = jds[nights_use[n]]
 
             # if all the RVs going into the observation's final RV calculation were NaN due to any pevious errors, pass NaN
             if np.nansum(weights) == 0:
@@ -945,7 +945,7 @@ Input Parameters:
 
         # Save results to fits file separately for each tight/loose dataset
         c1 = fits.Column( name='NIGHT',         array=nights_use,    format='8A')
-        c2 = fits.Column( name='JD',            array=mjds_out,      format='D')
+        c2 = fits.Column( name='JD',            array=jds_out,      format='D')
         c3 = fits.Column( name='RVBOX',         array=rvmasterbox,   format='{}D'.format(len(orders)))
         c4 = fits.Column( name='STDBOX',        array=stdmasterbox,  format='{}D'.format(len(orders)))
         c7 = fits.Column( name='Sigma_method2', array=sigma_method2, format='D')
@@ -968,7 +968,7 @@ Input Parameters:
 
         # Combine final RVs from both tight and loose mounting data sets
         nightsCombined     = np.concatenate((nightsCombined,     nights_use))
-        mjdsCombined       = np.concatenate((mjdsCombined,       mjds_out))
+        jdsCombined       = np.concatenate((jdsCombined,       jds_out))
         rvfinalCombined    = np.concatenate((rvfinalCombined,    rvfinal))
         stdfinalCombined   = np.concatenate((stdfinalCombined,   stdfinal))
         vsinifinalCombined = np.concatenate((vsinifinalCombined, vsinifinal))
@@ -1014,7 +1014,7 @@ Input Parameters:
 
     # Output combined final results to fits file
     c1 = fits.Column(name='NIGHT',    array=nightsCombined,         format='{}A'.format(len(nights[0])) )
-    c2 = fits.Column(name='JD',       array=mjdsCombined,           format='D')
+    c2 = fits.Column(name='JD',       array=jdsCombined,           format='D')
     c3 = fits.Column(name='RVfinal',  array=rvfinalCombined,        format='D')
     c4 = fits.Column(name='STDfinal', array=stdfinalCombined,       format='D')
     c5 = fits.Column(name='VSINI',    array=vsinifinalCombined,     format='D')

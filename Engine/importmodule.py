@@ -88,7 +88,7 @@ def read_prepdata(args):
         Tnights = np.array(targdata['night'],dtype='str')
         tags0   = np.array(targdata['tag'], dtype='int')
         beams0  = np.array(targdata['beam'],dtype='str')
-        mjds0   = np.array(targdata['mjd'],dtype=float)
+        jds0   = np.array(targdata['jd'],dtype=float)
         bvcs0   = np.array(targdata['bvc'])
         ams     = np.array(targdata['airmass'])
 
@@ -104,13 +104,13 @@ def read_prepdata(args):
         maskdict = {orders[i]:masks[i] for i in range(len(starts))}
 
         # Attribute A and B exposures to right file numbers
-        tagsA = {}; tagsB = {}; mjds = {}; bvcs = {};
+        tagsA = {}; tagsB = {}; jds = {}; bvcs = {};
         night_orig = Tnights[0]; tagsA0 = []; tagsB0 = [];
 
         nights_unique = np.unique(Tnights)
         for hrt in range(len(nights_unique)):
-            jdset = mjds0[(Tnights == nights_unique[hrt])]
-            mjds[nights_unique[hrt]] = np.nanmean(jdset)
+            jdset = jds0[(Tnights == nights_unique[hrt])]
+            jds[nights_unique[hrt]] = np.nanmean(jdset)
 
         for hrt in range(len(Tnights)):
             tag1 = '{:04d}'.format(tags0[hrt])
@@ -139,4 +139,4 @@ def read_prepdata(args):
 
         obs = np.array([obs0[n[:8]] for n in nightsFinal])
 
-        return xbounddict, maskdict, tagsA, tagsB, mjds, bvcs, nightsFinal, orders, obs
+        return xbounddict, maskdict, tagsA, tagsB, jds, bvcs, nightsFinal, orders, obs

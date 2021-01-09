@@ -27,7 +27,7 @@ def DataPrep(args):
     #-------------------------------------------------------------------------------
     # Prepare PrepData file for target star
     fileT = open('./Input/Prepdata/Prepdata_targ_{}.txt'.format(args.targname), 'w')
-    fileT.write('night beam tag mjd facility airmass bvc\n')
+    fileT.write('night beam tag jd facility airmass bvc\n')
 
     # Collect target star information
     nightsT = [];
@@ -113,8 +113,8 @@ def DataPrep(args):
                 BVCfile = barycorr.to(units.km/units.s).value
 
         # Write out collected info
-        mjd = time_midpoint;
-        fileT.write(night+' '+frame+' '+str(tag)+' '+str(mjd)+' '+str(facility)+' '+str(airmass)+' '+str(BVCfile))
+        jd = time_midpoint;
+        fileT.write(night+' '+frame+' '+str(tag)+' '+str(jd)+' '+str(facility)+' '+str(airmass)+' '+str(BVCfile))
         fileT.write('\n')
         nightsT.append(night)
     fileT.close()
