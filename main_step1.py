@@ -1086,8 +1086,7 @@ if __name__ == '__main__':
         logger.info(f'Only processing nights: {nightsFinal}')
 
     logger.info(f'Analyze {len(nightsFinal)} nights')
-    print([i[:7] for i in nightsFinal] )
-    intnights = np.array( [int(i[:8]) for i in nightsFinal] )
+    intnights = np.array( [np.int(i) for i in nightsFinal] )
     if len(intnights[(intnights >= 20180401) & (intnights < 20190531)]) > 0:
         logger.info('WARNING: Some of these nights were when the IGRINS K band was defocused! \n \
                     For K band RVs: IGRINS RV will take this into account and process these nights slightly differently. \
