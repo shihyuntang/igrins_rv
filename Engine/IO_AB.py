@@ -171,7 +171,7 @@ def setup_templates(logger, kind='synthetic', band='K', temperature=5000, logg=4
         logger.info(f'Using {band}-band PHOENIX stellar template...')
         logger.info(f'PHOENIX stellar template with T{temperature} logg{logg}!!!!!')
 
-        if 'igrins' in os.getcwd():.split('/')[-1]
+        if 'igrins' in os.getcwd().split('/')[-1]:
             stelldata = Table.read(f'./Engine/syn_template/PHOENIX-lte0{temperature}-{logg}0-0.0_contadj{band}.txt',format='ascii')
         else:
             stelldata = Table.read(f'../Engine/syn_template/PHOENIX-lte0{temperature}-{logg}0-0.0_contadj{band}.txt',format='ascii')
