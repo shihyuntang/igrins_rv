@@ -11,6 +11,7 @@ from os import listdir
 from os.path import isfile, join#, isdir
 import re
 import sys
+import matplotlib.pyplot as plt
 
 def partial_loader(inpath0,order):
 
@@ -149,10 +150,15 @@ def airtovac(wave):
     newwave = wave*fact
     return newwave
 
-def setup_templates(logger, kind='synthetic', band='K', temperature=5000, logg=4.5):
+
+def setup_templates(logger, args):
+
+    kind = args.template
+    band = args.band
+    temperature = np.int(args.temperature)
+    logg = np.float(args.logg)
+
     if (kind == 'synthetic'):
-        # if sptype not in ['K','M']:
-        #     sys.exit('Pipeline does not have a stellar template for early type stars in K band! Upload your own?')
         logger.info(f'Using {band}-band synthetic stellar template...')
         logger.info(f'synthetic stellar template with T{temperature} logg{logg}!!!!!')
 
@@ -181,36 +187,52 @@ def setup_templates(logger, kind='synthetic', band='K', temperature=5000, logg=4
         mwave0 = mwave0[(np.isfinite(mflux0))]
         mflux0 = mflux0[(np.isfinite(mflux0))]
         mflux0[(mflux0 < 0)] = 0
-
-
-    elif kind == 'livingston' and band == 'K':
-        if sptype not in ['K','M']:
-            sys.exit('Pipeline does not have a stellar template for early type stars in K band! Upload your own?')
-        logger.info('Using sunspot for stellar template...')
+        
+    elif (kind.lower() == 'user'):
+        logger.info(f'Using user-provided stellar template with T{temperature} logg{logg}...')
+        logger.info(f'WARNING! PRECISION AND ACCURACY OF THIS PIPELINE IS NOT GUARANTEED WITH USER-PROVIDED STELLAR TEMPLATES!!!!!')
+        logger.info(f'Make sure to characterize your errors appropriately - see IGRINS RV paper for details.')
+        logger.info(f'Also be sure your templates follow the naming and formatting conventions described in the github wiki AND are placed under ./Engine/user_templates.')
+        
         if 'igrins' in os.getcwd().split('/')[-1]:
-            stelldata = Table.read('./Engine/SpotAtl_contadjusted.txt',format='ascii')
+            stelldata = Table.read(f'./Engine/user_templates/user_T{temperature}_logg{logg}_{band}band.txt',format='ascii')
         else:
-            stelldata = Table.read('../Engine/SpotAtl_contadjusted.txt',format='ascii')
-        mwave0 = np.array(stelldata['wave'])*10000.0
+            stelldata = Table.read(f'../Engine/user_templates/user_T{temperature}_logg{logg}_{band}band.txt',format='ascii')
+
+        mwave0 = np.array(stelldata['wave'])#*10000.0
         mflux0 = np.array(stelldata['flux'])
         mwave0 = mwave0[(np.isfinite(mflux0))]
         mflux0 = mflux0[(np.isfinite(mflux0))]
         mflux0[(mflux0 < 0)] = 0
 
-    elif kind == 'livingston' and band == 'H':
-        if sptype not in ['F','G','K']:
-            sys.exit('Pipeline does not have a stellar template for late type stars in H band! Upload your own?')
-        logger.info('Using quiet sun for stellar template...')
+    elif (kind.lower() == 'generated'):
+        logger.info(f'Using generated stellar template from run Telluric_corrected_{args.gen_runnum}...')
+        
         if 'igrins' in os.getcwd().split('/')[-1]:
-            spotdata = Table.read('./Engine/PhotoAtl_Solar_contadjusted.txt',format='ascii')
+            stelldata = fits.open(f'./Output/{args.targname}_{args.band}/TelluricCorrected_results_{args.gen_runnum}/Generated_Template/StellarTemplateFromData.fits')
         else:
-            spotdata = Table.read('../Engine/PhotoAtl_Solar_contadjusted.txt',format='ascii')
-        mwave0 = np.array(spotdata['wave'])*10000.0
-        mflux0 = np.array(spotdata['flux'])
-        mwave0 = mwave0[(np.isfinite(mflux0))]
-        mflux0 = mflux0[(np.isfinite(mflux0))]
-        mflux0[(mflux0 < 0)] = 0
+            stelldata = fits.open(f'./Output/{args.targname}_{args.band}/TelluricCorrected_results_{args.gen_runnum}/Generated_Template/StellarTemplateFromData.fits')
 
+        epochs = ['T','L']
+        mwave0 = {}; mflux0 = {};
+
+        for e in range(len(epochs)):
+        
+            try:
+                tbdata = stelldata[e+1].data
+                mwave00 = np.array(tbdata['MWAVE_'+epochs[e]])
+                mflux00 = np.array(tbdata['MFLUX_'+epochs[e]])
+                mwave00 = mwave00[(np.isfinite(mflux00))]
+                mflux00 = mflux00[(np.isfinite(mflux00))]
+                mflux00[(mflux00 < 0)] = 0    
+                mwave0[epochs[e]] = mwave00; mflux0[epochs[e]] = mflux00;
+            except:
+                continue
+           
+        
+    else:
+        logger.info(f'Input kind is {kind}, but must be either "synthetic", "phoenix" (for IGRINS RV team usage only), or "user"!')
+            
     if 'igrins' in os.getcwd().split('/')[-1]:
         telluricdata = Table.read('./Engine/PhotoAtl Organized.txt',format='ascii')
     else:
