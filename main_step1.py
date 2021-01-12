@@ -1127,5 +1127,8 @@ if __name__ == '__main__':
 
     end_time = datetime.now()
     logger.info(f'A0 Fitting using TelFit finished, Duration: {end_time - start_time}')
-    print('You can start to run main_step2.py for RV initial guess')
+    print('The synthetic telluric templates have been saved under {}'.format(outpath))
+    print('If you chose to generate plots, they are saved under {}/figs'.format(outpath))
+    print('####################################################################################')
+    print('You can now run main_step2.py to produce RV and vsini initial guess(es)')
     print('####################################################################################')
