@@ -852,11 +852,11 @@ Input Parameters:
         else: # If target star, load the uncertainty in method calculated from our RV STD star runs
             if boxind == 0:
                 nights_use = nightsT.copy()
-                kind = 'Tight'
+                kind = 'Focused'
                 sigma_method2 = inparam.methodvariance_tight[args.band]
             else:
                 nights_use = nightsL.copy()
-                kind = 'Loose'
+                kind = 'Defocus'
                 sigma_method2 = inparam.methodvariance_loose[args.band]
 
         sigma_ON2    = np.ones_like(rvmasterbox)
@@ -1015,18 +1015,18 @@ Input Parameters:
                              transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
 
         if (len(nightsT) != 0) & (len(nightsL) == 0):
-            axes.text(0.05, 0.1, 'Tight', transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
+            axes.text(0.05, 0.1, 'Focused', transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
         elif (len(nightsT) == 0) & (len(nightsL) != 0):
-            axes.text(0.05, 0.1, 'Loose', transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
+            axes.text(0.05, 0.1, 'Defocus', transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
         else:
             if nightsT[-1] < nightsL[0]: # if tight epoch precedes loose epoch #sy
                 axes.axvline(xscale[len(nightsT)] - 0.5, linewidth=.7, color='black')
-                axes.text(0.05, 0.1, 'Tight', transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
-                axes.text(0.9,  0.1, 'Loose', transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
+                axes.text(0.05, 0.1, 'Focused', transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
+                axes.text(0.9,  0.1, 'Defocus', transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
             else:
                 axes.axvline(xscale[len(nightsL)] - 0.5, linewidth=.7, color='black')
-                axes.text(0.05, 0.1, 'Tight', transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
-                axes.text(0.9,  0.1, 'Loose', transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
+                axes.text(0.05, 0.1, 'Focused', transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
+                axes.text(0.9,  0.1, 'Defocused', transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
         axes.set_ylim(np.nanmin(rvfinalCombined)-.08,np.nanmax(rvfinalCombined)+.08)
         axes.set_ylabel('RV (km/s)', size=6, style='normal', family='sans-serif' )
         axes.set_xlabel('Night (#)', size=6, style='normal', family='sans-serif' )
