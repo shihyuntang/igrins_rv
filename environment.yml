@@ -8,7 +8,6 @@ dependencies:
   - numpy
   - pandas
   - scipy
-  - more_itertools
   - astropy
   - multiprocess
   - cython
@@ -17,3 +16,4 @@ dependencies:
   - pip
   - pip:
     - pysynphot
+    - more_itertools
