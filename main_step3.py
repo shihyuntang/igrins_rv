@@ -1054,7 +1054,7 @@ For H band RVs: We do not expect any systematic changes in the H band as
     hdul.writeto('{}/{}/RVresultsSummary.fits'.format(inparam.outpath, name),overwrite=True)
 
     tempin = Table.read('{}/{}/RVresultsSummary.fits'.format(inparam.outpath, name), format='fits')
-    tempin.write('{}/{}/RVresultsSummary.csv'.format(inparam.outpath, name), format='csv', overwrite=True)
+    tempin.write('{}/RVresultsSummary_{}.csv'.format(inparam.outpath, trk), format='csv', overwrite=True)
 
     if len(T_Ls) == 2:
         logger.info('Combined RV results: mean={:1.4f} km/s, std={:1.4f} km/s'.format(np.nanmean(rvfinalCombined),
