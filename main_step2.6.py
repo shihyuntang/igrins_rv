@@ -172,11 +172,51 @@ For H band RVs: We do not expect any systematic changes in the H band as
             order = orders[jerp]
             firstgo = True
 
+            wmins = []; wmaxs = []; ntags = [];
+
             for night in nights_use:
-
+                
                 tags = np.concatenate((np.array(tagsA[night]), np.array(tagsB[night])))
-
+                
                 for tag in tags:
+                
+                    hdu = fits.open('{}/Stellar_Residual_{}_{}_{}.fits'.format(outpath, args.band, night, tag))
+                    tbdata = hdu[jerp+1].data
+
+                    wave_in  = np.array(tbdata['WAVE'+str(order)])
+                    bvc      = np.array(tbdata['BVC'])[0]
+
+                    wave_corr = wave_in * (1 + bvc/c)
+
+                    wmins.append(wave_corr[0]); wmaxs.append(wave_corr[-1]);
+                    ntags.append([night,tag])
+            
+            # Rebin to the wavelength scale that is middlemost of the possible ranges
+            wmins = np.array(wmins); wmaxs = np.array(wmaxs); ntags = np.array(ntags);
+            dist = np.sqrt( (wmins-np.min(wmins))**2 + (wmaxs-np.max(wmaxs))**2 )
+            masternight = ntags[np.argmin(dist)][0]; mastertag = ntags[np.argmin(dist)][1];
+   
+
+            hdu = fits.open('{}/Stellar_Residual_{}_{}_{}.fits'.format(outpath, args.band, masternight, mastertag))
+            tbdata = hdu[jerp+1].data
+            masterflux  = np.array(tbdata['STELL'+str(order)])
+            masterunc   = np.array(tbdata['UNC'+str(order)])
+            wave_in     = np.array(tbdata['WAVE'+str(order)])
+            bvc         = np.array(tbdata['BVC'])[0]
+            masterwave  = wave_in * (1 + bvc/c)
+
+            if args.plotfigs:
+                plt.figure(figsize=(16,10))
+                plt.plot(masterwave,masterflux,alpha=.2)
+
+            for night in nights_use:
+                
+                tags = np.concatenate((np.array(tagsA[night]), np.array(tagsB[night])))
+                
+                for tag in tags:
+                
+                    if night == masternight and tag == mastertag:
+                        continue
 
                     hdu = fits.open('{}/Stellar_Residual_{}_{}_{}.fits'.format(outpath, args.band, night, tag))
                     tbdata = hdu[jerp+1].data
@@ -186,77 +226,38 @@ For H band RVs: We do not expect any systematic changes in the H band as
                     unc_in   = np.array(tbdata['UNC'+str(order)])
                     bvc      = np.array(tbdata['BVC'])[0]
 
-                    #print(bvc)
-                    #rv = 14, bvc = -27.8192473801
                     wave_corr = wave_in * (1 + bvc/c)
 
-                    '''
-                    stelldata = Table.read(f'./Engine/syn_template/syntheticstellar_hband_T3500_logg4.5.txt',format='ascii')
-                    mwave0 = np.array(stelldata['wave'])#*10000.0
-                    mflux0 = np.array(stelldata['flux'])
-                    mwave0 = mwave0[(np.isfinite(mflux0))]
-                    mflux0 = mflux0[(np.isfinite(mflux0))]
-                    mflux0[(mflux0 < 0)] = 0
-                    plt.figure(figsize=(16,10))
-                    plt.plot(mwave0,mflux0,color='red',alpha=.5)
-                    plt.plot(wave_corr,stell_in,color='black',alpha=.5)
-                    plt.xlim(wave_corr[0],wave_corr[-1])
-                    plt.savefig('test_wave.png')
-                    plt.clf()
-                    plt.close()
-                    print(breaker)
-                    '''
+                    fluxbinned = rebin_jv(wave_corr,stell_in,masterwave,False)
+                    ubinned    = rebin_jv(wave_corr,unc_in,masterwave,False)
+      
+                    # Throw out extrapolated values
+                    fluxbinned[(masterwave < wave_corr[0]) | (masterwave > wave_corr[-1])] = np.nan
+                    ubinned[(masterwave < wave_corr[0]) | (masterwave > wave_corr[-1])] = np.nan
 
-                    if firstgo == False:
-                        fluxstack = np.vstack((fluxstack,stell_in))
-                        wavestack = np.vstack((wavestack,wave_corr))
-                        ustack    = np.vstack((ustack,unc_in))
-                    else:
-                        fluxstack = stell_in.copy()
-                        wavestack = wave_corr.copy()
-                        ustack    = unc_in.copy()
-                        firstgo = False
-
-            # Rebin to the wavelength scale that is middlemost of the possible ranges
-            minw = np.min(wavestack[:,0]); maxw = np.max(wavestack[:,-1]);
-            dist = np.sqrt( (wavestack[:,0]-minw)**2 + (wavestack[:,-1]-maxw)**2 )
-
-            masterwave = wavestack[np.argmin(dist),:]
-            masterflux = fluxstack[np.argmin(dist),:]
-            masterunc  = ustack[np.argmin(dist),:]
-
-            if args.plotfigs:
-                plt.figure(figsize=(16,10))
-
-            for i in range(len(wavestack[:,0])):
-
-                fluxbinned = rebin_jv(wavestack[i,:],fluxstack[i,:],masterwave,False)
-                ubinned    = rebin_jv(wavestack[i,:],ustack[i,:],masterwave,False)
-
-                # Throw out extrapolated values
-                fluxbinned[(wavestack[i,:] < masterwave[0]) | (wavestack[i,:] > masterwave[-1])] = np.nan
-                ubinned[(wavestack[i,:] < masterwave[0]) | (wavestack[i,:] > masterwave[-1])]    = np.nan
-
-                masterflux = np.vstack((masterflux,fluxbinned))
-                masterunc  = np.vstack((masterunc,ubinned))
-
-                if args.plotfigs:
-                    plt.plot(masterwave,fluxbinned,alpha=.2)
-
-            if args.plotfigs:
-                plt.savefig('{}/Generated_Template/StellarTemplate_Separates_{}_{}.png'.format(outpath, T_L, order))
-                plt.clf()
-                plt.close()
+                    masterflux = np.vstack((masterflux,fluxbinned))
+                    masterunc  = np.vstack((masterunc,ubinned))
+        
+                    if args.plotfigs:
+                        plt.plot(masterwave,fluxbinned,alpha=.2)
 
             flux_out = np.array([np.nansum( masterflux[:,i] * ((1./(masterunc[:,i]**2)) / (np.nansum(1./(masterunc[:,i]**2)))) ) for i in range(len(masterwave))])
-
+        
+            # trim by 5 *MAD ? shouldnt be necessary
+            # MAD = np.median(abs(np.median(flux_out)-flux_out)) 
 
             if args.plotfigs:
-                plt.figure(figsize=(16,10))
-                plt.plot(masterwave,flux_out)
-                plt.savefig('{}/Generated_Template/StellarTemplate_Combined_{}_{}.png'.format(outpath, T_L, order))
-                plt.clf()
+
+                plt.savefig('{}/Generated_Template/StellarTemplate_Separates_{}_{}.png'.format(outpath, T_L, order))
+                plt.clf()  
                 plt.close()
+
+                plt.figure(figsize=(16,10))
+                plt.plot(masterwave,flux_out)           
+                plt.savefig('{}/Generated_Template/StellarTemplate_Combined_{}_{}.png'.format(outpath, T_L, order))
+                plt.clf()  
+                plt.close()
+    
 
             if jerp == 0:
                 mwave = masterwave.copy()
