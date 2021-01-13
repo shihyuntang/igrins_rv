@@ -997,8 +997,7 @@ Input Parameters:
                                                                                                         np.nanmean(rvfinal),
                                                                                                         np.nanstd(rvfinal) ))
         else:
-            logger.info('RV mean = {:1.4f} km/s, std = {:1.4f} km/s'.format( kind,
-                                                                                                        np.nanmean(rvfinal),
+            logger.info('RV mean = {:1.4f} km/s, std = {:1.4f} km/s'.format( np.nanmean(rvfinal),
                                                                                                         np.nanstd(rvfinal) ))
 
     #-------------------------------------------------------------------------------
