@@ -423,7 +423,7 @@ if __name__ == '__main__':
                         type=str, default='5.0' )
     parser.add_argument('-g',       dest="guesses",           action="store",
                         help="For STD star. Initial RV guess for all nights. Given by Step 2 results (float, km/s)",
-                        type=str,   default='' )
+                        type=str,   default='0' )
     parser.add_argument('-gS',       dest="guesses_source",           action="store",
                         help="For TAR star. Source for list of initial RV guesses. 'init' = Initguesser_results_X = past Step 2 result OR 'rvre' = RV_results_X = past Step 3 result",
                         type=str, default='')
@@ -517,6 +517,8 @@ if __name__ == '__main__':
 
     if args.mode.lower() == 'std': # Specify initial RV guesses as a single value applied to all nights
         initguesses = np.float(args.guesses)
+        if initguesses != 0:
+            sys.exit('ERROR: IF APPLYING UNIFORM INITIAL RV GUESS WHEN USING DATA-GENERATED STELLAR TEMPLATE, -g MUST BE SET TO 0!')
         initguesses_show = initguesses
     else: # Load initial RV guesses from file
         if args.guesses_source == 'init': # From Step 2 results
