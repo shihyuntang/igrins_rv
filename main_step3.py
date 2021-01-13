@@ -676,11 +676,17 @@ Input Parameters:
     intnights = np.array([int(i[:8]) for i in nights])
 
     if len(intnights[(intnights >= 20180401) & (intnights < 20190531)]) > 0:
-        logger.info('WARNING: Some of these nights were when the IGRINS K band was defocused! \n \
-                    For K band RVs: IGRINS RV will take this into account and process these nights slightly differently. \
-                    When you run Step 3, RVs will be output in two formats: one with the defocus nights separated, and the other with all nights together. \n \
-                    For H band RVs: We do not expect any systematic changes in the H band as the result of the defocus. IGRINS RV will process defocus nights \
-                    the same way as the others, but when you run Step 3, will still output the results in two formats like it does with the K band. \n')
+        logger.info('''
+WARNING: Some of these nights were when the IGRINS K band was defocused!
+For K band RVs: IGRINS RV will take this into account and process these
+                nights slightly differently.
+When you run Step 3, RVs will be output in two formats: 
+                one with the defocus nights separated,
+                and the other with all nights together.
+For H band RVs: We do not expect any systematic changes in the H band as
+                the result of the defocus. IGRINS RV will process defocus nights
+                the same way as the others, but when you run Step 3, will still
+                output the results in two formats like it does with the K band.''')
 
     indT = np.where((intnights < 20180401) | (intnights > 20190531))
     indL = np.where((intnights >= 20180401) & (intnights < 20190531))
@@ -765,9 +771,9 @@ Input Parameters:
         # For each set of nights (tight, loose)...
         iT_L = 0
         for nights_use in nightscomblist:
-            
+
             T_L = T_Ls[iT_L]
-            
+
             # For each night...
             for i in range(len(nights_use)):
                 # Collect the RVs and vsinis determined from different A/B exposures within a night
@@ -1055,7 +1061,7 @@ Input Parameters:
                                                                                 np.nanstd(rvfinalCombined)))
         logger.info('vsini results:       mean={:1.4f} km/s, std={:1.4f} km/s'.format(np.nanmean(vsinifinalCombined),
                                                                                 np.nanstd(vsinifinalCombined)))
-        
+
     print('\n')
     end_time = datetime.now()
     logger.info('Whole process DONE!!!!!!, Duration: {}'.format(end_time - start_time))
