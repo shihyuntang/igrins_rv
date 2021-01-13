@@ -680,7 +680,7 @@ Input Parameters:
 WARNING: Some of these nights were when the IGRINS K band was defocused!
 For K band RVs: IGRINS RV will take this into account and process these
                 nights slightly differently.
-When you run Step 3, RVs will be output in two formats: 
+When you run Step 3, RVs will be output in two formats:
                 one with the defocus nights separated,
                 and the other with all nights together.
 For H band RVs: We do not expect any systematic changes in the H band as
@@ -1054,7 +1054,7 @@ For H band RVs: We do not expect any systematic changes in the H band as
     hdul.writeto('{}/{}/RVresultsSummary.fits'.format(inparam.outpath, name),overwrite=True)
 
     tempin = Table.read('{}/{}/RVresultsSummary.fits'.format(inparam.outpath, name), format='fits')
-    tempin.write('{}/RVresultsSummary_{}.csv'.format(inparam.outpath, trk), format='csv', overwrite=True)
+    tempin.write('{}/{}/RVresultsSummary.csv'.format(inparam.outpath, name), format='csv', overwrite=True)
 
     if len(T_Ls) == 2:
         logger.info('Combined RV results: mean={:1.4f} km/s, std={:1.4f} km/s'.format(np.nanmean(rvfinalCombined),
