@@ -978,11 +978,9 @@ Input Parameters:
         primary_hdu = fits.PrimaryHDU(bleh)
         hdul        = fits.HDUList([primary_hdu,hdu_1])
         if len(T_Ls) == 2:
-            hdul.writeto('{}/{}/RVresultsSummary_{}.fits'.format(inparam.outpath, name, kind), overwrite=True)
+            hdul.writeto('{}/{}/RVresultsAdvanced_{}.fits'.format(inparam.outpath, name, kind), overwrite=True)
         else:
-            hdul.writeto('{}/{}/RVresultsSummary.fits'.format(inparam.outpath, name), overwrite=True)
-            tempin = Table.read('{}/{}/RVresultsSummary.fits'.format(inparam.outpath, name), format='fits')
-            tempin.write('{}/RVresultsSummary_{}.csv'.format(inparam.outpath, trk), format='csv', overwrite=True)
+            hdul.writeto('{}/{}/RVresultsAdvanced.fits'.format(inparam.outpath, name), overwrite=True)
 
         # Combine final RVs from both tight and loose mounting data sets
         nightsCombined     = np.concatenate((nightsCombined,     nights_use))
@@ -1005,55 +1003,55 @@ Input Parameters:
 
     #-------------------------------------------------------------------------------
 
-    if len(T_Ls) == 2:
-        # Plot combined results
-        xscale = np.arange(len(rvfinalCombined))+1
+    # Plot combined results
+    xscale = np.arange(len(rvfinalCombined))+1
 
-        f, axes = plt.subplots(1, 1, figsize=(5,3), facecolor='white', dpi=300)
-        axes.plot(xscale,rvfinalCombined, '.k', ms=5)
-        axes.errorbar(xscale,rvfinalCombined,yerr=stdfinalCombined,ls='none',lw=.5, ecolor='black')
-        axes.text(0.05, 0.93, r'RV mean= {:1.5f} $\pm$ {:1.5f} km/s'.format(np.nanmean(rvfinalCombined), np.nanstd(rvfinalCombined)),
-                             transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
+    f, axes = plt.subplots(1, 1, figsize=(5,3), facecolor='white', dpi=300)
+    axes.plot(xscale,rvfinalCombined, '.k', ms=5)
+    axes.errorbar(xscale,rvfinalCombined,yerr=stdfinalCombined,ls='none',lw=.5, ecolor='black')
+    axes.text(0.05, 0.93, r'RV mean= {:1.5f} $\pm$ {:1.5f} km/s'.format(np.nanmean(rvfinalCombined), np.nanstd(rvfinalCombined)),
+                         transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
 
-        if (len(nightsT) != 0) & (len(nightsL) == 0):
+    if (len(nightsT) != 0) & (len(nightsL) == 0):
+        axes.text(0.05, 0.1, 'Focused', transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
+    elif (len(nightsT) == 0) & (len(nightsL) != 0):
+        axes.text(0.05, 0.1, 'Defocus', transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
+    else:
+        if nightsT[-1] < nightsL[0]: # if tight epoch precedes loose epoch #sy
+            axes.axvline(xscale[len(nightsT)] - 0.5, linewidth=.7, color='black')
             axes.text(0.05, 0.1, 'Focused', transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
-        elif (len(nightsT) == 0) & (len(nightsL) != 0):
-            axes.text(0.05, 0.1, 'Defocus', transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
+            axes.text(0.9,  0.1, 'Defocus', transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
         else:
-            if nightsT[-1] < nightsL[0]: # if tight epoch precedes loose epoch #sy
-                axes.axvline(xscale[len(nightsT)] - 0.5, linewidth=.7, color='black')
-                axes.text(0.05, 0.1, 'Focused', transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
-                axes.text(0.9,  0.1, 'Defocus', transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
-            else:
-                axes.axvline(xscale[len(nightsL)] - 0.5, linewidth=.7, color='black')
-                axes.text(0.05, 0.1, 'Focused', transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
-                axes.text(0.9,  0.1, 'Defocused', transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
-        axes.set_ylim(np.nanmin(rvfinalCombined)-.08,np.nanmax(rvfinalCombined)+.08)
-        axes.set_ylabel('RV (km/s)', size=6, style='normal', family='sans-serif' )
-        axes.set_xlabel('Night (#)', size=6, style='normal', family='sans-serif' )
-        axes.xaxis.set_minor_locator(AutoMinorLocator(5))
-        axes.yaxis.set_minor_locator(AutoMinorLocator(5))
-        axes.tick_params(axis='both', which='both', labelsize=6, right=True, top=True, direction='in', width=.6)
-        f.savefig('{}/{}/FinalRVs.png'.format(inparam.outpath, name), format='png', bbox_inches='tight')
+            axes.axvline(xscale[len(nightsL)] - 0.5, linewidth=.7, color='black')
+            axes.text(0.05, 0.1, 'Focused', transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
+            axes.text(0.9,  0.1, 'Defocused', transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
+    axes.set_ylim(np.nanmin(rvfinalCombined)-.08,np.nanmax(rvfinalCombined)+.08)
+    axes.set_ylabel('RV (km/s)', size=6, style='normal', family='sans-serif' )
+    axes.set_xlabel('Night (#)', size=6, style='normal', family='sans-serif' )
+    axes.xaxis.set_minor_locator(AutoMinorLocator(5))
+    axes.yaxis.set_minor_locator(AutoMinorLocator(5))
+    axes.tick_params(axis='both', which='both', labelsize=6, right=True, top=True, direction='in', width=.6)
+    f.savefig('{}/{}/FinalRVs.png'.format(inparam.outpath, name), format='png', bbox_inches='tight')
 
-        # Output combined final results to fits file
-        c1 = fits.Column(name='NIGHT',    array=nightsCombined,         format='{}A'.format(len(nights[0])) )
-        c2 = fits.Column(name='JD',       array=jdsCombined,           format='D')
-        c3 = fits.Column(name='RVfinal',  array=rvfinalCombined,        format='D')
-        c4 = fits.Column(name='STDfinal', array=stdfinalCombined,       format='D')
-        c5 = fits.Column(name='VSINI',    array=vsinifinalCombined,     format='D')
+    # Output combined final results to fits file
+    c1 = fits.Column(name='NIGHT',    array=nightsCombined,         format='{}A'.format(len(nights[0])) )
+    c2 = fits.Column(name='JD',       array=jdsCombined,           format='D')
+    c3 = fits.Column(name='RVfinal',  array=rvfinalCombined,        format='D')
+    c4 = fits.Column(name='STDfinal', array=stdfinalCombined,       format='D')
+    c5 = fits.Column(name='VSINI',    array=vsinifinalCombined,     format='D')
 
-        cols = fits.ColDefs([c1,c2,c3,c4,c5])
-        hdu_1 = fits.BinTableHDU.from_columns(cols)
+    cols = fits.ColDefs([c1,c2,c3,c4,c5])
+    hdu_1 = fits.BinTableHDU.from_columns(cols)
 
-        bleh = np.ones((3,3))
-        primary_hdu = fits.PrimaryHDU(bleh)
-        hdul = fits.HDUList([primary_hdu,hdu_1])
-        hdul.writeto('{}/{}/RVresultsSummary.fits'.format(inparam.outpath, name),overwrite=True)
+    bleh = np.ones((3,3))
+    primary_hdu = fits.PrimaryHDU(bleh)
+    hdul = fits.HDUList([primary_hdu,hdu_1])
+    hdul.writeto('{}/{}/RVresultsSummary.fits'.format(inparam.outpath, name),overwrite=True)
 
-        tempin = Table.read('{}/{}/RVresultsSummary.fits'.format(inparam.outpath, name), format='fits')
-        tempin.write('{}/RVresultsSummary_{}.csv'.format(inparam.outpath, trk), format='csv', overwrite=True)
+    tempin = Table.read('{}/{}/RVresultsSummary.fits'.format(inparam.outpath, name), format='fits')
+    tempin.write('{}/RVresultsSummary_{}.csv'.format(inparam.outpath, trk), format='csv', overwrite=True)
 
+    if len(T_Ls) == 2:
         logger.info('Combined RV results: mean={:1.4f} km/s, std={:1.4f} km/s'.format(np.nanmean(rvfinalCombined),
                                                                                 np.nanstd(rvfinalCombined)))
         logger.info('vsini results:       mean={:1.4f} km/s, std={:1.4f} km/s'.format(np.nanmean(vsinifinalCombined),
