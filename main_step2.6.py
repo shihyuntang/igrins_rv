@@ -135,11 +135,17 @@ Input Parameters:
     intnights = np.array([int(i[:8]) for i in nights])
 
     if len(intnights[(intnights >= 20180401) & (intnights < 20190531)]) > 0:
-        logger.info('WARNING: Some of these nights were when the IGRINS K band was defocused! \n \
-                    For K band RVs: IGRINS RV will take this into account and process these nights slightly differently. \
-                    When you run Step 3, RVs will be output in two formats: one with the defocus nights separated, and the other with all nights together. \n \
-                    For H band RVs: We do not expect any systematic changes in the H band as the result of the defocus. IGRINS RV will process defocus nights \
-                    the same way as the others, but when you run Step 3, will still output the results in two formats like it does with the K band. \n')
+        logger.info('''
+WARNING: Some of these nights were when the IGRINS K band was defocused!
+For K band RVs: IGRINS RV will take this into account and process these
+                nights slightly differently.
+When you run Step 3, RVs will be output in two formats:
+                one with the defocus nights separated,
+                and the other with all nights together.
+For H band RVs: We do not expect any systematic changes in the H band as
+                the result of the defocus. IGRINS RV will process defocus nights
+                the same way as the others, but when you run Step 3, will still
+                output the results in two formats like it does with the K band.''')
 
     indT = np.where((intnights < 20180401) | (intnights > 20190531))
     indL = np.where((intnights >= 20180401) & (intnights < 20190531))
@@ -167,11 +173,11 @@ Input Parameters:
             firstgo = True
 
             for night in nights_use:
-                
+
                 tags = np.concatenate((np.array(tagsA[night]), np.array(tagsB[night])))
-                
+
                 for tag in tags:
-                
+
                     hdu = fits.open('{}/Stellar_Residual_{}_{}_{}.fits'.format(outpath, args.band, night, tag))
                     tbdata = hdu[jerp+1].data
 
@@ -200,7 +206,7 @@ Input Parameters:
                     plt.close()
                     print(breaker)
                     '''
-                       
+
                     if firstgo == False:
                         fluxstack = np.vstack((fluxstack,stell_in))
                         wavestack = np.vstack((wavestack,wave_corr))
@@ -210,7 +216,7 @@ Input Parameters:
                         wavestack = wave_corr.copy()
                         ustack    = unc_in.copy()
                         firstgo = False
-    
+
             # Rebin to the wavelength scale that is middlemost of the possible ranges
             minw = np.min(wavestack[:,0]); maxw = np.max(wavestack[:,-1]);
             dist = np.sqrt( (wavestack[:,0]-minw)**2 + (wavestack[:,-1]-maxw)**2 )
@@ -218,28 +224,28 @@ Input Parameters:
             masterwave = wavestack[np.argmin(dist),:]
             masterflux = fluxstack[np.argmin(dist),:]
             masterunc  = ustack[np.argmin(dist),:]
-    
+
             if args.plotfigs:
                 plt.figure(figsize=(16,10))
 
             for i in range(len(wavestack[:,0])):
-        
+
                 fluxbinned = rebin_jv(wavestack[i,:],fluxstack[i,:],masterwave,False)
                 ubinned    = rebin_jv(wavestack[i,:],ustack[i,:],masterwave,False)
-  
+
                 # Throw out extrapolated values
                 fluxbinned[(wavestack[i,:] < masterwave[0]) | (wavestack[i,:] > masterwave[-1])] = np.nan
                 ubinned[(wavestack[i,:] < masterwave[0]) | (wavestack[i,:] > masterwave[-1])]    = np.nan
 
                 masterflux = np.vstack((masterflux,fluxbinned))
                 masterunc  = np.vstack((masterunc,ubinned))
-    
+
                 if args.plotfigs:
                     plt.plot(masterwave,fluxbinned,alpha=.2)
-    
+
             if args.plotfigs:
                 plt.savefig('{}/Generated_Template/StellarTemplate_Separates_{}_{}.png'.format(outpath, T_L, order))
-                plt.clf()  
+                plt.clf()
                 plt.close()
 
             flux_out = np.array([np.nansum( masterflux[:,i] * ((1./(masterunc[:,i]**2)) / (np.nansum(1./(masterunc[:,i]**2)))) ) for i in range(len(masterwave))])
@@ -249,14 +255,14 @@ Input Parameters:
                 plt.figure(figsize=(16,10))
                 plt.plot(masterwave,flux_out)
                 plt.savefig('{}/Generated_Template/StellarTemplate_Combined_{}_{}.png'.format(outpath, T_L, order))
-                plt.clf()  
+                plt.clf()
                 plt.close()
-    
+
             if jerp == 0:
-                mwave = masterwave.copy()   
+                mwave = masterwave.copy()
                 mflux = flux_out.copy()
             else:
-                mwave = np.concatenate((masterwave,mwave))  
+                mwave = np.concatenate((masterwave,mwave))
                 mflux = np.concatenate((flux_out,mflux))
 
         c1 = fits.Column(name='MWAVE_'+T_L,       array=mwave,                                 format='D')
