@@ -676,11 +676,17 @@ Input Parameters:
     intnights = np.array([int(i[:8]) for i in nights])
 
     if len(intnights[(intnights >= 20180401) & (intnights < 20190531)]) > 0:
-        logger.info('WARNING: Some of these nights were when the IGRINS K band was defocused! \n \
-                    For K band RVs: IGRINS RV will take this into account and process these nights slightly differently. \
-                    When you run Step 3, RVs will be output in two formats: one with the defocus nights separated, and the other with all nights together. \n \
-                    For H band RVs: We do not expect any systematic changes in the H band as the result of the defocus. IGRINS RV will process defocus nights \
-                    the same way as the others, but when you run Step 3, will still output the results in two formats like it does with the K band. \n')
+        logger.info('''
+WARNING: Some of these nights were when the IGRINS K band was defocused!
+For K band RVs: IGRINS RV will take this into account and process these
+                nights slightly differently.
+When you run Step 3, RVs will be output in two formats:
+                one with the defocus nights separated,
+                and the other with all nights together.
+For H band RVs: We do not expect any systematic changes in the H band as
+                the result of the defocus. IGRINS RV will process defocus nights
+                the same way as the others, but when you run Step 3, will still
+                output the results in two formats like it does with the K band.''')
 
     indT = np.where((intnights < 20180401) | (intnights > 20190531))
     indL = np.where((intnights >= 20180401) & (intnights < 20190531))
