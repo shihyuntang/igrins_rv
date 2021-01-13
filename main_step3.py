@@ -964,13 +964,14 @@ Input Parameters:
         c8 = fits.Column( name='Sigma_ON2',     array=sigma_ON2,     format='{}D'.format(len(orders)))
         c9 = fits.Column( name='RVfinal',       array=rvfinal,       format='D')
         c10 = fits.Column(name='STDfinal',      array=stdfinal,      format='D')
+        c11 = fits.Column(name='VSINI',         array=vsinifinal,    format='D')
 
         if args.mode=='STD':
             c5 = fits.Column( name='Sigma_O2',      array=sigma_O2,      format='D')
             c6 = fits.Column( name='Sigma_ABbar2',  array=sigma_ABbar2,  format='D')
-            cols  = fits.ColDefs([c1,c2,c3,c4,c5,c6,c7,c8,c9,c10])
+            cols  = fits.ColDefs([c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11])
         else:
-            cols  = fits.ColDefs([c1,c2,c3,c4,c7,c8,c9,c10])
+            cols  = fits.ColDefs([c1,c2,c3,c4,c7,c8,c9,c10,c11])
 
         hdu_1 = fits.BinTableHDU.from_columns(cols)
         bleh = np.ones((3,3))
