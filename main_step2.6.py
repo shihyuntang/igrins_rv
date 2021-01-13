@@ -183,6 +183,9 @@ For H band RVs: We do not expect any systematic changes in the H band as
                     hdu = fits.open('{}/Stellar_Residual_{}_{}_{}.fits'.format(outpath, args.band, night, tag))
                     tbdata = hdu[jerp+1].data
 
+                    flag  = np.array(tbdata['ERRORFLAG'+str(order)])[0]
+                    if flag == 1:
+                        continue
                     wave_in  = np.array(tbdata['WAVE'+str(order)])
                     bvc      = np.array(tbdata['BVC'])[0]
 
@@ -221,6 +224,9 @@ For H band RVs: We do not expect any systematic changes in the H band as
                     hdu = fits.open('{}/Stellar_Residual_{}_{}_{}.fits'.format(outpath, args.band, night, tag))
                     tbdata = hdu[jerp+1].data
 
+                    flag  = np.array(tbdata['ERRORFLAG'+str(order)])[0]
+                    if flag == 1:
+                        continue
                     wave_in  = np.array(tbdata['WAVE'+str(order)])
                     stell_in = np.array(tbdata['STELL'+str(order)])
                     unc_in   = np.array(tbdata['UNC'+str(order)])
