@@ -2,7 +2,7 @@
 
 **This package is NOT yet ready for public use**
 
-``IGRINS RV`` is a ``python`` open source pipeline for extracting radial velocity (RV) for the IGRINS instrument. It's core technique use a modified forward modeling technique that utilize the telluric absorption lines as the common-path wavelength calibrator. With RV precision at K band around 25 m/s and H band 50 m/s, ``IGRINS RV`` had successfully retrieval of planet-induced RV signals for both HD 189733 and &tau; Boo A. Visit [arXiv]() to see the published paper.
+``IGRINS RV`` is a ``python`` open source pipeline for extracting radial velocity (RV) for the IGRINS instrument. It's core technique use a modified forward modeling technique that utilize the telluric absorption lines as the common-path wavelength calibrator. With RV precision at K band around 25 m/s and H band 50 m/s, ``IGRINS RV`` had successfully retrieval of planet-induced RV signals for both HD 189733 and &tau; Boo A. Visit [arXiv, comming soon]() to see the published paper.
 
 ``IGRINS RV`` is now under intense development. \
 If you wish to join the internal review and testing, please contact us (asa.stahl@rice.edu or sytang@lowell.edu).
