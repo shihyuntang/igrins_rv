@@ -17,6 +17,6 @@ News:\
 Visit the [GitHub wiki page](https://github.com/shihyuntang/igrins_rv/wiki) for detailed documentation and tutorials.
 
 Please Cite these papers if you use ``IGRINS RV``:
-* `` igrins plp v2.2`` paper https://zenodo.org/record/845059#.Xzlp5C0wJQI
+* `` igrins plp v2.2.0`` paper https://zenodo.org/record/845059#.Xzlp5C0wJQI
 * ``Telfit`` paper https://ui.adsabs.harvard.edu/abs/2014AJ....148...53G/abstract
 * ``IGRINS RV paper (coming soon!)``
