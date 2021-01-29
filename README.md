@@ -7,13 +7,13 @@
 ``IGRINS RV`` is now under intense development. \
 If you wish to join the internal review and testing, please contact us (asa.stahl@rice.edu or sytang@lowell.edu).
 
-News:\
-**2021/01/29: `IGRINS RV` v0.9.6-beta.1 public beta is ready for JOSS review!!**\
------------->  update the ability to process IGRINS data at Gemini South\
-2020/12/05: `IGRINS RV` v0.9.5-beta.1 public beta is under internal review and testing!!\
------------->  update with moding the flux suppression effect\
-2020/08/04: `IGRINS RV` v0.9-beta.1 public beta is under internal review and testing!!\
-2020/06/23: `IGRINS RV` v0.85 is under internal review.. will come to public soon!!
+News:
+* **2021/01/29: `IGRINS RV` v0.9.6-beta.1 public beta is ready for JOSS review!!\
+(update the ability to process IGRINS data at Gemini South)**
+* 2020/12/05: `IGRINS RV` v0.9.5-beta.1 public beta is under internal review and testing!!\
+(update with modeling the flux suppression effect)
+* 2020/08/04: `IGRINS RV` v0.9-beta.1 public beta is under internal review and testing!!
+* 2020/06/23: `IGRINS RV` v0.85 is under internal review.. will come to public soon!!
 
 ***
 Visit the [GitHub wiki page](https://github.com/shihyuntang/igrins_rv/wiki) for detailed documentation and tutorials.
