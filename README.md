@@ -8,10 +8,12 @@
 If you wish to join the internal review and testing, please contact us (asa.stahl@rice.edu or sytang@lowell.edu).
 
 News:\
-**2020/12/05: igrins_rv v0.9.5-beta.1 public beta is under internal review and testing!!**\
+**2021/01/29: `IGRINS RV` v0.9.6-beta.1 public beta is ready for JOSS review!!**\
+------------>  update the ability to process IGRINS data at Gemini South\
+2020/12/05: `IGRINS RV` v0.9.5-beta.1 public beta is under internal review and testing!!\
 ------------>  update with moding the flux suppression effect\
-2020/08/04: igrins_rv v0.9-beta.1 public beta is under internal review and testing!!\
-2020/06/23: igrins_rv v0.85 is under internal review.. will come to public soon!!
+2020/08/04: `IGRINS RV` v0.9-beta.1 public beta is under internal review and testing!!\
+2020/06/23: `IGRINS RV` v0.85 is under internal review.. will come to public soon!!
 
 ***
 Visit the [GitHub wiki page](https://github.com/shihyuntang/igrins_rv/wiki) for detailed documentation and tutorials.
@@ -20,3 +22,6 @@ Please Cite these papers if you use ``IGRINS RV``:
 * `` igrins plp v2.2.0`` paper https://zenodo.org/record/845059#.Xzlp5C0wJQI
 * ``Telfit`` paper https://ui.adsabs.harvard.edu/abs/2014AJ....148...53G/abstract
 * ``IGRINS RV paper (coming soon!)``
+
+Acknowledgements:\
+Many thanks to Dr. Gregory Mace to help improving the user experence with `IGRINS RV`!
