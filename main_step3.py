@@ -1002,9 +1002,14 @@ For H band RVs: We do not expect any systematic changes in the H band as
             logger.info('During the {} epoch: RV mean = {:1.4f} km/s, std = {:1.4f} km/s'.format( kind,
                                                                                                         np.nanmean(rvfinal),
                                                                                                         np.nanstd(rvfinal) ))
+            logger.info('During the {} epoch: vsini mean = {:1.4f} km/s, std = {:1.4f} km/s'.format( kind,
+                                                                                                        np.nanmean(vsinifinal),
+                                                                                                        np.nanstd(vsinifinal) ))
         else:
             logger.info('RV mean = {:1.4f} km/s, std = {:1.4f} km/s'.format( np.nanmean(rvfinal),
                                                                                                         np.nanstd(rvfinal) ))
+            logger.info('vsini mean = {:1.4f} km/s, std = {:1.4f} km/s'.format( np.nanmean(vsinifinal),
+                                                                                                        np.nanstd(vsinifinal) ))
 
     #-------------------------------------------------------------------------------
 
