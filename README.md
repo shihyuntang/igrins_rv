@@ -16,7 +16,7 @@ News:
 * 2020/06/23: `IGRINS RV` v0.85 is under internal review.. will come to public soon!!
 
 ***
-Visit the [GitHub wiki page](https://github.com/shihyuntang/igrins_rv/wiki) for detailed documentation and tutorials.
+The best way to learn how IGRINS RV works is to first play with the example data following steps in [Demo Run With Example Data of GJ281](https://github.com/shihyuntang/igrins_rv/wiki/Demo-Run-With-Example-Data-of-GJ281). While you are waiting for the example code to finish, please read all detailed documentation on the [GitHub wiki page](https://github.com/shihyuntang/igrins_rv/wiki) so you know how to change the command to fit your OWN science targets:
 
 Please Cite these papers if you use ``IGRINS RV``:
 * `` igrins plp v2.2.0`` paper https://zenodo.org/record/845059#.Xzlp5C0wJQI
