@@ -8,8 +8,10 @@
 If you wish to join the internal review and testing, please contact us (asa.stahl@rice.edu or sytang@lowell.edu).
 
 News:
-* **2021/01/29: `IGRINS RV` v0.9.6-beta.1 public beta is ready for JOSS review!!\
-(update the ability to process IGRINS data at Gemini South)**
+* **2021/02/18: `IGRINS RV` v0.9.6-beta.2 public beta is ready for JOSS review!!\
+(minor bugs related to example data fixed)**
+* 2021/01/29: `IGRINS RV` v0.9.6-beta.1 public beta\
+(update the ability to process IGRINS data at Gemini South)
 * 2020/12/05: `IGRINS RV` v0.9.5-beta.1 public beta is under internal review and testing!!\
 (update with modeling the flux suppression effect)
 * 2020/08/04: `IGRINS RV` v0.9-beta.1 public beta is under internal review and testing!!
