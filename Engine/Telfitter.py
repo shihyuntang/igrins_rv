@@ -179,10 +179,10 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
                               "co": [1e-6,1e2],\
                               "co2": [1.0, 1e4]})
 
-    elif inparam.zds[night] != 'NOINFO': # If GeminiS data, some but not all parameters are in fits file. 
+    elif inparam.zds[night] != 'NOINFO': # If GeminiS data, some but not all parameters are in fits file.
           # If parameters are not in fits file, use initial guesses and letting them vary.
           # Guesses are taken from mean of parameters from DCT GJ281 data.
-        
+
         angle       = np.float(inparam.zds[night])           #Zenith distance
         humidity    = np.float(inparam.humids[night])        #Percent humidity, at the observatory altitude
 
@@ -218,7 +218,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
                               "temperature": [265.,300.],\
                               "pressure": [1010.,1035.],\
                               "co": [ 1e-6,1e2]})
-            
+
         elif (order >= 9 or order <= 3) & (args.band =='K'):
             num_fit = 4
             # Only molecules present in chosen IGRINS orders' wavelength range are H2O, CH4, N2O, and CO2.
@@ -270,7 +270,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
                               "temperature": [265.,300.],\
                               "pressure": [1010.,1035.],\
                               "co2": [1.0, 1e4]})
-            
+
     else: # If parameters are not in fits file, use initial guesses and letting them vary.
           # Guesses are taken from mean of parameters from DCT GJ281 data.
 
@@ -466,7 +466,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
     # FORTRAN readout is quite unhelpful and anyone else who apepars to have experienced this problem had it randomly go away at some point.
     # If this happens, simply deliver NAN arrays, and in later parts of the RV analysis A0 fits from the nearest compatible observation will be used.
     try:
-        model2 = fitter2.GenerateModel(parfitted,nofit=True)
+        model2 = fitter2.GenerateModel(parfitted, nofit=True, air_wave=False)
     except TypeError:
         return [np.nan], [np.nan], [np.nan], [np.nan],[np.nan],[np.nan]
 
@@ -692,7 +692,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
     fitterL.ImportData(data2)
 
     try:
-        modelL = fitterL.GenerateModel(parfittedL,nofit=True)
+        modelL = fitterL.GenerateModel(parfittedL, nofit=True, air_wave=False)
     except TypeError:
         return [np.nan], [np.nan], [np.nan], [np.nan],[np.nan],[np.nan]
 
