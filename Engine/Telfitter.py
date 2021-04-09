@@ -55,7 +55,7 @@ def wavefit(par0, dpar0):
 
 #------------
 @suppress_stdout
-def suppress_p(fitter):
+def suppress_p(fitter, data):
     model = fitter.Fit(data=data, resolution_fit_mode="SVD", adjust_wave="model", air_wave=False)
 
     return model
@@ -370,7 +370,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
                               "co2": [ 1,1e4]})
 
     try:
-        model = suppress_p(fitter)
+        model = suppress_p(fitter, data)
         # model = fitter.Fit(data=data, resolution_fit_mode="SVD", adjust_wave="model",air_wave=False)
     except TypeError:
         return [np.nan], [np.nan], [np.nan], [np.nan],[np.nan],[np.nan]
