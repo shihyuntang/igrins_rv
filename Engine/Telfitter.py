@@ -54,15 +54,15 @@ def wavefit(par0, dpar0):
     return parfit
 
 #------------
-@suppress_stdout
-def suppress_p(fitter, data):
-    model = fitter.Fit(data=data, resolution_fit_mode="SVD", adjust_wave="model", air_wave=False)
-
-    return model
+# @suppress_stdout
+# def suppress_p(fitter, data):
+#     model = fitter.Fit(data=data, resolution_fit_mode="SVD", adjust_wave="model", air_wave=False)
+#
+#     return model
 
 #------------
 
-
+@suppress_stdout
 def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam):
     # Code to produced fitted telluric template. How and why it works is detailed in comments throughout the code.
     os.environ['PYSYN_CDBS'] = inparam.cdbsloc
@@ -370,8 +370,8 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
                               "co2": [ 1,1e4]})
 
     try:
-        model = suppress_p(fitter, data)
-        # model = fitter.Fit(data=data, resolution_fit_mode="SVD", adjust_wave="model",air_wave=False)
+        # model = suppress_p(fitter, data)
+        model = fitter.Fit(data=data, resolution_fit_mode="SVD", adjust_wave="model",air_wave=False)
     except TypeError:
         return [np.nan], [np.nan], [np.nan], [np.nan],[np.nan],[np.nan]
 
