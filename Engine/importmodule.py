@@ -25,7 +25,7 @@ import time
 from itertools import groupby
 import more_itertools as mit
 from operator  import itemgetter
-from functools import partial
+from functools import partial, wraps
 from datetime  import datetime
 
 import multiprocessing as mp
@@ -69,6 +69,28 @@ import matplotlib.pyplot as plt
 import warnings
 warnings.filterwarnings("ignore")
 np.seterr(divide='ignore', invalid='ignore')
+
+# -------------------------------------------------------------
+
+def suppress_stdout(f, *args, **kwargs):
+    """
+    A simple decorator to suppress function print outputs.
+    Borrowed from the lightkurve pkg @ https://github.com/lightkurve/lightkurve
+    """
+    
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        # redirect output to `null`
+        with open(os.devnull, "w") as devnull:
+            old_out = sys.stdout
+            sys.stdout = devnull
+            try:
+                return f(*args, **kwargs)
+            # restore to default
+            finally:
+                sys.stdout = old_out
+
+    return wrapper
 
 # -------------------------------------------------------------
 def read_prepdata(args):

@@ -7,7 +7,6 @@ import matplotlib.patches as mpatches
 from   Engine.rebin_jv import rebin_jv
 from   telfit import TelluricFitter, DataStructures
 
-
 def gauss_fit(x):
     def innerfit(*p):
         #print('p',p)
@@ -54,6 +53,14 @@ def wavefit(par0, dpar0):
     parfit = opt.optimize(par0)
     return parfit
 
+#------------
+@suppress_stdout
+def suppress_p(fitter):
+    model = fitter.Fit(data=data, resolution_fit_mode="SVD", adjust_wave="model", air_wave=False)
+
+    return model
+
+#------------
 
 
 def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam):
@@ -363,7 +370,8 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
                               "co2": [ 1,1e4]})
 
     try:
-        model = fitter.Fit(data=data, resolution_fit_mode="SVD", adjust_wave="model",air_wave=False)
+        model = suppress_p(fitter)
+        # model = fitter.Fit(data=data, resolution_fit_mode="SVD", adjust_wave="model",air_wave=False)
     except TypeError:
         return [np.nan], [np.nan], [np.nan], [np.nan],[np.nan],[np.nan]
 
