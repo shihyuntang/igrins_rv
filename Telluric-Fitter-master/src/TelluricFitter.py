@@ -111,6 +111,7 @@ class TelluricFitter:
         self.ignore = []
         self.shift = 0  #The wavelength shift to make the model and data align
         self.air_wave = True
+        self.printoutshow = True
         self.source_fcn = smoothing_source_fcn
         self.source_args = [61, 4]
         self.source_kwargs = dict(lowreject=2, highreject=3, numiters=5)
@@ -610,7 +611,7 @@ class TelluricFitter:
 
 
     def GenerateModel(self, pars, nofit=False, separate_source=False, return_resolution=False, broaden=False,
-                        model=None, air_wave=False, printoutshow=True):
+                        model=None, air_wave=False, print_show=True):
         """
         This function does the actual work of generating a model with the given parameters,
         fitting the continuum, making sure the model and data are well aligned in
@@ -672,7 +673,7 @@ class TelluricFitter:
         if model is None:
             model = self.Modeler.MakeModel(pressure, temperature, wavenum_start, wavenum_end, angle, h2o, co2, o3, n2o, co,
                                            ch4, o2, no, so2, no2, nh3, hno3, lat=lat, alt=alt, wavegrid=None,
-                                           resolution=None, vac2air=air_wave, printoutshow=printoutshow)
+                                           resolution=None, vac2air=air_wave, printoutshow=print_show)
 
             #Save each model if debugging
             if self.debug and self.debug_level >= 5:
