@@ -1,7 +1,7 @@
 """
 
     This file provides the MakeModel class. It is what directly interfaces
-      with LBLRTM to make the telluric model. You can call this function 
+      with LBLRTM to make the telluric model. You can call this function
       from the bash shell using the command 'python MakeModel.py' to generate
       a model transmission spectrum. The input settings for the model can be
       adjusted at the bottom of this file (after the line that reads
@@ -92,7 +92,7 @@ MoleculeNumbers = {1: "H2O",
 
 """
 This is the main code to generate a telluric absorption spectrum.
-The pressure, temperature, etc... can be adjusted all the way 
+The pressure, temperature, etc... can be adjusted all the way
 on the bottom of this file.
 """
 
@@ -443,10 +443,10 @@ class Modeler:
                 #Run lblrtm
                 cmd = "cd " + TelluricModelingDir + ";sh runlblrtm_v3.sh"
                 try:
-                    command = subprocess.check_call(cmd, shell=True)
+                    command = subprocess.check_call(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                 except subprocess.CalledProcessError:
                     raise subprocess.CalledProcessError("Error: Command '{}' failed in directory {}".format(cmd, TelluricModelingDir))
-      
+
 
                 #Read in TAPE12, which is the output of LBLRTM
                 freq, transmission = self.ReadTAPE12(TelluricModelingDir, appendto=(freq, transmission))
@@ -459,7 +459,7 @@ class Modeler:
         #Run lblrtm for the last time
         cmd = "cd " + TelluricModelingDir + ";sh runlblrtm_v3.sh"
         try:
-            command = subprocess.check_call(cmd, shell=True)
+            command = subprocess.check_call(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         except subprocess.CalledProcessError:
             raise subprocess.CalledProcessError("Error: Command '{}' failed in directory {}".format(cmd, TelluricModelingDir))
 
@@ -620,5 +620,3 @@ if __name__ == "__main__":
     modeler = Modeler(debug=False)
     modeler.MakeModel(pressure=pressure, temperature=temperature, humidity=humidity, lowfreq=lowfreq, highfreq=highfreq,
                       angle=angle, o2=o2, alt=2.1, save=True)
-          
-
