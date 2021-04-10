@@ -23,14 +23,14 @@ def MPinstB(args, inparam, jerp, orders, i):
     night = str(inparam.nights[i])  # multiprocess assigned night
     firstorder = orders[0]          # First order that will be analyzed, related to file writing
 
-    # print('Working on order {:02d}/{:02d} ({}), night {}/{} ({}) PID:{}...'.format(int(jerp+1),
-    #                                                                              len(orders),
-    #                                                                              order,
-    #                                                                              i+1,
-    #                                                                              len(inparam.nights),
-    #                                                                              night,
-    #                                                                              mp.current_process().pid) )
-
+    if args.debug:
+        print('Working on order {:02d}/{:02d} ({}), night {}/{} ({}) PID:{}...'.format(int(jerp+1),
+                                                                                     len(orders),
+                                                                                     order,
+                                                                                     i+1,
+                                                                                     len(inparam.nights),
+                                                                                     night,
+                                                                                     mp.current_process().pid) )
     #-------------------------------------------------------------------------------
 
     # Retrieve pixel bounds for where within each other significant telluric absorption is present.
@@ -418,13 +418,14 @@ def MPinstA(args, inparam, jerp, orders, i):
     night = str(inparam.nights[i])  # multiprocess assigned night
     firstorder = orders[0]          # First order that will be analyzed, related to file writing
 
-    # print('Working on order {:02d}/{:02d} ({}), night {}/{} ({}) PID:{}...'.format(int(jerp+1),
-    #                                                                              len(orders),
-    #                                                                              order,
-    #                                                                              i+1,
-    #                                                                              len(inparam.nights),
-    #                                                                              night,
-    #                                                                              mp.current_process().pid) )
+    if args.debug:
+        print('Working on order {:02d}/{:02d} ({}), night {}/{} ({}) PID:{}...'.format(int(jerp+1),
+                                                                                     len(orders),
+                                                                                     order,
+                                                                                     i+1,
+                                                                                     len(inparam.nights),
+                                                                                     night,
+                                                                                     mp.current_process().pid) )
 
     #-------------------------------------------------------------------------------
 
@@ -1124,10 +1125,12 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
     # Run order by order, multiprocessing over nights within an order
     print('Processing the B nods first...')
     for jerp in range(len(orders)):
+        if not args.debug: print('Working on order {:02d}/{:02d} ({})'.format(int(jerp+1), len(orders), order)
         outs = mp_run(args, inparam, args.Nthreads, jerp, orders, nightsFinal,'B')
 
     print('B nods done! Halfway there! \n Now processing the A nods...')
     for jerp in range(len(orders)):
+        if not args.debug: print('Working on order {:02d}/{:02d} ({})'.format(int(jerp+1), len(orders), order)    
         outs = mp_run(args, inparam, args.Nthreads, jerp, orders, nightsFinal,'A')
 
     print('\n')

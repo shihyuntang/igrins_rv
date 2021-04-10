@@ -609,7 +609,8 @@ class TelluricFitter:
 
 
 
-    def GenerateModel(self, pars, nofit=False, separate_source=False, return_resolution=False, broaden=False, model=None, air_wave=False):
+    def GenerateModel(self, pars, nofit=False, separate_source=False, return_resolution=False, broaden=False,
+                        model=None, air_wave=False, printoutshow=True):
         """
         This function does the actual work of generating a model with the given parameters,
         fitting the continuum, making sure the model and data are well aligned in
@@ -627,6 +628,7 @@ class TelluricFitter:
         :param model: A DataStructures.xypoint instance containing an un-broadened telluric model.
                       If given, it uses this instead of making one.
         :param air_wave:  Are the wavelengths in air wavelengths? Default is True.
+        :param printoutshow:  Printing all fortran ourputs? Default is True.
 
         :return:  The best-fit telluric model, as a DataStructures.xypoint instance where the x-axis is
                  sampled the same as the data (so you should be able to directly divide the two). If

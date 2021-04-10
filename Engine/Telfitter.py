@@ -61,8 +61,8 @@ def suppress_Fit(fitter, data):
     return model
 
 @suppress_stdout
-def suppress_GenerateModel(fitter, parfit):
-    model = fitter.GenerateModel(parfit, nofit=True, air_wave=False)
+def suppress_GenerateModel(fitter, parfit, args):
+    model = fitter.GenerateModel(parfit, nofit=True, air_wave=False, printoutshow=args.debug)
     return model
 
 #------------
@@ -482,9 +482,9 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
     # If this happens, simply deliver NAN arrays, and in later parts of the RV analysis A0 fits from the nearest compatible observation will be used.
     try:
         if args.debug:
-            model2 = fitter2.GenerateModel(parfitted, nofit=True, air_wave=False)
+            model2 = fitter2.GenerateModel(parfitted, nofit=True, air_wave=False, printoutshow=args.debug)
         else:
-            model2 = suppress_GenerateModel(fitter2, parfitted)
+            model2 = suppress_GenerateModel(fitter2, parfitted, args)
 
     except TypeError:
         return [np.nan], [np.nan], [np.nan], [np.nan],[np.nan],[np.nan]
@@ -712,9 +712,9 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
 
     try:
         if args.debug:
-            modelL = fitterL.GenerateModel(parfittedL, nofit=True, air_wave=False)
+            modelL = fitterL.GenerateModel(parfittedL, nofit=True, air_wave=False, printoutshow=args.debug)
         else:
-            modelL = suppress_GenerateModel(fitterL, parfittedL)
+            modelL = suppress_GenerateModel(fitterL, parfittedL, args)
 
 
     except TypeError:
