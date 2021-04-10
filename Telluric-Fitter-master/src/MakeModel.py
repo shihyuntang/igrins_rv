@@ -364,6 +364,8 @@ class Modeler:
                                saved file will be written to this filename. Should be a string
                                variable. Ignored if save==False
         :param vac2air:        If True (default), it converts the wavelengths from vacuum to air
+        :param printoutshow:  Printing all fortran ourputs? Default is True.
+        
         :return:               DataStructures.xypoint instance with the telluric model. The x-axis
                                is in nanometers and the y-axis is in fractional transmission.
         """

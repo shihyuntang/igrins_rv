@@ -672,7 +672,7 @@ class TelluricFitter:
         if model is None:
             model = self.Modeler.MakeModel(pressure, temperature, wavenum_start, wavenum_end, angle, h2o, co2, o3, n2o, co,
                                            ch4, o2, no, so2, no2, nh3, hno3, lat=lat, alt=alt, wavegrid=None,
-                                           resolution=None, vac2air=air_wave)
+                                           resolution=None, vac2air=air_wave, printoutshow=printoutshow)
 
             #Save each model if debugging
             if self.debug and self.debug_level >= 5:
