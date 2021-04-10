@@ -23,13 +23,13 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
     order = orders[order_use]
     xbounds = inparam.xbounddict[order]
-    print('Working on order {:02d}/{:02d} ({}), night {:03d}/{:03d} ({}) PID:{}...'.format(int(order_use)+1,
-                                                                                           len(orders),
-                                                                                           order,
-                                                                                           i+1,
-                                                                                           len(inparam.nights),
-                                                                                           night,
-                                                                                           mp.current_process().pid) )
+    # print('Working on order {:02d}/{:02d} ({}), night {:03d}/{:03d} ({}) PID:{}...'.format(int(order_use)+1,
+    #                                                                                        len(orders),
+    #                                                                                        order,
+    #                                                                                        i+1,
+    #                                                                                        len(inparam.nights),
+    #                                                                                        night,
+    #                                                                                        mp.current_process().pid) )
 
     #-------------------------------------------------------------------------------
 
