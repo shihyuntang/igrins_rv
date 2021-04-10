@@ -908,7 +908,7 @@ def mp_run(args, inparam, Nthreads, jerp, orders, nights, masterbeam):
     else:
         func = partial(MPinstB, args, inparam, jerp, orders)
 
-    outs = pqdm(np.arange(len(nights)), func, n_jobs=Nthreads, unit='night')
+    outs = pqdm(np.arange(len(nights)), func, n_jobs=Nthreads)
 
     # pool = mp.Pool(processes = Nthreads)
     # outs = pool.map(func, np.arange(len(nights)))

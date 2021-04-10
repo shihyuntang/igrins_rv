@@ -682,7 +682,7 @@ For K band RVs: IGRINS RV will take this into account and process these nights
                 slightly differently. When you run Step 3, RVs will be output in
                 two formats: one with the defocus nights separated, and the other
                 with all nights together.
-For H band RVs: We do not expect any systematic changes in the H band as the result 
+For H band RVs: We do not expect any systematic changes in the H band as the result
                 of the defocus. IGRINS RV will process defocus nights the same way
                 as the others, but when you run Step 3, will still output the results
                 in two formats like it does with the K band.''')
@@ -717,11 +717,14 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
 
     # Run order by order, multiprocessing over nights within an order
     for jerp in range(len(orders)):
-        pool = mp.Pool(processes = args.Nthreads)
+        if not args.debug: print('Working on order {:02d}/{:02d} ({})'.format(int(jerp+1), len(orders), orders[jerp]))
+
         func = partial(rv_MPinst, args, inparam, orders, jerp, trk, step2or3 )
-        outs = pool.map(func, np.arange(len(nightsFinal)))
-        pool.close()
-        pool.join()
+        outs = pqdm(np.arange(len(nightsFinal)), func, n_jobs=args.Nthreads)
+        # pool = mp.Pool(processes = args.Nthreads)
+        # outs = pool.map(func, np.arange(len(nightsFinal)))
+        # pool.close()
+        # pool.join()
 
         order = orders[jerp]
 
