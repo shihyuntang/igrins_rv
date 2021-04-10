@@ -23,13 +23,13 @@ def MPinstB(args, inparam, jerp, orders, i):
     night = str(inparam.nights[i])  # multiprocess assigned night
     firstorder = orders[0]          # First order that will be analyzed, related to file writing
 
-    print('Working on order {:02d}/{:02d} ({}), night {}/{} ({}) PID:{}...'.format(int(jerp+1),
-                                                                                 len(orders),
-                                                                                 order,
-                                                                                 i+1,
-                                                                                 len(inparam.nights),
-                                                                                 night,
-                                                                                 mp.current_process().pid) )
+    # print('Working on order {:02d}/{:02d} ({}), night {}/{} ({}) PID:{}...'.format(int(jerp+1),
+    #                                                                              len(orders),
+    #                                                                              order,
+    #                                                                              i+1,
+    #                                                                              len(inparam.nights),
+    #                                                                              night,
+    #                                                                              mp.current_process().pid) )
 
     #-------------------------------------------------------------------------------
 
@@ -418,13 +418,13 @@ def MPinstA(args, inparam, jerp, orders, i):
     night = str(inparam.nights[i])  # multiprocess assigned night
     firstorder = orders[0]          # First order that will be analyzed, related to file writing
 
-    print('Working on order {:02d}/{:02d} ({}), night {}/{} ({}) PID:{}...'.format(int(jerp+1),
-                                                                                 len(orders),
-                                                                                 order,
-                                                                                 i+1,
-                                                                                 len(inparam.nights),
-                                                                                 night,
-                                                                                 mp.current_process().pid) )
+    # print('Working on order {:02d}/{:02d} ({}), night {}/{} ({}) PID:{}...'.format(int(jerp+1),
+    #                                                                              len(orders),
+    #                                                                              order,
+    #                                                                              i+1,
+    #                                                                              len(inparam.nights),
+    #                                                                              night,
+    #                                                                              mp.current_process().pid) )
 
     #-------------------------------------------------------------------------------
 

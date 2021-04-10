@@ -54,10 +54,15 @@ def wavefit(par0, dpar0):
     return parfit
 
 #------------
+# to suppress print out from Telfit
 @suppress_stdout
-def suppress_p(fitter, data):
+def suppress_Fit(fitter, data):
     model = fitter.Fit(data=data, resolution_fit_mode="SVD", adjust_wave="model", air_wave=False)
+    return model
 
+@suppress_stdout
+def suppress_GenerateModel(fitter, parfit):
+    model = fitter.GenerateModel(parfit, nofit=True, air_wave=False)
     return model
 
 #------------
@@ -370,8 +375,10 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
                               "co2": [ 1,1e4]})
 
     try:
-        model = suppress_p(fitter, data)
-        # model = fitter.Fit(data=data, resolution_fit_mode="SVD", adjust_wave="model",air_wave=False)
+        if args.debug:
+            model = fitter.Fit(data=data, resolution_fit_mode="SVD", adjust_wave="model",air_wave=False)
+        else:
+            model = suppress_Fit(fitter, data)
     except TypeError:
         return [np.nan], [np.nan], [np.nan], [np.nan],[np.nan],[np.nan]
 
@@ -474,7 +481,11 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
     # FORTRAN readout is quite unhelpful and anyone else who apepars to have experienced this problem had it randomly go away at some point.
     # If this happens, simply deliver NAN arrays, and in later parts of the RV analysis A0 fits from the nearest compatible observation will be used.
     try:
-        model2 = fitter2.GenerateModel(parfitted, nofit=True, air_wave=False)
+        if args.debug:
+            model2 = fitter2.GenerateModel(parfitted, nofit=True, air_wave=False)
+        else:
+            model2 = suppress_GenerateModel(fitter2, parfitted)
+
     except TypeError:
         return [np.nan], [np.nan], [np.nan], [np.nan],[np.nan],[np.nan]
 
@@ -700,7 +711,12 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
     fitterL.ImportData(data2)
 
     try:
-        modelL = fitterL.GenerateModel(parfittedL, nofit=True, air_wave=False)
+        if args.debug:
+            modelL = fitterL.GenerateModel(parfittedL, nofit=True, air_wave=False)
+        else:
+            modelL = suppress_GenerateModel(fitterL, parfittedL)
+
+
     except TypeError:
         return [np.nan], [np.nan], [np.nan], [np.nan],[np.nan],[np.nan]
 
