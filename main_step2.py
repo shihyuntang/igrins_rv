@@ -22,11 +22,11 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
     order   = order_use
     xbounds = inparam.xbounddict[order]
-    print('Working on order {:02d}, night {:03d}/{:03d} ({}) PID:{}...'.format(int(order),
-                                                                                           i+1,
-                                                                                           len(inparam.nights),
-                                                                                           night,
-                                                                                           mp.current_process().pid) )
+    # print('Working on order {:02d}, night {:03d}/{:03d} ({}) PID:{}...'.format(int(order),
+                                                                                           # i+1,
+                                                                                           # len(inparam.nights),
+                                                                                           # night,
+                                                                                           # mp.current_process().pid) )
 
     #-------------------------------------------------------------------------------
 
@@ -605,7 +605,7 @@ Input Parameters:
 WARNING: Some of these nights were when the IGRINS K band was defocused!
 For K band RVs: IGRINS RV will take this into account and process these nights
                 slightly differently. When you run Step 3, RVs will be output in
-                two formats: one with the defocus nights separated, and the other 
+                two formats: one with the defocus nights separated, and the other
                 with all nights together.
 For H band RVs: We do not expect any systematic changes in the H band as the result
                 of the defocus. IGRINS RV will process defocus nights the same way
@@ -624,11 +624,12 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
     #-------------------------------------------------------------------------------
 
     # Run order by order, multiprocessing over nights within an order
-    pool = mp.Pool(processes = args.Nthreads)
     func = partial(rv_MPinst, args, inparam, orders, int(args.label_use), trk, step2or3 )
-    outs = pool.map(func, np.arange(len(nightsFinal)))
-    pool.close()
-    pool.join()
+    outs = pqdm(np.arange(len(nightsFinal)), func, n_jobs=Nthreads)
+    # pool = mp.Pool(processes = args.Nthreads)
+    # outs = pool.map(func, np.arange(len(nightsFinal)))
+    # pool.close()
+    # pool.join()
 
     # Write outputs to file
     vsinis = []; finalrvs = [];
