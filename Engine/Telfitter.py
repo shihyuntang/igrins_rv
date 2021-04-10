@@ -71,7 +71,7 @@ def suppress_GenerateModel(fitter, parfit, args):
 def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam):
     # Code to produced fitted telluric template. How and why it works is detailed in comments throughout the code.
     os.environ['PYSYN_CDBS'] = inparam.cdbsloc
-    fitter = TelluricFitter(debug=False, print_show=True)
+    fitter = TelluricFitter(debug=False, print_show=False)
 
     #Set the observatory location with a keyword
     DCT_props     = {"latitude": 34.744, "altitude": 2.36} #altitude in km
@@ -447,7 +447,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
     for k in range(len(names)):
         parfitted[k] = np.float(fitter.GetValue(names[k]) )
 
-    fitter2 = TelluricFitter(debug=False, print_show=True)
+    fitter2 = TelluricFitter(debug=False, print_show=False)
 
     if inparam.obses[night] == 'DCT':
         fitter2.SetObservatory(DCT_props)
@@ -693,7 +693,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
                5.00000000e-09, 1.56000000e-07]),
 }
 
-    fitterL = TelluricFitter(debug=False, print_show=True)
+    fitterL = TelluricFitter(debug=False, print_show=False)
 
     NSO_props = {"latitude": 31.958, "altitude":2.096} #alt in km
     fitterL.SetObservatory(NSO_props)
