@@ -58,8 +58,8 @@ def rebin_jv(Wold,Sold,Wnew,verbose):
     PSnew = (Wnew[-1] - Wnew[0]) / (Nnew-1) #new pixel scale
 
     #Verify that new wavelength scale is a subset of old wavelength scale.
-    if verbose == True:
-        if (Wnew[0] < Wold[0]) or (Wnew[-1] > Wold[-1]):
+    # if verbose == True:
+    #     if (Wnew[0] < Wold[0]) or (Wnew[-1] > Wold[-1]):
             # print('New wavelength scale not subset of old.')
 
     #Select integration or interpolation depending on change in dispersion.
