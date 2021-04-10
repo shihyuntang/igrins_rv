@@ -665,7 +665,13 @@ class TelluricFitter:
         lat = self.observatory["latitude"]
         alt = self.observatory["altitude"]
 
-
+        print(f'''
+        *********
+        *********
+        air_wave = {air_wave}
+        *********
+        *********
+        ''')
         #Generate the model:
         if model is None:
             model = self.Modeler.MakeModel(pressure, temperature, wavenum_start, wavenum_end, angle, h2o, co2, o3, n2o, co,
