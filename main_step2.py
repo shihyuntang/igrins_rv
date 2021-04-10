@@ -625,7 +625,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
 
     # Run order by order, multiprocessing over nights within an order
     func = partial(rv_MPinst, args, inparam, orders, int(args.label_use), trk, step2or3 )
-    outs = pqdm(np.arange(len(nightsFinal)), func, n_jobs=Nthreads)
+    outs = pqdm(np.arange(len(nightsFinal)), func, n_jobs=args.Nthreads)
     # pool = mp.Pool(processes = args.Nthreads)
     # outs = pool.map(func, np.arange(len(nightsFinal)))
     # pool.close()
