@@ -68,7 +68,7 @@ import DataStructures
 
 
 class TelluricFitter:
-    def __init__(self, debug=False, debug_level=2):
+    def __init__(self, debug=False, debug_level=2, print_show=True):
         """
         Initialize the TelluricFitter class.
 
@@ -105,13 +105,12 @@ class TelluricFitter:
         self.wavelength_fit_order = 3
         self.debug = debug
         self.debug_level = debug_level  #Number from 1-5, with 5 being the most verbose
-        self.Modeler = MakeModel.Modeler(debug=self.debug)
+        self.Modeler = MakeModel.Modeler(debug=self.debug, printoutshow=print_show)
         self.parvals = [[] for i in range(len(self.parnames))]
         self.chisq_vals = []
         self.ignore = []
         self.shift = 0  #The wavelength shift to make the model and data align
         self.air_wave = True
-        self.printoutshow = True
         self.source_fcn = smoothing_source_fcn
         self.source_args = [61, 4]
         self.source_kwargs = dict(lowreject=2, highreject=3, numiters=5)
@@ -611,7 +610,7 @@ class TelluricFitter:
 
 
     def GenerateModel(self, pars, nofit=False, separate_source=False, return_resolution=False, broaden=False,
-                        model=None, air_wave=False, print_show=True):
+                        model=None, air_wave=False):
         """
         This function does the actual work of generating a model with the given parameters,
         fitting the continuum, making sure the model and data are well aligned in
@@ -673,7 +672,7 @@ class TelluricFitter:
         if model is None:
             model = self.Modeler.MakeModel(pressure, temperature, wavenum_start, wavenum_end, angle, h2o, co2, o3, n2o, co,
                                            ch4, o2, no, so2, no2, nh3, hno3, lat=lat, alt=alt, wavegrid=None,
-                                           resolution=None, vac2air=air_wave, printoutshow=print_show)
+                                           resolution=None, vac2air=air_wave)
 
             #Save each model if debugging
             if self.debug and self.debug_level >= 5:
