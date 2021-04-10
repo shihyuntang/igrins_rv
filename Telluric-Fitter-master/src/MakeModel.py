@@ -103,7 +103,7 @@ class ModelerException(Exception):
 class Modeler:
     def __init__(self, debug=False,
                  TelluricModelingDirRoot=DEFAULT_TELLURICMODELING,
-                 nmolecules=12, printoutshow=print_show):
+                 nmolecules=12, printoutshow=True):
         """
         Initialize a modeler instance
 
