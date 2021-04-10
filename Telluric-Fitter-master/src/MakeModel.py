@@ -365,7 +365,7 @@ class Modeler:
                                variable. Ignored if save==False
         :param vac2air:        If True (default), it converts the wavelengths from vacuum to air
         :param printoutshow:  Printing all fortran ourputs? Default is True.
-        
+
         :return:               DataStructures.xypoint instance with the telluric model. The x-axis
                                is in nanometers and the y-axis is in fractional transmission.
         """
@@ -446,7 +446,7 @@ class Modeler:
                 cmd = "cd " + TelluricModelingDir + ";sh runlblrtm_v3.sh"
                 try:
                     if printoutshow:
-                        command = subprocess.check_call(cmd, shell=True)
+                        command = subprocess.check_call(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                     else:
                         command = subprocess.check_call(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                 except subprocess.CalledProcessError:
@@ -465,7 +465,7 @@ class Modeler:
         cmd = "cd " + TelluricModelingDir + ";sh runlblrtm_v3.sh"
         try:
             if printoutshow:
-                command = subprocess.check_call(cmd, shell=True)
+                command = subprocess.check_call(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             else:
                 command = subprocess.check_call(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         except subprocess.CalledProcessError:
