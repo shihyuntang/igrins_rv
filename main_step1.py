@@ -902,14 +902,17 @@ def MPinstA(args, inparam, jerp, orders, i):
 
 def mp_run(args, inparam, Nthreads, jerp, orders, nights, masterbeam):
     # Multiprocessing convenience function
-    pool = mp.Pool(processes = Nthreads)
     if masterbeam == 'A':
         func = partial(MPinstA, args, inparam, jerp, orders)
     else:
         func = partial(MPinstB, args, inparam, jerp, orders)
-    outs = pool.map(func, np.arange(len(nights)))
-    pool.close()
-    pool.join()
+
+    outs = pqdm(np.arange(len(nights)), func, n_jobs=Nthreads)
+
+    # pool = mp.Pool(processes = Nthreads)
+    # outs = pool.map(func, np.arange(len(nights)))
+    # pool.close()
+    # pool.join()
 
 
 #-------------------------------------------------------------------------------

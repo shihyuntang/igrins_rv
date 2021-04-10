@@ -29,7 +29,7 @@ from functools import partial, wraps
 from datetime  import datetime
 
 import multiprocessing as mp
-
+from pqdm.processes import pqdm
 # matplotlib  -----------------------------------------------------
 import matplotlib
 from matplotlib import gridspec
@@ -77,7 +77,7 @@ def suppress_stdout(f, *args, **kwargs):
     A simple decorator to suppress function print outputs.
     Borrowed from the lightkurve pkg @ https://github.com/lightkurve/lightkurve
     """
-    
+
     @wraps(f)
     def wrapper(*args, **kwargs):
         # redirect output to `null`
