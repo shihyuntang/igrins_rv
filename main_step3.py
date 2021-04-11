@@ -718,7 +718,8 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
     #-------------------------------------------------------------------------------
     # if not in debug mode than enter quite mode, i.e., all message saved in log file
     if not args.debug: logger.removeHandler(stream_hander)
-
+    print('\n')
+    
     # Run order by order, multiprocessing over nights within an order
     for jerp in range(len(orders)):
         if not args.debug: print('Working on order {} ({:02d}/{:02d})'.format(orders[jerp], int(jerp+1), len(orders)))
