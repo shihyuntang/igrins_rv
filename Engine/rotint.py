@@ -16,7 +16,7 @@ def rotint(wave_spec,flux_spec,vrot):
     velo_k -= velo_k[-1]/2.
     y = 1 - (velo_k/vrot)**2 # transformation of velocity
     G = (2*(1-epsilon)*np.sqrt(y)+np.pi*epsilon/2.*y)/(np.pi*vrot*(1-epsilon/3.0))  # the kernel
-    G /= G.sum()
+    G /= np.sum(G)
     #-- convolve the flux with the kernel
     flux_conv = fftconvolve(1-flux_,G,mode='same')
     velo_ = np.arange(len(flux_conv))*dvelo+velo_[0]
