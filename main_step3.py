@@ -1075,7 +1075,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
                                                                                 np.nanstd(vsinifinalCombined)))
 
     print('\n')
-    warning_r = log_warning_id(f'{outpath}/{args.targname}_{args.band}_A0Fits.log', start_t)
+    warning_r = log_warning_id(f'{outpath}/{args.targname}_{args.band}_A0Fits.log', start_time)
     if warning_r:
         print(f'''
 **********************************************************************************

@@ -646,7 +646,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
 
     filew.close()
 
-    warning_r = log_warning_id(f'{outpath}/{args.targname}_{args.band}.log', start_t)
+    warning_r = log_warning_id(f'{outpath}/{args.targname}_{args.band}.log', start_time)
     if warning_r:
         print(f'''
 **********************************************************************************

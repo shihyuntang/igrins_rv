@@ -94,6 +94,7 @@ def rebin_jv(Wold,Sold,Wnew,verbose):
 
         S = splev(W,splrep(Wold, Sold))
         S /= XFac #take average in each pixel
-        Snew = S.reshape(Nnew,XFac).sum(1)
+        # Snew = S.reshape(Nnew,XFac).sum(1)
+        Snew = np.sum(S.reshape(Nnew,XFac), axis=1 )
 
     return Snew
