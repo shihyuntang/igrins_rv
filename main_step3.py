@@ -1083,7 +1083,7 @@ WARNING!! you got warning message during this run. Please check the log file und
           {outpath}/{args.targname}_{args.band}_A0Fits.log
 **********************************************************************************
 ''')
-
+    print('\n')
     end_time = datetime.now()
     logger.info('Whole process DONE!!!!!!, Duration: {}'.format(end_time - start_time))
     logger.info('Output saved under {}/{}'.format(inparam.outpath, name) )

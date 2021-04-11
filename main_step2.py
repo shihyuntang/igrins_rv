@@ -656,6 +656,7 @@ WARNING!! you got warning message during this run. Please check the log file und
 **********************************************************************************
 ''')
 
+    print('\n')
     if not args.debug: logger.addHandler(stream_hander)
     print('--------!Initial Guess!--------')
     logger.info('RV results:    mean= {:1.4f} km/s, median= {:1.4f} km/s, std= {:1.4f} km/s'.format(np.nanmean(finalrvs),
