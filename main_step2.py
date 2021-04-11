@@ -22,11 +22,13 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
     order   = order_use
     xbounds = inparam.xbounddict[order]
-    # print('Working on order {:02d}, night {:03d}/{:03d} ({}) PID:{}...'.format(int(order),
-                                                                                           # i+1,
-                                                                                           # len(inparam.nights),
-                                                                                           # night,
-                                                                                           # mp.current_process().pid) )
+
+    if args.debug:
+        print('Working on order {:02d}, night {:03d}/{:03d} ({}) PID:{}...'.format(int(order),
+                                                                                               i+1,
+                                                                                               len(inparam.nights),
+                                                                                               night,
+                                                                                               mp.current_process().pid) )
 
     #-------------------------------------------------------------------------------
 
@@ -622,6 +624,8 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
                        initguesses,bvcs,tagsA,tagsB,nightsFinal,mwave0,mflux0,None,xbounddict,maskdict)
 
     #-------------------------------------------------------------------------------
+    # if not in debug mode than enter quite mode, i.e., all message saved in log file
+    if not args.debug: logger.removeHandler(stream_hander)
 
     # Run order by order, multiprocessing over nights within an order
     func = partial(rv_MPinst, args, inparam, orders, int(args.label_use), trk, step2or3 )
@@ -642,6 +646,16 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
 
     filew.close()
 
+    warning_r = log_warning_id(f'{outpath}/{args.targname}_{args.band}.log', start_t)
+    if warning_r:
+        print(f'''
+**********************************************************************************
+WARNING!! you got warning message during this run. Please check the log file under:
+          {outpath}/{args.targname}_{args.band}.log
+**********************************************************************************
+''')
+
+    if not args.debug: logger.addHandler(stream_hander)
     print('--------!Initial Guess!--------')
     logger.info('RV results:    mean= {:1.4f} km/s, median= {:1.4f} km/s, std= {:1.4f} km/s'.format(np.nanmean(finalrvs),
                                                                                                     np.nanmedian(finalrvs),

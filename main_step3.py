@@ -23,13 +23,15 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
     order = orders[order_use]
     xbounds = inparam.xbounddict[order]
-    # print('Working on order {:02d}/{:02d} ({}), night {:03d}/{:03d} ({}) PID:{}...'.format(int(order_use)+1,
-    #                                                                                        len(orders),
-    #                                                                                        order,
-    #                                                                                        i+1,
-    #                                                                                        len(inparam.nights),
-    #                                                                                        night,
-    #                                                                                        mp.current_process().pid) )
+
+    if args.debug:
+        print('Working on order {:02d}/{:02d} ({}), night {:03d}/{:03d} ({}) PID:{}...'.format(int(order_use)+1,
+                                                                                               len(orders),
+                                                                                               order,
+                                                                                               i+1,
+                                                                                               len(inparam.nights),
+                                                                                               night,
+                                                                                               mp.current_process().pid) )
 
     #-------------------------------------------------------------------------------
 
@@ -714,6 +716,8 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
     # orders = np.array([5])
     # print('ONLY process order 5')
     #-------------------------------------------------------------------------------
+    # if not in debug mode than enter quite mode, i.e., all message saved in log file
+    if not args.debug: logger.removeHandler(stream_hander)
 
     # Run order by order, multiprocessing over nights within an order
     for jerp in range(len(orders)):
@@ -811,6 +815,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
 
 
     #-------------------------------------------------------------------------------
+    if not args.debug: logger.addHandler(stream_hander)
 
     # Don't combine Loose and Tight datasets, but make them both easily referenceable
     nightsCombined  = np.array([]); jdsCombined = np.array([]);
@@ -1070,6 +1075,15 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
                                                                                 np.nanstd(vsinifinalCombined)))
 
     print('\n')
+    warning_r = log_warning_id(f'{outpath}/{args.targname}_{args.band}_A0Fits.log', start_t)
+    if warning_r:
+        print(f'''
+**********************************************************************************
+WARNING!! you got warning message during this run. Please check the log file under:
+          {outpath}/{args.targname}_{args.band}_A0Fits.log
+**********************************************************************************
+''')
+
     end_time = datetime.now()
     logger.info('Whole process DONE!!!!!!, Duration: {}'.format(end_time - start_time))
     logger.info('Output saved under {}/{}'.format(inparam.outpath, name) )

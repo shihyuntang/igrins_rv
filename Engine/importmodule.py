@@ -38,32 +38,6 @@ from matplotlib.ticker import (MultipleLocator, FormatStrFormatter,
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-# font = {'size'   : 6,
-#         'style'  : 'normal',
-#         'family' : 'sans-serif'   }
-#
-# matplotlib.rc('font', **font)
-#
-# matplotlib.rcParams['figure.dpi'] = 300
-# matplotlib.rcParams['figure.facecolor'] = 'white'
-#
-# #matplotlib.rcParams['axes.linewidth'] = 2.0
-# matplotlib.rcParams['axes.labelsize'] = 6
-#
-# matplotlib.rcParams['xtick.direction'] = 'in'
-# matplotlib.rcParams['ytick.direction'] = 'in'
-#
-# matplotlib.rcParams['xtick.major.top'] = True
-# matplotlib.rcParams['ytick.major.right'] = True
-#
-# matplotlib.rcParams['xtick.minor.top'] = True
-# matplotlib.rcParams['ytick.minor.right'] = True
-#
-# matplotlib.rcParams['xtick.major.width'] = .6
-# matplotlib.rcParams['ytick.major.width'] = .6
-#
-# matplotlib.rcParams['xtick.labelsize'] = 6
-# matplotlib.rcParams['ytick.labelsize'] = 6
 
 # -------------------------------------------------------------
 import warnings
@@ -91,6 +65,32 @@ def suppress_stdout(f, *args, **kwargs):
                 sys.stdout = old_out
 
     return wrapper
+
+# -------------------------------------------------------------
+
+def log_warning_id(file, start_t):
+    """
+    Under silent mode, check the .log file to see if any logger.warning.
+    """
+    file1 = open(file, 'r')
+    Lines = file1.readlines()
+    loop_range = np.arange(len(Lines), 0, -1)
+
+    # find lines (lidx) logging for this run
+    for lidx in loop_range:
+        line_str = Lines[lidx]
+        date_str = line_str[:19] # extract the date, e.g., '2021-04-11 08:29:50'
+        datetemp = datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S')
+
+        if start_t > datetemp:
+            start_lidx = lidx
+            break
+    this_run = Lines[start_lidx:]
+    for i in this_run:
+        if 'WARNING' in i:
+            return True:
+    return False
+
 
 # -------------------------------------------------------------
 def read_prepdata(args):

@@ -46,8 +46,6 @@ def MPinstB(args, inparam, jerp, orders, i):
             bound_cut = inparam.bound_cut_dic[args.band][order]
         else:
             bound_cut = [150, 150]
-    # bound_cut = [150, 150]
-
 
     ### Load relevant A0 spectrum
     x, a0wavelist, a0fluxlist, u = init_fitsread(inparam.inpath,
@@ -1032,7 +1030,6 @@ if __name__ == '__main__':
     file_hander  = logging.FileHandler(f'{outpath}/{args.targname}_{args.band}_A0Fits.log')
     stream_hander= logging.StreamHandler()
 
-    # file_hander.setLevel()
     file_hander.setFormatter(formatter)
 
     logger.addHandler(file_hander)
@@ -1121,6 +1118,8 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
                          temps,zds,press,obs,watm,satm,mwave0,mflux0,cdbs_loc,xbounddict,None)
 
     #-------------------------------------------------------------------------------
+    # if not in debug mode than enter quite mode, i.e., all message saved in log file
+    if not args.debug: logger.removeHandler(stream_hander)
 
     # Run order by order, multiprocessing over nights within an order
     print('Processing the B nods first...')
@@ -1134,6 +1133,16 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
         outs = mp_run(args, inparam, args.Nthreads, jerp, orders, nightsFinal,'A')
 
     print('\n')
+    warning_r = log_warning_id(f'{outpath}/{args.targname}_{args.band}_A0Fits.log', start_t)
+    if warning_r:
+        print(f'''
+**********************************************************************************
+WARNING!! you got warning message during this run. Please check the log file under:
+          {outpath}/{args.targname}_{args.band}_A0Fits.log
+**********************************************************************************
+''')
+
+    if not args.debug: logger.addHandler(stream_hander)
     logger.info('A0 Fitting Done!')
 
     end_time = datetime.now()
