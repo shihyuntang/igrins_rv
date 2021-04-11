@@ -816,6 +816,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
 
     #-------------------------------------------------------------------------------
     if not args.debug: logger.addHandler(stream_hander)
+    print('\n')
 
     # Don't combine Loose and Tight datasets, but make them both easily referenceable
     nightsCombined  = np.array([]); jdsCombined = np.array([]);
