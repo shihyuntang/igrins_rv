@@ -567,17 +567,17 @@ if __name__ == '__main__':
     print(u'''
 Input Parameters:
     Tartget             =  {}
-    Filter              = \33[41m {} band \033[0m
-    WaveLength file     = \33[41m WaveRegions_{} \033[0m
-    S/N cut             > \33[41m {} \033[0m
-    Minium # of AB sets = \33[41m {} \033[0m             <------- If TAR mode, this should be at least 3. If STD mode, at least 2.
-    Initial vsini       = \33[41m {} km/s \033[0m
-    vsini vary range    \u00B1 \33[41m {} km/s \033[0m
-    RV initial guess    = \33[41m {} \033[0m
-    Stellar template use= \33[41m {} \033[0m
-    syn template temp   = \33[41m {} \033[0m
-    syn template logg   = \33[41m {} \033[0m
-    RV Output format    = \33[41m {} \033[0m
+    Filter              = \33[37;1;41m {} band \033[0m
+    WaveLength file     = \33[37;1;41m WaveRegions_{} \033[0m
+    S/N cut             > \33[37;1;41m {} \033[0m
+    Minium # of AB sets = \33[37;1;41m {} \033[0m             <------- If TAR mode, this should be at least 3. If STD mode, at least 2.
+    Initial vsini       = \33[37;1;41m {} km/s \033[0m
+    vsini vary range    \u00B1 \33[37;1;41m {} km/s \033[0m
+    RV initial guess    = \33[37;1;41m {} \033[0m
+    Stellar template use= \33[37;1;41m {} \033[0m
+    syn template temp   = \33[37;1;41m {} \033[0m
+    syn template logg   = \33[37;1;41m {} \033[0m
+    RV Output format    = \33[37;1;41m {} \033[0m
     Threads use         = {}
     '''.format(args.targname, args.band, args.WRegion, args.SN_cut, nAB,
                initvsini, vsinivary, initguesses_show, args.template, args.temperature, args.logg, print_abs, args.Nthreads))
