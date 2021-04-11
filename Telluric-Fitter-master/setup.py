@@ -115,11 +115,11 @@ def GetCompilerString():
         raise OSError("Unrecognized operating system: %s" % p)
 
     #Next, find the fortran compiler to use
-    compilers = ["ifort",
-                 "gfortran",
+    compilers = ["gfortran",
+                 "ifort"
                  "g95"]
-    comp_strs = ["INTEL",
-                 "GNU",
+    comp_strs = ["GNU",
+                 "INTEL",
                  "G95"]
     found = False
     for i in range(len(compilers)):
@@ -277,7 +277,7 @@ requires = ['matplotlib',
             'astropy>=0.2',
             'lockfile',
             'pysynphot>=0.7',
-            'fortranformat',
+            'fortranformat<1.0',
             'cython',
             'requests']
 
