@@ -89,7 +89,11 @@ def log_warning_id(file, start_t):
         if start_t > datetemp:
             start_lidx = lidx
             break
-    this_run = Lines[start_lidx:]
+    try:
+        this_run = Lines[start_lidx:]
+    except:
+        this_run = Lines[0:]
+
     for i in this_run:
         if 'WARNING' in i:
             return True
