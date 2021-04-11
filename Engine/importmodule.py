@@ -92,6 +92,8 @@ def log_warning_id(file, start_t):
         if lidx == loop_range[-1]: # if loop to the first row
             start_lidx = lidx
 
+    this_run = Lines[start_lidx:]
+
     for i in this_run:
         if 'WARNING' in i:
             return True
