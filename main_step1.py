@@ -1053,7 +1053,6 @@ if __name__ == '__main__':
     print('###############################################################\n')
     logger.info(f'Using TelFit to create high-resolution, synthetic telluric templates based off the telluric standards \nassociated with {args.targname} on a night by night basis...')
     print('This will take a while..........')
-    print('\n')
 
     # Read in newly created pixel regions file to get list of orders to analyze.
     # Note that only target star observations will have their fits limited to the wavelength regions specified.
@@ -1101,8 +1100,6 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
                 in two formats like it does with the K band.''')
 
     #time.sleep(6)
-    print('\n')
-
     # print('For paper plot!')
     # if args.band == 'K':
     #     orders = np.array([2, 3, 4, 5, 6, 7, 8, 10, 14, 16])
@@ -1120,6 +1117,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
     #-------------------------------------------------------------------------------
     # if not in debug mode than enter quite mode, i.e., all message saved in log file
     if not args.debug: logger.removeHandler(stream_hander)
+    print('\n')
 
     # Run order by order, multiprocessing over nights within an order
     print('Processing the B nods first...')
@@ -1132,7 +1130,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
         if not args.debug: print('Working on order {} ({:02d}/{:02d})'.format(orders[jerp], int(jerp+1), len(orders)))
         outs = mp_run(args, inparam, args.Nthreads, jerp, orders, nightsFinal,'A')
 
-    warning_r = log_warning_id(f'{outpath}/{args.targname}_{args.band}_A0Fits.log', start_t)
+    warning_r = log_warning_id(f'{outpath}/{args.targname}_{args.band}_A0Fits.log', start_time)
     if warning_r:
         print(f'''
 **********************************************************************************
