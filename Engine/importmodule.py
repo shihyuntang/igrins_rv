@@ -88,7 +88,7 @@ def log_warning_id(file, start_t):
     this_run = Lines[start_lidx:]
     for i in this_run:
         if 'WARNING' in i:
-            return True:
+            return True
     return False
 
 
