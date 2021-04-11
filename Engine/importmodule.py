@@ -79,6 +79,10 @@ def log_warning_id(file, start_t):
     # find lines (lidx) logging for this run
     for lidx in loop_range:
         line_str = Lines[lidx]
+        try:
+            int(line_str[:4])
+        except ValueError:
+            continue
         date_str = line_str[:19] # extract the date, e.g., '2021-04-11 08:29:50'
         datetemp = datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S')
 
