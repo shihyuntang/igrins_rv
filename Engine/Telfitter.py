@@ -7,15 +7,6 @@ import matplotlib.patches as mpatches
 from   Engine.rebin_jv import rebin_jv
 from   telfit import TelluricFitter, DataStructures
 
-#-------------------------------------------------------------------------------
-def round_decimals_down(number, decimals=2):
-    """
-    Returns a value rounded down to a specific number of decimal places.
-    Borrowed from https://kodify.net/python/math/round-decimals/
-    """
-    factor = 10 ** decimals
-    return np.floor(number * factor) / factor
-
 
 def wavefunc(par,grad):
     '''
@@ -58,14 +49,12 @@ def wavefit(par0, dpar0):
     highs = par0+dpar0
     opt.set_lower_bounds(lows)
     opt.set_upper_bounds(highs)
-    # opt.set_maxtime(1200) #seconds
+    opt.set_maxtime(1200) #seconds
     # Quit optimization based on relative change in output fit parameters between iterations.
     # Choosing smaller change tolerance than 1e-6 has demonstrated no improvement in precision.
-    opt.set_ftol_rel(1e-10)
+    opt.set_ftol_rel(1e-14)
     parfit = opt.optimize(par0)
-
-    parfit_floor = round_decimals_down(parfit, decimals=10)
-    return parfit_floor
+    return parfit
 
 #------------
 # to suppress print out from Telfit
