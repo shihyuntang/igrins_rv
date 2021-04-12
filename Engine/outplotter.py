@@ -3,6 +3,18 @@ from Engine.opt   import fmod
 
 def outplotter_tel(parfit, fitobj, title, inparam, args, order):
 
+    ''' 
+    Plots model fit to telluric standard observation.
+    
+    Inputs:
+    parfit     : Best fit parameters
+    fitobj     : Class containing spectral data to be fit and templates for use in fit
+    title      : Title of plot file
+    inparam    : Class containing variety of information (e.g. on observing conditions)
+    order      : Echelle order, as characterized by file index (as opposed to m number; for conversion between the two, see Stahl et al. 2021)
+    args       : Information as input by user from command line
+    '''
+    
     fit,chi = fmod(parfit, fitobj)
     npars = len(parfit)
 
@@ -87,6 +99,21 @@ def outplotter_tel(parfit, fitobj, title, inparam, args, order):
 
 
 def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3, order):
+    
+    ''' 
+    Plots model fit to science target observation.
+    
+    Inputs:
+    parfit     : Best fit parameters
+    fitobj     : Class containing spectral data to be fit and templates for use in fit
+    title      : Title of plot file
+    trk        : Number of run (e.g. RV_results_1, RV_results_2)
+    inparam    : Class containing variety of information (e.g. on observing conditions)
+    args       : Information as input by user from command line
+    step2or3   : Whether run is Step 2 or Step 3
+    order      : Echelle order, as characterized by file index (as opposed to m number; for conversion between the two, see Stahl et al. 2021)
+    '''
+    
     fit,chi = fmod(parfit, fitobj)
 
     npars = len(parfit)
