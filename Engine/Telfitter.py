@@ -64,8 +64,8 @@ def wavefit(par0, dpar0):
     opt.set_ftol_rel(1e-14)
     parfit = opt.optimize(par0)
 
-    parfit_floor = round_decimals_down(parfit, decimals=14)
-    return parfit_floor
+    # parfit_floor = round_decimals_down(parfit, decimals=14)
+    return parfit
 
 #------------
 # to suppress print out from Telfit
