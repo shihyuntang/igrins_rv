@@ -33,10 +33,12 @@ def MPinstB(args, inparam, jerp, orders, i):
                                                                                      mp.current_process().pid) )
     #-------------------------------------------------------------------------------
     #-- reset logger ---
+    logger = logging.getLogger(__name__)
     formatter = logging.Formatter('%(asctime)s: %(module)s.py: %(levelname)s--> %(message)s')
     file_hander  = logging.FileHandler(f'{inparam.outpath}/{args.targname}_{args.band}_A0Fits.log')
     file_hander.setFormatter(formatter)
     logger.addHandler(file_hander)
+
     #-----
 
     # Retrieve pixel bounds for where within each other significant telluric absorption is present.
