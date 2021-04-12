@@ -655,7 +655,6 @@ WARNING!! you got warning message during this run. Please check the log file und
           {outpath}/{args.targname}_{args.band}.log
 **********************************************************************************
 ''')
-
     print('\n')
     if not args.debug: logger.addHandler(stream_hander)
     print('--------!Initial Guess!--------')

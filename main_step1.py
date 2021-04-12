@@ -32,6 +32,11 @@ def MPinstB(args, inparam, jerp, orders, i):
                                                                                      night,
                                                                                      mp.current_process().pid) )
     #-------------------------------------------------------------------------------
+    formatter = logging.Formatter('%(asctime)s: %(module)s.py: %(levelname)s--> %(message)s')
+    file_hander  = logging.FileHandler(f'{outpath}/{args.targname}_{args.band}_A0Fits.log')
+    file_hander.setFormatter(formatter)
+    logger.addHandler(file_hander)
+    #-----
 
     # Retrieve pixel bounds for where within each other significant telluric absorption is present.
     # If these bounds were not applied, analyzing some orders would give garbage fits.
@@ -1033,6 +1038,7 @@ if __name__ == '__main__':
     file_hander.setFormatter(formatter)
 
     logger.addHandler(file_hander)
+    logger.addHandler(stream_hander)
 
     #-------------------------------------------------------------------------------
 
@@ -1115,7 +1121,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
 
     #-------------------------------------------------------------------------------
     # if not in debug mode than enter quite mode, i.e., all message saved in log file
-    # if not args.debug: logger.removeHandler(stream_hander)
+    if not args.debug: logger.removeHandler(stream_hander)
     print('\n')
 
 
