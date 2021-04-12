@@ -32,8 +32,9 @@ def MPinstB(args, inparam, jerp, orders, i):
                                                                                      night,
                                                                                      mp.current_process().pid) )
     #-------------------------------------------------------------------------------
+    #-- reset logger ---
     formatter = logging.Formatter('%(asctime)s: %(module)s.py: %(levelname)s--> %(message)s')
-    file_hander  = logging.FileHandler(f'{outpath}/{args.targname}_{args.band}_A0Fits.log')
+    file_hander  = logging.FileHandler(f'{inparam.outpath}/{args.targname}_{args.band}_A0Fits.log')
     file_hander.setFormatter(formatter)
     logger.addHandler(file_hander)
     #-----
