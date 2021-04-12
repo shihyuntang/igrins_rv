@@ -905,16 +905,17 @@ def MPinstA(args, inparam, jerp, orders, i):
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 
-def mp_run(args, inparam, Nthreads, jerp, orders, nights, masterbeam, queue, worker_configurer):
+def mp_run(args, inparam, Nthreads, jerp, orders, nights, masterbeam):
     # Multiprocessing convenience function
-    if masterbeam == 'A':
-        func = partial(MPinstA, args, inparam, jerp, orders, queue, worker_configurer)
-    else:
-        func = partial(MPinstB, args, inparam, jerp, orders, queue, worker_configurer)
 
     queue = mp.Manager().Queue(-1)
     listener = mp.Process(target=listener_process, args=(queue, listener_configurer))
     listener.start()
+
+    if masterbeam == 'A':
+        func = partial(MPinstA, args, inparam, jerp, orders, queue, worker_configurer)
+    else:
+        func = partial(MPinstB, args, inparam, jerp, orders, queue, worker_configurer)
 
     outs = pqdm(np.arange(len(nights)), func, n_jobs=Nthreads)
 
