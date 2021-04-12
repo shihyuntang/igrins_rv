@@ -71,7 +71,7 @@ def suppress_GenerateModel(fitter, parfit, args):
 #------------
 
 
-def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam):
+def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam, logger):
     '''
     Produce synthetic telluric template from fit to telluric standard observation. How and why it works is detailed in comments throughout the code.
 
@@ -746,8 +746,8 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
 
     global x, satmLivGen, watm_Liv,satm_Liv;
 
-    satmTel    = rebin_jv(model2.x*10, model2.y, newwave1*10,True) # nm --> AA
-    satmLivGen = rebin_jv(modelL.x*10, modelL.y, newwave1*10,True) # nm --> AA
+    satmTel    = rebin_jv(model2.x*10, model2.y, newwave1*10, True, logger=logger) # nm --> AA
+    satmLivGen = rebin_jv(modelL.x*10, modelL.y, newwave1*10, True, logger=logger) # nm --> AA
     watmLivGen = newwave1.copy() ; watmLivGen*=10 # nm --> AA
 
     # Fit wavelength scale to Telfit'd Livingston

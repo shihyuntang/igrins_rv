@@ -35,7 +35,7 @@ def bin_ndarray(ndarray, new_shape, operation='mean'):
             ndarray = ndarray.mean(-1*(i+1))
     return ndarray
 
-def rebin_jv(Wold, Sold, Wnew, verbose):
+def rebin_jv(Wold, Sold, Wnew, verbose, logger=None):
     """Interpolates OR integrates a spectrum onto a new wavelength scale, depending
     on whether number of pixels per angstrom increases or decreases. Integration
     is effectively done analytically under a cubic spline fit to old spectrum.
@@ -64,9 +64,9 @@ def rebin_jv(Wold, Sold, Wnew, verbose):
     PSnew = (Wnew[-1] - Wnew[0]) / (Nnew-1) #new pixel scale
 
     #Verify that new wavelength scale is a subset of old wavelength scale.
-    # if verbose == True:
-    #     if (Wnew[0] < Wold[0]) or (Wnew[-1] > Wold[-1]):
-            # print('New wavelength scale not subset of old.')
+    if (verbose == True) and (logger not None):
+        if (Wnew[0] < Wold[0]) or (Wnew[-1] > Wold[-1]):
+            logger.warning('New wavelength scale not subset of old.')
 
     #Select integration or interpolation depending on change in dispersion.
     if PSnew <= PSold:

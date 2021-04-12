@@ -90,7 +90,7 @@ def fmodel_chi(par,grad):
         rspot2 = sspot
 
     #Now rebin the spot spectrum onto the telluric wavelength scale
-    sspot2 = rebin_jv(wspot2,rspot2,watm,False,logger_cp)
+    sspot2 = rebin_jv(wspot2,rspot2,watm,False)
 
     #Mutliply rotationally broadened spot by telluric to create total spectrum
     smod = sspot2*satm
@@ -114,7 +114,7 @@ def fmodel_chi(par,grad):
     nsmod = macbro_dyn(vel,smod,vhwhm)
 
     #Rebin model to observed wavelength scale
-    smod = rebin_jv(watm,nsmod,w,False,logger_cp)
+    smod = rebin_jv(watm,nsmod,w,False)
 
     # Load saved continuum
     c2 = fitobj_cp.continuum
@@ -184,7 +184,7 @@ def fmod(par,fitobj):
         wspot2 = wspot
         rspot2 = sspot
 
-    sspot2 = rebin_jv(wspot2,rspot2,watm,False,logger_cp)
+    sspot2 = rebin_jv(wspot2,rspot2,watm,False)
 
     smod = sspot2*satm
 
@@ -209,7 +209,7 @@ def fmod(par,fitobj):
     nsmod = macbro_dyn(vel,smod,vhwhm)
 
     #Rebin model to observed wavelength scale
-    smod = rebin_jv(watm,nsmod,w,False,logger_cp)
+    smod = rebin_jv(watm,nsmod,w,False)
 
     # Load saved continuum
     c2 = fitobj.continuum
@@ -274,7 +274,7 @@ def fmod_conti(par,fitobj):
         wspot2 = wspot
         rspot2 = sspot
 
-    sspot2 = rebin_jv(wspot2,rspot2,watm,False,logger_cp)
+    sspot2 = rebin_jv(wspot2,rspot2,watm,False)
 
     smod = sspot2*satm
 
@@ -298,7 +298,7 @@ def fmod_conti(par,fitobj):
     nsmod = macbro_dyn(vel,smod,vhwhm)
 
     #Rebin model to observed wavelength scale
-    smod = rebin_jv(watm,nsmod,w,False,logger_cp)
+    smod = rebin_jv(watm,nsmod,w,False)
 
     # Load saved continuum
     c2 = fitobj.continuum
@@ -320,7 +320,7 @@ def fmod_conti(par,fitobj):
 
 
 # def optimizer(par0,dpar0, hardbounds_v_ip, fitobj, optimize, logger, night, order, tag, optkind, nc, nk):
-def optimizer(par0, dpar0, hardbounds_v_ip, fitobj, optimize, logger):
+def optimizer(par0, dpar0, hardbounds_v_ip, fitobj, optimize):
     '''
     Prepares and applies NLOpt optimization to find spectral model that best fits data
 
@@ -336,10 +336,9 @@ def optimizer(par0, dpar0, hardbounds_v_ip, fitobj, optimize, logger):
     '''
 
     # NLopt convenience function.
-    global fitobj_cp, optimize_cp, logger_cp
+    global fitobj_cp, optimize_cp
     fitobj_cp   = fitobj
     optimize_cp = optimize
-    logger_cp = logger
 
     opt = nlopt.opt(nlopt.LN_NELDERMEAD, 24)
     opt.set_min_objective(fmodel_chi)
