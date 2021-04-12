@@ -4,6 +4,19 @@ from scipy.interpolate import splev,splrep#,interp1d
 from astropy.convolution import convolve #, Gaussian1DKernel,
 
 def macbro_dyn(w,s,hwhmlist):
+    '''
+ 
+    Applies dynamic-width instrumental broadening to spectrum.
+    
+    Inputs:
+    w        : Wavelength scale of unbroadened spectrum
+    s        : Flux of unbroadened spectrum
+    hwhmlist : Half-width at half maximum of gaussian instrumental profile at each wavelength
+    
+    Outputs:
+    sout0 : Flux of broadened spectrum
+    
+    '''
 
     hwhm_ref = np.min(hwhmlist)
 
