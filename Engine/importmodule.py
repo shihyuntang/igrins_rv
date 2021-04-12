@@ -103,7 +103,26 @@ def log_warning_id(file, start_t):
 
 # -------------------------------------------------------------
 def read_prepdata(args):
-        ## Collect relevant file information from Predata files
+        '''
+
+        Collect relevant file information from Predata files
+        
+        Inputs:
+        args  : Information specified by user at command line 
+
+        Outputs:
+        xbounddict  : Dictionary of pixel ranges to be analyzed, referenced by order
+        maskdict    : Dictionary of pixel ranges to be masked from analysis, referenced by order
+        tagsA       : Dictionary of A frame file numbers, referenced by night
+        tagsB       : Ditto but for B frames
+        jds         : Julian Dates
+        bvcs        : Barycentric velocity corrections
+        nightsFinal : Dates of observations in YYYYMMDD
+        orders      : Echelle orders, as characterized by file index (as opposed to m number; for conversion between the two, see Stahl et al. 2021) 
+        obs         : Dictionary of observatory corresponding to observation, referencedby night
+        '''
+        
+        ## 
         if 'igrins' in os.getcwd().split('/')[-1]:
             A0data   = Table.read('./Input/Prepdata/Prepdata_A0_{}.txt'.format(args.targname), format='ascii')
         else:
