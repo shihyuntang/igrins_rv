@@ -66,7 +66,7 @@ def rebin_jv(Wold, Sold, Wnew, verbose, logger=None):
     #Verify that new wavelength scale is a subset of old wavelength scale.
     if (verbose == True) and (logger is not None):
         if (Wnew[0] < Wold[0]) or (Wnew[-1] > Wold[-1]):
-            logger.warning('New wavelength scale not subset of old.')
+            logger.debug('New wavelength scale not subset of old.')
 
     #Select integration or interpolation depending on change in dispersion.
     if PSnew <= PSold:
