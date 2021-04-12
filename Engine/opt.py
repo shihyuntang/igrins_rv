@@ -12,7 +12,7 @@ import sys
 def fmodel_chi(par,grad):
     '''
     Function to be optimized. Computes model spectrum and compares it with data to calculate reduced chisq.
-    
+
     INPUTS:
        w - The observed wavelength scale (air) in Angstroms.
        x - The array of pixel indices from 0 to npts-1
@@ -90,7 +90,7 @@ def fmodel_chi(par,grad):
         rspot2 = sspot
 
     #Now rebin the spot spectrum onto the telluric wavelength scale
-    sspot2 = rebin_jv(wspot2,rspot2,watm,False)
+    sspot2 = rebin_jv(wspot2,rspot2,watm,False,logger_cp)
 
     #Mutliply rotationally broadened spot by telluric to create total spectrum
     smod = sspot2*satm
@@ -114,7 +114,7 @@ def fmodel_chi(par,grad):
     nsmod = macbro_dyn(vel,smod,vhwhm)
 
     #Rebin model to observed wavelength scale
-    smod = rebin_jv(watm,nsmod,w,False)
+    smod = rebin_jv(watm,nsmod,w,False,logger_cp)
 
     # Load saved continuum
     c2 = fitobj_cp.continuum
@@ -148,7 +148,6 @@ def fmodel_chi(par,grad):
         return smod,chisq
 
 def fmod(par,fitobj):
-    
     '''
     Same as fmodel_chi(), but meant to provide best fit model, not for optimization. Always returns both smod and chisq.
     '''
@@ -185,7 +184,7 @@ def fmod(par,fitobj):
         wspot2 = wspot
         rspot2 = sspot
 
-    sspot2 = rebin_jv(wspot2,rspot2,watm,False)
+    sspot2 = rebin_jv(wspot2,rspot2,watm,False,logger_cp)
 
     smod = sspot2*satm
 
@@ -210,7 +209,7 @@ def fmod(par,fitobj):
     nsmod = macbro_dyn(vel,smod,vhwhm)
 
     #Rebin model to observed wavelength scale
-    smod = rebin_jv(watm,nsmod,w,False)
+    smod = rebin_jv(watm,nsmod,w,False,logger_cp)
 
     # Load saved continuum
     c2 = fitobj.continuum
@@ -240,11 +239,10 @@ def fmod(par,fitobj):
     return smod,chisq
 
 def fmod_conti(par,fitobj):
-
     '''
     Same as fmod(), but provides best fit continuum model. For use in plotting.
     '''
-    
+
     watm = fitobj.watm_in;
     satm = fitobj.satm_in;
     mwave = fitobj.mwave_in;
@@ -276,7 +274,7 @@ def fmod_conti(par,fitobj):
         wspot2 = wspot
         rspot2 = sspot
 
-    sspot2 = rebin_jv(wspot2,rspot2,watm,False)
+    sspot2 = rebin_jv(wspot2,rspot2,watm,False,logger_cp)
 
     smod = sspot2*satm
 
@@ -300,7 +298,7 @@ def fmod_conti(par,fitobj):
     nsmod = macbro_dyn(vel,smod,vhwhm)
 
     #Rebin model to observed wavelength scale
-    smod = rebin_jv(watm,nsmod,w,False)
+    smod = rebin_jv(watm,nsmod,w,False,logger_cp)
 
     # Load saved continuum
     c2 = fitobj.continuum
@@ -322,25 +320,26 @@ def fmod_conti(par,fitobj):
 
 
 # def optimizer(par0,dpar0, hardbounds_v_ip, fitobj, optimize, logger, night, order, tag, optkind, nc, nk):
-def optimizer(par0,dpar0, hardbounds_v_ip, fitobj, optimize):
+def optimizer(par0, dpar0, hardbounds_v_ip, fitobj, optimize, logger):
     '''
     Prepares and applies NLOpt optimization to find spectral model that best fits data
-    
+
     Inputs:
     par0            : Initial guesses for spectral model parameters
     dpar0           : Amount optimizer can vary spectral model parameters from initial guesses
     hardbounds_v_ip : List of absolute upper and lower boundaries for vsini and IP width
     fitobj          : Class containing spectral data to be fit and templates to be used for fitting
     optimize        : Boolean specifying whether optimization will occur or not
-    
+
     Outputs:
     parfit   : Best-fit spectral model parameters
     '''
-    
+
     # NLopt convenience function.
-    global fitobj_cp, optimize_cp
+    global fitobj_cp, optimize_cp, logger_cp
     fitobj_cp   = fitobj
     optimize_cp = optimize
+    logger_cp = logger
 
     opt = nlopt.opt(nlopt.LN_NELDERMEAD, 24)
     opt.set_min_objective(fmodel_chi)

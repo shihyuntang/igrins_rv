@@ -10,16 +10,15 @@ from   telfit import TelluricFitter, DataStructures
 
 def wavefunc(par,grad):
     '''
- 
     Takes Telfitted template and uses an input wavelength solution to rebin it for direct comparison with Livingston.
-    
+
     Inputs:
     par  : array of polynomial coefficients specifying wavelength solution
     grad : Always "None" (has to be this way for NLOpt)
-    
+
     Outputs reduced chisq of model fit.
     '''
-    
+
     global watm_Liv, satm_Liv, satmLivGen, x;
     #Make the wavelength scale
     f = np.poly1d(par)
@@ -33,19 +32,17 @@ def wavefunc(par,grad):
 
 
 def wavefit(par0, dpar0):
-    
     '''
- 
     NLopt convenience function for fitting wavelength solution of Telfitted Livingston Atlas such that it matches with Livingston Atlas.
-    
+
     Inputs:
     par0  : Initial guesses for polynomial coefficients specifying wavelength solution
     dpar0 : Amount each initial guess can vary (higher or lower)
-    
+
     Outputs:
     parfit : Best fit polynomial coefficients specifying wavelength solution
     '''
-    
+
     opt = nlopt.opt(nlopt.LN_NELDERMEAD, 7)
     opt.set_min_objective(wavefunc)
     lows  = par0-dpar0
@@ -75,11 +72,9 @@ def suppress_GenerateModel(fitter, parfit, args):
 
 
 def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam):
-    
     '''
- 
     Produce synthetic telluric template from fit to telluric standard observation. How and why it works is detailed in comments throughout the code.
-    
+
     Inputs:
     watm_in    : Wavelength scale of telluric standard spectrum
     satm_in    : Corresponding flux of telluric standard spectrum
@@ -89,7 +84,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
     order      : Echelle order, as characterized by file index (as opposed to m number; for conversion between the two, see Stahl et al. 2021)
     args       : Information as input by user from command line
     masterbeam : A or B frame
-    
+
     Outputs:
     wavefitted : Wavelength scale of synethetic telluric spectrum
     satmTel    : Corresponding flux of synthetic telluric spectrum
@@ -97,9 +92,8 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
     parfitted  : Values of best-fit Telfit parameters
     wcont1     : Wavelength scale corresponding to best-fit continuum (from intermediate Telfit step)
     cont1      : Flux corresponding to best-fit continuum (from intermediate Telfit step)
-    
     '''
-    
+
     os.environ['PYSYN_CDBS'] = inparam.cdbsloc
     fitter = TelluricFitter(debug=False, print_show=args.debug)
 

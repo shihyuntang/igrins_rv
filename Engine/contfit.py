@@ -6,19 +6,18 @@ from Engine.detect_peaks import detect_peaks
 def A0cont(a0wavecut,a0vcut,night,order,band):
     '''
     Performs first-pass fit to blaze shape of telluric standard spectrum.
-    
-    Inputs: 
+
+    Inputs:
     a0wavecut : Wavelength scale of telluric standard spectrum
     a0vcut    : Corresponding flux of telluric standard spectrum
     night     : Date of observation in YYYYMMDD
     order     : Echelle order, as characterized by file index (as opposed to m number; for conversion between the two, see Stahl et al. 2021)
     band      : H or K band
-    
+
     Outputs:
     continuum : Best fit blaze model
-    
     '''
-    
+
     # a0vcut is a0fluxlist
     x = np.arange(len(a0vcut))
 

@@ -2,7 +2,6 @@
 
 import numpy as np
 from scipy.interpolate import interp1d, splev, splrep
-# import time
 
 def bin_ndarray(ndarray, new_shape, operation='mean'):
     """
@@ -37,7 +36,6 @@ def bin_ndarray(ndarray, new_shape, operation='mean'):
     return ndarray
 
 def rebin_jv(Wold, Sold, Wnew, verbose):
-
     """Interpolates OR integrates a spectrum onto a new wavelength scale, depending
     on whether number of pixels per angstrom increases or decreases. Integration
     is effectively done analytically under a cubic spline fit to old spectrum.
