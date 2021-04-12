@@ -13,7 +13,7 @@ from Engine.detect_peaks import detect_peaks
 from Engine.crmask    import CRmasker
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
-logger = logging.getLogger(__name__)
+
 
 def MPinstB(args, inparam, jerp, orders, i):
     # Main function for A0 fitting that will be threaded over by multiprocessing
@@ -899,14 +899,14 @@ def MPinstA(args, inparam, jerp, orders, i):
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 
-# def mp_run(args, inparam, Nthreads, jerp, orders, nights, masterbeam):
-#     # Multiprocessing convenience function
-#     if masterbeam == 'A':
-#         func = partial(MPinstA, args, inparam, jerp, orders)
-#     else:
-#         func = partial(MPinstB, args, inparam, jerp, orders)
-#
-#     outs = pqdm(np.arange(len(nights)), func, n_jobs=Nthreads)
+def mp_run(args, inparam, Nthreads, jerp, orders, nights, masterbeam):
+    # Multiprocessing convenience function
+    if masterbeam == 'A':
+        func = partial(MPinstA, args, inparam, jerp, orders)
+    else:
+        func = partial(MPinstB, args, inparam, jerp, orders)
+
+    outs = pqdm(np.arange(len(nights)), func, n_jobs=Nthreads)
 
     # pool = mp.Pool(processes = Nthreads)
     # outs = pool.map(func, np.arange(len(nights)))
@@ -1020,6 +1020,7 @@ if __name__ == '__main__':
     outpath = f'./Output/{args.targname}_{args.band}/A0Fits'
 #-------------------------------------------------------------------------------
     # Handle logger
+    logger = logging.getLogger(__name__)
     if args.debug:
         logger.setLevel(logging.DEBUG)
     else:
@@ -1032,7 +1033,6 @@ if __name__ == '__main__':
     file_hander.setFormatter(formatter)
 
     logger.addHandler(file_hander)
-    logger.addHandler(stream_hander)
 
     #-------------------------------------------------------------------------------
 
@@ -1115,27 +1115,20 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
 
     #-------------------------------------------------------------------------------
     # if not in debug mode than enter quite mode, i.e., all message saved in log file
-    if not args.debug: logger.removeHandler(stream_hander)
+    # if not args.debug: logger.removeHandler(stream_hander)
     print('\n')
+
 
     # Run order by order, multiprocessing over nights within an order
     print('Processing the B nods first...')
     for jerp in range(len(orders)):
         if not args.debug: print('Working on order {} ({:02d}/{:02d})'.format(orders[jerp], int(jerp+1), len(orders)))
-
-        func = partial(MPinstB, args, inparam, jerp, orders)
-        outs = pqdm(np.arange(len(nightsFinal)), func, n_jobs=args.Nthreads)
-        #
-        # outs = mp_run(args, inparam, args.Nthreads, jerp, orders, nightsFinal,'B')
+        outs = mp_run(args, inparam, args.Nthreads, jerp, orders, nightsFinal,'B')
 
     print('B nods done! Halfway there! \n Now processing the A nods...')
     for jerp in range(len(orders)):
         if not args.debug: print('Working on order {} ({:02d}/{:02d})'.format(orders[jerp], int(jerp+1), len(orders)))
-
-        func = partial(MPinstA, args, inparam, jerp, orders)
-        outs = pqdm(np.arange(len(nightsFinal)), func, n_jobs=args.Nthreads)
-        #
-        # outs = mp_run(args, inparam, args.Nthreads, jerp, orders, nightsFinal,'A')
+        outs = mp_run(args, inparam, args.Nthreads, jerp, orders, nightsFinal,'A')
 
     warning_r = log_warning_id(f'{outpath}/{args.targname}_{args.band}_A0Fits.log', start_time)
     if warning_r:
