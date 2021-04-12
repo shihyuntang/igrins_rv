@@ -5,7 +5,19 @@ from Engine.detect_peaks import detect_peaks
 
 
 def CRmasker(parfit,fitobj):
-
+    '''
+ 
+    Identify cosmic rays and hot pixels in spectrum, as well as places where the model does not have the ability to reflect the data.
+    
+    Inputs:
+    parfit    : Best fit spectral model parameters
+    fitobj    : Class containing data to be fit and stellar and telluric templates
+    
+    Outputs:
+    CRmaskF : Pixels to be masked
+    
+    '''
+    
     fit,chi = fmod(parfit, fitobj)
 
     # Everywhere where data protrudes high above model, check whether slope surrounding protrusion is /\ and mask if sufficiently steep
