@@ -95,7 +95,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam,
     '''
 
     os.environ['PYSYN_CDBS'] = inparam.cdbsloc
-    fitter = TelluricFitter(debug=False, print_show=args.debug)
+    fitter = TelluricFitter(debug=False, print_lblrtm_output=args.debug)
 
     #Set the observatory location with a keyword
     DCT_props     = {"latitude": 34.744, "altitude": 2.36} #altitude in km
@@ -471,7 +471,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam,
     for k in range(len(names)):
         parfitted[k] = np.float(fitter.GetValue(names[k]) )
 
-    fitter2 = TelluricFitter(debug=False, print_show=args.debug)
+    fitter2 = TelluricFitter(debug=False, print_lblrtm_output=args.debug)
 
     if inparam.obses[night] == 'DCT':
         fitter2.SetObservatory(DCT_props)
@@ -506,7 +506,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam,
     # If this happens, simply deliver NAN arrays, and in later parts of the RV analysis A0 fits from the nearest compatible observation will be used.
     try:
         if args.debug:
-            model2 = fitter2.GenerateModel(parfitted, nofit=True, air_wave=False, print_lblrtm_output=args.debug)
+            model2 = fitter2.GenerateModel(parfitted, nofit=True, air_wave=False)
         else:
             model2 = suppress_GenerateModel(fitter2, parfitted, args)
 
@@ -717,7 +717,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam,
                5.00000000e-09, 1.56000000e-07]),
 }
 
-    fitterL = TelluricFitter(debug=False, print_show=args.debug)
+    fitterL = TelluricFitter(debug=False, print_lblrtm_output=args.debug)
 
     NSO_props = {"latitude": 31.958, "altitude":2.096} #alt in km
     fitterL.SetObservatory(NSO_props)
@@ -736,7 +736,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam,
 
     try:
         if args.debug:
-            modelL = fitterL.GenerateModel(parfittedL, nofit=True, air_wave=False, print_lblrtm_output=args.debug)
+            modelL = fitterL.GenerateModel(parfittedL, nofit=True, air_wave=False)
         else:
             modelL = suppress_GenerateModel(fitterL, parfittedL, args)
 
