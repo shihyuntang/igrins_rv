@@ -74,7 +74,7 @@ def log_warning_id(file, start_t):
     """
     file1 = open(file, 'r')
     Lines = file1.readlines()
-    loop_range = np.arange(len(Lines)-1, 0, -1)
+    loop_range = np.arange(len(Lines)-1, -1, -1)
 
     # find lines (lidx) logging for this run
     for lidx in loop_range:
