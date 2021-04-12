@@ -506,7 +506,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam,
     # If this happens, simply deliver NAN arrays, and in later parts of the RV analysis A0 fits from the nearest compatible observation will be used.
     try:
         if args.debug:
-            model2 = fitter2.GenerateModel(parfitted, nofit=True, air_wave=False, printoutshow=args.debug)
+            model2 = fitter2.GenerateModel(parfitted, nofit=True, air_wave=False, print_lblrtm_output=args.debug)
         else:
             model2 = suppress_GenerateModel(fitter2, parfitted, args)
 
@@ -736,7 +736,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam,
 
     try:
         if args.debug:
-            modelL = fitterL.GenerateModel(parfittedL, nofit=True, air_wave=False, printoutshow=args.debug)
+            modelL = fitterL.GenerateModel(parfittedL, nofit=True, air_wave=False, print_lblrtm_output=args.debug)
         else:
             modelL = suppress_GenerateModel(fitterL, parfittedL, args)
 
