@@ -1,4 +1,6 @@
 # %load ./../functions/detect_peaks.py
+'''This code is from the BMC repository and is referenced as such (Duarte & Watanabe 2018)'''
+
 """Detect peaks in data based on their amplitude and other features."""
 
 #from __future__ import division, print_function
