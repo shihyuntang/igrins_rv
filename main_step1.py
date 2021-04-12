@@ -265,7 +265,7 @@ def MPinstB(args, inparam, jerp, orders, i):
 
                 for optkind in optgroup:
                     start = time.time()
-                    parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize, logger)
+                    parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize)
 
                     if parfit_1[3] < 0.1:
                         misfit_flag_low += 1
@@ -715,7 +715,7 @@ def MPinstA(args, inparam, jerp, orders, i):
 
                     for optkind in optgroup1:
                         start = time.time()
-                        parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize, logger)
+                        parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize)
 
                         if parfit_1[3] < 0.1:
                             misfit_flag_low += 1
@@ -785,7 +785,7 @@ def MPinstA(args, inparam, jerp, orders, i):
 
                     for optkind in optgroup2:
                         start = time.time()
-                        parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize, logger)
+                        parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize)
 
                         if parfit_1[3] < 0.1:
                             misfit_flag_low += 1
