@@ -14,13 +14,8 @@ from Engine.crmask    import CRmasker
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 
-
-def MPinstB(args, inparam, jerp, orders, queue, configurer, i):
-    #-- reset logger for multiprocess to track ---
-    configurer(queue)
-    logger = logging.getLogger(__name__)
-
-
+@suppress_stdout
+def MPinstB(args, inparam, jerp, orders, i):
     # Main function for A0 fitting that will be threaded over by multiprocessing
 
     masterbeam = 'B'
@@ -37,7 +32,6 @@ def MPinstB(args, inparam, jerp, orders, queue, configurer, i):
                                                                                      night,
                                                                                      mp.current_process().pid) )
     #-------------------------------------------------------------------------------
-    #-----
 
     # Retrieve pixel bounds for where within each other significant telluric absorption is present.
     # If these bounds were not applied, analyzing some orders would give garbage fits.
@@ -907,20 +901,13 @@ def MPinstA(args, inparam, jerp, orders, i):
 
 def mp_run(args, inparam, Nthreads, jerp, orders, nights, masterbeam):
     # Multiprocessing convenience function
-
-    queue = mp.Manager().Queue(-1)
-    listener = mp.Process(target=listener_process, args=(queue, listener_configurer))
-    listener.start()
-
     if masterbeam == 'A':
-        func = partial(MPinstA, args, inparam, jerp, orders, queue, worker_configurer)
+        func = partial(MPinstA, args, inparam, jerp, orders)
     else:
-        func = partial(MPinstB, args, inparam, jerp, orders, queue, worker_configurer)
+        func = partial(MPinstB, args, inparam, jerp, orders)
 
     outs = pqdm(np.arange(len(nights)), func, n_jobs=Nthreads)
 
-    queue.put_nowait(None)
-    listener.join()
     # pool = mp.Pool(processes = Nthreads)
     # outs = pool.map(func, np.arange(len(nights)))
     # pool.close()
@@ -1048,7 +1035,6 @@ if __name__ == '__main__':
     logger.addHandler(file_hander)
     logger.addHandler(stream_hander)
 
-    #----
     #-------------------------------------------------------------------------------
 
     start_time = datetime.now()
@@ -1132,7 +1118,6 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
     # if not in debug mode than enter quite mode, i.e., all message saved in log file
     if not args.debug: logger.removeHandler(stream_hander)
     print('\n')
-
 
     # Run order by order, multiprocessing over nights within an order
     print('Processing the B nods first...')
