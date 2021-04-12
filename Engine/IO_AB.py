@@ -167,7 +167,7 @@ def init_fitsread(path,kind,beam,night,order,tag,band,Ncuts=None):
 
 def airtovac(wave):
     """
-    From PyAstronomy repository - https://pyastronomy.readthedocs.io/en/latest/index.html (Czela et al. 2019)
+    This code is from the PyAstronomy repository and is referenced as such (Czela et al. 2019, https://pyastronomy.readthedocs.io/en/latest/index.html)
     Converts air wavelengths to vaccuum wavelengths returns a float or array of wavelengths
     INPUTS:
       wave - Wavelengths in air, in Angstroms, float or array
