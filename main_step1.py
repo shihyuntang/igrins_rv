@@ -899,14 +899,14 @@ def MPinstA(args, inparam, jerp, orders, i):
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 
-def mp_run(args, inparam, Nthreads, jerp, orders, nights, masterbeam):
-    # Multiprocessing convenience function
-    if masterbeam == 'A':
-        func = partial(MPinstA, args, inparam, jerp, orders)
-    else:
-        func = partial(MPinstB, args, inparam, jerp, orders)
-
-    outs = pqdm(np.arange(len(nights)), func, n_jobs=Nthreads)
+# def mp_run(args, inparam, Nthreads, jerp, orders, nights, masterbeam):
+#     # Multiprocessing convenience function
+#     if masterbeam == 'A':
+#         func = partial(MPinstA, args, inparam, jerp, orders)
+#     else:
+#         func = partial(MPinstB, args, inparam, jerp, orders)
+#
+#     outs = pqdm(np.arange(len(nights)), func, n_jobs=Nthreads)
 
     # pool = mp.Pool(processes = Nthreads)
     # outs = pool.map(func, np.arange(len(nights)))
@@ -1122,12 +1122,20 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
     print('Processing the B nods first...')
     for jerp in range(len(orders)):
         if not args.debug: print('Working on order {} ({:02d}/{:02d})'.format(orders[jerp], int(jerp+1), len(orders)))
-        outs = mp_run(args, inparam, args.Nthreads, jerp, orders, nightsFinal,'B')
+
+        func = partial(MPinstB, args, inparam, jerp, orders)
+        outs = pqdm(np.arange(len(nightsFinal)), func, n_jobs=args.Nthreads)
+        #
+        # outs = mp_run(args, inparam, args.Nthreads, jerp, orders, nightsFinal,'B')
 
     print('B nods done! Halfway there! \n Now processing the A nods...')
     for jerp in range(len(orders)):
         if not args.debug: print('Working on order {} ({:02d}/{:02d})'.format(orders[jerp], int(jerp+1), len(orders)))
-        outs = mp_run(args, inparam, args.Nthreads, jerp, orders, nightsFinal,'A')
+
+        func = partial(MPinstA, args, inparam, jerp, orders)
+        outs = pqdm(np.arange(len(nightsFinal)), func, n_jobs=args.Nthreads)
+        #
+        # outs = mp_run(args, inparam, args.Nthreads, jerp, orders, nightsFinal,'A')
 
     warning_r = log_warning_id(f'{outpath}/{args.targname}_{args.band}_A0Fits.log', start_time)
     if warning_r:
