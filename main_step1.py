@@ -14,7 +14,6 @@ from Engine.crmask    import CRmasker
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 
-@suppress_stdout
 def MPinstB(args, inparam, jerp, orders, i):
     # Main function for A0 fitting that will be threaded over by multiprocessing
 
@@ -1034,6 +1033,7 @@ if __name__ == '__main__':
 
     logger.addHandler(file_hander)
     logger.addHandler(stream_hander)
+    logger.propagate = False
 
     #-------------------------------------------------------------------------------
 

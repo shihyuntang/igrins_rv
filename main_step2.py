@@ -577,6 +577,7 @@ Input Parameters:
 
     logger.addHandler(file_hander)
     logger.addHandler(stream_hander)
+    logger.propagate = False
 
     #-------------------------------------------------------------------------------
     # Create output file to write to

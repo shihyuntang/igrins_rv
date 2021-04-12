@@ -642,6 +642,7 @@ Input Parameters:
 
     logger.addHandler(file_hander)
     logger.addHandler(stream_hander)
+    logger.propagate = False
 
     logger.info(f'Writing output to ./Output/{args.targname}_{args.band}/{name}')
 
