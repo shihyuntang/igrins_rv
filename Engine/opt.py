@@ -418,4 +418,4 @@ def optimizer(par0, dpar0, hardbounds_v_ip, fitobj, optimize):
     parfit = opt.optimize(par0)
 
     # parfit_floor = round_decimals_down(parfit, decimals=14)
-    return parfit_parfitfloor
+    return parfit
