@@ -15,7 +15,12 @@ from Engine.crmask    import CRmasker
 #-------------------------------------------------------------------------------
 
 
-def MPinstB(args, inparam, jerp, orders, i):
+def MPinstB(args, inparam, jerp, orders, queue, configurer, i):
+    #-- reset logger for multiprocess to track ---
+    configurer(queue)
+    logger = logging.getLogger(__name__)
+
+
     # Main function for A0 fitting that will be threaded over by multiprocessing
 
     masterbeam = 'B'
@@ -32,13 +37,6 @@ def MPinstB(args, inparam, jerp, orders, i):
                                                                                      night,
                                                                                      mp.current_process().pid) )
     #-------------------------------------------------------------------------------
-    #-- reset logger ---
-    logger = logging.getLogger(__name__)
-    formatter = logging.Formatter('%(asctime)s: %(module)s.py: %(levelname)s--> %(message)s')
-    file_hander  = logging.FileHandler(f'{inparam.outpath}/{args.targname}_{args.band}_A0Fits.log')
-    file_hander.setFormatter(formatter)
-    logger.addHandler(file_hander)
-
     #-----
 
     # Retrieve pixel bounds for where within each other significant telluric absorption is present.
@@ -907,15 +905,21 @@ def MPinstA(args, inparam, jerp, orders, i):
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 
-def mp_run(args, inparam, Nthreads, jerp, orders, nights, masterbeam):
+def mp_run(args, inparam, Nthreads, jerp, orders, nights, masterbeam, queue, worker_configurer):
     # Multiprocessing convenience function
     if masterbeam == 'A':
-        func = partial(MPinstA, args, inparam, jerp, orders)
+        func = partial(MPinstA, args, inparam, jerp, orders, queue, worker_configurer)
     else:
-        func = partial(MPinstB, args, inparam, jerp, orders)
+        func = partial(MPinstB, args, inparam, jerp, orders, queue, worker_configurer)
+
+    queue = mp.Manager().Queue(-1)
+    listener = mp.Process(target=listener_process, args=(queue, listener_configurer))
+    listener.start()
 
     outs = pqdm(np.arange(len(nights)), func, n_jobs=Nthreads)
 
+    queue.put_nowait(None)
+    listener.join()
     # pool = mp.Pool(processes = Nthreads)
     # outs = pool.map(func, np.arange(len(nights)))
     # pool.close()
@@ -1043,6 +1047,7 @@ if __name__ == '__main__':
     logger.addHandler(file_hander)
     logger.addHandler(stream_hander)
 
+    #----
     #-------------------------------------------------------------------------------
 
     start_time = datetime.now()
