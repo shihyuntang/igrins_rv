@@ -7,26 +7,20 @@ import matplotlib.patches as mpatches
 from   Engine.rebin_jv import rebin_jv
 from   telfit import TelluricFitter, DataStructures
 
-def gauss_fit(x):
-    def innerfit(*p):
-        #print('p',p)
-        mu     = p[1]
-        sigma  = p[2]
-        offset = p[3]
-        scale  = p[4]
-        slope  = p[5]
-        kurt   = p[6]
-        #print('went')
-        return(offset + slope*x + kurt*((x-mu)**2) + ((scale*np.sqrt(2*np.pi))*np.exp(-.5*((x-mu)/sigma)**2)))
-    return innerfit
-
-def gauss(x,mu,sigma,offset,scale,slope,kurt):
-    return(offset+ slope*x + kurt*((x-mu)**2) + ((scale*np.sqrt(2*np.pi))*np.exp(-.5*((x-mu)/sigma)**2)))
-
 
 def wavefunc(par,grad):
+    '''
+ 
+    Takes Telfitted template and uses an input wavelength solution to rebin it for direct comparison with Livingston.
+    
+    Inputs:
+    par  : array of polynomial coefficients specifying wavelength solution
+    grad : Always "None" (has to be this way for NLOpt)
+    
+    Outputs reduced chisq of model fit.
+    '''
+    
     global watm_Liv, satm_Liv, satmLivGen, x;
-    # This function takes Telfitted template and uses an input wavelength solution to rebin it for direct comparison with Livingston.
     #Make the wavelength scale
     f = np.poly1d(par)
     w = f(x)
@@ -39,7 +33,19 @@ def wavefunc(par,grad):
 
 
 def wavefit(par0, dpar0):
-    # NLopt convenience function.
+    
+    '''
+ 
+    NLopt convenience function for fitting wavelength solution of Telfitted Livingston Atlas such that it matches with Livingston Atlas.
+    
+    Inputs:
+    par0  : Initial guesses for polynomial coefficients specifying wavelength solution
+    dpar0 : Amount each initial guess can vary (higher or lower)
+    
+    Outputs:
+    parfit : Best fit polynomial coefficients specifying wavelength solution
+    '''
+    
     opt = nlopt.opt(nlopt.LN_NELDERMEAD, 7)
     opt.set_min_objective(wavefunc)
     lows  = par0-dpar0
@@ -69,7 +75,31 @@ def suppress_GenerateModel(fitter, parfit, args):
 
 
 def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam):
-    # Code to produced fitted telluric template. How and why it works is detailed in comments throughout the code.
+    
+    '''
+ 
+    Produce synthetic telluric template from fit to telluric standard observation. How and why it works is detailed in comments throughout the code.
+    
+    Inputs:
+    watm_in    : Wavelength scale of telluric standard spectrum
+    satm_in    : Corresponding flux of telluric standard spectrum
+    a0ucut     : Corresponding uncertainty of telluric standard spectrum
+    inparam    : Class containing variety of information (e.g. on observing conditions)
+    night      : Date of observation in YYYYMMDD
+    order      : Echelle order, as characterized by file index (as opposed to m number; for conversion between the two, see Stahl et al. 2021)
+    args       : Information as input by user from command line
+    masterbeam : A or B frame
+    
+    Outputs:
+    wavefitted : Wavelength scale of synethetic telluric spectrum
+    satmTel    : Corresponding flux of synthetic telluric spectrum
+    names      : Descriptors of Telfit parameters
+    parfitted  : Values of best-fit Telfit parameters
+    wcont1     : Wavelength scale corresponding to best-fit continuum (from intermediate Telfit step)
+    cont1      : Flux corresponding to best-fit continuum (from intermediate Telfit step)
+    
+    '''
+    
     os.environ['PYSYN_CDBS'] = inparam.cdbsloc
     fitter = TelluricFitter(debug=False, print_show=args.debug)
 
