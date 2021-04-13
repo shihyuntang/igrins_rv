@@ -1,11 +1,11 @@
 # IGRINS Radial Relocity Pipeline [IGRINS RV](https://github.com/shihyuntang/igrins_rv)
 
-**This package is NOT yet ready for public use**
 
-``IGRINS RV`` is a ``python`` open source pipeline for extracting radial velocity (RV) for the Immersion GRating INfrared Spectrometer (IGRINS) instrument. It's core technique use a modified forward modeling technique that utilize the telluric absorption lines as the common-path wavelength calibrator. With RV precision at K band around 25 m/s and H band 50 m/s, ``IGRINS RV`` had successfully retrieval of planet-induced RV signals for both HD 189733 and &tau; Boo A. Visit ([arXiv, comming soon]()) to see the published paper.
+``IGRINS RV`` is a ``python`` open source pipeline for extracting radial velocity (RV) for the Immersion GRating INfrared Spectrometer (IGRINS) instrument. It's core technique use a modified forward modeling technique that utilize the telluric absorption lines as the common-path wavelength calibrator. With RV precision at K band around 25 m/s and H band 50 m/s, ``IGRINS RV`` had successfully retrieval of planet-induced RV signals for both HD 189733 and &tau; Boo A. Visit [Stahl et al. 2021 arXiv](https://ui.adsabs.harvard.edu/abs/2021arXiv210402082S/abstract) to see the published paper.
 
 ``IGRINS RV`` is now under intense development. \
-If you wish to join the internal review and testing, please contact us (asa.stahl@rice.edu or sytang@lowell.edu).
+If you have any question, idea or wish to report any bug, please let us know by either open an issue or contact us (asa.stahl@rice.edu or sytang@lowell.edu).
+More on how to contribute can be found in the [FAQ](https://github.com/shihyuntang/igrins_rv/wiki/FAQ) page.
 
 News:
 * **2021/02/18: `IGRINS RV` v0.9.6-beta.3 public beta is ready for JOSS review!!\
@@ -23,7 +23,7 @@ The best way to learn how IGRINS RV works is to first play with the example data
 Please Cite these papers if you use ``IGRINS RV``:
 * `` igrins plp v2.2.0`` paper https://zenodo.org/record/845059#.Xzlp5C0wJQI
 * ``Telfit`` paper https://ui.adsabs.harvard.edu/abs/2014AJ....148...53G/abstract
-* ``IGRINS RV paper (coming soon!)``
+* ``IGRINS RV paper on arXiv`` https://ui.adsabs.harvard.edu/abs/2021arXiv210402082S/abstract
 
 Acknowledgements:\
-Many thanks to Dr. Gregory Mace to help improving the user experence with `IGRINS RV`!
+Many thanks to Dr. Gregory Mace for helping on the improvment of the user experence with `IGRINS RV`!

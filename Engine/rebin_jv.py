@@ -2,7 +2,6 @@
 
 import numpy as np
 from scipy.interpolate import interp1d, splev, splrep
-# import time
 
 def bin_ndarray(ndarray, new_shape, operation='mean'):
     """
@@ -36,21 +35,28 @@ def bin_ndarray(ndarray, new_shape, operation='mean'):
             ndarray = ndarray.mean(-1*(i+1))
     return ndarray
 
-def rebin_jv(Wold,Sold,Wnew,verbose):
-    #Interpolates OR integrates a spectrum onto a new wavelength scale, depending
-    #  on whether number of pixels per angstrom increases or decreases. Integration
-    #  is effectively done analytically under a cubic spline fit to old spectrum.
-    # Wold (input vector) old wavelngth scale.
-    # Sold (input vector) old spectrum to be binned.
-    # Wnew (input vector) new wavelength spectrum.
-    # Snew (output vector) newly binned spectrum.
-    #Edit History:
-    # 10-Oct-90 JAV Create.
-    # 22-Sep-91 JAV Translated from IDL to ANA.
-    # 27-Aug-93 JAV Fixed bug in endpoint check: the "or" was essentially an "and".
-    # 26-Aug-94 JAV	Made endpoint check less restrictive so that identical old and
-    # new endpoints are now allowed. Switched to new Solaris library in call_external.
+def rebin_jv(Wold, Sold, Wnew, verbose, logger=None):
+    """Interpolates OR integrates a spectrum onto a new wavelength scale, depending
+    on whether number of pixels per angstrom increases or decreases. Integration
+    is effectively done analytically under a cubic spline fit to old spectrum.
 
+    Parameters
+    ----------
+    Wold : old wavelngth scale.
+    Sold : old spectrum to be binned.
+    Wnew : new wavelength spectrum.
+
+    Returns
+    -------
+    Snew : newly binned spectrum.
+
+    Edit History:
+     10-Oct-90 JAV Create.
+     22-Sep-91 JAV Translated from IDL to ANA.
+     27-Aug-93 JAV Fixed bug in endpoint check: the "or" was essentially an "and".
+     26-Aug-94 JAV Made endpoint check less restrictive so that identical old and
+     new endpoints are now allowed. Switched to new Solaris library in call_external.
+    """
     #Determine spectrum attributes.
     Nold = np.int(len(Wold)) #number of old points
     Nnew = np.int(len(Wnew)) #number of new points
@@ -58,9 +64,9 @@ def rebin_jv(Wold,Sold,Wnew,verbose):
     PSnew = (Wnew[-1] - Wnew[0]) / (Nnew-1) #new pixel scale
 
     #Verify that new wavelength scale is a subset of old wavelength scale.
-    if verbose == True:
+    if (verbose == True) and (logger is not None):
         if (Wnew[0] < Wold[0]) or (Wnew[-1] > Wold[-1]):
-            print('New wavelength scale not subset of old.')
+            logger.debug('New wavelength scale not subset of old.')
 
     #Select integration or interpolation depending on change in dispersion.
     if PSnew <= PSold:
@@ -94,6 +100,7 @@ def rebin_jv(Wold,Sold,Wnew,verbose):
 
         S = splev(W,splrep(Wold, Sold))
         S /= XFac #take average in each pixel
-        Snew = S.reshape(Nnew,XFac).sum(1)
+        # Snew = S.reshape(Nnew,XFac).sum(1)
+        Snew = np.sum(S.reshape(Nnew,XFac), axis=1 )
 
     return Snew

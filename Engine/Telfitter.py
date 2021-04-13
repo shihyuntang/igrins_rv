@@ -8,26 +8,18 @@ from   Engine.rebin_jv import rebin_jv
 from   telfit import TelluricFitter, DataStructures
 
 
-def gauss_fit(x):
-    def innerfit(*p):
-        #print('p',p)
-        mu     = p[1]
-        sigma  = p[2]
-        offset = p[3]
-        scale  = p[4]
-        slope  = p[5]
-        kurt   = p[6]
-        #print('went')
-        return(offset + slope*x + kurt*((x-mu)**2) + ((scale*np.sqrt(2*np.pi))*np.exp(-.5*((x-mu)/sigma)**2)))
-    return innerfit
-
-def gauss(x,mu,sigma,offset,scale,slope,kurt):
-    return(offset+ slope*x + kurt*((x-mu)**2) + ((scale*np.sqrt(2*np.pi))*np.exp(-.5*((x-mu)/sigma)**2)))
-
-
 def wavefunc(par,grad):
+    '''
+    Takes Telfitted template and uses an input wavelength solution to rebin it for direct comparison with Livingston.
+
+    Inputs:
+    par  : array of polynomial coefficients specifying wavelength solution
+    grad : Always "None" (has to be this way for NLOpt)
+
+    Outputs reduced chisq of model fit.
+    '''
+
     global watm_Liv, satm_Liv, satmLivGen, x;
-    # This function takes Telfitted template and uses an input wavelength solution to rebin it for direct comparison with Livingston.
     #Make the wavelength scale
     f = np.poly1d(par)
     w = f(x)
@@ -40,7 +32,17 @@ def wavefunc(par,grad):
 
 
 def wavefit(par0, dpar0):
-    # NLopt convenience function.
+    '''
+    NLopt convenience function for fitting wavelength solution of Telfitted Livingston Atlas such that it matches with Livingston Atlas.
+
+    Inputs:
+    par0  : Initial guesses for polynomial coefficients specifying wavelength solution
+    dpar0 : Amount each initial guess can vary (higher or lower)
+
+    Outputs:
+    parfit : Best fit polynomial coefficients specifying wavelength solution
+    '''
+
     opt = nlopt.opt(nlopt.LN_NELDERMEAD, 7)
     opt.set_min_objective(wavefunc)
     lows  = par0-dpar0
@@ -54,12 +56,46 @@ def wavefit(par0, dpar0):
     parfit = opt.optimize(par0)
     return parfit
 
+#------------
+# to suppress print out from Telfit
+@suppress_stdout
+def suppress_Fit(fitter, data):
+    model = fitter.Fit(data=data, resolution_fit_mode="SVD", adjust_wave="model", air_wave=False)
+    return model
+
+@suppress_stdout
+def suppress_GenerateModel(fitter, parfit, args):
+    model = fitter.GenerateModel(parfit, nofit=True, air_wave=False)
+    return model
+
+#------------
 
 
-def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam):
-    # Code to produced fitted telluric template. How and why it works is detailed in comments throughout the code.
+def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam, logger):
+    '''
+    Produce synthetic telluric template from fit to telluric standard observation. How and why it works is detailed in comments throughout the code.
+
+    Inputs:
+    watm_in    : Wavelength scale of telluric standard spectrum
+    satm_in    : Corresponding flux of telluric standard spectrum
+    a0ucut     : Corresponding uncertainty of telluric standard spectrum
+    inparam    : Class containing variety of information (e.g. on observing conditions)
+    night      : Date of observation in YYYYMMDD
+    order      : Echelle order, as characterized by file index (as opposed to m number; for conversion between the two, see Stahl et al. 2021)
+    args       : Information as input by user from command line
+    masterbeam : A or B frame
+
+    Outputs:
+    wavefitted : Wavelength scale of synethetic telluric spectrum
+    satmTel    : Corresponding flux of synthetic telluric spectrum
+    names      : Descriptors of Telfit parameters
+    parfitted  : Values of best-fit Telfit parameters
+    wcont1     : Wavelength scale corresponding to best-fit continuum (from intermediate Telfit step)
+    cont1      : Flux corresponding to best-fit continuum (from intermediate Telfit step)
+    '''
+
     os.environ['PYSYN_CDBS'] = inparam.cdbsloc
-    fitter = TelluricFitter(debug=False)
+    fitter = TelluricFitter(debug=False, print_lblrtm_output=args.debug)
 
     #Set the observatory location with a keyword
     DCT_props     = {"latitude": 34.744, "altitude": 2.36} #altitude in km
@@ -179,10 +215,10 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
                               "co": [1e-6,1e2],\
                               "co2": [1.0, 1e4]})
 
-    elif inparam.zds[night] != 'NOINFO': # If GeminiS data, some but not all parameters are in fits file. 
+    elif inparam.zds[night] != 'NOINFO': # If GeminiS data, some but not all parameters are in fits file.
           # If parameters are not in fits file, use initial guesses and letting them vary.
           # Guesses are taken from mean of parameters from DCT GJ281 data.
-        
+
         angle       = np.float(inparam.zds[night])           #Zenith distance
         humidity    = np.float(inparam.humids[night])        #Percent humidity, at the observatory altitude
 
@@ -218,7 +254,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
                               "temperature": [265.,300.],\
                               "pressure": [1010.,1035.],\
                               "co": [ 1e-6,1e2]})
-            
+
         elif (order >= 9 or order <= 3) & (args.band =='K'):
             num_fit = 4
             # Only molecules present in chosen IGRINS orders' wavelength range are H2O, CH4, N2O, and CO2.
@@ -270,7 +306,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
                               "temperature": [265.,300.],\
                               "pressure": [1010.,1035.],\
                               "co2": [1.0, 1e4]})
-            
+
     else: # If parameters are not in fits file, use initial guesses and letting them vary.
           # Guesses are taken from mean of parameters from DCT GJ281 data.
 
@@ -363,7 +399,10 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
                               "co2": [ 1,1e4]})
 
     try:
-        model = fitter.Fit(data=data, resolution_fit_mode="SVD", adjust_wave="model",air_wave=False)
+        if args.debug:
+            model = fitter.Fit(data=data, resolution_fit_mode="SVD", adjust_wave="model",air_wave=False)
+        else:
+            model = suppress_Fit(fitter, data)
     except TypeError:
         return [np.nan], [np.nan], [np.nan], [np.nan],[np.nan],[np.nan]
 
@@ -432,7 +471,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
     for k in range(len(names)):
         parfitted[k] = np.float(fitter.GetValue(names[k]) )
 
-    fitter2 = TelluricFitter(debug=False)
+    fitter2 = TelluricFitter(debug=False, print_lblrtm_output=args.debug)
 
     if inparam.obses[night] == 'DCT':
         fitter2.SetObservatory(DCT_props)
@@ -466,7 +505,11 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
     # FORTRAN readout is quite unhelpful and anyone else who apepars to have experienced this problem had it randomly go away at some point.
     # If this happens, simply deliver NAN arrays, and in later parts of the RV analysis A0 fits from the nearest compatible observation will be used.
     try:
-        model2 = fitter2.GenerateModel(parfitted,nofit=True)
+        if args.debug:
+            model2 = fitter2.GenerateModel(parfitted, nofit=True, air_wave=False)
+        else:
+            model2 = suppress_GenerateModel(fitter2, parfitted, args)
+
     except TypeError:
         return [np.nan], [np.nan], [np.nan], [np.nan],[np.nan],[np.nan]
 
@@ -674,7 +717,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
                5.00000000e-09, 1.56000000e-07]),
 }
 
-    fitterL = TelluricFitter(debug=False)
+    fitterL = TelluricFitter(debug=False, print_lblrtm_output=args.debug)
 
     NSO_props = {"latitude": 31.958, "altitude":2.096} #alt in km
     fitterL.SetObservatory(NSO_props)
@@ -692,14 +735,19 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam)
     fitterL.ImportData(data2)
 
     try:
-        modelL = fitterL.GenerateModel(parfittedL,nofit=True)
+        if args.debug:
+            modelL = fitterL.GenerateModel(parfittedL, nofit=True, air_wave=False)
+        else:
+            modelL = suppress_GenerateModel(fitterL, parfittedL, args)
+
+
     except TypeError:
         return [np.nan], [np.nan], [np.nan], [np.nan],[np.nan],[np.nan]
 
     global x, satmLivGen, watm_Liv,satm_Liv;
 
-    satmTel    = rebin_jv(model2.x*10, model2.y, newwave1*10,True) # nm --> AA
-    satmLivGen = rebin_jv(modelL.x*10, modelL.y, newwave1*10,True) # nm --> AA
+    satmTel    = rebin_jv(model2.x*10, model2.y, newwave1*10, True, logger=logger) # nm --> AA
+    satmLivGen = rebin_jv(modelL.x*10, modelL.y, newwave1*10, True, logger=logger) # nm --> AA
     watmLivGen = newwave1.copy() ; watmLivGen*=10 # nm --> AA
 
     # Fit wavelength scale to Telfit'd Livingston

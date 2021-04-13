@@ -11,6 +11,8 @@ import sys
 #-------------------------------------------------------------------------------
 def fmodel_chi(par,grad):
     '''
+    Function to be optimized. Computes model spectrum and compares it with data to calculate reduced chisq.
+
     INPUTS:
        w - The observed wavelength scale (air) in Angstroms.
        x - The array of pixel indices from 0 to npts-1
@@ -41,7 +43,8 @@ def fmodel_chi(par,grad):
           23: Continuum hexic component      /
 
      OUTPUTS:
-       The model spectrum on the observed wavelength scale.
+       chisq: Reduced chisq
+       (If global optimize_cp is False) smod: The model spectrum on the observed wavelength scale.
     '''
 
     # Bring in global class of variables needed to generate model.
@@ -145,6 +148,9 @@ def fmodel_chi(par,grad):
         return smod,chisq
 
 def fmod(par,fitobj):
+    '''
+    Same as fmodel_chi(), but meant to provide best fit model, not for optimization. Always returns both smod and chisq.
+    '''
 
     watm = fitobj.watm_in;
     satm = fitobj.satm_in;
@@ -233,6 +239,9 @@ def fmod(par,fitobj):
     return smod,chisq
 
 def fmod_conti(par,fitobj):
+    '''
+    Same as fmod(), but provides best fit continuum model. For use in plotting.
+    '''
 
     watm = fitobj.watm_in;
     satm = fitobj.satm_in;
@@ -311,7 +320,21 @@ def fmod_conti(par,fitobj):
 
 
 # def optimizer(par0,dpar0, hardbounds_v_ip, fitobj, optimize, logger, night, order, tag, optkind, nc, nk):
-def optimizer(par0,dpar0, hardbounds_v_ip, fitobj, optimize):
+def optimizer(par0, dpar0, hardbounds_v_ip, fitobj, optimize):
+    '''
+    Prepares and applies NLOpt optimization to find spectral model that best fits data
+
+    Inputs:
+    par0            : Initial guesses for spectral model parameters
+    dpar0           : Amount optimizer can vary spectral model parameters from initial guesses
+    hardbounds_v_ip : List of absolute upper and lower boundaries for vsini and IP width
+    fitobj          : Class containing spectral data to be fit and templates to be used for fitting
+    optimize        : Boolean specifying whether optimization will occur or not
+
+    Outputs:
+    parfit   : Best-fit spectral model parameters
+    '''
+
     # NLopt convenience function.
     global fitobj_cp, optimize_cp
     fitobj_cp   = fitobj

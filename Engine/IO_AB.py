@@ -13,6 +13,18 @@ import re
 import sys
 
 def partial_loader(inpath0,order):
+    '''
+    Access data arrays from reduced IGRINS fits files.
+
+    Inputs:
+    inpath0 : Path to file, including filename up to ".spec.fits" suffix
+    order   : Echelle order, as characterized by file index (as opposed to m number; for conversion between the two, see Stahl et al. 2021)
+
+    Outputs:
+    wavelist : Wavelength solution from plp reduction (known to be imprecise)
+    fluxlist : Corresponding flux
+    s2nlist  : Corresponding signal to noise ratio
+    '''
 
     hdulist = fits.open(inpath0+'.spec.fits')
     tbdata_w = hdulist[1].data
@@ -29,6 +41,25 @@ def partial_loader(inpath0,order):
 
 
 def init_fitsread(path,kind,beam,night,order,tag,band,Ncuts=None):
+    '''
+    Fetches reduced spectrum from file, performs some basic quality checks and cleaning, and returns the results in a convenient format.
+
+    Inputs:
+    path  : Path to fits file up to some subdirectory (folder organization varies depending on whether loading target or telluric standard, separate A and Bs or combined
+    kind  : Specifies whether loading a telluric standard or target
+    beam  : Frame type (A, B, or combinedAB)
+    night : Date of observation in YYYYMMDD
+    order : Echelle order, as characterized by file index (as opposed to m number; for conversion between the two, see Stahl et al. 2021)
+    tag   : Number of observation, represented by last four digits in fits filename
+    band  : H or K band
+    Ncuts : List of format [L,R], where L specifies number of pixels to trim off left (low wavelength) end of spectrum, and R vice versa
+
+    Outputs:
+    x     : Absolute pixel value (if spectra has edges trimmed, will begin at a nonzero number)
+    wave  : Wavelength solution from plp reduction (known to be imprecise)
+    s     : Corresponding flux
+    u     :  Corresponding uncertainty
+    '''
 
     if kind not in ['A0','target']:
         print('kind MUST BE "target" OR "A0", FORCE QUITTING!')
@@ -132,14 +163,21 @@ def init_fitsread(path,kind,beam,night,order,tag,band,Ncuts=None):
     return x,wave,s,u
 
 def airtovac(wave):
-    """Converts air wavelengths to vaccuum wavelengths returns a float or array of wavelengths
-    INPUTS:
+    """
+    This code is from the PyAstronomy repository and is referenced as such (Czela et al. 2019, https://pyastronomy.readthedocs.io/en/latest/index.html)
+    Converts air wavelengths to vaccuum wavelengths returns a float or array of wavelengths
+
+    Inputs:
       wave - Wavelengths in air, in Angstroms, float or array
-    OUTPUTS:
+
+    Outputs:
       newwave - Wavelengths in a vacuum, in Angstroms, float or array
+
     NOTES:
       1. The procedure uses the IAU standard conversion formula
-         from Morton (1991 Ap. J. Suppl. 77, 119) """
+         from Morton (1991 Ap. J. Suppl. 77, 119)
+    """
+
     wave = np.array(wave,float)
     # Converting to Wavenumber squared
     sigma2 = (1.0e4/wave)**2
@@ -150,6 +188,23 @@ def airtovac(wave):
     return newwave
 
 def setup_templates(logger, kind='synthetic', band='K', temperature=5000, logg=4.5):
+    '''
+    Fetches static stellar and/or telluric templates from file.
+
+    Inputs:
+    logger      : Mechanism to keep updating log.txt
+    kind        : Specifies kind of stellar template ('synthetic' = IGRINS RV team generated models, 'phoenix' = for IGRINS RV team only, 'user' = user provided template)
+    band        : H or K band
+    temperature : Effective temperature corresponding to stellar template
+    logg        : log(g) corresponding to stellar template
+
+    Outputs:
+    watm    : Wavelength scale of static telluric template
+    satm    : Corresponding flux of static telluric template
+    mwave0  : Wavelength scale of stellar template
+    mflux0  :  Corresponding flux of stellar template
+    '''
+
     if (kind == 'synthetic'):
         logger.info(f'Using {band}-band synthetic stellar template...')
         logger.info(f'synthetic stellar template with T{temperature} logg{logg}!!!!!')
@@ -179,13 +234,13 @@ def setup_templates(logger, kind='synthetic', band='K', temperature=5000, logg=4
         mwave0 = mwave0[(np.isfinite(mflux0))]
         mflux0 = mflux0[(np.isfinite(mflux0))]
         mflux0[(mflux0 < 0)] = 0
-        
+
     elif (kind.lower() == 'user'):
         logger.info(f'Using user-provided stellar template with T{temperature} logg{logg}...')
-        logger.info(f'WARNING! PRECISION AND ACCURACY OF THIS PIPELINE IS NOT GUARANTEED WITH USER-PROVIDED STELLAR TEMPLATES!!!!!')
-        logger.info(f'Make sure to characterize your errors appropriately - see IGRINS RV paper for details.')
-        logger.info(f'Also be sure your templates follow the naming and formatting conventions described in the github wiki AND are placed under ./Engine/user_templates.')
-        
+        logger.warning(f'WARNING! PRECISION AND ACCURACY OF THIS PIPELINE IS NOT GUARANTEED WITH USER-PROVIDED STELLAR TEMPLATES!!!!!')
+        logger.warning(f'Make sure to characterize your errors appropriately - see IGRINS RV paper for details.')
+        logger.warning(f'Also be sure your templates follow the naming and formatting conventions described in the github wiki AND are placed under ./Engine/user_templates.')
+
         if 'igrins' in os.getcwd().split('/')[-1]:
             stelldata = Table.read(f'./Engine/user_templates/user_T{temperature}_logg{logg}_{band}band.txt',format='ascii')
         else:
@@ -196,10 +251,10 @@ def setup_templates(logger, kind='synthetic', band='K', temperature=5000, logg=4
         mwave0 = mwave0[(np.isfinite(mflux0))]
         mflux0 = mflux0[(np.isfinite(mflux0))]
         mflux0[(mflux0 < 0)] = 0
-        
+
     else:
         logger.info(f'Input kind is {kind}, but must be either "synthetic", "phoenix" (for IGRINS RV team usage only), or "user"!')
-            
+
     if 'igrins' in os.getcwd().split('/')[-1]:
         telluricdata = Table.read('./Engine/PhotoAtl Organized.txt',format='ascii')
     else:
@@ -214,7 +269,15 @@ def setup_templates(logger, kind='synthetic', band='K', temperature=5000, logg=4
 
 
 def setup_templates_tel():
+    '''
+    Stripped version of setup_templates() for Step 1, where only telluric template needed, so the stellar template is chosen by default.
 
+    Outputs:
+    watm    : Wavelength scale of static telluric template
+    satm    : Corresponding flux of static telluric template
+    mwave0  : Wavelength scale of stellar template
+    mflux0  : Corresponding flux of stellar template
+    '''
     if 'igrins' in os.getcwd().split('/')[-1]:
         spotdata = Table.read('./Engine/SpotAtl Organized.txt',format='ascii')
     else:
@@ -240,6 +303,20 @@ def setup_templates_tel():
 
 
 def stellarmodel_setup(wave,mwave0,mflux0):
+    '''
+    Convenience function to trim stellar template to cover just a bit more wavelength than data.
+    (This was once a meatier function)
+
+    Inputs:
+    wave    : Wavelength scale of data
+    mwave0  : Wavelength scale of stellar template
+    mflux0  : Corresponding flux of stellar template
+
+    Outputs:
+    mwave0  : Trimmed wavelength scale of stellar template
+    mflux0  : Trimmed flux of stellar template
+    '''
+
     mflux = mflux0[(mwave0/1e4 >= np.min(wave) - .003) & (mwave0/1e4 <= np.max(wave) + .002)]
     mwave = mwave0[(mwave0/1e4 >= np.min(wave) - .003) & (mwave0/1e4 <= np.max(wave) + .002)]
 
@@ -247,6 +324,16 @@ def stellarmodel_setup(wave,mwave0,mflux0):
 
 
 def setup_outdir(prefix):
+    '''
+    Checks what number of times the code has been run on a given target/band and makes a new output directory accordingly.
+
+    Inputs:
+    prefix : Directory of overall output for target/band
+
+    Outputs:
+    name : Directory of output for this run of code
+
+    '''
     filesndirs = os.listdir(os.getcwd())
     trk = 1; go = True;
     while go == True:

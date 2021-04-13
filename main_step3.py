@@ -23,13 +23,15 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
     order = orders[order_use]
     xbounds = inparam.xbounddict[order]
-    print('Working on order {:02d}/{:02d} ({}), night {:03d}/{:03d} ({}) PID:{}...'.format(int(order_use)+1,
-                                                                                           len(orders),
-                                                                                           order,
-                                                                                           i+1,
-                                                                                           len(inparam.nights),
-                                                                                           night,
-                                                                                           mp.current_process().pid) )
+
+    if args.debug:
+        print('Working on order {:02d}/{:02d} ({}), night {:03d}/{:03d} ({}) PID:{}...'.format(int(order_use)+1,
+                                                                                               len(orders),
+                                                                                               order,
+                                                                                               i+1,
+                                                                                               len(inparam.nights),
+                                                                                               night,
+                                                                                               mp.current_process().pid) )
 
     #-------------------------------------------------------------------------------
 
@@ -353,6 +355,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
             logger.warning(f'  --> Best fit model dips below 0 for {night}! May be too close to edge of blaze, throwing out result...')
             continue
 
+
         #-------------------------------------------------------------------------------
 
         if args.plotfigs == True:
@@ -565,17 +568,17 @@ if __name__ == '__main__':
     print(u'''
 Input Parameters:
     Tartget             =  {}
-    Filter              = \33[41m {} band \033[0m
-    WaveLength file     = \33[41m WaveRegions_{} \033[0m
-    S/N cut             > \33[41m {} \033[0m
-    Minium # of AB sets = \33[41m {} \033[0m             <------- If TAR mode, this should be at least 3. If STD mode, at least 2.
-    Initial vsini       = \33[41m {} km/s \033[0m
-    vsini vary range    \u00B1 \33[41m {} km/s \033[0m
-    RV initial guess    = \33[41m {} \033[0m
-    Stellar template use= \33[41m {} \033[0m
-    syn template temp   = \33[41m {} \033[0m
-    syn template logg   = \33[41m {} \033[0m
-    RV Output format    = \33[41m {} \033[0m
+    Filter              = \33[37;1;41m {} band \033[0m
+    WaveLength file     = \33[37;1;41m WaveRegions_{} \033[0m
+    S/N cut             > \33[37;1;41m {} \033[0m
+    Minium # of AB sets = \33[37;1;41m {} \033[0m             <------- If TAR mode, this should be at least 3. If STD mode, at least 2.
+    Initial vsini       = \33[37;1;41m {} km/s \033[0m
+    vsini vary range    \u00B1 \33[37;1;41m {} km/s \033[0m
+    RV initial guess    = \33[37;1;41m {} \033[0m
+    Stellar template use= \33[37;1;41m {} \033[0m
+    syn template temp   = \33[37;1;41m {} \033[0m
+    syn template logg   = \33[37;1;41m {} \033[0m
+    RV Output format    = \33[37;1;41m {} \033[0m
     Threads use         = {}
     '''.format(args.targname, args.band, args.WRegion, args.SN_cut, nAB,
                initvsini, vsinivary, initguesses_show, args.template, args.temperature, args.logg, print_abs, args.Nthreads))
@@ -640,6 +643,7 @@ Input Parameters:
 
     logger.addHandler(file_hander)
     logger.addHandler(stream_hander)
+    logger.propagate = False
 
     logger.info(f'Writing output to ./Output/{args.targname}_{args.band}/{name}')
 
@@ -682,7 +686,7 @@ For K band RVs: IGRINS RV will take this into account and process these nights
                 slightly differently. When you run Step 3, RVs will be output in
                 two formats: one with the defocus nights separated, and the other
                 with all nights together.
-For H band RVs: We do not expect any systematic changes in the H band as the result 
+For H band RVs: We do not expect any systematic changes in the H band as the result
                 of the defocus. IGRINS RV will process defocus nights the same way
                 as the others, but when you run Step 3, will still output the results
                 in two formats like it does with the K band.''')
@@ -714,14 +718,20 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
     # orders = np.array([5])
     # print('ONLY process order 5')
     #-------------------------------------------------------------------------------
+    # if not in debug mode than enter quite mode, i.e., all message saved in log file
+    if not args.debug: logger.removeHandler(stream_hander)
+    print('\n')
 
     # Run order by order, multiprocessing over nights within an order
     for jerp in range(len(orders)):
-        pool = mp.Pool(processes = args.Nthreads)
+        if not args.debug: print('Working on order {} ({:02d}/{:02d})'.format(orders[jerp], int(jerp+1), len(orders)))
+
         func = partial(rv_MPinst, args, inparam, orders, jerp, trk, step2or3 )
-        outs = pool.map(func, np.arange(len(nightsFinal)))
-        pool.close()
-        pool.join()
+        outs = pqdm(np.arange(len(nightsFinal)), func, n_jobs=args.Nthreads)
+        # pool = mp.Pool(processes = args.Nthreads)
+        # outs = pool.map(func, np.arange(len(nightsFinal)))
+        # pool.close()
+        # pool.join()
 
         order = orders[jerp]
 
@@ -808,6 +818,8 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
 
 
     #-------------------------------------------------------------------------------
+    if not args.debug: logger.addHandler(stream_hander)
+    print('\n')
 
     # Don't combine Loose and Tight datasets, but make them both easily referenceable
     nightsCombined  = np.array([]); jdsCombined = np.array([]);
@@ -1066,6 +1078,14 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
         logger.info('vsini results:       mean={:1.4f} km/s, std={:1.4f} km/s'.format(np.nanmean(vsinifinalCombined),
                                                                                 np.nanstd(vsinifinalCombined)))
 
+    warning_r = log_warning_id(f'{outpath}/{args.targname}_{args.band}.log', start_time)
+    if warning_r:
+        print(f'''
+**********************************************************************************
+WARNING!! you got warning message during this run. Please check the log file under:
+          {outpath}/{args.targname}_{args.band}_A0Fits.log
+**********************************************************************************
+''')
     print('\n')
     end_time = datetime.now()
     logger.info('Whole process DONE!!!!!!, Duration: {}'.format(end_time - start_time))

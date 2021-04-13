@@ -22,11 +22,13 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
     order   = order_use
     xbounds = inparam.xbounddict[order]
-    print('Working on order {:02d}, night {:03d}/{:03d} ({}) PID:{}...'.format(int(order),
-                                                                                           i+1,
-                                                                                           len(inparam.nights),
-                                                                                           night,
-                                                                                           mp.current_process().pid) )
+
+    if args.debug:
+        print('Working on order {:02d}, night {:03d}/{:03d} ({}) PID:{}...'.format(int(order),
+                                                                                               i+1,
+                                                                                               len(inparam.nights),
+                                                                                               night,
+                                                                                               mp.current_process().pid) )
 
     #-------------------------------------------------------------------------------
 
@@ -318,21 +320,23 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
     #-------------------------------------------------------------------------------
 
+
     # if best fit stellar template power is very low, throw out result
     if parfit[1] < 0.1:
-        logger.warning(f'  --> parfit[1] < 0.1, {night} parfit={parfit}')
-        pass
+        logger.warning(f'  --> Stellar template power is low for {night}! Data likely being misfit! Throwing out result...')
+        continue
 
     # if best fit stellar or telluric template powers are exactly equal to their starting values, fit failed, throw out result
     if parfit[1] == par_in[1] or parfit[3] == par_in[3]:
-        logger.warning(f'  --> parfit[1] == par_in[1] or parfit[3] == par_in[3], {night}')
-        pass
+        logger.warning(f'  --> Stellar or telluric template powers have not budged from starting values for {night}! Fit is broken! Optimizer bounds may be unfeasible, or chi-squared may be NaN? Throwing out result...')
+        continue
 
     # if best fit model dips below zero at any point, we're to close to edge of blaze, fit may be comrpomised, throw out result
     smod,chisq = fmod(parfit,fitobj)
     if len(smod[(smod < 0)]) > 0:
-        logger.warning(f'  --> len(smod[(smod < 0)]) > 0, {night}')
-        pass
+        logger.warning(f'  --> Best fit model dips below 0 for {night}! May be too close to edge of blaze, throwing out result...')
+        continue
+
 
     #-------------------------------------------------------------------------------
 
@@ -500,16 +504,16 @@ if __name__ == '__main__':
     print(u'''
 Input Parameters:
     Tartget             =  {}
-    Filter              = \33[41m {} band \033[0m
-    WaveLength file     = \33[41m WaveRegions_{} \033[0m
-    S/N cut             > \33[41m {} \033[0m
-    Order Use           = \33[41m Order {} \033[0m
-    Initial vsini       = \33[41m {} km/s \033[0m
-    vsini vary range    \u00B1 \33[41m {} km/s \033[0m
-    RV initial guess    = \33[41m {} \033[0m
-    Stellar template use= \33[41m {} \033[0m
-    syn template temp   = \33[41m {} \033[0m
-    syn template logg   = \33[41m {} \033[0m
+    Filter              = \33[37;1;41m {} band \033[0m
+    WaveLength file     = \33[37;1;41m WaveRegions_{} \033[0m
+    S/N cut             > \33[37;1;41m {} \033[0m
+    Order Use           = \33[37;1;41m Order {} \033[0m
+    Initial vsini       = \33[37;1;41m {} km/s \033[0m
+    vsini vary range    \u00B1 \33[37;1;41m {} km/s \033[0m
+    RV initial guess    = \33[37;1;41m {} \033[0m
+    Stellar template use= \33[37;1;41m {} \033[0m
+    syn template temp   = \33[37;1;41m {} \033[0m
+    syn template logg   = \33[37;1;41m {} \033[0m
     Threads use         =  {}
     '''.format(args.targname, args.band, args.WRegion, args.SN_cut, args.label_use,
                initvsini, vsinivary, initguesses_show, args.template, args.temperature, args.logg, args.Nthreads))
@@ -575,6 +579,7 @@ Input Parameters:
 
     logger.addHandler(file_hander)
     logger.addHandler(stream_hander)
+    logger.propagate = False
 
     #-------------------------------------------------------------------------------
     # Create output file to write to
@@ -605,7 +610,7 @@ Input Parameters:
 WARNING: Some of these nights were when the IGRINS K band was defocused!
 For K band RVs: IGRINS RV will take this into account and process these nights
                 slightly differently. When you run Step 3, RVs will be output in
-                two formats: one with the defocus nights separated, and the other 
+                two formats: one with the defocus nights separated, and the other
                 with all nights together.
 For H band RVs: We do not expect any systematic changes in the H band as the result
                 of the defocus. IGRINS RV will process defocus nights the same way
@@ -622,13 +627,17 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
                        initguesses,bvcs,tagsA,tagsB,nightsFinal,mwave0,mflux0,None,xbounddict,maskdict)
 
     #-------------------------------------------------------------------------------
+    # if not in debug mode than enter quite mode, i.e., all message saved in log file
+    if not args.debug: logger.removeHandler(stream_hander)
+    print('\n')
 
     # Run order by order, multiprocessing over nights within an order
-    pool = mp.Pool(processes = args.Nthreads)
     func = partial(rv_MPinst, args, inparam, orders, int(args.label_use), trk, step2or3 )
-    outs = pool.map(func, np.arange(len(nightsFinal)))
-    pool.close()
-    pool.join()
+    outs = pqdm(np.arange(len(nightsFinal)), func, n_jobs=args.Nthreads)
+    # pool = mp.Pool(processes = args.Nthreads)
+    # outs = pool.map(func, np.arange(len(nightsFinal)))
+    # pool.close()
+    # pool.join()
 
     # Write outputs to file
     vsinis = []; finalrvs = [];
@@ -641,6 +650,16 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
 
     filew.close()
 
+    warning_r = log_warning_id(f'{outpath}/{args.targname}_{args.band}.log', start_time)
+    if warning_r:
+        print(f'''
+**********************************************************************************
+WARNING!! you got warning message during this run. Please check the log file under:
+          {outpath}/{args.targname}_{args.band}.log
+**********************************************************************************
+''')
+    print('\n')
+    if not args.debug: logger.addHandler(stream_hander)
     print('--------!Initial Guess!--------')
     logger.info('RV results:    mean= {:1.4f} km/s, median= {:1.4f} km/s, std= {:1.4f} km/s'.format(np.nanmean(finalrvs),
                                                                                                     np.nanmedian(finalrvs),

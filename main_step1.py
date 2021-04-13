@@ -14,7 +14,6 @@ from Engine.crmask    import CRmasker
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 
-
 def MPinstB(args, inparam, jerp, orders, i):
     # Main function for A0 fitting that will be threaded over by multiprocessing
 
@@ -23,14 +22,14 @@ def MPinstB(args, inparam, jerp, orders, i):
     night = str(inparam.nights[i])  # multiprocess assigned night
     firstorder = orders[0]          # First order that will be analyzed, related to file writing
 
-    print('Working on order {:02d}/{:02d} ({}), night {}/{} ({}) PID:{}...'.format(int(jerp+1),
-                                                                                 len(orders),
-                                                                                 order,
-                                                                                 i+1,
-                                                                                 len(inparam.nights),
-                                                                                 night,
-                                                                                 mp.current_process().pid) )
-
+    if args.debug:
+        print('Working on order {:02d}/{:02d} ({}), night {}/{} ({}) PID:{}...'.format(int(jerp+1),
+                                                                                     len(orders),
+                                                                                     order,
+                                                                                     i+1,
+                                                                                     len(inparam.nights),
+                                                                                     night,
+                                                                                     mp.current_process().pid) )
     #-------------------------------------------------------------------------------
 
     # Retrieve pixel bounds for where within each other significant telluric absorption is present.
@@ -46,8 +45,6 @@ def MPinstB(args, inparam, jerp, orders, i):
             bound_cut = inparam.bound_cut_dic[args.band][order]
         else:
             bound_cut = [150, 150]
-    # bound_cut = [150, 150]
-
 
     ### Load relevant A0 spectrum
     x, a0wavelist, a0fluxlist, u = init_fitsread(inparam.inpath,
@@ -349,7 +346,7 @@ def MPinstB(args, inparam, jerp, orders, i):
         mwave_in,mflux_in = stellarmodel_setup(a0w_out_fit/1e4, inparam.mwave0, inparam.mflux0)
 
         # Feed this new wavelength solution into Telfit. Returns high-res synthetic telluric template, parameters of that best fit, and blaze function best fit
-        watm1, satm1, telfitparnames, telfitpars, a0contwave, continuum = telfitter(a0w_out_fit,a0fluxlist,a0u,inparam,night,order,args,masterbeam)
+        watm1, satm1, telfitparnames, telfitpars, a0contwave, continuum = telfitter(a0w_out_fit,a0fluxlist,a0u,inparam,night,order,args,masterbeam,logger)
     else:
         pass
     #-------------------------------------------------------------------------------
@@ -418,13 +415,14 @@ def MPinstA(args, inparam, jerp, orders, i):
     night = str(inparam.nights[i])  # multiprocess assigned night
     firstorder = orders[0]          # First order that will be analyzed, related to file writing
 
-    print('Working on order {:02d}/{:02d} ({}), night {}/{} ({}) PID:{}...'.format(int(jerp+1),
-                                                                                 len(orders),
-                                                                                 order,
-                                                                                 i+1,
-                                                                                 len(inparam.nights),
-                                                                                 night,
-                                                                                 mp.current_process().pid) )
+    if args.debug:
+        print('Working on order {:02d}/{:02d} ({}), night {}/{} ({}) PID:{}...'.format(int(jerp+1),
+                                                                                     len(orders),
+                                                                                     order,
+                                                                                     i+1,
+                                                                                     len(inparam.nights),
+                                                                                     night,
+                                                                                     mp.current_process().pid) )
 
     #-------------------------------------------------------------------------------
 
@@ -840,7 +838,7 @@ def MPinstA(args, inparam, jerp, orders, i):
             mwave_in,mflux_in = stellarmodel_setup(a0w_out_fit/1e4, inparam.mwave0, inparam.mflux0)
 
             # Feed this new wavelength solution into Telfit. Returns high-res synthetic telluric template, parameters of that best fit, and blaze function best fit
-            watm1, satm1, telfitparnames, telfitpars, a0contwave, continuum = telfitter(a0w_out_fit,a0fluxlist,a0u,inparam,night,order,args,masterbeam)
+            watm1, satm1, telfitparnames, telfitpars, a0contwave, continuum = telfitter(a0w_out_fit,a0fluxlist,a0u,inparam,night,order,args,masterbeam,logger)
         else:
             pass
         #-------------------------------------------------------------------------------
@@ -902,14 +900,17 @@ def MPinstA(args, inparam, jerp, orders, i):
 
 def mp_run(args, inparam, Nthreads, jerp, orders, nights, masterbeam):
     # Multiprocessing convenience function
-    pool = mp.Pool(processes = Nthreads)
     if masterbeam == 'A':
         func = partial(MPinstA, args, inparam, jerp, orders)
     else:
         func = partial(MPinstB, args, inparam, jerp, orders)
-    outs = pool.map(func, np.arange(len(nights)))
-    pool.close()
-    pool.join()
+
+    outs = pqdm(np.arange(len(nights)), func, n_jobs=Nthreads)
+
+    # pool = mp.Pool(processes = Nthreads)
+    # outs = pool.map(func, np.arange(len(nights)))
+    # pool.close()
+    # pool.join()
 
 
 #-------------------------------------------------------------------------------
@@ -1028,11 +1029,11 @@ if __name__ == '__main__':
     file_hander  = logging.FileHandler(f'{outpath}/{args.targname}_{args.band}_A0Fits.log')
     stream_hander= logging.StreamHandler()
 
-    # file_hander.setLevel()
     file_hander.setFormatter(formatter)
 
     logger.addHandler(file_hander)
     logger.addHandler(stream_hander)
+    logger.propagate = False
 
     #-------------------------------------------------------------------------------
 
@@ -1052,7 +1053,6 @@ if __name__ == '__main__':
     print('###############################################################\n')
     logger.info(f'Using TelFit to create high-resolution, synthetic telluric templates based off the telluric standards \nassociated with {args.targname} on a night by night basis...')
     print('This will take a while..........')
-    print('\n')
 
     # Read in newly created pixel regions file to get list of orders to analyze.
     # Note that only target star observations will have their fits limited to the wavelength regions specified.
@@ -1100,8 +1100,6 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
                 in two formats like it does with the K band.''')
 
     #time.sleep(6)
-    print('\n')
-
     # print('For paper plot!')
     # if args.band == 'K':
     #     orders = np.array([2, 3, 4, 5, 6, 7, 8, 10, 14, 16])
@@ -1117,17 +1115,31 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
                          temps,zds,press,obs,watm,satm,mwave0,mflux0,cdbs_loc,xbounddict,None)
 
     #-------------------------------------------------------------------------------
+    # if not in debug mode than enter quite mode, i.e., all message saved in log file
+    if not args.debug: logger.removeHandler(stream_hander)
+    print('\n')
 
     # Run order by order, multiprocessing over nights within an order
     print('Processing the B nods first...')
     for jerp in range(len(orders)):
+        if not args.debug: print('Working on order {} ({:02d}/{:02d})'.format(orders[jerp], int(jerp+1), len(orders)))
         outs = mp_run(args, inparam, args.Nthreads, jerp, orders, nightsFinal,'B')
 
     print('B nods done! Halfway there! \n Now processing the A nods...')
     for jerp in range(len(orders)):
+        if not args.debug: print('Working on order {} ({:02d}/{:02d})'.format(orders[jerp], int(jerp+1), len(orders)))
         outs = mp_run(args, inparam, args.Nthreads, jerp, orders, nightsFinal,'A')
 
+    warning_r = log_warning_id(f'{outpath}/{args.targname}_{args.band}_A0Fits.log', start_time)
+    if warning_r:
+        print(f'''
+**********************************************************************************
+WARNING!! you got warning message during this run. Please check the log file under:
+          {outpath}/{args.targname}_{args.band}_A0Fits.log
+**********************************************************************************
+''')
     print('\n')
+    if not args.debug: logger.addHandler(stream_hander)
     logger.info('A0 Fitting Done!')
 
     end_time = datetime.now()

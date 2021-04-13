@@ -2,6 +2,19 @@ from scipy.signal import fftconvolve
 from Engine.importmodule import *
 
 def rotint(wave_spec,flux_spec,vrot):
+    '''
+    Applies rotational broadening to spectrum. This code is from the IvS Python Repository and is referenced as such (Institute for Astronomy at KU Leuven 2018, https://github.com/IvS-KULeuven/IvSPythonRepository)
+
+    Inputs:
+    wave_spec : Wavelength scale of spectrum
+    flux_spec : Corresponding flux of spectrum
+    vrot      : vsin(i)
+
+    Outputs:
+
+    wave_conv   : Rotationally broadened wavelength scale
+    1-flux_conv : Rotationally broadened flux
+    '''
 
     epsilon = 0.6
 
@@ -16,7 +29,7 @@ def rotint(wave_spec,flux_spec,vrot):
     velo_k -= velo_k[-1]/2.
     y = 1 - (velo_k/vrot)**2 # transformation of velocity
     G = (2*(1-epsilon)*np.sqrt(y)+np.pi*epsilon/2.*y)/(np.pi*vrot*(1-epsilon/3.0))  # the kernel
-    G /= G.sum()
+    G /= np.sum(G)
     #-- convolve the flux with the kernel
     flux_conv = fftconvolve(1-flux_,G,mode='same')
     velo_ = np.arange(len(flux_conv))*dvelo+velo_[0]
