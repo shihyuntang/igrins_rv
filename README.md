@@ -5,6 +5,7 @@
 
 ``IGRINS RV`` is now under intense development. \
 If you have any question, idea or wish to report any bug, please let us know by either open an issue or contact us (asa.stahl@rice.edu or sytang@lowell.edu).
+More on how to contribute can be found in the [FAQ](https://github.com/shihyuntang/igrins_rv/wiki/FAQ) page.
 
 News:
 * **2021/02/18: `IGRINS RV` v0.9.6-beta.3 public beta is ready for JOSS review!!\
