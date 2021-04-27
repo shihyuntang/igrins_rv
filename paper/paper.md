@@ -27,7 +27,7 @@ affiliations:
    index: 2
  - name: Department of Physics and Astronomy, Rice University, 6100 Main Street, Houston, TX 77005, USA
    index: 3
-aas-doi:
+aas-doi: 10.3847/1538-3881/abf5e7
 aas-journal: Astronomical Journal
 date:
 bibliography: master.bib
