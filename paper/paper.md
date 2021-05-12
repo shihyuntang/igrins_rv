@@ -42,7 +42,7 @@ In the past decade, RVs have primarily been measured from spectra in the optical
 
 # Statement of need
 
-Current RV pipelines and techniques that can deliver RV precision in tens of m/s (or beyond) in the NIR, e.g., ``PySHELL`` [@cale19], ``wobble`` [@bede19] or the PCA-based cross-correlating method used for the SPIRou spectrograph [@mout20], all require instruments that are highly stabilized and with well-characterized wavelength solutions. For example, the iSHELL spectrograph can be equipped with the methane isotopologue gas cell, and the SPIRou spectrograph comes with uranium-neon hollow-cathode lamps and stabilized Fabry-Perot etalons.
+Current RV pipelines and techniques that can deliver RV precision in tens of m/s (or beyond) in the NIR, e.g., ``PySHELL`` [@cale19], ``wobble`` [@bede19], ``SERVAL`` [@zech18] or the PCA-based cross-correlating method used for the SPIRou spectrograph [@mout20], all require instruments that are highly stabilized and with well-characterized wavelength solutions. For example, the iSHELL spectrograph can be equipped with the methane isotopologue gas cell, and the SPIRou and the CARMENES (NIR channel) spectrograph come with uranium-neon hollow-cathode lamps and stabilized Fabry-Perot etalons.
 
 The Immersion GRating INfrared Spectrometer (IGRINS) spectrograph [@yuk10; @park14; @mace16; @mace18], on the other hand, was not designed to be RV-stable and comes with no means of wavelength calibration accurate enough to achieve RVs precise to tens of m/s.  A new approach to extract precision RVs is needed for an echelle spectrograph like IGRINS, which still offers fertile ground for RV science with its high resolution (R ~ 45,000) and broad spectral grasp (the full H and K bands).
 
