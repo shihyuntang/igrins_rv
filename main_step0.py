@@ -221,6 +221,10 @@ def DataPrep(args):
                 except ValueError: # McDonald headers don't have these quantities :( They will be fit by Telfit instead of set to their recorded values.
                     humid = 'NOINFO'; temp = 'NOINFO'; press = 'NOINFO'; zd = 'NOINFO';
 
+                ## If is from McD, make all header info. as NOINFO cause McD headers are not all correct
+                if (head['OBSERVAT'] == 'McDonald Observatory') or (head['OBSERVAT'] == 'McDonald'):
+                    humid = 'NOINFO'; temp = 'NOINFO'; press = 'NOINFO'; zd = 'NOINFO'
+
         # Write to file
         fileA0.write(night+' '+str(tagA)+' '+str(humid)+' '+str(temp)+' '+str(zd)+' '+str(press)+' '+str(obs)+' '+str(AM))
         fileA0.write('\n')
