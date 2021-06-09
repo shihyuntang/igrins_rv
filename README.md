@@ -10,9 +10,9 @@ If you have any questions, suggestions, or wish to report a bug, please let us k
 More on how to contribute can be found in the [FAQ](https://github.com/shihyuntang/igrins_rv/wiki/FAQ#q-how-do-i-report-bugs) page.
 
 ***
-The best way to learn how IGRINS RV works is to first play with the example data, following steps in [Demo Run With Example Data of GJ281](https://github.com/shihyuntang/igrins_rv/wiki/Demo-Run-With-Example-Data-of-GJ281). While you are waiting for the example code to finish, read the detailed documentation on the [GitHub wiki page](https://github.com/shihyuntang/igrins_rv/wiki) so you know how to alter the example commands to fit your OWN science targets:
+The best way to learn how IGRINS RV works is to first play with the example data, following steps in [Demo Run With Example Data of GJ281](https://github.com/shihyuntang/igrins_rv/wiki/Demo-Run-With-Example-Data-of-GJ281). While you are waiting for the example code to finish, read the detailed documentation on the [GitHub wiki page](https://github.com/shihyuntang/igrins_rv/wiki) so you know how to alter the example commands to fit your OWN science targets.
 
-If you use ``IGRINS RV`` in your work, please go to the [FAQ page](https://github.com/shihyuntang/igrins_rv/wiki/FAQ#q-how-do-i-properly-cite-igrins-rv) to see how to properly cite ``IGRINS RV``:
+If you use ``IGRINS RV`` in your work, please go to the [FAQ page](https://github.com/shihyuntang/igrins_rv/wiki/FAQ#q-how-do-i-properly-cite-igrins-rv) to see how to properly cite ``IGRINS RV``.
 
 Acknowledgements:\
 Many thanks to Dr. Gregory Mace for helping improve the user experence with `IGRINS RV`!
