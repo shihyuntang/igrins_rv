@@ -1,5 +1,5 @@
 [![status](https://joss.theoj.org/papers/37282917527e6c195d9dff80107388fd/status.svg)](https://joss.theoj.org/papers/37282917527e6c195d9dff80107388fd)
-
+[![DOI](https://zenodo.org/badge/266670787.svg)](https://zenodo.org/badge/latestdoi/266670787)
 
 # [IGRINS RV](https://github.com/shihyuntang/igrins_rv): A Radial Velocity Pipeline for IGRINS
 
