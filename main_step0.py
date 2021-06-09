@@ -268,7 +268,7 @@ if __name__ == '__main__':
                         help="Optional (pc), can be from GaiaDR2 parallax [mas] (1/plx), or from Bailer-Jones et al. 2018. If give, will calculate BVC base on this info.",
                         type=str,   default='')
 
-    parser.add_argument('--version',                         action='version',  version='%(prog)s 0.9')
+    parser.add_argument('--version',                         action='version',  version='%(prog)s 1.0.0')
     args   = parser.parse_args()
     inpath = './Input/{}/'.format(args.targname)
 

@@ -28,7 +28,7 @@ if __name__ == '__main__':
                         type=str,   default='K')
     parser.add_argument('-sk_check', dest="skip",           action="store_true",
                         help="If set, will skip the input parameters check. Handy when running mutiple targets line by line")
-    parser.add_argument('--version',                          action='version',  version='%(prog)s 0.9')
+    parser.add_argument('--version',                          action='version',  version='%(prog)s 1.0.0')
     args = parser.parse_args()
     inpath   = './Input/{}/'.format(args.targname)
     cdbs_loc = '~/cdbs/'

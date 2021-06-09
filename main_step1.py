@@ -998,7 +998,7 @@ if __name__ == '__main__':
                         type=str,   default='')
     parser.add_argument('-DeBug',    dest="debug",           action="store_true",
                         help="If set, DeBug logging will be output, as well as (lots of) extra plots.")
-    parser.add_argument('--version',                         action='version',  version='%(prog)s 0.9')
+    parser.add_argument('--version',                         action='version',  version='%(prog)s 1.0.0')
     args = parser.parse_args()
     inpath   = './Input/{}/'.format(args.targname)
     cdbs_loc = '~/cdbs/'
