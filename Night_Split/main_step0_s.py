@@ -109,14 +109,18 @@ def DataPrep(args, tar_night, tar_num, tar_frame, file_night_num, std_name, std_
                               dec =  de_deg                   *units.degree,
                               pm_ra_cosdec = pmra_deg         *units.mas/units.yr,
                               pm_dec       = pmde_deg         *units.mas/units.yr,
-                              distance = float(args.distance) *units.pc,
+                              # distance = float(args.distance) *units.pc,
                               frame='icrs',
                               obstime="J2015.5")
 
             new_coord = targ_c.apply_space_motion(new_obstime=Time(time_midpoint, format='jd'))
 
 
-            observatoryN = EarthLocation.of_site('McDonald Observatory')
+            if obs == 'McD':
+                observatoryN = EarthLocation.of_site('McDonald Observatory')
+            elif obs == 'DCT':
+                observatoryN = EarthLocation.of_site('DCT')
+
             new_RA = new_coord.ra
             new_DE = new_coord.dec
 
@@ -272,9 +276,9 @@ if __name__ == '__main__':
     parser.add_argument("-pm",       dest="pm",               action="store",
                         help="Optional [-XX.xx,-XX.xx] [mas/yr], GaiaDR2 proper motion. If give, will calculate BVC base on this info.",
                         type=str,   default='')
-    parser.add_argument("-dist",    dest="distance",          action="store",
-                        help="Optional (pc), can be from GaiaDR2 parallax [mas] (1/plx), or from Bailer-Jones et al. 2018. If give, will calculate BVC base on this info.",
-                        type=str,   default='')
+    # parser.add_argument("-dist",    dest="distance",          action="store",
+    #                     help="Optional (pc), can be from GaiaDR2 parallax [mas] (1/plx), or from Bailer-Jones et al. 2018. If give, will calculate BVC base on this info.",
+    #                     type=str,   default='')
 
     parser.add_argument('-c',       dest="Nthreads",         action="store",
                         help="Number of cpu (threads) to use, default is 1/2 of avalible ones (you have %i cpus (threads) avaliable)" % (
