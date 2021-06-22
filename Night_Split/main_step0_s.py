@@ -24,7 +24,7 @@ def DataPrep(args, tar_night, tar_num, tar_frame, file_night_num, std_name, std_
 
     # Collect target star information
     fileT = open('../Input/Prepdata/Prepdata_targ_{}.txt'.format(star), 'w')
-    fileT.write('night beam tag mjd facility airmass bvc\n')
+    fileT.write('night beam tag jd facility airmass bvc\n')
 
     nightsT = []
 #    for x in range(len(star_files['CIVIL'])):
