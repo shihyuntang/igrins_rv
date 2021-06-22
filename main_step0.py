@@ -87,8 +87,11 @@ def DataPrep(args):
 
             new_coord = targ_c.apply_space_motion(new_obstime=Time(time_midpoint, format='jd'))
 
-
-            observatoryN = EarthLocation.of_site('McDonald Observatory')
+            if obs == 'McD':
+                observatoryN = EarthLocation.of_site('McDonald Observatory')
+            elif obs == 'DCT':
+                observatoryN = EarthLocation.of_site('DCT')
+                
             new_RA = new_coord.ra
             new_DE = new_coord.dec
 
