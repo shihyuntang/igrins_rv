@@ -81,14 +81,17 @@ def DataPrep(args):
                               dec =  de_deg                   *units.degree,
                               pm_ra_cosdec = pmra_deg         *units.mas/units.yr,
                               pm_dec       = pmde_deg         *units.mas/units.yr,
-                              distance = float(args.distance) *units.pc,
+                              # distance = float(args.distance) *units.pc,
                               frame='icrs',
                               obstime="J2015.5")
 
             new_coord = targ_c.apply_space_motion(new_obstime=Time(time_midpoint, format='jd'))
 
+            if obs == 'McD':
+                observatoryN = EarthLocation.of_site('McDonald Observatory')
+            elif obs == 'DCT':
+                observatoryN = EarthLocation.of_site('DCT')
 
-            observatoryN = EarthLocation.of_site('McDonald Observatory')
             new_RA = new_coord.ra
             new_DE = new_coord.dec
 
@@ -101,7 +104,7 @@ def DataPrep(args):
             if obs == 'McD':
                 print('WARNING!! BVC taken stright from the master log ...')
                 observatoryN = EarthLocation.of_site('McDonald Observatory')
-                BVCfile  = float(np.array(star_files['BVC'])[x]       ) #BVC in the master log might be wrong, so, re-calculated below...
+                BVCfile  = float(np.array(star_files['BVC'])[x]       ) #BVC in the master log might be wrong...
 
             elif obs == 'DCT':
                 print('WARNING!! BVC calculated base on the fits header information ...')
@@ -264,9 +267,9 @@ if __name__ == '__main__':
     parser.add_argument("-pm",       dest="pm",               action="store",
                         help="Optional [-XX.xx,-XX.xx] [mas/yr], GaiaDR2 proper motion. If give, will calculate BVC base on this info.",
                         type=str,   default='')
-    parser.add_argument("-dist",    dest="distance",          action="store",
-                        help="Optional (pc), can be from GaiaDR2 parallax [mas] (1/plx), or from Bailer-Jones et al. 2018. If give, will calculate BVC base on this info.",
-                        type=str,   default='')
+    # parser.add_argument("-dist",    dest="distance",          action="store",
+    #                     help="Optional (pc), can be from GaiaDR2 parallax [mas] (1/plx), or from Bailer-Jones et al. 2018. If give, will calculate BVC base on this info.",
+    #                     type=str,   default='')
 
     parser.add_argument('--version',                         action='version',  version='%(prog)s 1.0.0')
     args   = parser.parse_args()
