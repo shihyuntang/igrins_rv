@@ -867,11 +867,11 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
             sigma_method2 = sigma_O2 - sigma_ABbar2
 
         else: # If target star, load the uncertainty in method calculated from our RV STD star runs
-            if boxind == 0:
+            if T_Ls[boxind] == 'T':
                 nights_use = nightsT.copy()
                 kind = 'Focused'
                 sigma_method2 = inparam.methodvariance_tight[args.band]
-            else:
+            elif T_Ls[boxind] == 'L':
                 nights_use = nightsL.copy()
                 kind = 'Defocus'
                 sigma_method2 = inparam.methodvariance_loose[args.band]
@@ -912,9 +912,9 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
         vsinifinal = np.ones(Nnights, dtype=np.float64)
         jds_out   = np.ones(Nnights, dtype=np.float64)
 
-        if boxind == 0:
+        if T_Ls[boxind] == 'T':
             nights_use = nightsT.copy(); kind = 'Focused';
-        else:
+        elif T_Ls[boxind] == 'L'::
             nights_use = nightsL.copy(); kind = 'Defocused';
 
 
@@ -947,13 +947,13 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
             stdfinal = np.sqrt(stdfinal**2 + sigma_order_to_order**2)
         else:
             # Correct for zero-point offset between loose and tight epochs
-            if boxind == 0:
+            if T_Ls[boxind] == 'T':
                 rvMeanTight = np.nanmean(rvfinal)
-            else:
+
+            elif (T_Ls[boxind] == 'L') & (len(T_Ls)==2):
                 logger.info('Mean RV during the Defocus mounting period, before subtraction = {:1.4f} km/s'.format(np.nanmean(rvfinal)))
                 logger.info('Mean RV during the Focused mounting period, before subtraction = {:1.4f} km/s'.format(rvMeanTight))
                 logger.info('Value used to correct for this = {:1.4f} km/s'.format(np.nanmean(rvfinal) - rvMeanTight))
-
                 rvfinal -= np.nanmean(rvfinal) - rvMeanTight
 
         # Plot results
