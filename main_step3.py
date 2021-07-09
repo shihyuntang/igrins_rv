@@ -914,7 +914,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
 
         if T_Ls[boxind] == 'T':
             nights_use = nightsT.copy(); kind = 'Focused';
-        elif T_Ls[boxind] == 'L'::
+        elif T_Ls[boxind] == 'L':
             nights_use = nightsL.copy(); kind = 'Defocused';
 
 
