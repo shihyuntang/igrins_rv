@@ -716,7 +716,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
         T_Ls = ['T']
 
     orders = np.array([6])
-    print('ONLY process order 5')
+    print('ONLY process order 6')
     #-------------------------------------------------------------------------------
     # if not in debug mode than enter quite mode, i.e., all message saved in log file
     if not args.debug: logger.removeHandler(stream_hander)
@@ -961,7 +961,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
 
         axes.plot(    np.arange(len(rvfinal))+1, rvfinal, '.k', ms=5)
         axes.errorbar(np.arange(len(rvfinal))+1, rvfinal, yerr=stdfinal, ls='none', lw=.5, ecolor='black')
-        axes.text(0.05, 0.93, r'RV mean= {:1.5f} $\pm$ {:1.5f} km/s'.format(np.nanmean(rvfinal), np.nanstd(rvfinal)),
+        axes.text(0.05, 0.93, r'RV mean= ${:1.5f}$ $\pm$ {:1.5f} km/s'.format(np.nanmean(rvfinal), np.nanstd(rvfinal)),
                              transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
         axes.set_ylim(np.nanmin(rvfinal)-.08,
                      np.nanmax(rvfinal)+.08)
@@ -1030,7 +1030,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
     f, axes = plt.subplots(1, 1, figsize=(5,3), facecolor='white', dpi=300)
     axes.plot(xscale,rvfinalCombined, '.k', ms=5)
     axes.errorbar(xscale,rvfinalCombined,yerr=stdfinalCombined,ls='none',lw=.5, ecolor='black')
-    axes.text(0.05, 0.93, r'RV mean= {:1.5f} $\pm$ {:1.5f} km/s'.format(np.nanmean(rvfinalCombined), np.nanstd(rvfinalCombined)),
+    axes.text(0.05, 0.93, r'RV mean= ${:1.5f}$ $\pm$ {:1.5f} km/s'.format(np.nanmean(rvfinalCombined), np.nanstd(rvfinalCombined)),
                          transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
 
     if (len(nightsT) != 0) & (len(nightsL) == 0):

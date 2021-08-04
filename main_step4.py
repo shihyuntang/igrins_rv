@@ -124,22 +124,22 @@ Input Parameters:
     f, axes = plt.subplots(1, 1, figsize=(5,3), facecolor='white', dpi=300)
     axes.plot(xscale,rvfinalCombined, '.k', ms=5)
     axes.errorbar(xscale,rvfinalCombined,yerr=stdfinalCombined,ls='none',lw=.5, ecolor='black')
-    axes.text(0.05, 0.93, r'RV mean= {:1.5f} $\pm$ {:1.5f} km/s'.format(np.nanmean(rvfinalCombined), np.nanstd(rvfinalCombined)),
+    axes.text(0.05, 0.93, r'RV mean= ${:1.5f}$ $\pm$ {:1.5f} km/s'.format(np.nanmean(rvfinalCombined), np.nanstd(rvfinalCombined)),
                          transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
 
     if (len(nightsT) != 0) & (len(nightsL) == 0):
-        axes.text(0.05, 0.1, 'Tight', transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
+        axes.text(0.05, 0.1, 'Focused', transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
     elif (len(nightsT) == 0) & (len(nightsL) != 0):
-        axes.text(0.05, 0.1, 'Loose', transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
+        axes.text(0.05, 0.1, 'Defocus', transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
     else:
         if nightsT[-1] < nightsL[0]: # if tight epoch precedes loose epoch #sy
             axes.axvline(xscale[len(nightsT)] - 0.5, linewidth=.7, color='black')
-            axes.text(0.05, 0.1, 'Tight', transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
-            axes.text(0.9,  0.1, 'Loose', transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
+            axes.text(0.05, 0.1, 'Focused', transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
+            axes.text(0.9,  0.1, 'Defocus', transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
         else:
             axes.axvline(xscale[len(nightsL)] - 0.5, linewidth=.7, color='black')
-            axes.text(0.05, 0.1, 'Tight', transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
-            axes.text(0.9,  0.1, 'Loose', transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
+            axes.text(0.05, 0.1, 'Focused', transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
+            axes.text(0.9,  0.1, 'Defocus', transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
     axes.set_ylim(np.nanmin(rvfinalCombined)-.08,np.nanmax(rvfinalCombined)+.08)
     axes.set_ylabel('RV (km/s)', size=6, style='normal', family='sans-serif' )
     axes.set_xlabel('Night (#)', size=6, style='normal', family='sans-serif' )
