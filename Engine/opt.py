@@ -64,7 +64,7 @@ def fmodel_chi(par,grad):
     if w[-1] < w[0]:
         # print(f'{nc_cp}, {nk_cp}, {optkind_cp}: Hitting negative wavelength solution for some reason !')
         return 1e10
-
+    
     # Define the speed of light in km/s and other useful quantities
     c = 2.99792458e5
     npts = len(w)
