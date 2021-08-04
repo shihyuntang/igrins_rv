@@ -715,8 +715,8 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
         nightscomblist = [nightsT]
         T_Ls = ['T']
 
-    # orders = np.array([5])
-    # print('ONLY process order 5')
+    orders = np.array([6])
+    print('ONLY process order 5')
     #-------------------------------------------------------------------------------
     # if not in debug mode than enter quite mode, i.e., all message saved in log file
     if not args.debug: logger.removeHandler(stream_hander)
