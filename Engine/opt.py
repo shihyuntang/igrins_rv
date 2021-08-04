@@ -64,7 +64,7 @@ def fmodel_chi(par,grad):
     if w[-1] < w[0]:
         # print(f'{nc_cp}, {nk_cp}, {optkind_cp}: Hitting negative wavelength solution for some reason !')
         return 1e10
-    
+
     # Define the speed of light in km/s and other useful quantities
     c = 2.99792458e5
     npts = len(w)
@@ -79,6 +79,13 @@ def fmodel_chi(par,grad):
     if (w[0] < watm[0]) or (w[-1] > watm[-1]):
         # print(f'{nc_cp}, {nk_cp}, {optkind_cp}: w not subset of watm, w goes from '+str(w[0])+' to '+str(w[-1])+' and watm goes from '+str(watm[0])+' to '+str(watm[-1]))
         return 1e10
+
+    # dstep = np.median(w[1:]-w[:-1])
+    # nstep = int((w[-1]-w[0])/dstep)
+    # wreg = np.linspace(w[0],w[-1],nstep)
+    # fitobj_cp.s = rebin_jv(w,fitobj_cp.s,wreg,False)
+    # fitobj_cp.u = rebin_jv(w,fitobj_cp.u,wreg,False)
+    # w = wreg.copy()
 
     dstep = np.median(wspot[1:]-wspot[:-1])
     nstep = int((wspot[-1]-wspot[0])/dstep)
@@ -186,7 +193,7 @@ def fmod(par,fitobj):
     wspot1 = np.linspace(w[0],w[-1],nstep)
     sspot = rebin_jv(wspot,sspot,wspot1,False)
     wspot = wspot1.copy()
-    
+
     vsini = par[4]
 
     # Rotationally broaden stellar template
@@ -282,7 +289,7 @@ def fmod_conti(par,fitobj):
     wspot1 = np.linspace(w[0],w[-1],nstep)
     sspot = rebin_jv(wspot,sspot,wspot1,False)
     wspot = wspot1.copy()
-    
+
     vsini = par[4]
 
     # Rotationally broaden stellar template
