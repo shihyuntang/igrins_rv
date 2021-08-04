@@ -5,7 +5,7 @@ import numpy as np
 from scipy.interpolate import interp1d, splrep,splev
 import time
 
-def rotint_old(w,s,vsini,eps=None,nr=None,ntheta=None,dif=None):
+def rotint(w,s,vsini,eps=None,nr=None,ntheta=None,dif=None):
     #  This routine reads in a spectrum, s, on a wavelength scale, w, and a vsini
     #  with which to rotationally broaden the spectrum.  The rotationally broadened
     #  spectrum is returned in ns.  Parameters that can be set are the coefficient
