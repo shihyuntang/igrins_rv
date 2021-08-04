@@ -264,6 +264,26 @@ def setup_templates(logger, kind='synthetic', band='K', temperature=5000, logg=4
     watm = watm[(np.isfinite(satm))]
     satm = satm[(np.isfinite(satm))]
     satm[(satm < 0)] = 0
+    
+    # Make sure wavelength is ascending always
+    mflux0 = np.array([x for _, x in sorted(zip(mwave0, mflux0))])
+    mwave0 = np.array(list(sorted(mwave0)))
+
+    # Remove duplicate wavelength values from stellar template (doesn't affect steps 1-3, but needed for bisectors)
+    ind = []
+    maxwave = mwave0[0]
+    for i in range(1,len(mwave0)-1):
+        if mwave0[i] > maxwave:
+            maxwave = mwave0[i]
+        else:
+            ind.append(i)
+    ind = np.array(ind)
+    mask = np.ones(len(mwave0),dtype=bool)
+    if len(ind) > 0:
+        mask[ind] = False
+        mwave0 = mwave0[mask]
+        mflux0 = mflux0[mask]
+        
     return watm, satm, mwave0, mflux0
 
 
