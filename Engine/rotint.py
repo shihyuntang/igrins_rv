@@ -56,4 +56,4 @@ def rotint(w,s,vsini,eps=None,nr=None,ntheta=None,dif=None):
 
     ns /= tarea
 
-    return ns
+    return w, ns
