@@ -23,11 +23,11 @@ def rotint_old(w,s,vsini,eps=None,nr=None,ntheta=None,dif=None):
     #
 
     if eps == None:
-        eps = .6
+        eps = .4
     if nr == None:
         nr = 10
     if ntheta == None:
-        ntheta = 100
+        ntheta = 20
     if dif == None:
         dif = 0
 
