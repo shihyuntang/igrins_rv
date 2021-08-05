@@ -263,7 +263,7 @@ def fmod(par,fitobj):
 
     if len(fitobj.mask) != 0:
         for maskbounds in fitobj.mask:
-            mask[(fitobj.x > maskbounds[0]) & (fitobj.x < maskbounds[1]) ] = False
+            mask[(xdata > maskbounds[0]) & (xdata < maskbounds[1]) ] = False
 
     mask[fitobj.CRmask] = False
 
