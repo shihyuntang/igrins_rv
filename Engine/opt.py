@@ -65,6 +65,14 @@ def fmodel_chi(par,grad):
         # print(f'{nc_cp}, {nk_cp}, {optkind_cp}: Hitting negative wavelength solution for some reason !')
         return 1e10
 
+    dstep = np.median(w[1:]-w[:-1])
+    nstep = int((w[-1]-w[0])/dstep)
+    wreg = np.linspace(w[0],w[-1],nstep)
+    sdata = rebin_jv(w,fitobj_cp.s,wreg,False)
+    udata = rebin_jv(w,fitobj_cp.u,wreg,False)
+    xdata = np.linspace(fitobj_cp.x[0],fitobj_cp.x[-1],nstep)
+    w = wreg.copy()
+    
     # Define the speed of light in km/s and other useful quantities
     c = 2.99792458e5
     npts = len(w)
@@ -80,19 +88,15 @@ def fmodel_chi(par,grad):
         # print(f'{nc_cp}, {nk_cp}, {optkind_cp}: w not subset of watm, w goes from '+str(w[0])+' to '+str(w[-1])+' and watm goes from '+str(watm[0])+' to '+str(watm[-1]))
         return 1e10
 
-    dstep = np.median(w[1:]-w[:-1])
-    nstep = int((w[-1]-w[0])/dstep)
-    wreg = np.linspace(w[0],w[-1],nstep)
-    fitobj_cp.s = rebin_jv(w,fitobj_cp.s,wreg,False)
-    fitobj_cp.u = rebin_jv(w,fitobj_cp.u,wreg,False)
-    w = wreg.copy()
-
     dstep = np.median(wspot[1:]-wspot[:-1])
     nstep = int((wspot[-1]-wspot[0])/dstep)
     wspot1 = np.linspace(w[0],w[-1],nstep)
     sspot = rebin_jv(wspot,sspot,wspot1,False)
     wspot = wspot1.copy()
 
+    satm = satm[(watm >= w[0]) & (watm <= w[-1])]
+    watm = watm[(watm >= w[0]) & (watm <= w[-1])]
+    
     vsini = par[4]
 
     # Rotationally broaden stellar template
@@ -113,7 +117,7 @@ def fmodel_chi(par,grad):
     dw = (w[-1] - w[0])/(npts-1.)
     vel = (watm-mnw)/mnw*c
 
-    fwhmraw = par[5] + par[13]*(fitobj_cp.x) + par[14]*(fitobj_cp.x**2)
+    fwhmraw = par[5] + par[13]*(xdata) + par[14]*(xdata**2)
     try:
         spl = splrep(w,fwhmraw)
     except:
@@ -130,29 +134,29 @@ def fmodel_chi(par,grad):
     smod = rebin_jv(watm,nsmod,w,False)
 
     # Load saved continuum
-    c2 = fitobj_cp.continuum
+    c2 = rebin_jv(fitobj_cp.x,fitobj_cp.continuum,xdata,False)
     smod *= c2
 
     # Apply continuum adjustment
-    cont = par[10] + par[11]*fitobj_cp.x+ par[12]*(fitobj_cp.x**2) + par[20]*(fitobj_cp.x**3) + par[21]*(fitobj_cp.x**4) + par[22]*(fitobj_cp.x**5) + par[23]*(fitobj_cp.x**6)
+    cont = par[10] + par[11]*xdata + par[12]*(xdata**2) + par[20]*(xdata**3) + par[21]*(xdata**4) + par[22]*(xdata**5) + par[23]*(xdata**6)
     if fitobj_cp.masterbeam == 'A':
         bucket = np.zeros_like(cont)
-        bucket[(fitobj_cp.x >= (par[15]-par[16]/2))         & (fitobj_cp.x <= (par[15]+par[16]/2))] = par[17]
-        bucket[(fitobj_cp.x >= (par[15]+par[16]/2-par[18])) & (fitobj_cp.x <= (par[15]+par[16]/2))] += par[19]
+        bucket[(xdata >= (par[15]-par[16]/2))         & (xdata <= (par[15]+par[16]/2))] = par[17]
+        bucket[(xdata >= (par[15]+par[16]/2-par[18])) & (xdata <= (par[15]+par[16]/2))] += par[19]
         cont -= bucket
     smod *= cont
 
     mask = np.ones_like(smod,dtype=bool)
-    mask[(fitobj_cp.s < .0)] = False
+    mask[(sdata < .0)] = False
 
     if len(fitobj_cp.mask) != 0:
         for maskbounds in fitobj_cp.mask:
-            mask[(fitobj_cp.x > maskbounds[0]) & (fitobj_cp.x < maskbounds[1]) ] = False
+            mask[(xdata > maskbounds[0]) & (xdata < maskbounds[1]) ] = False
 
     mask[fitobj_cp.CRmask] = False
 
     # Compute chisq
-    chisq = np.sum((fitobj_cp.s[mask] - smod[mask])**2. / fitobj_cp.u[mask]**2.)
+    chisq = np.sum((sdata[mask] - smod[mask])**2. / udata[mask]**2.)
     chisq = chisq / (len(smod[mask]) - len(par))
 
     if optimize_cp == True:
@@ -176,6 +180,14 @@ def fmod(par,fitobj):
         sys.exit('WAVE ERROR 1 {}'.format(par[6:10]))
         return 1e10
 
+    dstep = np.median(w[1:]-w[:-1])
+    nstep = int((w[-1]-w[0])/dstep)
+    wreg = np.linspace(w[0],w[-1],nstep)
+    sdata = rebin_jv(w,fitobj_cp.s,wreg,False)
+    udata = rebin_jv(w,fitobj_cp.u,wreg,False)
+    xdata = np.linspace(fitobj_cp.x[0],fitobj_cp.x[-1],nstep)
+    w = wreg.copy()
+    
     c = 2.99792458e5
     npts = len(w)
 
@@ -188,19 +200,15 @@ def fmod(par,fitobj):
         sys.exit('WAVE ERROR 2 {} {} {} {} {}'.format(par[6:10],watm[0],watm[-1],w[0],w[-1]))
         return 1e10
 
-    dstep = np.median(w[1:]-w[:-1])
-    nstep = int((w[-1]-w[0])/dstep)
-    wreg = np.linspace(w[0],w[-1],nstep)
-    fitobj_cp.s = rebin_jv(w,fitobj_cp.s,wreg,False)
-    fitobj_cp.u = rebin_jv(w,fitobj_cp.u,wreg,False)
-    w = wreg.copy()
-
     dstep = np.median(wspot[1:]-wspot[:-1])
     nstep = int((wspot[-1]-wspot[0])/dstep)
     wspot1 = np.linspace(w[0],w[-1],nstep)
     sspot = rebin_jv(wspot,sspot,wspot1,False)
     wspot = wspot1.copy()
 
+    satm = satm[(watm >= w[0]) & (watm <= w[-1])]
+    watm = watm[(watm >= w[0]) & (watm <= w[-1])]
+    
     vsini = par[4]
 
     # Rotationally broaden stellar template
@@ -219,7 +227,7 @@ def fmod(par,fitobj):
     dw = (w[-1] - w[0])/(npts-1.)
     vel = (watm-mnw)/mnw*c
 
-    fwhmraw = par[5] + par[13]*(fitobj.x) + par[14]*(fitobj.x**2)
+    fwhmraw = par[5] + par[13]*(xdata) + par[14]*(xdata**2)
     if np.round(np.min(fwhmraw),5) < 1 or np.round(np.max(fwhmraw),5) > 7:
         sys.exit('IP ERROR 1 {} {} {} {} {}'.format(par[5],par[13],par[14],np.min(fwhmraw),np.max(fwhmraw) ))
         return 1e10
@@ -238,20 +246,20 @@ def fmod(par,fitobj):
     smod = rebin_jv(watm,nsmod,w,False)
 
     # Load saved continuum
-    c2 = fitobj.continuum
+    c2 = rebin_jv(fitobj.x,fitobj.continuum,xdata,False)
     smod *= c2#/np.median(c2)
 
     # Apply continuum adjustment
-    cont = par[10] + par[11]*fitobj.x+ par[12]*(fitobj.x**2) + par[20]*(fitobj.x**3) + par[21]*(fitobj.x**4) + par[22]*(fitobj.x**5) + par[23]*(fitobj.x**6)
-    if fitobj.masterbeam == 'A':
+    cont = par[10] + par[11]*xdata + par[12]*(xdata**2) + par[20]*(xdata**3) + par[21]*(xdata**4) + par[22]*(xdata**5) + par[23]*(xdata**6)
+    if fitobj_cp.masterbeam == 'A':
         bucket = np.zeros_like(cont)
-        bucket[(fitobj.x >= (par[15]-par[16]/2)) & (fitobj.x <= (par[15]+par[16]/2))] = par[17]
-        bucket[(fitobj.x >= (par[15]+par[16]/2-par[18])) & (fitobj.x <= (par[15]+par[16]/2))] += par[19]
+        bucket[(xdata >= (par[15]-par[16]/2))         & (xdata <= (par[15]+par[16]/2))] = par[17]
+        bucket[(xdata >= (par[15]+par[16]/2-par[18])) & (xdata <= (par[15]+par[16]/2))] += par[19]
         cont -= bucket
     smod *= cont
 
     mask = np.ones_like(smod,dtype=bool)
-    mask[(fitobj.s < .0)] = False
+    mask[(sdata < .0)] = False
 
     if len(fitobj.mask) != 0:
         for maskbounds in fitobj.mask:
@@ -259,7 +267,7 @@ def fmod(par,fitobj):
 
     mask[fitobj.CRmask] = False
 
-    chisq = np.sum((fitobj.s[mask] - smod[mask])**2. / fitobj.u[mask]**2.)
+    chisq = np.sum((sdata[mask] - smod[mask])**2. / udata[mask]**2.)
     chisq = chisq / (len(smod[mask]) - len(par))
 
     return smod,chisq
@@ -280,6 +288,14 @@ def fmod_conti(par,fitobj):
         sys.exit('WAVE ERROR 1 {}'.format(par[6:10]))
         return 1e10
 
+    dstep = np.median(w[1:]-w[:-1])
+    nstep = int((w[-1]-w[0])/dstep)
+    wreg = np.linspace(w[0],w[-1],nstep)
+    sdata = rebin_jv(w,fitobj_cp.s,wreg,False)
+    udata = rebin_jv(w,fitobj_cp.u,wreg,False)
+    xdata = np.linspace(fitobj_cp.x[0],fitobj_cp.x[-1],nstep)
+    w = wreg.copy()
+    
     c = 2.99792458e5
     npts = len(w)
 
@@ -289,14 +305,8 @@ def fmod_conti(par,fitobj):
     satm = satm**par[3]
 
     if (w[0] < watm[0]) or (w[-1] > watm[-1]):
+        sys.exit('WAVE ERROR 2 {} {} {} {} {}'.format(par[6:10],watm[0],watm[-1],w[0],w[-1]))
         return 1e10
-
-    dstep = np.median(w[1:]-w[:-1])
-    nstep = int((w[-1]-w[0])/dstep)
-    wreg = np.linspace(w[0],w[-1],nstep)
-    fitobj_cp.s = rebin_jv(w,fitobj_cp.s,wreg,False)
-    fitobj_cp.u = rebin_jv(w,fitobj_cp.u,wreg,False)
-    w = wreg.copy()
 
     dstep = np.median(wspot[1:]-wspot[:-1])
     nstep = int((wspot[-1]-wspot[0])/dstep)
@@ -304,10 +314,13 @@ def fmod_conti(par,fitobj):
     sspot = rebin_jv(wspot,sspot,wspot1,False)
     wspot = wspot1.copy()
 
+    satm = satm[(watm >= w[0]) & (watm <= w[-1])]
+    watm = watm[(watm >= w[0]) & (watm <= w[-1])]
+    
     vsini = par[4]
 
     # Rotationally broaden stellar template
-    if vsini != 0:
+    if vsini >= 0.5:
         wspot2,rspot2 = rotint(wspot,sspot,vsini)
     else:
         wspot2 = wspot
@@ -322,8 +335,8 @@ def fmod_conti(par,fitobj):
     dw = (w[-1] - w[0])/(npts-1.)
     vel = (watm-mnw)/mnw*c
 
-    fwhmraw = par[5] + par[13]*(fitobj.x) + par[14]*(fitobj.x**2)
-    if np.min(fwhmraw) < 1 or np.max(fwhmraw) > 7:
+    fwhmraw = par[5] + par[13]*(xdata) + par[14]*(xdata**2)
+    if np.round(np.min(fwhmraw),5) < 1 or np.round(np.max(fwhmraw),5) > 7:
         sys.exit('IP ERROR 1 {} {} {} {} {}'.format(par[5],par[13],par[14],np.min(fwhmraw),np.max(fwhmraw) ))
         return 1e10
     try:
@@ -331,6 +344,7 @@ def fmod_conti(par,fitobj):
     except ValueError:
         sys.exit('IP ERROR 2 {} {} {}'.format(par[5],par[13],par[14]))
         return 1e10
+
     fwhm = splev(watm,spl)
 
     vhwhm = dw*np.abs(fwhm)/mnw*c/2.
@@ -340,20 +354,18 @@ def fmod_conti(par,fitobj):
     smod = rebin_jv(watm,nsmod,w,False)
 
     # Load saved continuum
-    c2 = fitobj.continuum
-    smod *= c2
+    c2 = rebin_jv(fitobj.x,fitobj.continuum,xdata,False)
+    smod *= c2#/np.median(c2)
 
     # Apply continuum adjustment
-    cont = par[10] + par[11]*fitobj.x+ par[12]*(fitobj.x**2) + par[20]*(fitobj.x**3) + par[21]*(fitobj.x**4) + par[22]*(fitobj.x**5) + par[23]*(fitobj.x**6)
-    if fitobj.masterbeam == 'A':
+    cont = par[10] + par[11]*xdata + par[12]*(xdata**2) + par[20]*(xdata**3) + par[21]*(xdata**4) + par[22]*(xdata**5) + par[23]*(xdata**6)
+    if fitobj_cp.masterbeam == 'A':
         bucket = np.zeros_like(cont)
-        bucket[(fitobj.x >= (par[15]-par[16]/2)) & (fitobj.x <= (par[15]+par[16]/2))] = par[17]
-        bucket[(fitobj.x >= (par[15]+par[16]/2-par[18])) & (fitobj.x <= (par[15]+par[16]/2))] += par[19]
+        bucket[(xdata >= (par[15]-par[16]/2))         & (xdata <= (par[15]+par[16]/2))] = par[17]
+        bucket[(xdata >= (par[15]+par[16]/2-par[18])) & (xdata <= (par[15]+par[16]/2))] += par[19]
         cont -= bucket
     smod *= cont
 
-    mask = np.ones_like(smod,dtype=bool)
-    mask[(fitobj.s < .05)] = False
 
     return w, smod, cont, c2
 
