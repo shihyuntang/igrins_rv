@@ -2,6 +2,7 @@
 from Engine.opt       import fmod
 from Engine.importmodule import *
 from Engine.detect_peaks import detect_peaks
+from Engine.rebin_jv import rebin_jv
 
 
 def CRmasker(parfit,fitobj):
@@ -19,13 +20,24 @@ def CRmasker(parfit,fitobj):
     fit,chi = fmod(parfit, fitobj)
 
     # Everywhere where data protrudes high above model, check whether slope surrounding protrusion is /\ and mask if sufficiently steep
-    residual = fitobj.s/fit
+
+    w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
+
+    dstep = np.median(w[1:]-w[:-1])
+    nstep = int((w[-1]-w[0])/dstep)
+    wreg = np.linspace(w[0],w[-1],nstep)
+    sdata = rebin_jv(w,fitobj.s,wreg,False)
+    udata = rebin_jv(w,fitobj.u,wreg,False)
+    xdata = np.linspace(fitobj.x[0],fitobj.x[-1],nstep)
+    w = wreg.copy()
+
+    residual = sdata/fit
     MAD = np.median(np.abs(np.median(residual)-residual))
     CRmask = np.array(np.where(residual > np.median(residual)+2*MAD)[0])
 
     CRmaskF = []; CRmask = list(CRmask);
 
-    for hit in [0,len(fitobj.x)-1]:
+    for hit in [0,len(xdata)-1]:
         if hit in CRmask:
             CRmaskF.append(hit)
             CRmask.remove(hit)
@@ -36,18 +48,18 @@ def CRmasker(parfit,fitobj):
         if len(group) == 1:
             gL = group-1; gR = group+1;
         else:
-            peaks = detect_peaks(fitobj.s[group])
+            peaks = detect_peaks(sdata[group])
             if len(peaks) < 1:
                 group = np.concatenate((np.array([group[0]-1]),group,np.array([group[-1]+1])))
-                peaks = detect_peaks(fitobj.s[group])
+                peaks = detect_peaks(sdata[group])
                 if len(peaks) < 1:
                     continue
             if len(peaks) > 1:
                 continue
             gL = group[:peaks[0]]; gR = group[peaks[0]+1:];
 
-        slopeL = (fitobj.s[gL+1]-fitobj.s[gL])/(fitobj.x[gL+1]-fitobj.x[gL])
-        slopeR = (fitobj.s[gR]-fitobj.s[gR-1])/(fitobj.x[gR]-fitobj.x[gR-1])
+        slopeL = (sdata[gL+1]-sdata[gL])/(xdata[gL+1]-xdata[gL])
+        slopeR = (sdata[gR]-sdata[gR-1])/(xdata[gR]-xdata[gR-1])
         try:
             if (np.min(slopeL) > 300) and (np.max(slopeR) < -300) and len(group) < 6:
                 CRmaskF = np.concatenate((CRmaskF,group))
@@ -55,4 +67,6 @@ def CRmasker(parfit,fitobj):
             if (slopeL > 300) and (slopeR < -300):
                 CRmaskF = np.concatenate((CRmaskF,group))
 
-    return CRmaskF
+    #mask = np.ones_like(xdata,dtype=bool)
+    
+    return [xdata,CRmaskF]
