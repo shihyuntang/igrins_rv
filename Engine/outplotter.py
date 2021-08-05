@@ -24,7 +24,10 @@ def outplotter_tel(parfit, fitobj, title, inparam, args, order):
         for maskbounds in fitobj.mask:
             mask[(fitobj.x > maskbounds[0]) & (fitobj.x < maskbounds[1]) ] = False
 
-    mask[fitobj.CRmask] = False
+    if len(fitobj.CRmask[1]) > 0:
+        for mb in fitobj.CRmask[1]:
+            mask[(xdata >= fitobj.CRmask[0][mb]-1) & (xdata <= fitobj.CRmask[0][mb]+1)] = False
+
 
     if args.band == 'H':
         if np.int(order) in [13]:
@@ -60,7 +63,11 @@ def outplotter_tel(parfit, fitobj, title, inparam, args, order):
     cont *= fitobj.continuum
 
     mask2 = np.ones_like(fitobj.x,dtype=bool)
-    mask2[fitobj.CRmask] = False
+    
+    if len(fitobj.CRmask[1]) > 0:
+        for mb in fitobj.CRmask[1]:
+            mask2[(xdata >= fitobj.CRmask[0][mb]-1) & (xdata <= fitobj.CRmask[0][mb]+1)] = False
+
 
     fig, axes = plt.subplots(1, 1, figsize=(6,3), facecolor='white', dpi=300)
 
@@ -108,7 +115,10 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3, order):
         for maskbounds in fitobj.mask:
             mask[(fitobj.x > maskbounds[0]) & (fitobj.x < maskbounds[1]) ] = False
 
-    mask[fitobj.CRmask] = False
+    if len(fitobj.CRmask[1]) > 0:
+        for mb in fitobj.CRmask[1]:
+            mask[(xdata >= fitobj.CRmask[0][mb]-1) & (xdata <= fitobj.CRmask[0][mb]+1)] = False
+
 
     if args.band == 'H':
         if np.int(order) in [13]:
@@ -146,7 +156,11 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3, order):
     fig, axes = plt.subplots(1, 1, figsize=(6,3), facecolor='white', dpi=300)
 
     mask2 = np.ones_like(fitobj.x,dtype=bool)
-    mask2[fitobj.CRmask] = False
+    
+    if len(fitobj.CRmask[1]) > 0:
+        for mb in fitobj.CRmask[1]:
+            mask2[(xdata >= fitobj.CRmask[0][mb]-1) & (xdata <= fitobj.CRmask[0][mb]+1)] = False
+
 
     n = len(fitobj.mask)
 
