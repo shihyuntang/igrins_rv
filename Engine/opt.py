@@ -72,7 +72,7 @@ def fmodel_chi(par,grad):
     udata = rebin_jv(w,fitobj_cp.u,wreg,False)
     xdata = np.linspace(fitobj_cp.x[0],fitobj_cp.x[-1],nstep)
     w = wreg.copy()
-    
+
     # Define the speed of light in km/s and other useful quantities
     c = 2.99792458e5
     npts = len(w)
@@ -96,7 +96,7 @@ def fmodel_chi(par,grad):
 
     satm = satm[(watm >= w[0]) & (watm <= w[-1])]
     watm = watm[(watm >= w[0]) & (watm <= w[-1])]
-    
+
     vsini = par[4]
 
     # Rotationally broaden stellar template
@@ -123,7 +123,7 @@ def fmodel_chi(par,grad):
     except:
         return 1e10
     fwhm = splev(watm,spl)
-    if (np.min(fwhm) < 1) or (np.max(fwhm) > 7):
+    if (np.min(fwhm) < 1) or (np.max(fwhm) > 8):
         return 1e10
 
     #Handle instrumental broadening
@@ -190,7 +190,7 @@ def fmod(par,fitobj):
     udata = rebin_jv(w,fitobj_cp.u,wreg,False)
     xdata = np.linspace(fitobj_cp.x[0],fitobj_cp.x[-1],nstep)
     w = wreg.copy()
-    
+
     c = 2.99792458e5
     npts = len(w)
 
@@ -211,7 +211,7 @@ def fmod(par,fitobj):
 
     satm = satm[(watm >= w[0]) & (watm <= w[-1])]
     watm = watm[(watm >= w[0]) & (watm <= w[-1])]
-    
+
     vsini = par[4]
 
     # Rotationally broaden stellar template
@@ -231,7 +231,7 @@ def fmod(par,fitobj):
     vel = (watm-mnw)/mnw*c
 
     fwhmraw = par[5] + par[13]*(xdata) + par[14]*(xdata**2)
-    if np.round(np.min(fwhmraw),5) < 1 or np.round(np.max(fwhmraw),5) > 7:
+    if np.round(np.min(fwhmraw),5) < 1 or np.round(np.max(fwhmraw),5) > 8:
         sys.exit('IP ERROR 1 {} {} {} {} {}'.format(par[5],par[13],par[14],np.min(fwhmraw),np.max(fwhmraw) ))
         return 1e10
     try:
@@ -301,7 +301,7 @@ def fmod_conti(par,fitobj):
     udata = rebin_jv(w,fitobj_cp.u,wreg,False)
     xdata = np.linspace(fitobj_cp.x[0],fitobj_cp.x[-1],nstep)
     w = wreg.copy()
-    
+
     c = 2.99792458e5
     npts = len(w)
 
@@ -322,7 +322,7 @@ def fmod_conti(par,fitobj):
 
     satm = satm[(watm >= w[0]) & (watm <= w[-1])]
     watm = watm[(watm >= w[0]) & (watm <= w[-1])]
-    
+
     vsini = par[4]
 
     # Rotationally broaden stellar template
@@ -342,7 +342,7 @@ def fmod_conti(par,fitobj):
     vel = (watm-mnw)/mnw*c
 
     fwhmraw = par[5] + par[13]*(xdata) + par[14]*(xdata**2)
-    if np.round(np.min(fwhmraw),5) < 1 or np.round(np.max(fwhmraw),5) > 7:
+    if np.round(np.min(fwhmraw),5) < 1 or np.round(np.max(fwhmraw),5) > 8:
         sys.exit('IP ERROR 1 {} {} {} {} {}'.format(par[5],par[13],par[14],np.min(fwhmraw),np.max(fwhmraw) ))
         return 1e10
     try:
