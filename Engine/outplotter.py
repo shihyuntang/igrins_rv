@@ -1,5 +1,6 @@
 from Engine.importmodule import *
 from Engine.opt   import fmod
+from Engine.rebin_jv import rebin_jv
 
 def outplotter_tel(parfit, fitobj, title, inparam, args, order):
     '''
@@ -63,7 +64,7 @@ def outplotter_tel(parfit, fitobj, title, inparam, args, order):
     cont *= fitobj.continuum
 
     mask2 = np.ones_like(fitobj.x,dtype=bool)
-    
+
     if len(fitobj.CRmask[1]) > 0:
         for mb in fitobj.CRmask[1]:
             mask2[(xdata >= fitobj.CRmask[0][mb]-1) & (xdata <= fitobj.CRmask[0][mb]+1)] = False
@@ -236,5 +237,3 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3, order):
         axes.legend(fontsize=5, edgecolor='white')
 
     fig.savefig(f'{inparam.outpath}/figs/main_step{step2or3}_{args.band}_{trk}/{title}.png', bbox_inches='tight', format='png', overwrite=True)
-
-    
