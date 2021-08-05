@@ -61,7 +61,7 @@ def fmodel_chi(par,grad):
     #Make the wavelength scale
     w = par[6] + par[7]*fitobj_cp.x + par[8]*(fitobj_cp.x**2.) + par[9]*(fitobj_cp.x**3.)
 
-    if w[-1] < w[0]:
+    if np.all(np.diff(w) > 0) == False:
         # print(f'{nc_cp}, {nk_cp}, {optkind_cp}: Hitting negative wavelength solution for some reason !')
         return 1e10
 
@@ -179,7 +179,7 @@ def fmod(par,fitobj):
 
     w = par[6] + par[7]*fitobj.x + par[8]*(fitobj.x**2.) + par[9]*(fitobj.x**3.)
 
-    if w[-1] < w[0]:
+    if np.all(np.diff(w) > 0) == False:
         sys.exit('WAVE ERROR 1 {}'.format(par[6:10]))
         return 1e10
 
@@ -290,7 +290,7 @@ def fmod_conti(par,fitobj):
 
     w = par[6] + par[7]*fitobj.x + par[8]*(fitobj.x**2.) + par[9]*(fitobj.x**3.)
 
-    if w[-1] < w[0]:
+    if np.all(np.diff(w) > 0) == False:
         sys.exit('WAVE ERROR 1 {}'.format(par[6:10]))
         return 1e10
 
