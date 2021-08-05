@@ -271,7 +271,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
             pass
 
     continuum_in = rebin_jv(a0contx,continuum,x_piece,False)
-    fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]),masterbeam,np.array([],dtype=int))
+    fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]),masterbeam,[np.array([],dtype=int),np.array([],dtype=int)])
 
     #-------------------------------------------------------------------------------
 
