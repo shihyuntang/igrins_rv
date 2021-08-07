@@ -63,7 +63,7 @@ import time
 from numba import njit
 
 @njit
-def rotint(w,s,vsini,eps=None,nr=None,ntheta=None,dif=None):
+def rotint(w, s, vsini, eps=0.4, nr=10, ntheta=20, dif=0):
     #  This routine reads in a spectrum, s, on a wavelength scale, w, and a vsini
     #  with which to rotationally broaden the spectrum.  The rotationally broadened
     #  spectrum is returned in ns.  Parameters that can be set are the coefficient
@@ -80,20 +80,19 @@ def rotint(w,s,vsini,eps=None,nr=None,ntheta=None,dif=None):
     #  11-May-1994: Written CMJ.
     #
 
-    if eps == None:
-        eps = .4
-    if nr == None:
-        nr = 10
-    if ntheta == None:
-        ntheta = 20
-    if dif == None:
-        dif = 0
+    # if eps == None:
+    #     eps = .4
+    # if nr == None:
+    #     nr = 10
+    # if ntheta == None:
+    #     ntheta = 20
+    # if dif == None:
+    #     dif = 0
 
     c = 2.99792458e5
-    tarea=0.0e00
+    tarea = 0.0e00
 
     dr = 1./nr
-
     ns = np.zeros(len(s), dtype=np.float64)
 
     for j in range(nr):
