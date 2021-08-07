@@ -1,5 +1,6 @@
 
-from Engine.opt       import fmod
+# from Engine.opt   import fmod
+from Engine.opt_rebintel   import fmod
 from Engine.importmodule import *
 from Engine.detect_peaks import detect_peaks
 from Engine.rebin_jv import rebin_jv
@@ -14,7 +15,7 @@ def CRmasker(parfit,fitobj):
     fitobj    : Class containing data to be fit and stellar and telluric templates
 
     Outputs:
-    CRmaskF : Pixels to be masked    
+    CRmaskF : Pixels to be masked
     '''
 
     fit,chi = fmod(parfit, fitobj)
@@ -68,5 +69,5 @@ def CRmasker(parfit,fitobj):
                 CRmaskF = np.concatenate((CRmaskF,group))
 
     #mask = np.ones_like(xdata,dtype=bool)
-    
+
     return [xdata,CRmaskF]
