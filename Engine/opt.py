@@ -186,9 +186,9 @@ def fmod(par,fitobj):
     dstep = np.median(w[1:]-w[:-1])
     nstep = int((w[-1]-w[0])/dstep)
     wreg = np.linspace(w[0],w[-1],nstep)
-    sdata = rebin_jv(w,fitobj_cp.s,wreg,False)
-    udata = rebin_jv(w,fitobj_cp.u,wreg,False)
-    xdata = np.linspace(fitobj_cp.x[0],fitobj_cp.x[-1],nstep)
+    sdata = rebin_jv(w,fitobj.s,wreg,False)
+    udata = rebin_jv(w,fitobj.u,wreg,False)
+    xdata = np.linspace(fitobj.x[0],fitobj.x[-1],nstep)
     w = wreg.copy()
 
     c = 2.99792458e5
@@ -254,7 +254,7 @@ def fmod(par,fitobj):
 
     # Apply continuum adjustment
     cont = par[10] + par[11]*xdata + par[12]*(xdata**2) + par[20]*(xdata**3) + par[21]*(xdata**4) + par[22]*(xdata**5) + par[23]*(xdata**6)
-    if fitobj_cp.masterbeam == 'A':
+    if fitobj.masterbeam == 'A':
         bucket = np.zeros_like(cont)
         bucket[(xdata >= (par[15]-par[16]/2))         & (xdata <= (par[15]+par[16]/2))] = par[17]
         bucket[(xdata >= (par[15]+par[16]/2-par[18])) & (xdata <= (par[15]+par[16]/2))] += par[19]
@@ -268,9 +268,9 @@ def fmod(par,fitobj):
         for maskbounds in fitobj.mask:
             mask[(xdata > maskbounds[0]) & (xdata < maskbounds[1]) ] = False
 
-    if len(fitobj_cp.CRmask[1]) > 0:
-        for mb in fitobj_cp.CRmask[1]:
-            mask[(xdata >= fitobj_cp.CRmask[0][mb]-1) & (xdata <= fitobj_cp.CRmask[0][mb]+1)] = False
+    if len(fitobj.CRmask[1]) > 0:
+        for mb in fitobj.CRmask[1]:
+            mask[(xdata >= fitobj.CRmask[0][mb]-1) & (xdata <= fitobj.CRmask[0][mb]+1)] = False
 
 
     chisq = np.sum((sdata[mask] - smod[mask])**2. / udata[mask]**2.)
@@ -297,9 +297,9 @@ def fmod_conti(par,fitobj):
     dstep = np.median(w[1:]-w[:-1])
     nstep = int((w[-1]-w[0])/dstep)
     wreg = np.linspace(w[0],w[-1],nstep)
-    sdata = rebin_jv(w,fitobj_cp.s,wreg,False)
-    udata = rebin_jv(w,fitobj_cp.u,wreg,False)
-    xdata = np.linspace(fitobj_cp.x[0],fitobj_cp.x[-1],nstep)
+    sdata = rebin_jv(w,fitobj.s,wreg,False)
+    udata = rebin_jv(w,fitobj.u,wreg,False)
+    xdata = np.linspace(fitobj.x[0],fitobj.x[-1],nstep)
     w = wreg.copy()
 
     c = 2.99792458e5
@@ -365,7 +365,7 @@ def fmod_conti(par,fitobj):
 
     # Apply continuum adjustment
     cont = par[10] + par[11]*xdata + par[12]*(xdata**2) + par[20]*(xdata**3) + par[21]*(xdata**4) + par[22]*(xdata**5) + par[23]*(xdata**6)
-    if fitobj_cp.masterbeam == 'A':
+    if fitobj.masterbeam == 'A':
         bucket = np.zeros_like(cont)
         bucket[(xdata >= (par[15]-par[16]/2))         & (xdata <= (par[15]+par[16]/2))] = par[17]
         bucket[(xdata >= (par[15]+par[16]/2-par[18])) & (xdata <= (par[15]+par[16]/2))] += par[19]

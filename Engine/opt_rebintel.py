@@ -190,9 +190,9 @@ def fmod(par,fitobj):
     dstep = np.median(w[1:]-w[:-1])
     nstep = int((w[-1]-w[0])/dstep)
     wreg = np.linspace(w[0],w[-1],nstep)
-    sdata = rebin_jv(w,fitobj_cp.s,wreg,False)
-    udata = rebin_jv(w,fitobj_cp.u,wreg,False)
-    xdata = np.linspace(fitobj_cp.x[0],fitobj_cp.x[-1],nstep)
+    sdata = rebin_jv(w,fitobj.s,wreg,False)
+    udata = rebin_jv(w,fitobj.u,wreg,False)
+    xdata = np.linspace(fitobj.x[0],fitobj.x[-1],nstep)
     w = wreg.copy()
 
     c = 2.99792458e5
