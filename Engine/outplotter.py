@@ -162,6 +162,9 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3, order):
         bucket[(xdata >= (parfit[15]+parfit[16]/2-parfit[18])) & (xdata <= (parfit[15]+parfit[16]/2))] += parfit[19]
         cont -= bucket
 
+    c2 = rebin_jv(fitobj_cp.x, fitobj_cp.continuum, xdata,False)
+    cont *= c2
+
     fig, axes = plt.subplots(1, 1, figsize=(6,3), facecolor='white', dpi=300)
 
     mask2 = np.ones_like(xdata,dtype=bool)
