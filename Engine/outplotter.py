@@ -156,13 +156,15 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3, order):
 
     # Apply continuum adjustment
     cont = parfit[10] + parfit[11]*xdata+ parfit[12]*(xdata**2) + parfit[20]*(xdata**3) + parfit[21]*(xdata**4) + parfit[22]*(xdata**5) + parfit[23]*(xdata**6)
+
+
     if fitobj.masterbeam == 'A':
         bucket = np.zeros_like(cont)
         bucket[(xdata >= (parfit[15]-parfit[16]/2))         & (xdata <= (parfit[15]+parfit[16]/2))] = parfit[17]
         bucket[(xdata >= (parfit[15]+parfit[16]/2-parfit[18])) & (xdata <= (parfit[15]+parfit[16]/2))] += parfit[19]
         cont -= bucket
 
-    c2 = rebin_jv(fitobj_cp.x, fitobj_cp.continuum, xdata,False)
+    c2 = rebin_jv(fitobj.x, fitobj.continuum, xdata,False)
     cont *= c2
 
     fig, axes = plt.subplots(1, 1, figsize=(6,3), facecolor='white', dpi=300)
