@@ -309,8 +309,16 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
         cycles = 4
 
-        optgroup = ['cont', 'twave', 'cont', 'ts',
-                    'cont', 'twave', 's', 'cont',
+        # optgroup = ['cont', 'twave', 'cont', 'ts',
+        #             'cont', 'twave', 's', 'cont',
+        #             'twave',
+        #             'ip', 'v',
+        #             'ip', 'v',
+        #             'twave',  's',
+        #             'twave',  'ts']
+
+        optgroup = ['cont', 'twave', 'cont', 'twave', 's',
+                    'cont', 'ts', 'twave', 'cont',
                     'twave',
                     'ip', 'v',
                     'ip', 'v',
