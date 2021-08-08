@@ -1,6 +1,6 @@
 from Engine.importmodule import *
-# from Engine.opt   import fmod
-from Engine.opt_rebintel   import fmod
+from Engine.opt   import fmod
+# from Engine.opt_rebintel   import fmod
 from Engine.rebin_jv import rebin_jv
 
 def outplotter_tel(parfit, fitobj, title, inparam, args, order):

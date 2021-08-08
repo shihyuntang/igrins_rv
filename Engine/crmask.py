@@ -1,6 +1,6 @@
 
-# from Engine.opt   import fmod
-from Engine.opt_rebintel   import fmod
+from Engine.opt   import fmod
+# from Engine.opt_rebintel   import fmod
 from Engine.importmodule import *
 from Engine.detect_peaks import detect_peaks
 from Engine.rebin_jv import rebin_jv
