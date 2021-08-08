@@ -1125,7 +1125,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
     for jerp in range(len(orders)):
         if not args.debug: print('Working on order {} ({:02d}/{:02d})'.format(orders[jerp], int(jerp+1), len(orders)))
         # outs = mp_run(args, inparam, args.Nthreads, jerp, orders, nightsFinal,'B')
-        for ii in np.arange(len(nights)):
+        for ii in np.arange(len(nightsFinal)):
             MPinstB(args, inparam, jerp, orders, ii)
 
     print('B nods done! Halfway there! \n Now processing the A nods...')
