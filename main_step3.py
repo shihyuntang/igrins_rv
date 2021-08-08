@@ -263,18 +263,18 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
         # Use quadratic blaze correction for order 13; cubic for orders 6, 14, 21; quartic for orders 16 and 22
         if args.band == 'H':
-            if np.int(order) in [13]:
+            if int(order) in [13]:
                 dpars['cont'][20] = 0.; dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
-            elif np.int(order) in [6,14,21]:
+            elif int(order) in [6,14,21]:
                 dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
             else:
                 pass
         else:
-            if np.int(order) in [3]:
-                dpars['cont'][20] = 0.; dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
-            elif np.int(order) in [4,5]:
+            # if np.int(order) in [3]:
+            #     dpars['cont'][20] = 0.; dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
+            if int(order) in [3,4,5]:
                 dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
-            elif np.int(order) in [6]:
+            elif int(order) in [6]:
                 dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
             else:
                 pass

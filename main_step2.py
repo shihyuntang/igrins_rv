@@ -259,13 +259,13 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         else:
             pass
     else:
-        if np.int(order) in [3]:
-            dpars1['cont'][20] = 0.; dpars1['cont'][21] = 0.; dpars1['cont'][22] = 0.; dpars1['cont'][23] = 0.;
-            dpars2['cont'][20] = 0.; dpars2['cont'][21] = 0.; dpars2['cont'][22] = 0.; dpars2['cont'][23] = 0.;
-        elif np.int(order) in [4,5]:
+        # if np.int(order) in [3]:
+        #     dpars1['cont'][20] = 0.; dpars1['cont'][21] = 0.; dpars1['cont'][22] = 0.; dpars1['cont'][23] = 0.;
+        #     dpars2['cont'][20] = 0.; dpars2['cont'][21] = 0.; dpars2['cont'][22] = 0.; dpars2['cont'][23] = 0.;
+        if int(order) in [4,5]:
             dpars1['cont'][21] = 0.; dpars1['cont'][22] = 0.; dpars1['cont'][23] = 0.;
             dpars2['cont'][21] = 0.; dpars2['cont'][22] = 0.; dpars2['cont'][23] = 0.;
-        elif np.int(order) in [6]:
+        elif int(order) in [6]:
             dpars1['cont'][22] = 0.; dpars1['cont'][23] = 0.;
             dpars2['cont'][22] = 0.; dpars2['cont'][23] = 0.;
         else:
