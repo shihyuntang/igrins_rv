@@ -208,7 +208,7 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3, order):
             if title[6]=='_':
                 # only plot residual on the "parfit"
                 ax0.plot(w[mask2],fit[mask2] - sdata[mask2], 's', c='k', ms=0.3, mew=0.3, label='residual', alpha=1)
-                ax0.axhline(0, color='tab:grey', lw=0.2, zorder=0, alpha=0.5)
+                ax0.axhline(0, color='tab:grey', lw=0.2, zorder=0, alpha=1)
 
             kwargs = dict(transform=ax0.transAxes, color='k', clip_on=False,lw= 0.6)
             if m == 0:
@@ -255,7 +255,7 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3, order):
         if title[6]=='_':
             # only plot residual on the "parfit"
             axes.plot(w[mask2],fit[mask2] - sdata[mask2], 's', c='k', ms=0.3, mew=0.3, label='residual', alpha=0.8)
-            axes.axhline(0, color='tab:grey', lw=0.2, zorder=0, alpha=0.5)
+            axes.axhline(0, color='tab:grey', lw=0.2, zorder=0, alpha=1)
 
         axes.tick_params(axis='both', labelsize=6, right=True, top=True, direction='in')
         axes.set_title(title,  size=6, style='normal' , family='sans-serif' )

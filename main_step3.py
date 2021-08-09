@@ -803,7 +803,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
                         stdmasterboxT[i,jerp] = np.nan
                     else:
                         rvmasterboxT[i,jerp]  = np.nanmean(rvtags)
-                        stdmasterboxT[i,jerp] = np.nanstd(rvtags)/np.sqrt(len(rvtags[np.isnan(rvtags) == False]))
+                        stdmasterboxT[i,jerp] = np.nanstd(rvtags)/np.sqrt(len(rvtags[~np.isnan(rvtags)]))
 
                 else:
                     if order == 3 and args.band == 'K': # Don't use vsini estimates from this order during loose epoch
@@ -816,7 +816,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
                         stdmasterboxL[i,jerp] = np.nan
                     else:
                         rvmasterboxL[i,jerp]  = np.nanmean(rvtags)
-                        stdmasterboxL[i,jerp] = np.nanstd(rvtags)/np.sqrt(len(rvtags[np.isnan(rvtags) == False]))
+                        stdmasterboxL[i,jerp] = np.nanstd(rvtags)/np.sqrt(len(rvtags[~np.isnan(rvtags)]))
             iT_L += 1
 
 
