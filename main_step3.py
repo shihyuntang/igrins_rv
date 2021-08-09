@@ -330,6 +330,8 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
             if cycle == 0:
                 parstart = par_in.copy()
 
+            if nc = cycles:
+                optgroup = optgroup[:-1] # if is the last run, skip the 'ts'
             for optkind in optgroup:
                 parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize)
                 parstart = parfit_1.copy()
