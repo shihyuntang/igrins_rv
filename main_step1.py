@@ -287,27 +287,15 @@ def MPinstB(args, inparam, jerp, orders, i):
 
                 # Redo rough blaze fit in case hot pixels were throwing it off
                 w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
-                #---
-                dstep = np.median(w[1:]-w[:-1])
-                nstep = int((w[-1]-w[0])/dstep)
-                wreg = np.linspace(w[0],w[-1],nstep)
-                sdata = rebin_jv(w,fitobj.s,wreg,False)
-                udata = rebin_jv(w,fitobj.u,wreg,False)
-                xdata = np.linspace(fitobj.x[0],fitobj.x[-1],nstep)
-                w = wreg.copy()
-                #---
-                mask = np.ones_like(w,dtype=bool)
-                mask[CRmaskF[1]] = False
-                continuum    = A0cont(w[mask]/1e4,sdata[mask],night,order,args.band)
-                continuum    = rebin_jv(w[mask],continuum,w,False)
-                # fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam, CRmaskF)
-                #--- sytang add ---
-                fitobj.s = sdata
-                fitobj.x = xdata
-                fitobj.u = udata
-                fitobj.continuum = continuum
-                fitobj.CRmaskF = CRmaskF
 
+                #--- sytang modified ---
+                mask = np.ones_like(w,dtype=bool)
+                for mb in fitobj_cp.CRmask[1]:
+                    mask[(x >= fitobj_cp.CRmask[0][mb]-1) & (x <= fitobj_cp.CRmask[0][mb]+1)] = False
+                # mask[CRmaskF[1]] = False
+                continuum    = A0cont(w[mask]/1e4,s[mask],night,order,args.band)
+                continuum    = rebin_jv(w[mask],continuum,w,False)
+                fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam, CRmaskF)
 
         if misfit_flag_low == 0 or restarted == True:
 
@@ -749,24 +737,7 @@ def MPinstA(args, inparam, jerp, orders, i):
                     if nc == 1:
                         parfit = parfit_1.copy()
                         CRmaskF = CRmasker(parfit,fitobj)
-
-                        w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
-                        #---
-                        dstep = np.median(w[1:]-w[:-1])
-                        nstep = int((w[-1]-w[0])/dstep)
-                        wreg = np.linspace(w[0],w[-1],nstep)
-                        sdata = rebin_jv(w,fitobj.s,wreg,False)
-                        udata = rebin_jv(w,fitobj.u,wreg,False)
-                        xdata = np.linspace(fitobj.x[0],fitobj.x[-1],nstep)
-                        w = wreg.copy()
-                        #---
-                        # fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam, CRmaskF)
-                        #--- sytang add ---
-                        fitobj.s = sdata
-                        fitobj.x = xdata
-                        fitobj.u = udata
-                        fitobj.continuum = continuum
-                        fitobj.CRmaskF = CRmaskF
+                        fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam, CRmaskF)
 
                 if misfit_flag_low == 0 or restarted == True:
 
@@ -794,11 +765,10 @@ def MPinstA(args, inparam, jerp, orders, i):
             # ------------------------- Now do it again, but with Livingston -------------------------
 
             dpars['cont'] = np.array([0.0, 0.0, 0.0, 0.0,   0.0,   0.0,    0.0,  0.0, 0.0,        0.,     1e7, 1, 1,    0, 0,     0.0,  0.0, 0.0,  0.0, 0.0,   1.0, 1.0, 1.0, 1.0  ])
-            hardbounds = [par_in[4]  - 0             , par_in[4]  + 0,
-                          par_in[5]  - dpars['ip'][5], par_in[5]  + dpars['ip'][5] ]
-
-            #--- sytang changed --
-            fitobj = fitobjs(sdata, xdata, udata, continuum, watm_inLIV, satm_inLIV, mflux_in, mwave_in, [], masterbeam, CRmaskF)
+            hardbounds = [par_in[4]  - 0,                 par_in[4]  + 0,
+                                  par_in[5]  - dpars['ip'][5],    par_in[5]  + dpars['ip'][5]
+                                 ]
+            fitobj = fitobjs(s, x, u, continuum, watm_inLIV, satm_inLIV, mflux_in, mwave_in, [], masterbeam, CRmaskF)
 
             go = 1; misfit_flag_low = 0; restarted = False;
 
