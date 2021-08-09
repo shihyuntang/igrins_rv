@@ -290,8 +290,8 @@ def MPinstB(args, inparam, jerp, orders, i):
 
                 #--- sytang modified ---
                 mask = np.ones_like(w,dtype=bool)
-                for mb in fitobj_cp.CRmask[1]:
-                    mask[(x >= fitobj_cp.CRmask[0][mb]-1) & (x <= fitobj_cp.CRmask[0][mb]+1)] = False
+                for mb in CRmask[1]:
+                    mask[(x >= CRmask[0][mb]-1) & (x <= CRmask[0][mb]+1)] = False
                 # mask[CRmaskF[1]] = False
                 continuum    = A0cont(w[mask]/1e4,s[mask],night,order,args.band)
                 continuum    = rebin_jv(w[mask],continuum,w,False)
