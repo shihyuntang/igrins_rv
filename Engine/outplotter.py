@@ -205,8 +205,10 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3, order):
             ax0.plot(w[mask2],fit[mask2],      '--', c='tab:red', lw=0.7, label='model', alpha=.8)
             ax0.plot(w[mask2],cont[mask2],     '--', c='tab:blue',  lw=0.7, label='cont', alpha=.8)
 
-            if 'parfit' in title:
-                ax0.plot(w[mask2],fit[mask2] - sdata[mask2], 's', c='k', ms=0.5, mew=0.5, label='residual', alpha=1)
+            if title[6]=='_':
+                # only plot residual on the "parfit"
+                ax0.plot(w[mask2],fit[mask2] - sdata[mask2], 's', c='k', ms=0.3, mew=0.3, label='residual', alpha=1)
+                ax0.axhline(0, color='tab:grey', lw=0.2, zorder=0, alpha=0.5)
 
             kwargs = dict(transform=ax0.transAxes, color='k', clip_on=False,lw= 0.6)
             if m == 0:
@@ -250,8 +252,10 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3, order):
         axes.plot(w[mask2],fit[mask2],      '--', c='tab:red', lw=0.7, label='model', alpha=.8)
         axes.plot(w[mask2],cont[mask2],     '--', c='tab:blue',  lw=0.7, label='cont', alpha=.8)
 
-        if 'parfit' in title:
-            axes.plot(w[mask2],fit[mask2] - sdata[mask2], 's', c='k', ms=0.5, mew=0.5, label='residual', alpha=1)
+        if title[6]=='_':
+            # only plot residual on the "parfit"
+            axes.plot(w[mask2],fit[mask2] - sdata[mask2], 's', c='k', ms=0.3, mew=0.3, label='residual', alpha=0.8)
+            axes.axhline(0, color='tab:grey', lw=0.2, zorder=0, alpha=0.5)
 
         axes.tick_params(axis='both', labelsize=6, right=True, top=True, direction='in')
         axes.set_title(title,  size=6, style='normal' , family='sans-serif' )
