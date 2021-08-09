@@ -398,17 +398,13 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam,
                               "pressure": [1010.,1035.],\
                               "co2": [ 1,1e4]})
 
-    # try:
-    #     if args.debug:
-    #         model = fitter.Fit(data=data, resolution_fit_mode="SVD", adjust_wave="model",air_wave=False)
-    #     else:
-    #         model = suppress_Fit(fitter, data)
-    # except TypeError:
-    #     return [np.nan], [np.nan], [np.nan], [np.nan],[np.nan],[np.nan]
-    if args.debug:
-        model = fitter.Fit(data=data, resolution_fit_mode="SVD", adjust_wave="model",air_wave=False)
-    else:
-        model = suppress_Fit(fitter, data)
+    try:
+        if args.debug:
+            model = fitter.Fit(data=data, resolution_fit_mode="SVD", adjust_wave="model",air_wave=False)
+        else:
+            model = suppress_Fit(fitter, data)
+    except TypeError:
+        return [np.nan], [np.nan], [np.nan], [np.nan],[np.nan],[np.nan]
 
     '''
       resolution_fit_mode = SVD ought to give faster, more accurate fits for the deep telluric lines we mostly see in K band

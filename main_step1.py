@@ -246,95 +246,95 @@ def MPinstB(args, inparam, jerp, orders, i):
                 'ip', 'twave',  'cont',
                 'ip', 'twave',  'cont',
                 'twave']
-    # try:
-    go = 1; misfit_flag_low = 0; restarted = False;
+    try:
+        go = 1; misfit_flag_low = 0; restarted = False;
 
-    while go == 1:
+        while go == 1:
 
-        parstart = par_in.copy()
+            parstart = par_in.copy()
 
-        if misfit_flag_low == 1:
-            parstart[3] = 0.5
-            restarted = True
+            if misfit_flag_low == 1:
+                parstart[3] = 0.5
+                restarted = True
 
-        if misfit_flag_low == 2:
-            print(breaker) # deliberately throw error to enter except statement
+            if misfit_flag_low == 2:
+                print(breaker) # deliberately throw error to enter except statement
 
-        nk = 1
-        for nc, cycle in enumerate(np.arange(cycles), start=1):
+            nk = 1
+            for nc, cycle in enumerate(np.arange(cycles), start=1):
 
-            for optkind in optgroup:
-                start = time.time()
-                parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize)
+                for optkind in optgroup:
+                    start = time.time()
+                    parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize)
 
-                if parfit_1[3] < 0.1:
-                    misfit_flag_low += 1
+                    if parfit_1[3] < 0.1:
+                        misfit_flag_low += 1
+                        break
+
+                    if args.debug == True:
+                        outplotter_tel(parfit_1,fitobj,'{}_{}_beforeparfit_{}{}'.format(order,night,nk,optkind),inparam, args, order)
+                    parstart = parfit_1.copy()
+                    nk += 1
+
+                if  ((misfit_flag_low == 1) and (restarted == False)) or ((misfit_flag_low == 2) and (restarted == True)):
                     break
 
-                if args.debug == True:
-                    outplotter_tel(parfit_1,fitobj,'{}_{}_beforeparfit_{}{}'.format(order,night,nk,optkind),inparam, args, order)
-                parstart = parfit_1.copy()
-                nk += 1
 
-            if  ((misfit_flag_low == 1) and (restarted == False)) or ((misfit_flag_low == 2) and (restarted == True)):
-                break
+                ## After first cycle, use best fit model to identify CRs/hot pixels
+                if nc == 1:
+                    parfit = parfit_1.copy()
+                    CRmaskF = CRmasker(parfit,fitobj)
 
+                    # Redo rough blaze fit in case hot pixels were throwing it off
+                    w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
 
-            ## After first cycle, use best fit model to identify CRs/hot pixels
-            if nc == 1:
+                    #--- sytang modified ---
+                    mask = np.ones_like(w,dtype=bool)
+                    for mb in CRmaskF[1]:
+                        mask[(x >= CRmaskF[0][mb]-1) & (x <= CRmaskF[0][mb]+1)] = False
+                    # mask[CRmaskF[1]] = False
+                    continuum    = A0cont(w[mask]/1e4,s[mask],night,order,args.band)
+                    continuum    = rebin_jv(w[mask],continuum,w,False)
+                    fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam, CRmaskF)
+
+            if misfit_flag_low == 0 or restarted == True:
+
                 parfit = parfit_1.copy()
-                CRmaskF = CRmasker(parfit,fitobj)
 
-                # Redo rough blaze fit in case hot pixels were throwing it off
-                w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
+                # If dip present, correct it out of data before running Telfit to enable better fit
+                if masterbeam == 'A':
+                    cont = parfit[10] + parfit[11]*fitobj.x+ parfit[12]*(fitobj.x**2) + parfit[20]*(fitobj.x**3) + parfit[21]*(fitobj.x**4) + parfit[22]*(fitobj.x**5) + parfit[23]*(fitobj.x**6)
+                    cont0 = cont.copy()
+                    bucket = np.zeros_like(cont)
+                    bucket[(fitobj.x >= (parfit[15]-parfit[16]/2)) & (fitobj.x <= (parfit[15]+parfit[16]/2))] = parfit[17]
+                    bucket[(fitobj.x >= (parfit[15]+parfit[16]/2-parfit[18])) & (fitobj.x <= (parfit[15]+parfit[16]/2))] += parfit[19]
+                    cont -= bucket
 
-                #--- sytang modified ---
-                mask = np.ones_like(w,dtype=bool)
-                for mb in CRmaskF[1]:
-                    mask[(x >= CRmaskF[0][mb]-1) & (x <= CRmaskF[0][mb]+1)] = False
-                # mask[CRmaskF[1]] = False
-                continuum    = A0cont(w[mask]/1e4,s[mask],night,order,args.band)
-                continuum    = rebin_jv(w[mask],continuum,w,False)
-                fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam, CRmaskF)
+                    cont *= continuum
+                    cont0 *= continuum
+                    justdip = cont/cont0
+                    a0fluxlist /= justdip
 
-        if misfit_flag_low == 0 or restarted == True:
+                go = 0; break;
 
-            parfit = parfit_1.copy()
+    except:
+        pre_err = True
+        logger.warning(f'  --> NIGHT {night}, ORDER {order} HIT ERROR DURING PRE_OPT')
+        # Write out table to fits header with errorflag = 1
+        c0    = fits.Column(name=f'ERRORFLAG{order}', array=np.array([1]), format='K')
+        cols  = fits.ColDefs([c0])
+        hdu_1 = fits.BinTableHDU.from_columns(cols)
 
-            # If dip present, correct it out of data before running Telfit to enable better fit
-            if masterbeam == 'A':
-                cont = parfit[10] + parfit[11]*fitobj.x+ parfit[12]*(fitobj.x**2) + parfit[20]*(fitobj.x**3) + parfit[21]*(fitobj.x**4) + parfit[22]*(fitobj.x**5) + parfit[23]*(fitobj.x**6)
-                cont0 = cont.copy()
-                bucket = np.zeros_like(cont)
-                bucket[(fitobj.x >= (parfit[15]-parfit[16]/2)) & (fitobj.x <= (parfit[15]+parfit[16]/2))] = parfit[17]
-                bucket[(fitobj.x >= (parfit[15]+parfit[16]/2-parfit[18])) & (fitobj.x <= (parfit[15]+parfit[16]/2))] += parfit[19]
-                cont -= bucket
-
-                cont *= continuum
-                cont0 *= continuum
-                justdip = cont/cont0
-                a0fluxlist /= justdip
-
-            go = 0; break;
-
-    # except:
-    pre_err = True
-    logger.warning(f'  --> NIGHT {night}, ORDER {order} HIT ERROR DURING PRE_OPT')
-    # Write out table to fits header with errorflag = 1
-    c0    = fits.Column(name=f'ERRORFLAG{order}', array=np.array([1]), format='K')
-    cols  = fits.ColDefs([c0])
-    hdu_1 = fits.BinTableHDU.from_columns(cols)
-
-    # If first time writing fits file, make up filler primary hdu
-    if order == firstorder: # If first time writing fits file, make up filler primary hdu
-        bleh = np.ones((3,3))
-        primary_hdu = fits.PrimaryHDU(bleh)
-        hdul = fits.HDUList([primary_hdu,hdu_1])
-        hdul.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band), overwrite=True)
-    else:
-        hh = fits.open('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band))
-        hh.append(hdu_1)
-        hh.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band), overwrite=True)
+        # If first time writing fits file, make up filler primary hdu
+        if order == firstorder: # If first time writing fits file, make up filler primary hdu
+            bleh = np.ones((3,3))
+            primary_hdu = fits.PrimaryHDU(bleh)
+            hdul = fits.HDUList([primary_hdu,hdu_1])
+            hdul.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band), overwrite=True)
+        else:
+            hh = fits.open('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band))
+            hh.append(hdu_1)
+            hh.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band), overwrite=True)
 
 
     #-------------------------------------------------------------------------------
