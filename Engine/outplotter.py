@@ -87,10 +87,10 @@ def outplotter_tel(parfit, fitobj, title, inparam, args, order):
 
     fig, axes = plt.subplots(1, 1, figsize=(6,3), facecolor='white', dpi=300)
 
-    axes.plot(w,fitobj.s, '-',  c = 'k',        lw=0.7, label='data',  alpha=.3)
-    axes.plot(w[mask2],fitobj.s[mask2], '-',  c='k',       lw=0.7, label='data (emission removed)',  alpha=.8)
-    axes.plot(w[mask2],fit[mask2],      '--', c='tab:red', lw=0.7, label='model', alpha=.8)
-    axes.plot(w[mask2],cont[mask2],     '--', c='tab:blue',  lw=0.7, label='cont', alpha=.8)
+    axes.plot(w        ,sdata, '-',  c = 'k',        lw=0.7, label='data',  alpha=.3)
+    axes.plot(w[mask2] ,sdata[mask2], '-',  c='k',       lw=0.7, label='data (emission removed)',  alpha=.8)
+    axes.plot(w[mask2] ,fit[mask2],      '--', c='tab:red', lw=0.7, label='model', alpha=.8)
+    axes.plot(w[mask2] ,cont[mask2],     '--', c='tab:blue',  lw=0.7, label='cont', alpha=.8)
     axes.set_title( title,                 size=6, style='normal', family='sans-serif')
     axes.set_ylabel(r'Flux',    size=6, style='normal', family='sans-serif')
     axes.set_xlabel(r'Wavelength [$\AA$]', size=6, style='normal', family='sans-serif')
