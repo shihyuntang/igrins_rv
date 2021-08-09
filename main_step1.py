@@ -699,134 +699,134 @@ def MPinstA(args, inparam, jerp, orders, i):
                     'ip', 'twave',  'cont',
                     'ip', 'twave',  'cont',
                     'twave']
-        try:
+        # try:
 
-            go = 1; misfit_flag_low = 0; restarted = False;
+        go = 1; misfit_flag_low = 0; restarted = False;
 
-            while go == 1:
+        while go == 1:
 
-                parstart = par_in.copy()
+            parstart = par_in.copy()
 
-                if misfit_flag_low == 1:
-                    parstart[3] = 0.5
-                    restarted = True
+            if misfit_flag_low == 1:
+                parstart[3] = 0.5
+                restarted = True
 
-                if misfit_flag_low == 2:
-                    print(breaker) # deliberately throw error to enter except statement
+            if misfit_flag_low == 2:
+                print(breaker) # deliberately throw error to enter except statement
 
-                nk = 1
-                for nc, cycle in enumerate(np.arange(cycles), start=1):
+            nk = 1
+            for nc, cycle in enumerate(np.arange(cycles), start=1):
 
-                    for optkind in optgroup1:
-                        start = time.time()
-                        parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize)
+                for optkind in optgroup1:
+                    start = time.time()
+                    parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize)
 
-                        if parfit_1[3] < 0.1:
-                            misfit_flag_low += 1
-                            break
-
-                        if args.debug == True:
-                            outplotter_tel(parfit_1,fitobj,'{}_{}_beforeparfitwithB_{}{}'.format(order,night,nk,optkind),inparam, args, order)
-                        parstart = parfit_1.copy()
-                        nk += 1
-
-                    if  ((misfit_flag_low == 1) and (restarted == False)) or ((misfit_flag_low == 2) and (restarted == True)):
+                    if parfit_1[3] < 0.1:
+                        misfit_flag_low += 1
                         break
 
-                    ## After first cycle, use best fit model to identify CRs/hot pixels
-                    if nc == 1:
-                        parfit = parfit_1.copy()
-                        CRmaskF = CRmasker(parfit,fitobj)
-                        fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam, CRmaskF)
+                    if args.debug == True:
+                        outplotter_tel(parfit_1,fitobj,'{}_{}_beforeparfitwithB_{}{}'.format(order,night,nk,optkind),inparam, args, order)
+                    parstart = parfit_1.copy()
+                    nk += 1
 
-                if misfit_flag_low == 0 or restarted == True:
+                if  ((misfit_flag_low == 1) and (restarted == False)) or ((misfit_flag_low == 2) and (restarted == True)):
+                    break
 
+                ## After first cycle, use best fit model to identify CRs/hot pixels
+                if nc == 1:
                     parfit = parfit_1.copy()
+                    CRmaskF = CRmasker(parfit,fitobj)
+                    fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam, CRmaskF)
 
-                    # If dip present, correct it out of data before running Telfit to enable better fit
-                    if masterbeam == 'A':
-                        cont = parfit[10] + parfit[11]*fitobj.x+ parfit[12]*(fitobj.x**2) + parfit[20]*(fitobj.x**3) + parfit[21]*(fitobj.x**4) + parfit[22]*(fitobj.x**5) + parfit[23]*(fitobj.x**6)
-                        cont0 = cont.copy()
-                        bucket = np.zeros_like(cont)
-                        bucket[(fitobj.x >= (parfit[15]-parfit[16]/2)) & (fitobj.x <= (parfit[15]+parfit[16]/2))] = parfit[17]
-                        bucket[(fitobj.x >= (parfit[15]+parfit[16]/2-parfit[18])) & (fitobj.x <= (parfit[15]+parfit[16]/2))] += parfit[19]
-                        cont -= bucket
+            if misfit_flag_low == 0 or restarted == True:
 
-                        cont *= continuum
-                        cont0 *= continuum
-                        justdip = cont/cont0
-                        a0fluxlist /= justdip
+                parfit = parfit_1.copy()
 
-                    go = 0; break;
+                # If dip present, correct it out of data before running Telfit to enable better fit
+                if masterbeam == 'A':
+                    cont = parfit[10] + parfit[11]*fitobj.x+ parfit[12]*(fitobj.x**2) + parfit[20]*(fitobj.x**3) + parfit[21]*(fitobj.x**4) + parfit[22]*(fitobj.x**5) + parfit[23]*(fitobj.x**6)
+                    cont0 = cont.copy()
+                    bucket = np.zeros_like(cont)
+                    bucket[(fitobj.x >= (parfit[15]-parfit[16]/2)) & (fitobj.x <= (parfit[15]+parfit[16]/2))] = parfit[17]
+                    bucket[(fitobj.x >= (parfit[15]+parfit[16]/2-parfit[18])) & (fitobj.x <= (parfit[15]+parfit[16]/2))] += parfit[19]
+                    cont -= bucket
 
-            if inparam.plotfigs: # Plot results
-                outplotter_tel(parfit, fitobj, f'BeforeTelFitWithB_Order{order}_{night}_{masterbeam}', inparam, args, order)
+                    cont *= continuum
+                    cont0 *= continuum
+                    justdip = cont/cont0
+                    a0fluxlist /= justdip
 
-            # ------------------------- Now do it again, but with Livingston -------------------------
+                go = 0; break;
 
-            dpars['cont'] = np.array([0.0, 0.0, 0.0, 0.0,   0.0,   0.0,    0.0,  0.0, 0.0,        0.,     1e7, 1, 1,    0, 0,     0.0,  0.0, 0.0,  0.0, 0.0,   1.0, 1.0, 1.0, 1.0  ])
-            hardbounds = [par_in[4]  - 0,                 par_in[4]  + 0,
-                                  par_in[5]  - dpars['ip'][5],    par_in[5]  + dpars['ip'][5]
-                                 ]
-            fitobj = fitobjs(s, x, u, continuum, watm_inLIV, satm_inLIV, mflux_in, mwave_in, [], masterbeam, CRmaskF)
+        if inparam.plotfigs: # Plot results
+            outplotter_tel(parfit, fitobj, f'BeforeTelFitWithB_Order{order}_{night}_{masterbeam}', inparam, args, order)
 
-            go = 1; misfit_flag_low = 0; restarted = False;
+        # ------------------------- Now do it again, but with Livingston -------------------------
 
-            while go == 1:
+        dpars['cont'] = np.array([0.0, 0.0, 0.0, 0.0,   0.0,   0.0,    0.0,  0.0, 0.0,        0.,     1e7, 1, 1,    0, 0,     0.0,  0.0, 0.0,  0.0, 0.0,   1.0, 1.0, 1.0, 1.0  ])
+        hardbounds = [par_in[4]  - 0,                 par_in[4]  + 0,
+                              par_in[5]  - dpars['ip'][5],    par_in[5]  + dpars['ip'][5]
+                             ]
+        fitobj = fitobjs(s, x, u, continuum, watm_inLIV, satm_inLIV, mflux_in, mwave_in, [], masterbeam, CRmaskF)
 
-                parstart = par_in.copy()
-                parstart[17] = 0.; parstart[19] = 0.;
+        go = 1; misfit_flag_low = 0; restarted = False;
 
-                if misfit_flag_low == 1:
-                    parstart[3] = 0.5
-                    restarted = True
+        while go == 1:
 
-                if misfit_flag_low == 2:
-                    print(breaker) # deliberately throw error to enter except statement
+            parstart = par_in.copy()
+            parstart[17] = 0.; parstart[19] = 0.;
 
-                nk = 1
-                for nc, cycle in enumerate(np.arange(cycles), start=1):
+            if misfit_flag_low == 1:
+                parstart[3] = 0.5
+                restarted = True
 
-                    for optkind in optgroup2:
-                        start = time.time()
-                        parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize)
+            if misfit_flag_low == 2:
+                print(breaker) # deliberately throw error to enter except statement
 
-                        if parfit_1[3] < 0.1:
-                            misfit_flag_low += 1
-                            break
+            nk = 1
+            for nc, cycle in enumerate(np.arange(cycles), start=1):
 
-                        if args.debug == True:
-                            outplotter_tel(parfit_1,fitobj,'{}_{}_beforeparfit_{}{}'.format(order,night,nk,optkind),inparam, args, order)
-                        parstart = parfit_1.copy()
-                        nk += 1
+                for optkind in optgroup2:
+                    start = time.time()
+                    parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize)
 
-                    if  ((misfit_flag_low == 1) and (restarted == False)) or ((misfit_flag_low == 2) and (restarted == True)):
+                    if parfit_1[3] < 0.1:
+                        misfit_flag_low += 1
                         break
 
-                if misfit_flag_low == 0 or restarted == True:
+                    if args.debug == True:
+                        outplotter_tel(parfit_1,fitobj,'{}_{}_beforeparfit_{}{}'.format(order,night,nk,optkind),inparam, args, order)
+                    parstart = parfit_1.copy()
+                    nk += 1
 
-                    parfit = parfit_1.copy()
-                    go = 0; break;
+                if  ((misfit_flag_low == 1) and (restarted == False)) or ((misfit_flag_low == 2) and (restarted == True)):
+                    break
+
+            if misfit_flag_low == 0 or restarted == True:
+
+                parfit = parfit_1.copy()
+                go = 0; break;
 
 
-        except:
-            pre_err = True
-            logger.warning(f'  --> NIGHT {night}, ORDER {order} HIT ERROR DURING PRE_OPT')
-            # Write out table to fits header with errorflag = 1
-            c0    = fits.Column(name=f'ERRORFLAG{order}', array=np.array([1]), format='K')
-            cols  = fits.ColDefs([c0])
-            hdu_1 = fits.BinTableHDU.from_columns(cols)
+        # except:
+        pre_err = True
+        logger.warning(f'  --> NIGHT {night}, ORDER {order} HIT ERROR DURING PRE_OPT')
+        # Write out table to fits header with errorflag = 1
+        c0    = fits.Column(name=f'ERRORFLAG{order}', array=np.array([1]), format='K')
+        cols  = fits.ColDefs([c0])
+        hdu_1 = fits.BinTableHDU.from_columns(cols)
 
-            # If first time writing fits file, make up filler primary hdu
-            if order == firstorder: # If first time writing fits file, make up filler primary hdu
-                bleh = np.ones((3,3))
-                primary_hdu = fits.PrimaryHDU(bleh)
-                hdul = fits.HDUList([primary_hdu,hdu_1])
-                hdul.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band), overwrite=True)
-            else:
-                hh = fits.open('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band))
-                hh.append(hdu_1)
-                hh.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band), overwrite=True)
+        # If first time writing fits file, make up filler primary hdu
+        if order == firstorder: # If first time writing fits file, make up filler primary hdu
+            bleh = np.ones((3,3))
+            primary_hdu = fits.PrimaryHDU(bleh)
+            hdul = fits.HDUList([primary_hdu,hdu_1])
+            hdul.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band), overwrite=True)
+        else:
+            hh = fits.open('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band))
+            hh.append(hdu_1)
+            hh.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band), overwrite=True)
 
 
         #-------------------------------------------------------------------------------
@@ -1123,15 +1123,15 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
     if not args.debug: logger.removeHandler(stream_hander)
     print('\n')
 
-    # orders = np.array([4])
-    # print('ONLY process order 4')
+    orders = np.array([4])
+    print('ONLY process order 4')
     # Run order by order, multiprocessing over nights within an order
     print('Processing the B nods first...')
     for jerp in range(len(orders)):
         if not args.debug: print('Working on order {} ({:02d}/{:02d})'.format(orders[jerp], int(jerp+1), len(orders)))
-        outs = mp_run(args, inparam, args.Nthreads, jerp, orders, nightsFinal,'B')
-        # for ii in np.arange(len(nightsFinal)):
-        #     MPinstB(args, inparam, jerp, orders, ii)
+        # outs = mp_run(args, inparam, args.Nthreads, jerp, orders, nightsFinal,'B')
+        for ii in np.arange(len(nightsFinal)):
+            MPinstB(args, inparam, jerp, orders, ii)
 
     print('B nods done! Halfway there! \n Now processing the A nods...')
     for jerp in range(len(orders)):
