@@ -17,14 +17,26 @@ def outplotter_tel(parfit, fitobj, title, inparam, args, order):
     '''
 
     fit,chi = fmod(parfit, fitobj)
+
+    #--- to match the wavelengh scale of fit from fmod ---
+    w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
+
+    dstep = np.median(w[1:]-w[:-1])
+    nstep = int((w[-1]-w[0])/dstep)
+    wreg = np.linspace(w[0],w[-1],nstep)
+    sdata = rebin_jv(w,fitobj.s,wreg,False)
+    udata = rebin_jv(w,fitobj.u,wreg,False)
+    xdata = np.linspace(fitobj.x[0],fitobj.x[-1],nstep)
+    w = wreg.copy()
+    #---
     npars = len(parfit)
 
-    mask = np.ones_like(fitobj.s,dtype=bool)
-    mask[(fitobj.s < .0)] = False
+    mask = np.ones_like(sdata,dtype=bool)
+    mask[(sdata < .0)] = False
 
     if len(fitobj.mask) != 0:
         for maskbounds in fitobj.mask:
-            mask[(fitobj.x > maskbounds[0]) & (fitobj.x < maskbounds[1]) ] = False
+            mask[(xdata > maskbounds[0]) & (xdata < maskbounds[1]) ] = False
 
     if len(fitobj.CRmask[1]) > 0:
         for mb in fitobj.CRmask[1]:
@@ -40,9 +52,9 @@ def outplotter_tel(parfit, fitobj, title, inparam, args, order):
             pass
     else:
         # print("We haven't determined what polynomial orders for K band yet and hardcoded this!")
-        if np.int(order) in [3]:
-            npars -= 4
-        elif np.int(order) in [4,5]:
+        # if np.int(order) in [3]:
+        #     npars -= 4
+        if np.int(order) in [3,4,5]:
             npars -= 3
         else:
             pass
@@ -52,19 +64,21 @@ def outplotter_tel(parfit, fitobj, title, inparam, args, order):
 
     npars -= 6 # subtract 6 from npars total: 2 for linear/quadratic IP, 1 for RV_telluric, 2 fot stellar template power and RV, 1 for vsini
 
-    chi_new = chi*(len(fitobj.s[mask]) - len(parfit))/(len(fitobj.s[mask]) - npars) # correct reduce chisq
+    chi_new = chi*(len(sdata[mask]) - len(parfit))/(len(sdata[mask]) - npars) # correct reduce chisq
 
-    w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
+    w = parfit[6] + parfit[7]*xdata + parfit[8]*(xdata**2.) + parfit[9]*(xdata**3.)
 
-    cont = parfit[10] + parfit[11]*fitobj.x+ parfit[12]*(fitobj.x**2) + parfit[20]*(fitobj.x**3) + parfit[21]*(fitobj.x**4) + parfit[22]*(fitobj.x**5) + parfit[23]*(fitobj.x**6)
+    cont = parfit[10] + parfit[11]*xdata+ parfit[12]*(xdata**2) + parfit[20]*(xdata**3) + parfit[21]*(xdata**4) + parfit[22]*(xdata**5) + parfit[23]*(xdata**6)
     if fitobj.masterbeam == 'A':
         bucket = np.zeros_like(cont)
-        bucket[(fitobj.x >= (parfit[15]-parfit[16]/2)) & (fitobj.x <= (parfit[15]+parfit[16]/2))] = parfit[17]
-        bucket[(fitobj.x >= (parfit[15]+parfit[16]/2-parfit[18])) & (fitobj.x <= (parfit[15]+parfit[16]/2))] += parfit[19]
+        bucket[(xdata >= (parfit[15]-parfit[16]/2)) & (xdata <= (parfit[15]+parfit[16]/2))] = parfit[17]
+        bucket[(xdata >= (parfit[15]+parfit[16]/2-parfit[18])) & (xdata <= (parfit[15]+parfit[16]/2))] += parfit[19]
         cont -= bucket
-    cont *= fitobj.continuum
 
-    mask2 = np.ones_like(fitobj.x,dtype=bool)
+    c2 = rebin_jv(fitobj.x, fitobj.continuum, xdata,False)
+    cont *= c2
+
+    mask2 = np.ones_like(xdata,dtype=bool)
 
     if len(fitobj.CRmask[1]) > 0:
         for mb in fitobj.CRmask[1]:
@@ -140,9 +154,9 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3, order):
             pass
     else:
         # print("We haven't determined what polynomial orders for K band yet and hardcoded this!")
-        if np.int(order) in [3]:
-            npars -= 4
-        elif np.int(order) in [4,5]:
+        # if np.int(order) in [3]:
+        #     npars -= 4
+        if np.int(order) in [3,4,5]:
             npars -= 3
         else:
             pass
