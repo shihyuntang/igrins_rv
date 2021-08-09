@@ -252,7 +252,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
         # Arrays defining parameter variations during optimization steps
         #                            | 0    1    2    3 |  | ------ 4 ------ |  | 5 |   | 6     7     8           9  |  |10  11  12| |13 14|  |15   16   17   18    19 |  |20   21   22   23 |
-        dpars = {'cont' : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    1e7, 1, 1,   0, 0,    10., 20., 0.2, 50.0, 0.2,   1.0, 1.0, 1.0, 1.0 ]),
+        dpars = {'cont' : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    1e7, 1, 1,   0, 0,    10., 30., 0.2, 50.0, 0.2,   1.0, 1.0, 1.0, 1.0 ]),
                  'twave': np.array([  0.0, 0.0, 0.0, 1.0,   0.0,                 0.0,   10.0, 10.0,  5.00000e-5, 1e-7,   0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ]),
                  'ip'   : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.5,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ]),
                  's'    : np.array([  5.0, 1.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ]),
@@ -295,7 +295,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                           par_in[5]  - dpars['ip'][5],    par_in[5] + dpars['ip'][5],
                           par_in[15] - dpars['cont'][15], par_in[15] + dpars['cont'][15],
                           par_in[16] - dpars['cont'][16], par_in[16] + dpars['cont'][16],
-                          0.,                             par_in[17] + dpars['cont'][17],
+                          0.01,                           par_in[17] + dpars['cont'][17],
                           par_in[18] - dpars['cont'][18], par_in[18] + dpars['cont'][18],
                           0.,                             par_in[19] + dpars['cont'][19]
                           ]
