@@ -313,24 +313,24 @@ def MPinstB(args, inparam, jerp, orders, i):
 
             go = 0; break;
 
-    except:
-        pre_err = True
-        logger.warning(f'  --> NIGHT {night}, ORDER {order} HIT ERROR DURING PRE_OPT')
-        # Write out table to fits header with errorflag = 1
-        c0    = fits.Column(name=f'ERRORFLAG{order}', array=np.array([1]), format='K')
-        cols  = fits.ColDefs([c0])
-        hdu_1 = fits.BinTableHDU.from_columns(cols)
+    # except:
+    pre_err = True
+    logger.warning(f'  --> NIGHT {night}, ORDER {order} HIT ERROR DURING PRE_OPT')
+    # Write out table to fits header with errorflag = 1
+    c0    = fits.Column(name=f'ERRORFLAG{order}', array=np.array([1]), format='K')
+    cols  = fits.ColDefs([c0])
+    hdu_1 = fits.BinTableHDU.from_columns(cols)
 
-        # If first time writing fits file, make up filler primary hdu
-        if order == firstorder: # If first time writing fits file, make up filler primary hdu
-            bleh = np.ones((3,3))
-            primary_hdu = fits.PrimaryHDU(bleh)
-            hdul = fits.HDUList([primary_hdu,hdu_1])
-            hdul.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band), overwrite=True)
-        else:
-            hh = fits.open('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band))
-            hh.append(hdu_1)
-            hh.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band), overwrite=True)
+    # If first time writing fits file, make up filler primary hdu
+    if order == firstorder: # If first time writing fits file, make up filler primary hdu
+        bleh = np.ones((3,3))
+        primary_hdu = fits.PrimaryHDU(bleh)
+        hdul = fits.HDUList([primary_hdu,hdu_1])
+        hdul.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band), overwrite=True)
+    else:
+        hh = fits.open('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band))
+        hh.append(hdu_1)
+        hh.writeto('{}/{}A0_{}treated_{}.fits'.format(inparam.outpath, night, masterbeam, args.band), overwrite=True)
 
 
     #-------------------------------------------------------------------------------
