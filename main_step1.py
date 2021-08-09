@@ -794,10 +794,10 @@ def MPinstA(args, inparam, jerp, orders, i):
             # ------------------------- Now do it again, but with Livingston -------------------------
 
             dpars['cont'] = np.array([0.0, 0.0, 0.0, 0.0,   0.0,   0.0,    0.0,  0.0, 0.0,        0.,     1e7, 1, 1,    0, 0,     0.0,  0.0, 0.0,  0.0, 0.0,   1.0, 1.0, 1.0, 1.0  ])
-            hardbounds = [par_in[4]  - 0,                 par_in[4]  + 0,
-                                  par_in[5]  - dpars['ip'][5],    par_in[5]  + dpars['ip'][5]
+            hardbounds = [par_in[4]  - 0             , par_in[4]  + 0,
+                          par_in[5]  - dpars['ip'][5], par_in[5]  + dpars['ip'][5] ]
 
-            #--- sytang changed --                 ]
+            #--- sytang changed --
             fitobj = fitobjs(sdata, xdata, udata, continuum, watm_inLIV, satm_inLIV, mflux_in, mwave_in, [], masterbeam, CRmaskF)
 
             go = 1; misfit_flag_low = 0; restarted = False;
