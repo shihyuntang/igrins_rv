@@ -19,7 +19,7 @@ def CRmasker(parfit, fitobj, tel=False):
     '''
 
     if tel:
-        clip_slope = 200
+        clip_slope = 150
     else:
         clip_slope = 300
 
