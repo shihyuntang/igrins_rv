@@ -648,7 +648,7 @@ def MPinstA(args, inparam, jerp, orders, i):
         fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam, [np.array([],dtype=int),np.array([],dtype=int)])
 
         #                            |0    1    2    3  |  | 4 |  | 5 |   | 6    7    8           9  |    |10 11 12|  |13 14|    |15    16    17   18    19|  |20   21   22    23 |
-        dpars = {'cont' :   np.array([0.0, 0.0, 0.0, 0.0,   0.0,   0.0,    0.0,  0.0, 0.0,        0.0,    1e7, 1, 1,    0, 0,    10.0, 20.0, 0.2, 50.0, 0.2,   1.0, 1.0, 1.0, 1.0 ]),
+        dpars = {'cont' :   np.array([0.0, 0.0, 0.0, 0.0,   0.0,   0.0,    0.0,  0.0, 0.0,        0.0,    1e7, 1, 1,    0, 0,    10.0, 30.0, 0.2, 50.0, 0.2,   1.0, 1.0, 1.0, 1.0 ]),
                  't'    :   np.array([0.0, 0.0, 0.0, 1.0,   0.0,   0.0,    0.0,  0.0, 0.0,        0.0,    0.0, 0, 0,    0, 0,     0.0,  0.0, 0.0,  0.0, 0.0,   0.0, 0.0, 0.0, 0.0 ]),
                  'twave':   np.array([0.0, 0.0, 0.0, 1.0,   0.0,   0.0,   10.0, 10.0, 5.00000e-5, 1e-7,   0.0, 0, 0,    0, 0,     0.0,  0.0, 0.0,  0.0, 0.0,   0.0, 0.0, 0.0, 0.0 ]),
                  'ip'   :   np.array([0.0, 0.0, 0.0, 0.0,   0.0,   0.5,    0.0,  0.0, 0.0,        0.0,    0.0, 0, 0,    0, 0,     0.0,  0.0, 0.0,  0.0, 0.0,   0.0, 0.0, 0.0, 0.0 ])}
@@ -660,12 +660,28 @@ def MPinstA(args, inparam, jerp, orders, i):
 
         #-------------------------------------------------------------------------------
 
-        # Use quadratic blaze correction for order 13; cubic for orders 6, 14, 21; quartic for orders 16 and 22
+        # # Use quadratic blaze correction for order 13; cubic for orders 6, 14, 21; quartic for orders 16 and 22
+        # if args.band == 'H':
+        #     if int(order) in [13]:
+        #         dpars['cont'][20] = 0.; dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
+        #     elif int(order) in [6,14,21]:
+        #         dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
+        #     else:
+        #         pass
+        # else:
+        #     # if np.int(order) in [3]:
+        #     #     dpars['cont'][20] = 0.; dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
+        #     if int(order) in [3,4,5]:
+        #         dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
+        #     elif int(order) in [6]:
+        #         dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
+        #     else:
+        #         pass
+
+        # --- sytang modified ---
         if args.band == 'H':
             if int(order) in [13]:
                 dpars['cont'][20] = 0.; dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
-            elif int(order) in [6,14,21]:
-                dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
             else:
                 pass
         else:
@@ -677,6 +693,7 @@ def MPinstA(args, inparam, jerp, orders, i):
                 dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
             else:
                 pass
+
 
         # Initialize an array that puts hard bounds on vsini and the instrumental resolution to make sure they do not diverge to unphysical values
         optimize = True
