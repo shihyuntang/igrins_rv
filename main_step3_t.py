@@ -617,7 +617,7 @@ Input Parameters:
     #         break
     #     trk += 1
     trk = 7
-    name = 'RV_results_{trk}'
+    name = f'RV_results_{trk}'
 
     os.mkdir(f'./Output/{args.targname}_{args.band}/{name}')
 
