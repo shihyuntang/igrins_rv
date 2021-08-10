@@ -85,7 +85,7 @@ def outplotter_tel(parfit, fitobj, title, inparam, args, order):
             mask2[(xdata >= fitobj.CRmask[0][mb]-1) & (xdata <= fitobj.CRmask[0][mb]+1)] = False
 
 
-    fig, axes = plt.subplots(1, 1, figsize=(6,3), facecolor='white', dpi=300)
+    fig, axes = plt.subplots(1, 1, figsize=(8,4), facecolor='white', dpi=250)
 
     axes.plot(w        ,sdata, '-',  c = 'k',        lw=0.7, label='data',  alpha=.3)
     axes.plot(w[mask2] ,sdata[mask2], '-',  c='k',       lw=0.7, label='data (emission removed)',  alpha=.8)
@@ -181,7 +181,7 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3, order):
     c2 = rebin_jv(fitobj.x, fitobj.continuum, xdata,False)
     cont *= c2
 
-    fig, axes = plt.subplots(1, 1, figsize=(6,3), facecolor='white', dpi=300)
+    fig, axes = plt.subplots(1, 1, figsize=(8,4), facecolor='white', dpi=250)
 
     mask2 = np.ones_like(xdata,dtype=bool)
 
