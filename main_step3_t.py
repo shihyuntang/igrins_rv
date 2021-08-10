@@ -618,8 +618,8 @@ Input Parameters:
     #     trk += 1
     trk = 7
     name = f'RV_results_{trk}'
-
-    os.mkdir(f'./Output/{args.targname}_{args.band}/{name}')
+    #
+    # os.mkdir(f'./Output/{args.targname}_{args.band}/{name}')
 
     if not os.path.isdir(f'./Output/{args.targname}_{args.band}/figs'):
         os.mkdir(f'./Output/{args.targname}_{args.band}/figs')
