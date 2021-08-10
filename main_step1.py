@@ -255,7 +255,7 @@ def MPinstB(args, inparam, jerp, orders, i):
 
     pre_err = False
 
-    cycles = 2
+    cycles = 3
     optgroup = ['twave', 'cont',
                 'twave', 'cont',
                 'twave',
@@ -720,7 +720,7 @@ def MPinstA(args, inparam, jerp, orders, i):
 
         pre_err = False
 
-        cycles = 2
+        cycles = 3
         optgroup1 = ['twave', 'cont',
                     'twave', 'cont',
                     'twave','cont']
