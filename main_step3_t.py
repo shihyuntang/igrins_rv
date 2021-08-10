@@ -746,7 +746,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
         df = fits.open('{}/{}/RVresultsRawBox.fits'.format(inparam.outpath, name))
 
         rvbox    = df[jerp+1].data['RV'+str(order)]
-        vsinibox = df[jerp+1].data['vsinibox'+str(order)]
+        vsinibox = df[jerp+1].data['VSINI'+str(order)]
         nightsbox= df[jerp+1].data['NIGHT'+str(order)]
         # for i in range(len(nights)):
             # outsbox = outs[i]
