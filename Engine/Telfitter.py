@@ -442,7 +442,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam,
     # chi_new = chisq / (len(model.y) - num_fit)
 
     if args.plotfigs:
-        fig, axes = plt.subplots(1, 1, figsize=(6,3), facecolor='white', dpi=300)
+        fig, axes = plt.subplots(1, 1, figsize=(6,3), facecolor='white', dpi=250)
 
         axes.plot(10*watm_in, satm_in,       color='black',    alpha=.8, label='data',      lw=0.7)
         axes.plot(10*model.x, model.y*cont1, color='tab:red',  alpha=.8, label='model fit', lw=0.7)
