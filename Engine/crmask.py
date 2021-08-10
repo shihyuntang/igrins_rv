@@ -6,7 +6,7 @@ from Engine.detect_peaks import detect_peaks
 from Engine.rebin_jv import rebin_jv
 
 
-def CRmasker(parfit,fitobj):
+def CRmasker(parfit, fitobj, tel=False):
     '''
     Identify cosmic rays and hot pixels in spectrum, as well as places where the model does not have the ability to reflect the data.
 
@@ -17,6 +17,11 @@ def CRmasker(parfit,fitobj):
     Outputs:
     CRmaskF : Pixels to be masked
     '''
+
+    if tel:
+        clip_slope = 200
+    else:
+        clip_slope = 300
 
     fit,chi = fmod(parfit, fitobj)
 
@@ -62,10 +67,10 @@ def CRmasker(parfit,fitobj):
         slopeL = (sdata[gL+1]-sdata[gL])/(xdata[gL+1]-xdata[gL])
         slopeR = (sdata[gR]-sdata[gR-1])/(xdata[gR]-xdata[gR-1])
         try:
-            if (np.min(slopeL) > 300) and (np.max(slopeR) < -300) and len(group) < 6:
+            if (np.min(slopeL) > clip_slope) and (np.max(slopeR) < -clip_slope) and len(group) < 6:
                 CRmaskF = np.concatenate((CRmaskF,group))
         except ValueError:
-            if (slopeL > 300) and (slopeR < -300):
+            if (slopeL > clip_slope) and (slopeR < -clip_slope):
                 CRmaskF = np.concatenate((CRmaskF,group))
 
     #mask = np.ones_like(xdata,dtype=bool)

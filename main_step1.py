@@ -299,7 +299,7 @@ def MPinstB(args, inparam, jerp, orders, i):
                 ## After first cycle, use best fit model to identify CRs/hot pixels
                 if nc == 1:
                     parfit = parfit_1.copy()
-                    CRmaskF = CRmasker(parfit,fitobj)
+                    CRmaskF = CRmasker(parfit,fitobj, tel=True)
 
                     # Redo rough blaze fit in case hot pixels were throwing it off
                     w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
@@ -769,7 +769,7 @@ def MPinstA(args, inparam, jerp, orders, i):
                     ## After first cycle, use best fit model to identify CRs/hot pixels
                     if nc == 1:
                         parfit = parfit_1.copy()
-                        CRmaskF = CRmasker(parfit,fitobj)
+                        CRmaskF = CRmasker(parfit,fitobj, tel=True)
                         fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam, CRmaskF)
 
                 if misfit_flag_low == 0 or restarted == True:
