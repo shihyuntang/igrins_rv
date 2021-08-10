@@ -69,7 +69,7 @@ def CRmasker(parfit, fitobj, tel=False):
         slopeL = (sdata[gL+1]-sdata[gL])/(xdata[gL+1]-xdata[gL])
         slopeR = (sdata[gR]-sdata[gR-1])/(xdata[gR]-xdata[gR-1])
         try:
-            if (np.min(slopeL) > clip_slope) and (np.max(slopeR) < -clip_slope) and (len(group) < clip_pixel_tol):
+            if (np.min(slopeL) > clip_slope_tol) and (np.max(slopeR) < -clip_slope_tol) and (len(group) < clip_pixel_tol):
                 CRmaskF = np.concatenate((CRmaskF,group))
         except ValueError:
             if (slopeL > clip_slope) and (slopeR < -clip_slope):
