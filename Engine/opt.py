@@ -90,7 +90,7 @@ def fmodel_chi(par,grad):
 
     dstep = np.median(wspot[1:]-wspot[:-1])
     nstep = int((wspot[-1]-wspot[0])/dstep)
-    wspot1 = np.linspace(w[0],w[-1],nstep)
+    wspot1 = np.linspace(wspot[0],wspot[-1],nstep)
     sspot = rebin_jv(wspot,sspot,wspot1,False)
     wspot = wspot1.copy()
 
@@ -205,7 +205,7 @@ def fmod(par,fitobj):
 
     dstep = np.median(wspot[1:]-wspot[:-1])
     nstep = int((wspot[-1]-wspot[0])/dstep)
-    wspot1 = np.linspace(w[0],w[-1],nstep)
+    wspot1 = np.linspace(wspot[0],wspot[-1],nstep)
     sspot = rebin_jv(wspot,sspot,wspot1,False)
     wspot = wspot1.copy()
 
@@ -316,7 +316,7 @@ def fmod_conti(par,fitobj):
 
     dstep = np.median(wspot[1:]-wspot[:-1])
     nstep = int((wspot[-1]-wspot[0])/dstep)
-    wspot1 = np.linspace(w[0],w[-1],nstep)
+    wspot1 = np.linspace(wspot[0],wspot[-1],nstep)
     sspot = rebin_jv(wspot,sspot,wspot1,False)
     wspot = wspot1.copy()
 
