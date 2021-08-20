@@ -91,13 +91,13 @@ def fmodel_chi(par,grad):
 
     dstep = np.median(wspot[1:]-wspot[:-1])
     nstep = int((wspot[-1]-wspot[0])/dstep)
-    wspot1 = np.linspace(w[0],w[-1],nstep)
+    wspot1 = np.linspace(wspot[0],wspot[-1],nstep)
     sspot = rebin_jv(wspot,sspot,wspot1,False)
     wspot = wspot1.copy()
 
     dstep = np.median(watm[1:]-watm[:-1])
     nstep = int((watm[-1]-watm[0])/dstep)
-    watm1 = np.linspace(w[0],w[-1],nstep)
+    watm1 = np.linspace(watm[0],watm[-1],nstep)
     satm = rebin_jv(watm,satm,watm1,False)
     watm = watm1.copy()
 
@@ -209,13 +209,13 @@ def fmod(par,fitobj):
 
     dstep = np.median(wspot[1:]-wspot[:-1])
     nstep = int((wspot[-1]-wspot[0])/dstep)
-    wspot1 = np.linspace(w[0],w[-1],nstep)
+    wspot1 = np.linspace(wspot[0],wspot[-1],nstep)
     sspot = rebin_jv(wspot,sspot,wspot1,False)
     wspot = wspot1.copy()
 
     dstep = np.median(watm[1:]-watm[:-1])
     nstep = int((watm[-1]-watm[0])/dstep)
-    watm1 = np.linspace(w[0],w[-1],nstep)
+    watm1 = np.linspace(watm[0],watm[-1],nstep)
     satm = rebin_jv(watm,satm,watm1,False)
     watm = watm1.copy()
 
@@ -323,13 +323,13 @@ def fmod_conti(par,fitobj):
 
     dstep = np.median(wspot[1:]-wspot[:-1])
     nstep = int((wspot[-1]-wspot[0])/dstep)
-    wspot1 = np.linspace(w[0],w[-1],nstep)
+    wspot1 = np.linspace(wspot[0],wspot[-1],nstep)
     sspot = rebin_jv(wspot,sspot,wspot1,False)
     wspot = wspot1.copy()
 
     dstep = np.median(watm[1:]-watm[:-1])
     nstep = int((watm[-1]-watm[0])/dstep)
-    watm1 = np.linspace(w[0],w[-1],nstep)
+    watm1 = np.linspace(watm[0],watm[-1],nstep)
     satm = rebin_jv(watm,satm,watm1,False)
     watm = watm1.copy()
 
