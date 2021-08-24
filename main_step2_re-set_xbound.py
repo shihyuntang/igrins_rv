@@ -314,7 +314,6 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         #             'twave',  's',
         #             'twave',  's']
         optgroup = ['cont', 'twave', 'cont', 's',
-                    'twave',  's',
                     'twave',  's']
 
         nk = 1
