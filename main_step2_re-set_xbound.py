@@ -678,10 +678,10 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
                 xbound1   = outsbox[4]
             else:
                 nightsbox = nightsbox + outsbox[0]
-                rvbox     = np.append((rvbox,outsbox[1]))
-                vsinibox  = np.append((vsinibox,outsbox[2]))
-                xbound0   = np.append((xbound0,outsbox[3]))
-                xbound1   = np.append((xbound1,outsbox[4]))
+                rvbox     = np.append([rvbox,outsbox[1]])
+                vsinibox  = np.append([vsinibox,outsbox[2]])
+                xbound0   = np.append([xbound0,outsbox[3]])
+                xbound1   = np.append([xbound1,outsbox[4]])
 
         print(rvbox)
         print(xbound0)
