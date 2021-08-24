@@ -344,8 +344,8 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         par_box.append(parfit)
         xbound_box.append(xbounds)
 
-    min_chi2_par_idx = np.argmin(chisq)
-    parfit  = par_box[min_chi2_par_idx]
+    min_chi2_par_idx = np.argmin(chi2_box)
+    parfit   = par_box[min_chi2_par_idx]
     xbounds0 = xbound_box[min_chi2_par_idx][0]
     xbounds1 = xbound_box[min_chi2_par_idx][-1]
 
