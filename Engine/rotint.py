@@ -1,38 +1,119 @@
-from scipy.signal import fftconvolve
-from Engine.importmodule import *
 
-def rotint(wave_spec,flux_spec,vrot):
-    '''
-    Applies rotational broadening to spectrum. This code is from the IvS Python Repository and is referenced as such (Institute for Astronomy at KU Leuven 2018, https://github.com/IvS-KULeuven/IvSPythonRepository)
+# coding: utf-8
 
-    Inputs:
-    wave_spec : Wavelength scale of spectrum
-    flux_spec : Corresponding flux of spectrum
-    vrot      : vsin(i)
+import numpy as np
+from scipy.interpolate import interp1d, splrep,splev
+import time
 
-    Outputs:
 
-    wave_conv   : Rotationally broadened wavelength scale
-    1-flux_conv : Rotationally broadened flux
-    '''
+# def rotint(w,s,vsini,eps=None,nr=None,ntheta=None,dif=None):
+#     #  This routine reads in a spectrum, s, on a wavelength scale, w, and a vsini
+#     #  with which to rotationally broaden the spectrum.  The rotationally broadened
+#     #  spectrum is returned in ns.  Parameters that can be set are the coefficient
+#     #  of the limb darkening law, eps (0.6 default), the number of radial steps on
+#     #  the disk, nr (default = 10), and the maximum number of steps in angle around
+#     #  the disk, ntheta (default = 100).  Final optional parameter dif allows for
+#     #  differential rotation according to the law Omeg(th)/Omeg(eq) = (1. - dif/2
+#     #  - (dif/2) cos(2 th)).  Dif = .675 nicely reproduces the law proposed by
+#     #  Smith, 1994, A&A, in press. to unify WTTS and CTTS.  Dif = .23 is similar to
+#     #  observed solar differential rotation.  Note: the th in the above expression
+#     #  is the stellar co-latitude, not the same as the integration variable used
+#     #  below.  This is a disk integration routine.
+#     #
+#     #  11-May-1994: Written CMJ.
+#     #
+#
+#     if eps == None:
+#         eps = .4
+#     if nr == None:
+#         nr = 10
+#     if ntheta == None:
+#         ntheta = 20
+#     if dif == None:
+#         dif = 0
+#
+#     c = 2.99792458e5
+#     tarea=0.0e00
+#
+#     dr = 1./nr
+#
+#     ns = np.zeros(len(s), dtype=np.float64)
+#
+#     for j in range(nr):
+#         r=dr/2.+j*dr # step from dr/2 to 3dr/2, 5dr/2, etc til you hit edge
+#         area=((r+dr/2.)**2-(r-dr/2.)**2)/int(ntheta*r)*(1.-eps+eps*np.cos(np.arcsin(r))) # annulus for 0 to r, r to 2r, etc, times (1 - e + e*cos(arcsin(r))) (limb darkening effectively changes area?
+#         # divide by int(ntheta*r) because about to iterate through ntheta, higher r means a given ntheta corresponds to larger area, so...what
+#         for k in range(int(ntheta*r)):
+#             th=np.pi/int(ntheta*r)+k*2.*np.pi/int(ntheta*r)
+#
+#             if dif != 0:
+#                 vl = vsini*r*np.sin(th)*(1.-dif/2.-dif/2.*np.cos(2.*np.arccos(r*np.cos(th))))
+#             else:
+#                 vl=r*vsini*np.sin(th)
+#
+#             f = interp1d(w+w*vl/c,s, kind='linear',bounds_error=False,fill_value='extrapolate')
+#             ns = ns + area*f(w)
+#             tarea += area
+#
+#     ns /= tarea
+#
+#     return w, ns
 
-    epsilon = 0.6
 
-    wave_ = np.log(wave_spec)
-    velo_ = np.linspace(wave_[0], wave_[-1], len(wave_))
-    flux_ = np.interp(velo_,wave_, flux_spec)
-    dvelo = velo_[1]-velo_[0]
-    vrot = vrot/(2.99792458e5)
-    #-- compute the convolution kernel and normalise it
-    n = int( 2*vrot / dvelo)
-    velo_k = np.arange(n)*dvelo
-    velo_k -= velo_k[-1]/2.
-    y = 1 - (velo_k/vrot)**2 # transformation of velocity
+from numba import njit
 
-    G = ( 2*(1-epsilon)*np.sqrt(y) + np.pi*epsilon/2.*y ) / ( np.pi*vrot * (1-epsilon/3.0) )  # the kernel
-    G /= np.sum(G)
-    #-- convolve the flux with the kernel
-    flux_conv = fftconvolve(1-flux_,G,mode='same')
-    velo_ = np.arange(len(flux_conv)) * dvelo+velo_[0]
-    wave_conv = np.exp(velo_)
-    return wave_conv,1-flux_conv
+@njit
+def rotint(w, s, vsini, eps=0.4, nr=10, ntheta=20, dif=0):
+    #  This routine reads in a spectrum, s, on a wavelength scale, w, and a vsini
+    #  with which to rotationally broaden the spectrum.  The rotationally broadened
+    #  spectrum is returned in ns.  Parameters that can be set are the coefficient
+    #  of the limb darkening law, eps (0.6 default), the number of radial steps on
+    #  the disk, nr (default = 10), and the maximum number of steps in angle around
+    #  the disk, ntheta (default = 100).  Final optional parameter dif allows for
+    #  differential rotation according to the law Omeg(th)/Omeg(eq) = (1. - dif/2
+    #  - (dif/2) cos(2 th)).  Dif = .675 nicely reproduces the law proposed by
+    #  Smith, 1994, A&A, in press. to unify WTTS and CTTS.  Dif = .23 is similar to
+    #  observed solar differential rotation.  Note: the th in the above expression
+    #  is the stellar co-latitude, not the same as the integration variable used
+    #  below.  This is a disk integration routine.
+    #
+    #  11-May-1994: Written CMJ.
+    #
+
+    # if eps == None:
+    #     eps = .4
+    # if nr == None:
+    #     nr = 10
+    # if ntheta == None:
+    #     ntheta = 20
+    # if dif == None:
+    #     dif = 0
+
+    c = 2.99792458e5
+    tarea = 0.0e00
+
+    dr = 1./nr
+    ns = np.zeros(len(s), dtype=np.float64)
+
+    for j in range(nr):
+        # step from dr/2 to 3dr/2, 5dr/2, etc til you hit edge
+        r = dr/2. + j*dr
+        # annulus for 0 to r, r to 2r, etc, times (1 - e + e*cos(arcsin(r))) (limb darkening effectively changes area?
+        area = ( (r+dr/2.)**2-(r-dr/2.)**2 ) / int(ntheta*r)*( 1.-eps + eps*np.cos(np.arcsin(r)) )
+        # divide by int(ntheta*r) because about to iterate through ntheta, higher r means a given ntheta corresponds to larger area, so...what
+        for k in range(int(ntheta*r)):
+            th = np.pi/int(ntheta*r) + k*2.*np.pi/int(ntheta*r)
+
+            if dif != 0:
+                vl = r*vsini*np.sin(th) * ( 1.-dif/2.-dif/2. * np.cos( 2.*np.arccos(r*np.cos(th)) ) )
+            else:
+                vl = r*vsini*np.sin(th)
+
+            # f = interp1d(w+w*vl/c,s, kind='linear',bounds_error=False,fill_value='extrapolate')
+            # ns = ns + area*f(w)
+            ns = ns + area * np.interp(w, w+w*vl/c, s)
+            tarea += area
+
+    ns /= tarea
+
+    return w, ns
