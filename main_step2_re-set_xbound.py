@@ -201,7 +201,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     # --- xbound re-set -- sytang add ---
     chi2_box = []; par_box = []; xbound_box = []
 
-    for adj_xbound in [10, 20, 30, -10, -20, -30]:
+    for adj_xbound in [0, 10, 20, 30, -10, -20, -30]:
         xbounds = [xbounds_org[0]+adj_xbound, xbounds_org[-1]+adj_xbound]
 
         # -- check if xbounds is within the bound_cut --
@@ -333,6 +333,13 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         parfit = parfit_1.copy()
         smod,chisq = fmod(parfit,fitobj)
 
+        if args.plotfigs == True:
+            parfitS = parfit.copy(); parfitS[3] = 0
+            parfitT = parfit.copy(); parfitT[1] = 0
+            outplotter_23(parfitS, fitobj, 'parfitS_{}_{}_{}'.format(order,night,tag), trk, inparam, args, step2or3, order)
+            outplotter_23(parfitT, fitobj, 'parfitT_{}_{}_{}'.format(order,night,tag), trk, inparam, args, step2or3, order)
+            outplotter_23(parfit, fitobj,  'parfit_{}_{}_{}_xbound_{}-{}_chi2{:1.2f}'.format(order,night,tag,xbounds[0],xbounds[-1],chisq), trk, inparam, args, step2or3, order)
+
         chi2_box.append(chisq)
         par_box.append(parfit)
         xbound_box.append(xbounds)
@@ -365,14 +372,6 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
 
     #-------------------------------------------------------------------------------
-
-    if args.plotfigs == True:
-        parfitS = parfit.copy(); parfitS[3] = 0
-        parfitT = parfit.copy(); parfitT[1] = 0
-        outplotter_23(parfitS, fitobj, 'parfitS_{}_{}_{}'.format(order,night,tag), trk, inparam, args, step2or3, order)
-        outplotter_23(parfitT, fitobj, 'parfitT_{}_{}_{}'.format(order,night,tag), trk, inparam, args, step2or3, order)
-        outplotter_23(parfit, fitobj,  'parfit_{}_{}_{}'.format(order,night,tag), trk, inparam, args, step2or3, order)
-
     rv0 = parfit[0]
     rvsmini    = rv0 + inparam.bvcs[night+tag] + rv0*inparam.bvcs[night+tag]/(2.99792458e5**2) # Barycentric correction
     vsinismini = parfit[4]
