@@ -665,7 +665,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
         # -- advance save with xbound and orders --
         order = orders[jerp]
         # Collect outputs: the reference night, the best fit RV, vsini, and other parameters
-        for i in range(len(nights)):
+        for i in range(len(nightsFinal)):
             outsbox = outs[i]
             if i == 0:
                 nightsbox = outsbox[0]
