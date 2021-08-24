@@ -677,11 +677,11 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
                 xbound0   = outsbox[3]
                 xbound1   = outsbox[4]
             else:
-                nightsbox = nightsbox + outsbox[0]
-                rvbox     = np.append(rvbox,outsbox[1])
-                vsinibox  = np.append(vsinibox,outsbox[2])
-                xbound0   = np.append(xbound0,outsbox[3])
-                xbound1   = np.append(xbound1,outsbox[4])
+                nightsbox = np.append(nightsbox, outsbox[0])
+                rvbox     = np.append(rvbox,     outsbox[1])
+                vsinibox  = np.append(vsinibox,  outsbox[2])
+                xbound0   = np.append(xbound0,   outsbox[3])
+                xbound1   = np.append(xbound1,   outsbox[4])
 
         print(nightsbox)
         print(rvbox)
@@ -695,6 +695,10 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
         c3    = fits.Column(name='VSINI'+str(order),  array=vsinibox,  format='D')
         c4    = fits.Column(name='xBOUND0'+str(order),array=xbound0,    format='D')
         c5    = fits.Column(name='xBOUND1'+str(order),array=xbound1,    format='D')
+        print(c1)
+        print(c2)
+        print(c4)
+
         cols  = fits.ColDefs([c1,c2,c3,c4,c5])
         hdu_1 = fits.BinTableHDU.from_columns(cols)
 
