@@ -611,7 +611,7 @@ Input Parameters:
     logger.info(f'Writing output to ./Output/{args.targname}_{args.band}/{iniguess_dir}')
 
     filew = open(f'./Output/{args.targname}_{args.band}/{iniguess_dir}','w')
-    filew.write('night, bestguess, vsini xbound0 xbound 1')
+    filew.write('night, bestguess, vsini')
     filew.write('\n')
 
     #-------------------------------------------------------------------------------
@@ -662,13 +662,54 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
         func = partial(rv_MPinst, args, inparam, orders, jerp, trk, step2or3 )
         outs = pqdm(np.arange(len(nightsFinal)), func, n_jobs=args.Nthreads)
 
+        # -- advance save with xbound and orders --
+        order = orders[jerp]
+        # Collect outputs: the reference night, the best fit RV, vsini, and other parameters
+        for i in range(len(nights)):
+            outsbox = outs[i]
+            if i == 0:
+                nightsbox = outsbox[0]
+                rvbox     = outsbox[1]
+                vsinibox  = outsbox[2]
+                xbound0   = outsbox[3]
+                xbound1   = outsbox[4]
+            else:
+                nightsbox = nightsbox + outsbox[0]
+                rvbox     = np.concatenate((rvbox,outsbox[1]))
+                vsinibox  = np.concatenate((vsinibox,outsbox[2]))
+                xbound0   = np.concatenate((xbound0,outsbox[3]))
+                xbound1   = np.concatenate((xbound1,outsbox[4]))
 
+        nightsbox = np.array(nightsbox)
+        vsinitags = []
+
+        # Save results to fits file
+        c1    = fits.Column(name='NIGHT'+str(order),  array=nightsbox, format='{}A'.format(len(nights[0])) )
+        c2    = fits.Column(name='RV'+str(order),     array=rvbox,     format='D')
+        c3    = fits.Column(name='VSINI'+str(order),  array=vsinibox,  format='D')
+        c4    = fits.Column(name='xBOUND0'+str(order),array=xbound0,    format='D')
+        c5    = fits.Column(name='xBOUND1'+str(order),array=xbound1,    format='D')
+        cols  = fits.ColDefs([c1,c2,c3,c4,c5])
+        hdu_1 = fits.BinTableHDU.from_columns(cols)
+
+        if jerp == 0: # If first time writing fits file, make up filler primary hdu
+            bleh = np.ones((3,3))
+            primary_hdu = fits.PrimaryHDU(bleh)
+            hdul = fits.HDUList([primary_hdu,hdu_1])
+            hdul.writeto('{}/{}'.format(inparam.outpath, iniguess_dir.replace('.csv', '.fits')))
+        else:
+            hh = fits.open('{}/{}'.format(inparam.outpath, iniguess_dir.replace('.csv', '.fits')))
+            hh.append(hdu_1)
+            hh.writeto('{}/{}'.format(inparam.outpath, iniguess_dir.replace('.csv', '.fits')),overwrite=True)
+
+
+        # -- normal save rv and vsini --
         if int(args.label_use) == int(orders[jerp]):
             # Write outputs to file
             vsinis = []; finalrvs = [];
             for n in range(len(nightsFinal)):
                 nightout = outs[n]
-                filew.write('{}, {}, {}, {}, {}'.format(nightout[0], nightout[1], nightout[2], nightout[3], nightout[4]))
+                filew.write('{}, {}, {}'.format(nightout[0], nightout[1], nightout[2]))
                 filew.write('\n')
                 vsinis.append(nightout[2])
                 finalrvs.append(nightout[1])
