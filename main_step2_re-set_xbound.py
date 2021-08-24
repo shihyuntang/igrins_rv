@@ -689,7 +689,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
         vsinitags = []
 
         # Save results to fits file
-        c1    = fits.Column(name='NIGHT'+str(order),  array=nightsbox, format='{}A'.format(len(nights[0])) )
+        c1    = fits.Column(name='NIGHT'+str(order),  array=nightsbox, format='{}A'.format(len(nightsFinal[0])) )
         c2    = fits.Column(name='RV'+str(order),     array=rvbox,     format='D')
         c3    = fits.Column(name='VSINI'+str(order),  array=vsinibox,  format='D')
         c4    = fits.Column(name='xBOUND0'+str(order),array=xbound0,    format='D')
