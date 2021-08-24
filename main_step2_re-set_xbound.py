@@ -357,18 +357,18 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     # if best fit stellar template power is very low, throw out result
     if parfit[1] < 0.1:
         logger.warning(f'  --> Stellar template power is low for {night}! Data likely being misfit! Throwing out result...')
-        return night, np.nan, np.nan
+        return night, np.nan, np.nan, np.nan, np.nan
 
     # if best fit stellar or telluric template powers are exactly equal to their starting values, fit failed, throw out result
     if parfit[1] == par_in[1] or parfit[3] == par_in[3]:
         logger.warning(f'  --> Stellar or telluric template powers have not budged from starting values for {night}! Fit is broken! Optimizer bounds may be unfeasible, or chi-squared may be NaN? Throwing out result...')
-        return night, np.nan, np.nan
+        return night, np.nan, np.nan, np.nan, np.nan
 
     # if best fit model dips below zero at any point, we're to close to edge of blaze, fit may be comrpomised, throw out result
     smod,chisq = fmod(parfit,fitobj)
     if len(smod[(smod < 0)]) > 0:
         logger.warning(f'  --> Best fit model dips below 0 for {night}! May be too close to edge of blaze, throwing out result...')
-        return night, np.nan, np.nan
+        return night, np.nan, np.nan, np.nan, np.nan
 
 
     #-------------------------------------------------------------------------------
@@ -667,6 +667,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
         # Collect outputs: the reference night, the best fit RV, vsini, and other parameters
         for i in range(len(nightsFinal)):
             outsbox = outs[i]
+            print(outsbox[0], outsbox[1], outsbox[2], outsbox[3], outsbox[4])
             if i == 0:
                 nightsbox = outsbox[0]
                 rvbox     = outsbox[1]
