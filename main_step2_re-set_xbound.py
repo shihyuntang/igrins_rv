@@ -338,7 +338,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
             parfitT = parfit.copy(); parfitT[1] = 0
             outplotter_23(parfitS, fitobj, 'parfitS_{}_{}_{}'.format(order,night,tag), trk, inparam, args, step2or3, order)
             outplotter_23(parfitT, fitobj, 'parfitT_{}_{}_{}'.format(order,night,tag), trk, inparam, args, step2or3, order)
-            outplotter_23(parfit, fitobj,  'parfit_{}_{}_{}_xbound_{}-{}_chi2{:1.2f}'.format(order,night,tag,xbounds[0],xbounds[-1],chisq), trk, inparam, args, step2or3, order)
+            outplotter_23(parfit, fitobj,  'parfit_{}_{}_{}_xbound_{}-{}_chi2-{:1.2f}'.format(order,night,tag,xbounds[0],xbounds[-1],chisq), trk, inparam, args, step2or3, order)
 
         chi2_box.append(chisq)
         par_box.append(parfit)
