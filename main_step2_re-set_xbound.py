@@ -683,6 +683,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
                 xbound0   = np.append(xbound0,outsbox[3])
                 xbound1   = np.append(xbound1,outsbox[4])
 
+        print(nightsbox)
         print(rvbox)
         print(xbound0)
         nightsbox = np.array(nightsbox)
