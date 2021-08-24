@@ -339,8 +339,8 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         if args.plotfigs == True:
             parfitS = parfit.copy(); parfitS[3] = 0
             parfitT = parfit.copy(); parfitT[1] = 0
-            outplotter_23(parfitS, fitobj, 'parfitS_{}_{}_{}'.format(order,night,tag), trk, inparam, args, step2or3, order)
-            outplotter_23(parfitT, fitobj, 'parfitT_{}_{}_{}'.format(order,night,tag), trk, inparam, args, step2or3, order)
+            outplotter_23(parfitS, fitobj, 'parfitS_{}_{}_{}_xbound_{}-{}_chi2-{:1.2f}'.format(order,night,tag,xbounds[0],xbounds[-1],chisq), trk, inparam, args, step2or3, order)
+            outplotter_23(parfitT, fitobj, 'parfitT_{}_{}_{}_xbound_{}-{}_chi2-{:1.2f}'.format(order,night,tag,xbounds[0],xbounds[-1],chisq), trk, inparam, args, step2or3, order)
             outplotter_23(parfit, fitobj,  'parfit_{}_{}_{}_xbound_{}-{}_chi2-{:1.2f}'.format(order,night,tag,xbounds[0],xbounds[-1],chisq), trk, inparam, args, step2or3, order)
 
         chi2_box.append(chisq)
@@ -679,11 +679,13 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
                 xbound1   = outsbox[4]
             else:
                 nightsbox = nightsbox + outsbox[0]
-                rvbox     = np.concatenate((rvbox,outsbox[1]))
-                vsinibox  = np.concatenate((vsinibox,outsbox[2]))
-                xbound0   = np.concatenate((xbound0,outsbox[3]))
-                xbound1   = np.concatenate((xbound1,outsbox[4]))
+                rvbox     = np.append((rvbox,outsbox[1]))
+                vsinibox  = np.append((vsinibox,outsbox[2]))
+                xbound0   = np.append((xbound0,outsbox[3]))
+                xbound1   = np.append((xbound1,outsbox[4]))
 
+        print(rvbox)
+        print(xbound0)
         nightsbox = np.array(nightsbox)
         vsinitags = []
 
