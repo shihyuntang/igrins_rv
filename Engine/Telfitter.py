@@ -3,23 +3,27 @@ import os, nlopt
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
-# from   astropy import units
 from   Engine.rebin_jv import rebin_jv
 from   telfit import TelluricFitter, DataStructures
 
 
-def wavefunc(par,grad):
-    '''
-    Takes Telfitted template and uses an input wavelength solution to rebin it for direct comparison with Livingston.
+def wavefunc(par, grad):
+    """Takes Telfitted template and uses an input wavelength solution to rebin it for direct comparison with Livingston.
 
-    Inputs:
-    par  : array of polynomial coefficients specifying wavelength solution
-    grad : Always "None" (has to be this way for NLOpt)
+    Parameters
+    ----------
+    par : ndarray
+        array of polynomial coefficients specifying wavelength solution
+    grad : None
+        Always "None" (has to be this way for NLOpt)
 
-    Outputs reduced chisq of model fit.
-    '''
+    Returns
+    -------
+    float
+        reduced chisq of model fit.
+    """
 
-    global watm_Liv, satm_Liv, satmLivGen, x;
+    global watm_Liv, satm_Liv, satmLivGen, x
     #Make the wavelength scale
     f = np.poly1d(par)
     w = f(x)
@@ -27,31 +31,37 @@ def wavefunc(par,grad):
     if (w[-1] < w[0]) or (w[-1] > watm_Liv[-1]+5):
         return 1e3
 
-    satmTel2 = rebin_jv(w,satmLivGen,watm_Liv,False)
+    satmTel2 = rebin_jv(w, satmLivGen, watm_Liv, False)
     return np.sum((satm_Liv - satmTel2)**2) / (len(satmTel2) - len(par))
 
 
 def wavefit(par0, dpar0):
-    '''
-    NLopt convenience function for fitting wavelength solution of Telfitted Livingston Atlas such that it matches with Livingston Atlas.
+    """NLopt convenience function for fitting wavelength solution of Telfitted Livingston Atlas such that it matches with Livingston Atlas.
 
-    Inputs:
-    par0  : Initial guesses for polynomial coefficients specifying wavelength solution
-    dpar0 : Amount each initial guess can vary (higher or lower)
+    Parameters
+    ----------
+    par0 : ndarray
+        Initial guesses for polynomial coefficients specifying wavelength solution
+    dpar0 : ndarray
+        Amount each initial guess can vary (higher or lower)
 
-    Outputs:
-    parfit : Best fit polynomial coefficients specifying wavelength solution
-    '''
-
+    Returns
+    -------
+    ndarry
+        Best fit polynomial coefficients specifying wavelength solution
+    """
+ 
     opt = nlopt.opt(nlopt.LN_NELDERMEAD, 7)
     opt.set_min_objective(wavefunc)
+    
     lows  = par0-dpar0
     highs = par0+dpar0
+    
     opt.set_lower_bounds(lows)
     opt.set_upper_bounds(highs)
     opt.set_maxtime(1200) #seconds
+    
     # Quit optimization based on relative change in output fit parameters between iterations.
-    # Choosing smaller change tolerance than 1e-6 has demonstrated no improvement in precision.
     opt.set_ftol_rel(1e-14)
     parfit = opt.optimize(par0)
     return parfit
@@ -68,7 +78,33 @@ def suppress_GenerateModel(fitter, parfit, args):
     model = fitter.GenerateModel(parfit, nofit=True, air_wave=False)
     return model
 
-#------------
+# some share default values and fitting boundaries for telfit
+_telfit_default_values_dic = {"h2o" : 43.0,
+                              "ch4" :  1.8,
+                              "co"  :  5e-3,
+                              "n2o" :  5e-2,
+                              "co2" :  3.675e2,
+                              "o3"  :  7.6e-4,
+                              "o2"  :  2.1e5,
+                              "no"  :  0.0,
+                              "so2" :  5e-9,
+                              "no2" :  5e-9,
+                              "nh3" :  5e-9,
+                              "hno3":  1.56e-7,
+                              "pressure"   : 1023.0, 
+                              "temperature":  280.87,
+                              "angle"      :   39.0 
+                              }
+
+_telfit_default_vary_bound_dic = {"h2o": [1.0, 99.0],
+                                  "ch4": [0.1, 10.0],
+                                  "n2o": [1e-5, 1e2],
+                                  "co" : [1e-6, 1e2],
+                                  "co2": [1.0,  1e4],
+                                  "temperature": [ 265.0,  300.0],
+                                  "pressure"   : [1010.0, 1035.0],
+                                  "angle"      : [   1.0,   75.0]
+                                  }
 
 
 def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam, logger):
@@ -98,8 +134,8 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam,
     fitter = TelluricFitter(debug=False, print_lblrtm_output=args.debug)
 
     #Set the observatory location with a keyword
-    DCT_props     = {"latitude": 34.744, "altitude": 2.36} #altitude in km
-    McD_props     = {"latitude": 30.710, "altitude": 2.07}
+    DCT_props     = {"latitude":  34.744, "altitude": 2.36} # altitude in km
+    McD_props     = {"latitude":  30.710, "altitude": 2.07}
     GaminiS_props = {"latitude": -30.241, "altitude": 2.72}
 
     if inparam.obses[night] == 'DCT':
@@ -112,334 +148,382 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam,
         sys.exit('TELFIT OBSERVATORY ERROR, OLNY SUPPORT DCT, McD & GeminiS IN THIS VERSION!')
 
     # Read in data
+    # do not use astropy units in telfit to speed things up. telfit default wavelength units is in nm
     watm_in = watm_in/10 # AA --> nm
     data = DataStructures.xypoint(x=watm_in, y=satm_in, cont=None, err=a0ucut) # input wavelength in nm
+    
+    # set spectrum resolution
+    # Ideally, we'd fit resolution as well since that varies across the detector.
+    # But in practice the Telfit's resolution fits often diverge to unphysically high values.
+    # Ultimately, we only want accurate estimates for the chemical compositions, which are unaffacted
+    # by fixing the resolution at 45000. The final telluric template we'll be synthesizing from this
+    # will be at a set high resolution, anyway, and when we need/have needed to estimate resolution
+    # across the detector, we (have) done so via the fits of the telluric and stellar templates to the
+    # observed A0 and GJ281 spectra.
+    
+    resolution = 55000.0 if (order <= 4) else 45000.0  # Resolution lambda/delta-lambda
+
 
     # DCT data has parameters describing night of observation that the McDonald data does not.
-    if inparam.temps[night] != 'NOINFO': # If such information is available:
+    if inparam.temps[night] != 'NOINFO': # If temperature info. is available:
+
+        angle       = np.float(inparam.zds[night]    )        # Zenith distance
+        pressure    = np.float(inparam.press[night]  )        # Pressure, in hPa
+        humidity    = np.float(inparam.humids[night] )        # Percent humidity, at the observatory altitude
+        temperature = np.float(inparam.temps[night]  )+273.15 # Temperature in Kelvin
+
+        if (3 < order < 9) & (args.band == 'K'):
+            # Only 3 molecules present in chosen IGRINS orders' wavelength range are H2O, CH4, and CO.
+            fitter.FitVariable({"h2o": humidity,
+                                "ch4": _telfit_default_values_dic["ch4"],
+                                "co" : _telfit_default_values_dic["co"], 
+                                "n2o": _telfit_default_values_dic["n2o"]}
+                               )
+
+            #Adjust parameters that will not be fit, but are important
+            fitter.AdjustValue({"angle": angle,
+                                "pressure"   : pressure,
+                                "temperature": temperature,
+                                "resolution" : resolution,
+                                "wavestart"  : data.x[0] -0.001,
+                                "waveend"    : data.x[-1]+0.001,
+                                "co2" : _telfit_default_values_dic["co2"],
+                                "o3"  : _telfit_default_values_dic["o3"],
+                                "o2"  : _telfit_default_values_dic["o2"],
+                                "no"  : _telfit_default_values_dic["no"],
+                                "so2" : _telfit_default_values_dic["so2"],
+                                "no2" : _telfit_default_values_dic["no2"],
+                                "nh3" : _telfit_default_values_dic["nh3"],
+                                "hno3": _telfit_default_values_dic["hno3"]}
+                               )
+
+            #Set bounds on the variables being fit
+            fitter.SetBounds({"h2o": _telfit_default_vary_bound_dic["h2o"],
+                              "ch4": _telfit_default_vary_bound_dic["ch4"],
+                              "n2o": _telfit_default_vary_bound_dic["n2o"],
+                              "co" : _telfit_default_vary_bound_dic["co"]}
+                             )
+            
+        elif (order >= 9 or order <= 3) & (args.band == 'K'):
+            # Only 4 molecules present in chosen IGRINS orders' wavelength range are H2O, CH4, N2O, and CO2.
+            fitter.FitVariable({"h2o": humidity,
+                                "ch4": _telfit_default_values_dic["ch4"],
+                                "co2": _telfit_default_values_dic["co2"],
+                                "n2o": _telfit_default_values_dic["n2o"]}
+                               )
+
+            #Adjust parameters that will not be fit, but are important
+            fitter.AdjustValue({"angle": angle,
+                                "pressure"   : pressure,
+                                "temperature": temperature,
+                                "resolution" : resolution,
+                                "wavestart"  : data.x[0] -0.001,
+                                "waveend"    : data.x[-1]+0.001,
+                                "co"  : _telfit_default_values_dic["co"],
+                                "o3"  : _telfit_default_values_dic["o3"],
+                                "o2"  : _telfit_default_values_dic["o2"],
+                                "no"  : _telfit_default_values_dic["no"],
+                                "so2" : _telfit_default_values_dic["so2"],
+                                "no2" : _telfit_default_values_dic["no2"],
+                                "nh3" : _telfit_default_values_dic["nh3"],
+                                "hno3": _telfit_default_values_dic["hno3"]}
+                               )
+
+            #Set bounds on the variables being fit
+            fitter.SetBounds({"h2o": _telfit_default_vary_bound_dic["h2o"],
+                              "ch4": _telfit_default_vary_bound_dic["ch4"],
+                              "n2o": _telfit_default_vary_bound_dic["n2o"],
+                              "co2": _telfit_default_vary_bound_dic["co2"]}
+                             )
+            
+        elif args.band =='H':
+            fitter.FitVariable({"h2o": humidity,
+                                "ch4": _telfit_default_values_dic["ch4"],
+                                "co" : _telfit_default_values_dic["co"],
+                                "co2": _telfit_default_values_dic["co2"],
+                                "n2o": _telfit_default_values_dic["n2o"]}
+                               )
+
+            #Adjust parameters that will not be fit, but are important
+            fitter.AdjustValue({"angle": angle,
+                                "pressure"   : pressure,
+                                "temperature": temperature,
+                                "resolution" : resolution,
+                                "wavestart"  : data.x[0] -0.001,
+                                "waveend"    : data.x[-1]+0.001,
+                                "o3"  : _telfit_default_values_dic["o3"],
+                                "o2"  : _telfit_default_values_dic["o2"],
+                                "no"  : _telfit_default_values_dic["no"],
+                                "so2" : _telfit_default_values_dic["so2"],
+                                "no2" : _telfit_default_values_dic["no2"],
+                                "nh3" : _telfit_default_values_dic["nh3"],
+                                "hno3": _telfit_default_values_dic["hno3"]}
+                               )
+
+            #Set bounds on the variables being fit
+            fitter.SetBounds({"h2o": _telfit_default_vary_bound_dic["h2o"],
+                              "ch4": _telfit_default_vary_bound_dic["ch4"],
+                              "n2o": _telfit_default_vary_bound_dic["n2o"],
+                              "co" : _telfit_default_vary_bound_dic["co"],
+                              "co2": _telfit_default_vary_bound_dic["co2"]})
+
+    elif inparam.zds[night] != 'NOINFO': 
+        # If GeminiS data, some but not all parameters are in fits file.
+        # If parameters are not in fits file, use initial guesses and letting them vary.
+        # Guesses are taken from mean of parameters from DCT GJ281 data.
 
         angle       = np.float(inparam.zds[night])           #Zenith distance
-        pressure    = np.float(inparam.press[night])         #Pressure, in hPa
-        humidity    = np.float(inparam.humids[night])        #Percent humidity, at the observatory altitude
-        temperature = np.float(inparam.temps[night])+273.15  #Temperature in Kelvin
-
-        if (order <= 4):
-            resolution  = 55000.0                             #Resolution lambda/delta-lambda
-        else:
-            resolution  = 45000.0                             #Resolution lambda/delta-lambda
-
-        # Ideally, we'd fit resolution as well since that varies across the detector.
-        # But in practice the Telfit's resolution fits often diverge to unphysically high values.
-        # Ultimately, we only want accurate estimates for the chemical compositions, which are unaffacted
-        # by fixing the resolution at 45000. The final telluric template we'll be synthesizing from this
-        # will be at a set high resolution, anyway, and when we need/have needed to estimate resolution
-        # across the detector, we (have) done so via the fits of the telluric and stellar templates to the
-        # observed A0 and GJ281 spectra.
-
-        # Only 3 molecules present in chosen IGRINS orders' wavelength range are H2O, CH4, and CO.
-        if (3 < order < 9) & (args.band =='K'):
-            num_fit = 4
-            # Only 3 molecules present in chosen IGRINS orders' wavelength range are H2O, CH4, and CO.
-            fitter.FitVariable({"h2o": humidity,"ch4": 1.8,"co": 5e-3, "n2o":5e-2})
-
-            #Adjust parameters that will not be fit, but are important
-            fitter.AdjustValue({"angle": angle,\
-                                "pressure": pressure,\
-                                "temperature": temperature,\
-                                "resolution": resolution,
-                                "wavestart": data.x[0]-0.001,\
-                                "waveend": data.x[-1]+0.001,\
-                                "co2": 3.675e2,\
-                                "o3": 7.6e-4,\
-                                "o2": 2.1e5,\
-                                "no": 0.,\
-                                "so2": 5e-9,\
-                                "no2": 5e-9,\
-                                "nh3": 5e-9,\
-                                "hno3": 1.56e-7})
-
-            #Set bounds on the variables being fit
-            fitter.SetBounds({"h2o": [1.0, 99.0],\
-                              "ch4": [.1,  10.0],\
-                              "n2o": [1e-5,1e2],\
-                              "co": [ 1e-6,1e2]})
-        elif (order >= 9 or order <= 3) & (args.band =='K'):
-            num_fit = 4
-            # Only molecules present in chosen IGRINS orders' wavelength range are H2O, CH4, N2O, and CO2.
-            fitter.FitVariable({"h2o": humidity,"ch4": 1.8,"co2": 3.675e2, "n2o":5e-2})
-
-            #Adjust parameters that will not be fit, but are important
-            fitter.AdjustValue({"angle": angle,\
-                                "pressure": pressure,\
-                                "temperature": temperature,\
-                                "resolution": resolution,
-                                "wavestart": data.x[0]-0.001,\
-                                "waveend": data.x[-1]+0.001,\
-                                "co": 5e-3,\
-                                "o3": 7.6e-4,\
-                                "o2": 2.1e5,\
-                                "no": 0.,\
-                                "so2": 5e-9,\
-                                "no2": 5e-9,\
-                                "nh3": 5e-9,\
-                                "hno3": 1.56e-7})
-
-            #Set bounds on the variables being fit
-            fitter.SetBounds({"h2o": [1.0, 99.0],\
-                              "ch4": [.1,  10.0],\
-                              "n2o": [1e-5,1e2],\
-                              "co2": [1.0, 1e4]})
-        elif args.band =='H':
-            num_fit = 3
-            fitter.FitVariable({"h2o": humidity,"ch4": 1.8,"co": 5e-3,"co2": 3.675e2,"n2o" : 5e-2})
-
-            #Adjust parameters that will not be fit, but are important
-            fitter.AdjustValue({"angle": angle,\
-                                "pressure": pressure,\
-                                "temperature": temperature,\
-                                "resolution": resolution,
-                                "wavestart": data.x[0]-0.001,\
-                                "waveend": data.x[-1]+0.001,\
-                                "o3": 7.6e-4,\
-                                "o2": 2.1e5,\
-                                "no": 0.,\
-                                "so2": 5e-9,\
-                                "no2": 5e-9,\
-                                "nh3": 5e-9,\
-                                "hno3": 1.56e-7})
-
-            #Set bounds on the variables being fit
-            fitter.SetBounds({"h2o": [1.0, 99.0],\
-                              "ch4": [.1,  10.0],\
-                              "n2o": [1e-6,1e2],\
-                              "co": [1e-6,1e2],\
-                              "co2": [1.0, 1e4]})
-
-    elif inparam.zds[night] != 'NOINFO': # If GeminiS data, some but not all parameters are in fits file.
-          # If parameters are not in fits file, use initial guesses and letting them vary.
-          # Guesses are taken from mean of parameters from DCT GJ281 data.
-
-        angle       = np.float(inparam.zds[night])           #Zenith distance
         humidity    = np.float(inparam.humids[night])        #Percent humidity, at the observatory altitude
 
-        if (order <= 4):
-            resolution  = 55000.0                             #Resolution lambda/delta-lambda
-        else:
-            resolution  = 45000.0                             #Resolution lambda/delta-lambda
-
-        # Only 3 molecules present in chosen IGRINS orders' wavelength range are H2O, CH4, and CO.
         if (3 < order < 9) & (args.band =='K'):
-            num_fit = 4
             # Only 3 molecules present in chosen IGRINS orders' wavelength range are H2O, CH4, and CO.
-            fitter.FitVariable({"h2o": humidity,"ch4": 1.8,"co": 5e-3, "n2o":5e-2, "pressure":1023., "temperature":280.87})
+            fitter.FitVariable({"h2o": humidity,
+                                "ch4": _telfit_default_values_dic["ch4"],
+                                "co" : _telfit_default_values_dic["co"], 
+                                "n2o": _telfit_default_values_dic["n2o"], 
+                                "pressure"   : _telfit_default_values_dic["pressure"],  
+                                "temperature": _telfit_default_values_dic["temperature"]}
+                               )
 
             #Adjust parameters that will not be fit, but are important
-            fitter.AdjustValue({"angle": angle,\
-                                "resolution": resolution,
-                                "wavestart": data.x[0]-0.001,\
-                                "waveend": data.x[-1]+0.001,\
-                                "co2": 3.675e2,\
-                                "o3": 7.6e-4,\
-                                "o2": 2.1e5,\
-                                "no": 0.,\
-                                "so2": 5e-9,\
-                                "no2": 5e-9,\
-                                "nh3": 5e-9,\
-                                "hno3": 1.56e-7})
+            fitter.AdjustValue({"angle": angle,
+                                "resolution" : resolution,
+                                "wavestart"  : data.x[0] -0.001,
+                                "waveend"    : data.x[-1]+0.001,
+                                "co2" : _telfit_default_values_dic["co2"],
+                                "o3"  : _telfit_default_values_dic["o3"],
+                                "o2"  : _telfit_default_values_dic["o2"],
+                                "no"  : _telfit_default_values_dic["no"],
+                                "so2" : _telfit_default_values_dic["so2"],
+                                "no2" : _telfit_default_values_dic["no2"],
+                                "nh3" : _telfit_default_values_dic["nh3"],
+                                "hno3": _telfit_default_values_dic["hno3"]}
+                               )
 
             #Set bounds on the variables being fit
-            fitter.SetBounds({"h2o": [1.0, 99.0],\
-                              "ch4": [.1,  10.0],\
-                              "n2o": [1e-5,1e2],\
-                              "temperature": [265.,300.],\
-                              "pressure": [1010.,1035.],\
-                              "co": [ 1e-6,1e2]})
+            fitter.SetBounds({"h2o": _telfit_default_vary_bound_dic["h2o"],
+                              "ch4": _telfit_default_vary_bound_dic["ch4"],
+                              "n2o": _telfit_default_vary_bound_dic["n2o"],
+                              "co" : _telfit_default_vary_bound_dic["co"],
+                              "temperature": _telfit_default_vary_bound_dic["temperature"],
+                              "pressure"   : _telfit_default_vary_bound_dic["pressure"]}
+                             )
 
         elif (order >= 9 or order <= 3) & (args.band =='K'):
             num_fit = 4
             # Only molecules present in chosen IGRINS orders' wavelength range are H2O, CH4, N2O, and CO2.
-            fitter.FitVariable({"h2o": humidity,"ch4": 1.8,"co2": 3.675e2, "n2o":5e-2, "pressure":1023., "temperature":280.87})
+            fitter.FitVariable({"h2o": humidity,
+                                "ch4": _telfit_default_values_dic["ch4"],
+                                "co2": _telfit_default_values_dic["co2"],
+                                "n2o": _telfit_default_values_dic["n2o"],
+                                "pressure"   : _telfit_default_values_dic["pressure"],  
+                                "temperature": _telfit_default_values_dic["temperature"]}
+                               )
 
             #Adjust parameters that will not be fit, but are important
-            fitter.AdjustValue({"angle": angle,\
-                                "resolution": resolution,
-                                "wavestart": data.x[0]-0.001,\
-                                "waveend": data.x[-1]+0.001,\
-                                "co": 5e-3,\
-                                "o3": 7.6e-4,\
-                                "o2": 2.1e5,\
-                                "no": 0.,\
-                                "so2": 5e-9,\
-                                "no2": 5e-9,\
-                                "nh3": 5e-9,\
-                                "hno3": 1.56e-7})
+            fitter.AdjustValue({"angle": angle,
+                                "resolution" : resolution,
+                                "wavestart"  : data.x[0] -0.001,
+                                "waveend"    : data.x[-1]+0.001,
+                                "co"  : _telfit_default_values_dic["co"],
+                                "o3"  : _telfit_default_values_dic["o3"],
+                                "o2"  : _telfit_default_values_dic["o2"],
+                                "no"  : _telfit_default_values_dic["no"],
+                                "so2" : _telfit_default_values_dic["so2"],
+                                "no2" : _telfit_default_values_dic["no2"],
+                                "nh3" : _telfit_default_values_dic["nh3"],
+                                "hno3": _telfit_default_values_dic["hno3"]}
+                               )
 
             #Set bounds on the variables being fit
-            fitter.SetBounds({"h2o": [1.0, 99.0],\
-                              "ch4": [.1,  10.0],\
-                              "n2o": [1e-5,1e2],\
-                              "temperature": [265.,300.],\
-                              "pressure": [1010.,1035.],\
-                              "co2": [1.0, 1e4]})
+            fitter.SetBounds({"h2o": _telfit_default_vary_bound_dic["h2o"],
+                              "ch4": _telfit_default_vary_bound_dic["ch4"],
+                              "n2o": _telfit_default_vary_bound_dic["n2o"],
+                              "co2": _telfit_default_vary_bound_dic["co2"],
+                              "temperature": _telfit_default_vary_bound_dic["temperature"],
+                              "pressure"   : _telfit_default_vary_bound_dic["pressure"]}
+                             )
+            
         elif args.band =='H':
-            num_fit = 3
-            fitter.FitVariable({"h2o": humidity,"ch4": 1.8,"co": 5e-3,"co2": 3.675e2,"n2o" : 5e-2, "pressure":1023., "temperature":280.87})
+            fitter.FitVariable({"h2o": humidity,
+                                "ch4": _telfit_default_values_dic["ch4"],
+                                "co" : _telfit_default_values_dic["co"],
+                                "co2": _telfit_default_values_dic["co2"],
+                                "n2o": _telfit_default_values_dic["n2o"],
+                                "pressure"   : _telfit_default_values_dic["pressure"],  
+                                "temperature": _telfit_default_values_dic["temperature"]}
+                               )
 
             #Adjust parameters that will not be fit, but are important
-            fitter.AdjustValue({"angle": angle,\
-                                "resolution": resolution,
-                                "wavestart": data.x[0]-0.001,\
-                                "waveend": data.x[-1]+0.001,\
-                                "o3": 7.6e-4,\
-                                "o2": 2.1e5,\
-                                "no": 0.,\
-                                "so2": 5e-9,\
-                                "no2": 5e-9,\
-                                "nh3": 5e-9,\
-                                "hno3": 1.56e-7})
+            fitter.AdjustValue({"angle": angle,
+                                "resolution" : resolution,
+                                "wavestart"  : data.x[0] -0.001,
+                                "waveend"    : data.x[-1]+0.001,
+                                "o3"  : _telfit_default_values_dic["o3"],
+                                "o2"  : _telfit_default_values_dic["o2"],
+                                "no"  : _telfit_default_values_dic["no"],
+                                "so2" : _telfit_default_values_dic["so2"],
+                                "no2" : _telfit_default_values_dic["no2"],
+                                "nh3" : _telfit_default_values_dic["nh3"],
+                                "hno3": _telfit_default_values_dic["hno3"]}
+                               )
 
             #Set bounds on the variables being fit
-            fitter.SetBounds({"h2o": [1.0, 99.0],\
-                              "ch4": [.1,  10.0],\
-                              "n2o": [1e-6,1e2],\
-                              "co": [1e-6,1e2],\
-                              "temperature": [265.,300.],\
-                              "pressure": [1010.,1035.],\
-                              "co2": [1.0, 1e4]})
+            fitter.SetBounds({"h2o": _telfit_default_vary_bound_dic["h2o"],
+                              "ch4": _telfit_default_vary_bound_dic["ch4"],
+                              "n2o": _telfit_default_vary_bound_dic["n2o"],
+                              "co" : _telfit_default_vary_bound_dic["co"],
+                              "co2": _telfit_default_vary_bound_dic["co2"],
+                              "temperature": _telfit_default_vary_bound_dic["temperature"],
+                              "pressure"   : _telfit_default_vary_bound_dic["pressure"]}
+                             )
 
-    else: # If parameters are not in fits file, use initial guesses and letting them vary.
-          # Guesses are taken from mean of parameters from DCT GJ281 data.
-
-        if (order <= 4):
-            resolution  = 55000.0                             #Resolution lambda/delta-lambda
-        else:
-            resolution  = 45000.0                             #Resolution lambda/delta-lambda
+    else: 
+        # If parameters are not in fits file, use initial guesses and letting them vary.
+        # Guesses are taken from mean of parameters from DCT GJ281 data.
 
         # Only 3 molecules present in chosen IGRINS orders' wavelength range are H2O, CH4, and CO.
         if (3 < order < 9) & (args.band =='K'):
-            num_fit = 6
-            fitter.FitVariable({"h2o": 43.,"ch4": 1.8,"co": 5e-3, "n2o":5e-2,
-                                "angle": 39., "pressure":1023., "temperature":280.87})
+            fitter.FitVariable({"h2o": _telfit_default_values_dic["h2o"],
+                                "ch4": _telfit_default_values_dic["ch4"],
+                                "co" : _telfit_default_values_dic["co"],
+                                "n2o": _telfit_default_values_dic["n2o"],
+                                "angle"      : _telfit_default_values_dic["angle"],
+                                "pressure"   : _telfit_default_values_dic["pressure"],
+                                "temperature": _telfit_default_values_dic["temperature"],})
 
             #Adjust parameters that will not be fit, but are important
-            fitter.AdjustValue({"resolution": resolution,\
-                                "wavestart": data.x[0]-0.001,\
-                                "waveend": data.x[-1]+0.001,\
-                                "co2": 3.675e2,\
-                                "o3": 7.6e-4,\
-                                "o2": 2.1e5,\
-                                "no": 0.,\
-                                "so2": 5e-9,\
-                                "no2": 5e-9,\
-                                "nh3": 5e-9,\
-                                "hno3": 1.56e-7})
+            fitter.AdjustValue({"resolution" : resolution,
+                                "wavestart"  : data.x[0] -0.001,
+                                "waveend"    : data.x[-1]+0.001,
+                                "co2" : _telfit_default_values_dic["co2"],
+                                "o3"  : _telfit_default_values_dic["o3"],
+                                "o2"  : _telfit_default_values_dic["o2"],
+                                "no"  : _telfit_default_values_dic["no"],
+                                "so2" : _telfit_default_values_dic["so2"],
+                                "no2" : _telfit_default_values_dic["no2"],
+                                "nh3" : _telfit_default_values_dic["nh3"],
+                                "hno3": _telfit_default_values_dic["hno3"]}
+                               )
 
             #Set bounds on the variables being fit
-            fitter.SetBounds({"h2o": [1.0, 99.0],\
-                              "ch4": [.1,10.0],\
-                              "n2o": [1e-5,1e2],\
-                              "temperature": [265.,300.],\
-                              "angle": [1.,75.],\
-                              "pressure": [1010.,1035.],\
-                              "co": [ 1e-6,1e2]})
+            fitter.SetBounds({"h2o": _telfit_default_vary_bound_dic["h2o"],
+                              "ch4": _telfit_default_vary_bound_dic["ch4"],
+                              "n2o": _telfit_default_vary_bound_dic["n2o"],
+                              "co" : _telfit_default_vary_bound_dic["co"],
+                              "temperature": _telfit_default_vary_bound_dic["temperature"],
+                              "pressure"   : _telfit_default_vary_bound_dic["pressure"],
+                              "angle"      : _telfit_default_vary_bound_dic["angle"]}
+                             )
 
         elif (order >= 9 or order <= 3) & (args.band =='K'):
-            num_fit = 7
             # Only molecules present in chosen IGRINS orders' wavelength range are H2O, CH4, N2O, and CO2.
-            fitter.FitVariable({"h2o": 43.,"ch4": 1.8,"co2": 3.675e2, "n2o": 5e-2,
-                                "angle": 39., "pressure":1023., "temperature":280.87})
+            fitter.FitVariable({"h2o": _telfit_default_values_dic["h2o"],
+                                "ch4": _telfit_default_values_dic["ch4"],
+                                "co2": _telfit_default_values_dic["co2"],
+                                "n2o": _telfit_default_values_dic["n2o"],
+                                "angle"      : _telfit_default_values_dic["angle"],
+                                "pressure"   : _telfit_default_values_dic["pressure"],
+                                "temperature": _telfit_default_values_dic["temperature"]}
+                               )
 
             #Adjust parameters that will not be fit, but are important
-            fitter.AdjustValue({"resolution": resolution,\
-                                "wavestart": data.x[0]-0.001,\
-                                "waveend": data.x[-1]+0.001,\
-                                "co": 5e-3,\
-                                "o3": 7.6e-4,\
-                                "o2": 2.1e5,\
-                                "no": 0.,\
-                                "so2": 5e-9,\
-                                "no2": 5e-9,\
-                                "nh3": 5e-9,\
-                                "hno3": 1.56e-7})
+            fitter.AdjustValue({"resolution" : resolution,
+                                "wavestart"  : data.x[0] -0.001,
+                                "waveend"    : data.x[-1]+0.001,
+                                "co"  : _telfit_default_values_dic["co"],
+                                "o3"  : _telfit_default_values_dic["o3"],
+                                "o2"  : _telfit_default_values_dic["o2"],
+                                "no"  : _telfit_default_values_dic["no"],
+                                "so2" : _telfit_default_values_dic["so2"],
+                                "no2" : _telfit_default_values_dic["no2"],
+                                "nh3" : _telfit_default_values_dic["nh3"],
+                                "hno3": _telfit_default_values_dic["hno3"]}
+                               )
 
             #Set bounds on the variables being fit
-            fitter.SetBounds({"h2o": [1.0, 99.0],\
-                              "ch4": [.1,10.0],\
-                              "temperature": [265.,300.],\
-                              "angle": [1.,75.],\
-                              "n2o":[1e-5,1e2],\
-                              "pressure": [1010.,1035.],\
-                              "co2": [1.0, 1e4]})
+            fitter.SetBounds({"h2o": _telfit_default_vary_bound_dic["h2o"],
+                              "ch4": _telfit_default_vary_bound_dic["ch4"],
+                              "n2o": _telfit_default_vary_bound_dic["n2o"],
+                              "co2": _telfit_default_vary_bound_dic["co2"],
+                              "angle"      : _telfit_default_vary_bound_dic["angle"],
+                              "temperature": _telfit_default_vary_bound_dic["temperature"],
+                              "pressure"   : _telfit_default_vary_bound_dic["pressure"]}
+                             )
 
         elif args.band =='H':
-            num_fit = 6
-            fitter.FitVariable({"h2o": 43.,"ch4": 1.8,"co": 5e-3,"co2": 3.675e2,"n2o" : 5e-2,
-                                "angle": 39., "pressure":1023., "temperature":280.87})
+            fitter.FitVariable({"h2o": humidity,
+                                "ch4": _telfit_default_values_dic["ch4"],
+                                "co" : _telfit_default_values_dic["co"],
+                                "co2": _telfit_default_values_dic["co2"],
+                                "n2o": _telfit_default_values_dic["n2o"],
+                                "angle"      : _telfit_default_values_dic["angle"], 
+                                "pressure"   : _telfit_default_values_dic["pressure"],  
+                                "temperature": _telfit_default_values_dic["temperature"]})
 
             #Adjust parameters that will not be fit, but are important
-            fitter.AdjustValue({"resolution": resolution,\
-                                "wavestart": data.x[0]-0.001,\
-                                "waveend": data.x[-1]+0.001,\
-                                "o3": 7.6e-4,\
-                                "o2": 2.1e5,\
-                                "no": 0.,\
-                                "so2": 5e-9,\
-                                "no2": 5e-9,\
-                                "nh3": 5e-9,\
-                                "hno3": 1.56e-7})
+            fitter.AdjustValue({"resolution" : resolution,
+                                "wavestart"  : data.x[0] -0.001,
+                                "waveend"    : data.x[-1]+0.001,
+                                "o3"  : _telfit_default_values_dic["o3"],
+                                "o2"  : _telfit_default_values_dic["o2"],
+                                "no"  : _telfit_default_values_dic["no"],
+                                "so2" : _telfit_default_values_dic["so2"],
+                                "no2" : _telfit_default_values_dic["no2"],
+                                "nh3" : _telfit_default_values_dic["nh3"],
+                                "hno3": _telfit_default_values_dic["hno3"]}
+                               )
 
             #Set bounds on the variables being fit
-            fitter.SetBounds({"h2o": [1.0, 99.0],\
-                              "ch4": [.1,10.0],\
-                              "n2o": [1e-6,1e2],\
-                              "co": [1e-6,1e2],\
-                              "temperature": [265.,300.],\
-                              "angle": [1.,75.],\
-                              "pressure": [1010.,1035.],\
-                              "co2": [ 1,1e4]})
+            fitter.SetBounds({"h2o": _telfit_default_vary_bound_dic["h2o"],
+                              "ch4": _telfit_default_vary_bound_dic["ch4"],
+                              "n2o": _telfit_default_vary_bound_dic["n2o"],
+                              "co" : _telfit_default_vary_bound_dic["co"],
+                              "co2": _telfit_default_vary_bound_dic["co2"],
+                              "angle"      : _telfit_default_vary_bound_dic["angle"],
+                              "temperature": _telfit_default_vary_bound_dic["temperature"],
+                              "pressure"   : _telfit_default_vary_bound_dic["pressure"]}
+                             )
 
     try:
         if args.debug:
-            model = fitter.Fit(data=data, resolution_fit_mode="SVD", adjust_wave="model",air_wave=False)
+            model = fitter.Fit(data=data, resolution_fit_mode="SVD", adjust_wave="model", air_wave=False)
         else:
             model = suppress_Fit(fitter, data)
     except TypeError:
-        return [np.nan], [np.nan], [np.nan], [np.nan],[np.nan],[np.nan]
+        return [np.nan], [np.nan], [np.nan], [np.nan], [np.nan], [np.nan]
 
     '''
-      resolution_fit_mode = SVD ought to give faster, more accurate fits for the deep telluric lines we mostly see in K band
-      air_wave = False because data in vacuum wavelengths
-      adjust_wave =
-                    From Telfit comments: "Can be set to either 'data' or 'model'. To wavelength calibrate the
-                    data to the telluric lines, set to 'data'. If you think the wavelength
-                    calibration is good on the data (such as Th-Ar lines in the optical),
-                    then set to 'model' Note that currently, the vacuum --> air conversion
-                    for the telluric model is done in a very approximate sense, so
-                    adjusting the data wavelengths may introduce a small (few km/s) offset
-                    from what it should be. That is fine for relative RVs, but probably not
-                    for absolute RVs."
+    Note
+    ----
+    resolution_fit_mode = SVD ought to give faster, more accurate fits for the deep telluric lines we mostly see in K band
+    air_wave = False, because data in vacuum wavelengths
+    adjust_wave =
+                From Telfit comments: "Can be set to either 'data' or 'model'. To wavelength calibrate the
+                data to the telluric lines, set to 'data'. If you think the wavelength
+                calibration is good on the data (such as Th-Ar lines in the optical),
+                then set to 'model' Note that currently, the vacuum --> air conversion
+                for the telluric model is done in a very approximate sense, so
+                adjusting the data wavelengths may introduce a small (few km/s) offset
+                from what it should be. That is fine for relative RVs, but probably not
+                for absolute RVs."
 
-                    As it turns out, the model internal to Telfit is still not very precise in wavelength space, since it relies on the HITRAN
-                    database. Some lines are accurate to 1 m/s, but some less so.
+                As it turns out, the model internal to Telfit is still not very precise in wavelength space, since it relies on the HITRAN
+                database. Some lines are accurate to 1 m/s, but some less so.
 
-                    Hence, our procedure is as follows:
+                Hence, our procedure is as follows:
 
-                    1) Fit the A0 spectrum using the Livingston telluric template. Get out a precisely calibrated wavelength solution for the spectrum.
-                        (This is done in A0Fitter, not Telfitter)
-                    2) Use that wavelength solution was input for Telfit, and let the wavelength scale of the model vary with respect to it.
-                    3) Using Telfit's best fit parameters, generate a telluric template at high resolution.
-                       Note: Telfit's default when generating a model is to employ a vacuum/air conversion. In order to avoid that,
-                             I have manually edited one of Telfit's files.
-                    4) To properly calibrate this template in wavelength space, we fit it to a Telfit'd version of the Livingston telluric template, only allowing
-                       the wavelength solution to vary.
+                1) Fit the A0 spectrum using the Livingston telluric template. Get out a precisely calibrated wavelength solution for the spectrum.
+                    (This is done in A0Fitter, not Telfitter)
+                2) Use that wavelength solution was input for Telfit, and let the wavelength scale of the model vary with respect to it.
+                3) Using Telfit's best fit parameters, generate a telluric template at high resolution.
+                4) To properly calibrate this template in wavelength space, we fit it to a Telfit'd version of the Livingston telluric template, only allowing
+                    the wavelength solution to vary.
     '''
 
     #Get the improved continuum from the fitter
     cont1  = fitter.data.cont
     wcont1 = model.x*10 # nm-->AA
-
-    # chi_new = np.sum((satm_in - model.y*cont1)**2. / model.u**2.)
-    # chi_new = chisq / (len(model.y) - num_fit)
 
     if args.plotfigs:
         fig, axes = plt.subplots(1, 1, figsize=(6,3), facecolor='white', dpi=250)
@@ -452,26 +536,24 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam,
         axes.yaxis.set_minor_locator(AutoMinorLocator(2))
         axes.tick_params(axis='both', which='both', labelsize=6, right=True, top=True, direction='in')
         axes.set_ylabel(r'Flux',       size=6, style='normal' , family='sans-serif' )
-        axes.set_xlabel(r'Wavelength [$\AA$]', size=6, style='normal' , family='sans-serif' )
+        axes.set_xlabel(r'Wavelength [$\rm \AA$]', size=6, style='normal' , family='sans-serif' )
         axes.legend(fontsize=5, edgecolor='white')
         axes.set_title('A0Telfit_Order{}_{}_{}.png'.format(order, night, masterbeam),
                          size=6, style='normal', family='sans-serif')
-        # fig.text(0.65, 0.2, r'$\rm \chi^{{2}}_{{\nu}}$ = {:1.2f}'.format(chi_new),
-        #                     size=6, style='normal', family='sans-serif')
+
         fig.savefig('{}/figs_{}/A0Telfit_Order{}_{}_{}.png'.format(inparam.outpath, args.band, order, night, masterbeam),
                     format='png', bbox_inches='tight', overwrite=True)
 
-    ############### Generate template with these parameters but at higher resolution
 
-    names = ["pressure", "temperature", "angle", "resolution",'wavestart','waveend',
-                         "h2o", "co2", "o3", "n2o", "co", "ch4", "o2", "no",
-                         "so2", "no2", "nh3", "hno3"]
+    ############### Generate telluric template with these parameters but at higher resolution
+    names = ["pressure", "temperature", "angle", "resolution", "wavestart", "waveend",
+             "h2o", "co2", "o3", "n2o", "co", "ch4", "o2", "no", "so2", "no2", "nh3", "hno3"]
 
     parfitted = np.ones_like(names, dtype=float)
     for k in range(len(names)):
         parfitted[k] = np.float(fitter.GetValue(names[k]) )
 
-    fitter2 = TelluricFitter(debug=False, print_lblrtm_output=args.debug)
+    fitter2 = TelluricFitter(debug = False, print_lblrtm_output = args.debug)
 
     if inparam.obses[night] == 'DCT':
         fitter2.SetObservatory(DCT_props)
@@ -483,9 +565,9 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam,
     # Compute telluric template with highest resolution of Livingston template.
     # Add extra space at ends to make sure template covers wider range than data.
     Livingston_minimum_wsep = .035/10
-    IGRINS_minimum_wsep     = .130 # <-- This would compute template with IGRINS resolution, sensibly coarser than Livingston
+    IGRINS_minimum_wsep     = .130 # This would compute template with IGRINS resolution, sensibly coarser than Livingston
 
-    newwave = np.arange(np.min(watm_in)-2.5, np.max(watm_in)+2.5, Livingston_minimum_wsep) #in nm
+    newwave = np.arange(np.min(watm_in)-2.5, np.max(watm_in)+2.5, Livingston_minimum_wsep) # in nm
 
     data2 = DataStructures.xypoint(x=newwave,
                                    y=None,
@@ -501,9 +583,10 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam,
     fitter2.AdjustValue(params)
     fitter2.ImportData(data2)
 
-    # Call the modeller. On rare occasions, this returns an error. I have no idea what is causing this error, as the
-    # FORTRAN readout is quite unhelpful and anyone else who apepars to have experienced this problem had it randomly go away at some point.
+    # Call the modeller. On rare occasions, this returns an error as noted on https://github.com/kgullikson88/Telluric-Fitter/issues/9#issuecomment-123074731
+    # The cause of this issue are often by using the gfortran compiler.
     # If this happens, simply deliver NAN arrays, and in later parts of the RV analysis A0 fits from the nearest compatible observation will be used.
+    # HOWEVER, the better solution will be to use the ifort compiler.
     try:
         if args.debug:
             model2 = fitter2.GenerateModel(parfitted, nofit=True, air_wave=False)
@@ -511,9 +594,9 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam,
             model2 = suppress_GenerateModel(fitter2, parfitted, args)
 
     except TypeError:
-        return [np.nan], [np.nan], [np.nan], [np.nan],[np.nan],[np.nan]
+        return [np.nan], [np.nan], [np.nan], [np.nan], [np.nan], [np.nan]
 
-    watm_save = watm_in.copy(); satm_save = satm_in.copy();
+    watm_save = watm_in.copy(); satm_save = satm_in.copy()
     newwave1 = newwave[(newwave > watm_in[0]-1.0) & (newwave < watm_in[-1]+1.0)]
 
     # Parameters for reproducing Livingston template with Telfit
@@ -717,9 +800,9 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam,
                5.00000000e-09, 1.56000000e-07]),
 }
 
-    fitterL = TelluricFitter(debug=False, print_lblrtm_output=args.debug)
+    fitterL = TelluricFitter(debug = False, print_lblrtm_output = args.debug)
 
-    NSO_props = {"latitude": 31.958, "altitude":2.096} #alt in km
+    NSO_props = {"latitude": 31.958, "altitude": 2.096} # alt in km
     fitterL.SetObservatory(NSO_props)
 
     dataL = DataStructures.xypoint(x=newwave1, y=None, cont=None, err=None)
@@ -740,11 +823,10 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam,
         else:
             modelL = suppress_GenerateModel(fitterL, parfittedL, args)
 
-
     except TypeError:
-        return [np.nan], [np.nan], [np.nan], [np.nan],[np.nan],[np.nan]
+        return [np.nan], [np.nan], [np.nan], [np.nan], [np.nan], [np.nan]
 
-    global x, satmLivGen, watm_Liv,satm_Liv;
+    global x, satmLivGen, watm_Liv,satm_Liv
 
     satmTel    = rebin_jv(model2.x*10, model2.y, newwave1*10, True, logger=logger) # nm --> AA
     satmLivGen = rebin_jv(modelL.x*10, modelL.y, newwave1*10, True, logger=logger) # nm --> AA
@@ -758,7 +840,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam,
 #    print('x=\n', x)
 
     watm_Liv  = inparam.watm[ (inparam.watm > watmLivGen[0]+1) & (inparam.watm < watmLivGen[-1]-1) ]
-    satm_Liv  = inparam.satm[ (inparam.watm > watmLivGen[0]+1) & (inparam.watm < watmLivGen[-1]-1 )]
+    satm_Liv  = inparam.satm[ (inparam.watm > watmLivGen[0]+1) & (inparam.watm < watmLivGen[-1]-1) ]
     dpar = np.abs(initguess)*10
     dpar[-1] = 5
 
