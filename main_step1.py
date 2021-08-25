@@ -163,7 +163,7 @@ def base_dpars_dict(use_sets, band, order):
         if order in [3,4,5]:
             # fit a cubic (3) continuum
             dpars_org['cont'][21:] = 0
-        elif iorder in [6]:
+        elif order in [6]:
             # fit a quartic (4) continuum
             dpars_org['cont'][22:] = 0
         else:
