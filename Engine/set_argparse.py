@@ -5,8 +5,6 @@ handeling all the argparse setup for all steps
 import argparse
 import multiprocessing as mp
 
-# commom setting for all steps
-
 _epilog = "Contact authors: Asa Stahl (asa.stahl@rice.edu); Shih-Yun Tang (sytang@lowell.edu)"
 _igrins_version = '1.0.0'
 
@@ -229,6 +227,39 @@ def _argparse_step3():
                         type=str,   default='')
     parser.add_argument('-DeBug',    dest="debug",           action="store_true",
                         help="If set, DeBug logging will be output, as well as (lots of) extra plots.")
+    parser.add_argument('-sk_check', dest="skip",           action="store_true",
+                        help="If set, will skip the input parameters check. Handy when running mutiple targets line by line")
+    
+    parser.add_argument(
+        '--version', action='version', version='%(prog)s {}'.format(_igrins_version))
+    
+    return parser.parse_args()
+
+
+def _argparse_step4():
+    """Take care of all the argparse stuff."""
+    parser = argparse.ArgumentParser(
+                                     prog        = 'IGRINS Spectra Radial Velocity Pipeline - Step 4',
+                                     description = '''
+                                      Updates RV uncertainty estimates to take into account uncertainty in vsini. Takes two runs of Step 3, one with vsini held fixed at the best guess value and one with vsini held fixed at the best guess value plus or minus one sigma, and uses the difference between the two to produce updated RVs and uncertainties.
+
+                                     For the most part, the uncertainties should change little (~1 m/s), but for high vsini (>~ 15 km/s) objects, it may increase by ~5-7 m/s or so.
+                                     ''',
+                                     epilog = _epilog)
+    parser.add_argument("targname",                          action="store",
+                        help="Enter your *target name",            type=str)
+    
+    parser.add_argument("-run1",    dest="run1",             action="store",
+                        help="First step3 run that will be used, the one with vsini held fixed AT THE BEST GUESS. Takes the string that suffixes 'RV_results_', e.g. for 'RV_results_1', you would set this to '1'.",
+                        type=str,   default='')
+    parser.add_argument("-run2",    dest="run2",             action="store",
+                        help="Second step3 run that will be used, the one with vsini held fixed at the best guess PLUS OR MINUS SIGMA.",
+                        type=str,   default='')
+    
+    parser.add_argument("-HorK",    dest="band",             action="store",
+                        help="Which band to process? H or K?. Default = K",
+                        type=str,   default='K')
+    
     parser.add_argument('-sk_check', dest="skip",           action="store_true",
                         help="If set, will skip the input parameters check. Handy when running mutiple targets line by line")
     
