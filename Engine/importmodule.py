@@ -90,11 +90,11 @@ def log_warning_id(file, start_t):
             int(line_str[:4])
         except ValueError:
             continue
-        date_str = line_str[:19] # extract the date, e.g., '2021-04-11 08:29:50'
-        datetemp = datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S')
+        date_str = line_str[:23] # extract the date, e.g., '2021-04-11 08:29:50'
+        datetemp = datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S,%f')
 
         if start_t > datetemp:
-            start_lidx = lidx
+            start_lidx = lidx+1
             break
         if lidx == loop_range[-1]: # if loop to the first row
             start_lidx = lidx
