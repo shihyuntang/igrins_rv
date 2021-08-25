@@ -278,7 +278,7 @@ def MPinstB(args, inparam, jerp, orders, i):
     fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam, [np.array([],dtype=int),np.array([],dtype=int)])
 
     # setup fitting boundary
-    dpars = base_dpars_dict(['cont', 'twave', 'ip'], int(args.band), order)
+    dpars = base_dpars_dict(['cont', 'twave', 'ip'], args.band, order)
 
     # if args.band == 'H':
     #     if int(order) in [13]:
@@ -601,7 +601,7 @@ def MPinstA(args, inparam, jerp, orders, i):
         fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam, [np.array([],dtype=int),np.array([],dtype=int)])
 
         # setup fitting boundary
-        dpars = base_dpars_dict(['cont', 't', 'twave', 'ip'], int(args.band), order)
+        dpars = base_dpars_dict(['cont', 't', 'twave', 'ip'], args.band, order)
         dpars['cont'][15:20] = np.array([10.0, 30.0, 0.2, 50.0, 0.2]) # setting for the Blaze dip
         
         # #                            |0    1    2    3  |  | 4 |  | 5 |   | 6    7    8           9  |    |10 11 12|  |13 14|    |15    16    17   18    19|  |20   21   22    23 |
