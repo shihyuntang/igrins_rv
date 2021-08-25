@@ -1,4 +1,5 @@
 from Engine.importmodule import *
+from Engine.set_argparse import _argparse_step0
 # -------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 def DataPrep(args):
@@ -30,7 +31,7 @@ def DataPrep(args):
     fileT.write('night beam tag jd facility airmass bvc\n')
 
     # Collect target star information
-    nightsT = [];
+    nightsT = []
     for x in range(len(star_files['CIVIL'])):
         night    = str(  np.array(star_files['CIVIL'])[x]     )
         frame    = str(  np.array(star_files['FRAMETYPE'])[x] )
@@ -243,36 +244,35 @@ def DataPrep(args):
 # -------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(
-                                     prog        = 'IGRINS Spectra Radial Velocity Pipeline - Step 0',
-                                     description = '''
-                                     This step collects and organizes all relevant information on target observations and associated telluric standard observations, for ease of use in later steps.
-                                     It requires that your observations be listed in IGRINS_RV_MASTERLOG.csv, which comes with this package in the /Engine folder.
-                                     If your target is not listed, you must construct your own PrepData files. See ReadMe for more details. \n
-                                     ''',
-                                     epilog = "Contact authors: asa.stahl@rice.edu; sytang@lowell.edu")
-    parser.add_argument("targname",                          action="store",
-                        help="Enter your target name, no space",
-                        type=str)
-    parser.add_argument("-HorK",    dest="band",             action="store",
-                        help="Which band to process? H or K?. Default = K",
-                        type=str,   default='K')
-    parser.add_argument("-AM",      dest="AM_cut",           action="store",
-                        help="AirMass difference allowed between TAR and STD (A0) stars. Default X = 0.3 ",
-                        type=str,   default='0.3')
+    # parser = argparse.ArgumentParser(
+    #                                  prog        = 'IGRINS Spectra Radial Velocity Pipeline - Step 0',
+    #                                  description = '''
+    #                                  This step collects and organizes all relevant information on target observations and associated telluric standard observations, for ease of use in later steps.
+    #                                  It requires that your observations be listed in IGRINS_RV_MASTERLOG.csv, which comes with this package in the /Engine folder.
+    #                                  If your target is not listed, you must construct your own PrepData files. See ReadMe for more details. \n
+    #                                  ''',
+    #                                  epilog = "Contact authors: asa.stahl@rice.edu; sytang@lowell.edu")
+    # parser.add_argument("targname",                          action="store",
+    #                     help="Enter your target name, no space",
+    #                     type=str)
+    # parser.add_argument("-HorK",    dest="band",             action="store",
+    #                     help="Which band to process? H or K?. Default = K",
+    #                     type=str,   default='K')
+    # parser.add_argument("-AM",      dest="AM_cut",           action="store",
+    #                     help="AirMass difference allowed between TAR and STD (A0) stars. Default X = 0.3 ",
+    #                     type=str,   default='0.3')
 
-    parser.add_argument("-coord",    dest="coord",            action="store",
-                        help="Optional [-XX.xx,-XX.xx] deg, GaiaDR2 coordinates at J2015.5. If give, will calculate BVC base on this info.",
-                        type=str,   default='')
-    parser.add_argument("-pm",       dest="pm",               action="store",
-                        help="Optional [-XX.xx,-XX.xx] [mas/yr], GaiaDR2 proper motion. If give, will calculate BVC base on this info.",
-                        type=str,   default='')
-    # parser.add_argument("-dist",    dest="distance",          action="store",
-    #                     help="Optional (pc), can be from GaiaDR2 parallax [mas] (1/plx), or from Bailer-Jones et al. 2018. If give, will calculate BVC base on this info.",
+    # parser.add_argument("-coord",    dest="coord",            action="store",
+    #                     help="Optional [-XX.xx,-XX.xx] deg, GaiaDR2 coordinates at J2015.5. If give, will calculate BVC base on this info.",
+    #                     type=str,   default='')
+    # parser.add_argument("-pm",       dest="pm",               action="store",
+    #                     help="Optional [-XX.xx,-XX.xx] [mas/yr], GaiaDR2 proper motion. If give, will calculate BVC base on this info.",
     #                     type=str,   default='')
 
-    parser.add_argument('--version',                         action='version',  version='%(prog)s 1.0.0')
-    args   = parser.parse_args()
+    # parser.add_argument('--version',                         action='version',  version='%(prog)s 1.0.0')
+    # args   = parser.parse_args()
+    
+    args = _argparse_step0()
     inpath = './Input/{}/'.format(args.targname)
 
     if ' ' in args.targname:

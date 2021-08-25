@@ -1,5 +1,6 @@
 from Engine.importmodule import *
 from Engine.importmodule import read_prepdata
+from Engine.set_argparse import _argparse_step3
 
 from Engine.IO_AB      import setup_templates, init_fitsread,stellarmodel_setup, setup_outdir
 from Engine.clips      import basicclip_above
@@ -391,79 +392,81 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(
-                                     prog        = 'IGRINS Spectra Radial Velocity Pipeline - Step 3',
-                                     description = '''
-                                     Performs a full analysis of each target star observation to produce accurate and precise RVs. \n
-                                     All the wavelength regions defined in Step 1 are used, and the code analyzes each observation that is part of a given exposure separately. \n
-                                     Unless the target vsini is already known to high accuracy, an initial run of Step 3 in which \vsini is allowed to vary is required. \n
-                                     This provides an estimate of vsini that can then be plugged into the code as a fixed value in the second run of Step 3. \n
-                                     If the user seeks the best possible RV uncertainty estimates, or if their target star has a relatively high \vsini ($>$ 10 \kms), they must run Step 3 once with \vsini held fixed at its estimated value and once with \vsini held fixed at this value plus or minus one sigma. \n
-                                     The minor differences in the RVs of the two runs (as low as $<$1 \ms and as high as 7 \ms) can then be incorporated into the final uncertainties. \n
-                                     If \vsini is already well-known, it is not necessary to run Step 3 more than once, as the code fully converges to the final RVs (within uncertainty) through just one run.
-                                     ''',
-                                     epilog = "Contact authors: asa.stahl@rice.edu; sytang@lowell.edu")
-    parser.add_argument("targname",                          action="store",
-                        help="Enter your *target name",            type=str)
-    parser.add_argument("-mode",    dest="mode",             action="store",
-                        help="RV standard star (STD) or a normal target (TAR)?",
-                        type=str,   default='')
-    parser.add_argument("-HorK",    dest="band",             action="store",
-                        help="Which band to process? H or K?. Default = K",
-                        type=str,   default='K')
-    parser.add_argument("-Wr",      dest="WRegion",          action="store",
-                        help="Which list of wavelength regions file (./Input/UseWv/WaveRegions_X) to use? Defaults to those chosen by IGRINS RV team, -Wr 1",
-                        type=int,   default=int(1))
-    parser.add_argument("-SN",      dest="SN_cut",           action="store",
-                        help="Spectrum S/N quality cut. Spectra with median S/N below this will not be analyzed. Default = 50 ",
-                        type=str,   default='50')
-    parser.add_argument("-nAB",      dest="nAB",           action="store",
-                        help="Minium number of separte A/B exposures within a set for a given observation (ensures accuracy of uncertainy estimates). Default = 2 for STD, 3 for TAR",
-                        type=str,   default='')
-    parser.add_argument('-i',       dest="initvsini",        action="store",
-                        help="Initial vsini (float, km/s). If no literature value known, use the value given by Step 2",
-                        type=str,   default='' )
-    parser.add_argument('-v',       dest="vsinivary",         action="store",
-                        help="Range of allowed vsini variation during optimization, default = 5.0 km/s. Should be set to 0 for final run.",
-                        type=str, default='5.0' )
-    parser.add_argument('-g',       dest="guesses",           action="store",
-                        help="For STD star. Initial RV guess for all nights. Given by Step 2 results (float, km/s)",
-                        type=str,   default='' )
-    parser.add_argument('-gS',       dest="guesses_source",           action="store",
-                        help="For TAR star. Source for list of initial RV guesses. 'init' = Initguesser_results_X = past Step 2 result OR 'rvre' = RV_results_X = past Step 3 result",
-                        type=str, default='')
-    parser.add_argument('-gX',       dest="guessesX",           action="store",
-                        help="For TAR star. The number, X, under ./*targname/Initguesser_results_X or ./*targname/RV_results_X, that you wish to use. Prefix determined by -gS",
-                        type=str, default='')
-    parser.add_argument('-t',       dest="template",         action="store",
-                        help="Stellar template. Pick from 'synthetic', 'PHOENIX', or 'livingston'. Default = 'synthetic'",
-                        type=str,   default='synthetic' )
-    parser.add_argument('-temp',      dest="temperature",           action="store",
-                        help="The synthetic template temperature used, e.g., 5000",
-                        type=str,   default='' )
-    parser.add_argument('-logg',      dest="logg",           action="store",
-                        help="The synthetic template logg used, e.g., 4.5",
-                        type=str,   default='' )
-    parser.add_argument('-abs_out',   dest="abs",            action="store",
-                        help="Take REL and ABS. REL for relative RVs as output, ABS for absolute RVs. Default = REL. Note that ABS mode will have worser precision.",
-                        type=str,   default='REL' )
-    # parser.add_argument('-sp',      dest="sptype",           action="store",
-    #                     help="The spectral type of the *target. (Letter only)",
+    # parser = argparse.ArgumentParser(
+    #                                  prog        = 'IGRINS Spectra Radial Velocity Pipeline - Step 3',
+    #                                  description = '''
+    #                                  Performs a full analysis of each target star observation to produce accurate and precise RVs. \n
+    #                                  All the wavelength regions defined in Step 1 are used, and the code analyzes each observation that is part of a given exposure separately. \n
+    #                                  Unless the target vsini is already known to high accuracy, an initial run of Step 3 in which \vsini is allowed to vary is required. \n
+    #                                  This provides an estimate of vsini that can then be plugged into the code as a fixed value in the second run of Step 3. \n
+    #                                  If the user seeks the best possible RV uncertainty estimates, or if their target star has a relatively high \vsini ($>$ 10 \kms), they must run Step 3 once with \vsini held fixed at its estimated value and once with \vsini held fixed at this value plus or minus one sigma. \n
+    #                                  The minor differences in the RVs of the two runs (as low as $<$1 \ms and as high as 7 \ms) can then be incorporated into the final uncertainties. \n
+    #                                  If \vsini is already well-known, it is not necessary to run Step 3 more than once, as the code fully converges to the final RVs (within uncertainty) through just one run.
+    #                                  ''',
+    #                                  epilog = "Contact authors: asa.stahl@rice.edu; sytang@lowell.edu")
+    # parser.add_argument("targname",                          action="store",
+    #                     help="Enter your *target name",            type=str)
+    # parser.add_argument("-mode",    dest="mode",             action="store",
+    #                     help="RV standard star (STD) or a normal target (TAR)?",
+    #                     type=str,   default='')
+    # parser.add_argument("-HorK",    dest="band",             action="store",
+    #                     help="Which band to process? H or K?. Default = K",
+    #                     type=str,   default='K')
+    # parser.add_argument("-Wr",      dest="WRegion",          action="store",
+    #                     help="Which list of wavelength regions file (./Input/UseWv/WaveRegions_X) to use? Defaults to those chosen by IGRINS RV team, -Wr 1",
+    #                     type=int,   default=int(1))
+    # parser.add_argument("-SN",      dest="SN_cut",           action="store",
+    #                     help="Spectrum S/N quality cut. Spectra with median S/N below this will not be analyzed. Default = 50 ",
+    #                     type=str,   default='50')
+    # parser.add_argument("-nAB",      dest="nAB",           action="store",
+    #                     help="Minium number of separte A/B exposures within a set for a given observation (ensures accuracy of uncertainy estimates). Default = 2 for STD, 3 for TAR",
+    #                     type=str,   default='')
+    # parser.add_argument('-i',       dest="initvsini",        action="store",
+    #                     help="Initial vsini (float, km/s). If no literature value known, use the value given by Step 2",
     #                     type=str,   default='' )
-    parser.add_argument('-c',       dest="Nthreads",         action="store",
-                        help="Number of cpu (threads) to use, default is 1/2 of avalible ones (you have %i cpus (threads) avaliable)"%(mp.cpu_count()),
-                        type=int,   default=int(mp.cpu_count()//2) )
-    parser.add_argument('-plot',    dest="plotfigs",          action="store_true",
-                        help="If set, will generate plots of the fitting results under ./Output/*targname_*band/figs/main_step3_*band_*runnumber")
-    parser.add_argument('-n_use',   dest="nights_use",       action="store",
-                        help="If you don't want to process all nights under the ./Input/*target/ folder, specify an array of night you wish to process here. e.g., [20181111,20181112]",
-                        type=str,   default='')
-    parser.add_argument('-DeBug',    dest="debug",           action="store_true",
-                        help="If set, DeBug logging will be output, as well as (lots of) extra plots.")
-    parser.add_argument('-sk_check', dest="skip",           action="store_true",
-                        help="If set, will skip the input parameters check. Handy when running mutiple targets line by line")
-    parser.add_argument('--version',                          action='version',  version='%(prog)s 1.0.0')
-    args = parser.parse_args()
+    # parser.add_argument('-v',       dest="vsinivary",         action="store",
+    #                     help="Range of allowed vsini variation during optimization, default = 5.0 km/s. Should be set to 0 for final run.",
+    #                     type=str, default='5.0' )
+    # parser.add_argument('-g',       dest="guesses",           action="store",
+    #                     help="For STD star. Initial RV guess for all nights. Given by Step 2 results (float, km/s)",
+    #                     type=str,   default='' )
+    # parser.add_argument('-gS',       dest="guesses_source",           action="store",
+    #                     help="For TAR star. Source for list of initial RV guesses. 'init' = Initguesser_results_X = past Step 2 result OR 'rvre' = RV_results_X = past Step 3 result",
+    #                     type=str, default='')
+    # parser.add_argument('-gX',       dest="guessesX",           action="store",
+    #                     help="For TAR star. The number, X, under ./*targname/Initguesser_results_X or ./*targname/RV_results_X, that you wish to use. Prefix determined by -gS",
+    #                     type=str, default='')
+    # parser.add_argument('-t',       dest="template",         action="store",
+    #                     help="Stellar template. Pick from 'synthetic', 'PHOENIX', or 'livingston'. Default = 'synthetic'",
+    #                     type=str,   default='synthetic' )
+    # parser.add_argument('-temp',      dest="temperature",           action="store",
+    #                     help="The synthetic template temperature used, e.g., 5000",
+    #                     type=str,   default='' )
+    # parser.add_argument('-logg',      dest="logg",           action="store",
+    #                     help="The synthetic template logg used, e.g., 4.5",
+    #                     type=str,   default='' )
+    # parser.add_argument('-abs_out',   dest="abs",            action="store",
+    #                     help="Take REL and ABS. REL for relative RVs as output, ABS for absolute RVs. Default = REL. Note that ABS mode will have worser precision.",
+    #                     type=str,   default='REL' )
+    # # parser.add_argument('-sp',      dest="sptype",           action="store",
+    # #                     help="The spectral type of the *target. (Letter only)",
+    # #                     type=str,   default='' )
+    # parser.add_argument('-c',       dest="Nthreads",         action="store",
+    #                     help="Number of cpu (threads) to use, default is 1/2 of avalible ones (you have %i cpus (threads) avaliable)"%(mp.cpu_count()),
+    #                     type=int,   default=int(mp.cpu_count()//2) )
+    # parser.add_argument('-plot',    dest="plotfigs",          action="store_true",
+    #                     help="If set, will generate plots of the fitting results under ./Output/*targname_*band/figs/main_step3_*band_*runnumber")
+    # parser.add_argument('-n_use',   dest="nights_use",       action="store",
+    #                     help="If you don't want to process all nights under the ./Input/*target/ folder, specify an array of night you wish to process here. e.g., [20181111,20181112]",
+    #                     type=str,   default='')
+    # parser.add_argument('-DeBug',    dest="debug",           action="store_true",
+    #                     help="If set, DeBug logging will be output, as well as (lots of) extra plots.")
+    # parser.add_argument('-sk_check', dest="skip",           action="store_true",
+    #                     help="If set, will skip the input parameters check. Handy when running mutiple targets line by line")
+    # parser.add_argument('--version',                          action='version',  version='%(prog)s 1.0.0')
+    # args = parser.parse_args()
+    
+    args = _argparse_step3()
     inpath   = './Input/{}/'.format(args.targname)
     cdbs_loc = '~/cdbs/'
 

@@ -1,4 +1,5 @@
 from Engine.importmodule import *
+from Engine.set_argparse import _argparse_step1
 
 from Engine.IO_AB     import setup_templates_tel, init_fitsread, stellarmodel_setup, setup_outdir
 from Engine.clips     import basicclip_above
@@ -414,7 +415,7 @@ def MPinstB(args, inparam, jerp, orders, i):
         mwave_in,mflux_in = stellarmodel_setup(a0w_out_fit/1e4, inparam.mwave0, inparam.mflux0)
 
         # Feed this new wavelength solution into Telfit. Returns high-res synthetic telluric template, parameters of that best fit, and blaze function best fit
-        watm1, satm1, telfitparnames, telfitpars, a0contwave, continuum = telfitter(a0w_out_fit,a0fluxlist,a0u,inparam,night,order,args,masterbeam,logger)
+        watm1, satm1, telfitparnames, telfitpars, a0contwave, continuum = telfitter(a0w_out_fit, a0fluxlist, a0u, inparam, night, order, args, masterbeam, logger)
     else:
         pass
     #-------------------------------------------------------------------------------
@@ -434,7 +435,7 @@ def MPinstB(args, inparam, jerp, orders, i):
 
     else: # If Telfit exited normally, proceed.
         #  Save best blaze function fit
-        continuum = rebin_jv(a0contwave,continuum,a0w_out_fit,False)
+        continuum = rebin_jv(a0contwave, continuum, a0w_out_fit, False)
 
         # Write out table to fits file with errorflag = 0
         c0  = fits.Column(name='ERRORFLAG'+str(order),      array=np.array([0]),            format='K')
@@ -478,7 +479,6 @@ def MPinstA(args, inparam, jerp, orders, i):
     #-------------------------------------------------------------------------------
 
     bound_cut = _setup_bound_cut(inparam.bound_cut_dic, args.band, order)
-
 
     ### Load relevant A0 spectrum
     x, a0wavelist, a0fluxlist, u = init_fitsread(inparam.inpath,
@@ -911,42 +911,44 @@ def use_w(args):
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(
-                                     prog        = 'IGRINS Spectra Radial Velocity Pipeline - Step 1',
-                                     description = '''
-                                     This step 1) defines the wavelength regions to be analyzed based on user specification \n
-                                     2) generates a synthetic, high-resolution telluric
-                                     template for use in later model fits on a night by night basis.  \n
-                                     Note that only target star observations will have their fits limited to the wavelength regions specified. \n
-                                     For A0 observations, only the orders specified will be analyzed, but each order will be fit as far as there is significant telluric absoprtion.
-                                     ''',
-                                     epilog = "Contact authors: asa.stahl@rice.edu; sytang@lowell.edu")
-    parser.add_argument("targname",                          action="store",
-                        help="Enter your *target name, no space",            type=str)
-    parser.add_argument("-HorK",    dest="band",             action="store",
-                        help="Which band to process? H or K?. Default = K",
-                        type=str,   default='K')
-    parser.add_argument("-Wr",      dest="WRegion",          action="store",
-                        help="Which list of wavelength regions file (./Input/UseWv/WaveRegions_X) to use? Defaults to those chosen by IGRINS RV team, -Wr 1",
-                        type=int,   default=int(1))
+    # parser = argparse.ArgumentParser(
+    #                                  prog        = 'IGRINS Spectra Radial Velocity Pipeline - Step 1',
+    #                                  description = '''
+    #                                  This step 1) defines the wavelength regions to be analyzed based on user specification \n
+    #                                  2) generates a synthetic, high-resolution telluric
+    #                                  template for use in later model fits on a night by night basis.  \n
+    #                                  Note that only target star observations will have their fits limited to the wavelength regions specified. \n
+    #                                  For A0 observations, only the orders specified will be analyzed, but each order will be fit as far as there is significant telluric absoprtion.
+    #                                  ''',
+    #                                  epilog = "Contact authors: asa.stahl@rice.edu; sytang@lowell.edu")
+    # parser.add_argument("targname",                          action="store",
+    #                     help="Enter your *target name, no space",            type=str)
+    # parser.add_argument("-HorK",    dest="band",             action="store",
+    #                     help="Which band to process? H or K?. Default = K",
+    #                     type=str,   default='K')
+    # parser.add_argument("-Wr",      dest="WRegion",          action="store",
+    #                     help="Which list of wavelength regions file (./Input/UseWv/WaveRegions_X) to use? Defaults to those chosen by IGRINS RV team, -Wr 1",
+    #                     type=int,   default=int(1))
 
-    parser.add_argument("-SN",      dest="SN_cut",           action="store",
-                        help="Spectrum S/N quality cut. Spectra with median S/N below this will not be analyzed. Default = 50 ",
-                        type=str,   default='50')
+    # parser.add_argument("-SN",      dest="SN_cut",           action="store",
+    #                     help="Spectrum S/N quality cut. Spectra with median S/N below this will not be analyzed. Default = 50 ",
+    #                     type=str,   default='50')
 
-    parser.add_argument('-c',       dest="Nthreads",         action="store",
-                        help="Number of cpu (threads) to use, default is 1/2 of avalible ones (you have %i cpus (threads) avaliable)"%(mp.cpu_count()),
-                        type=int,   default=int(mp.cpu_count()//2) )
-    parser.add_argument('-plot',    dest="plotfigs",        action="store_true",
-                        help="If set, will generate plots of A0 fitting results under ./Output/A0Fits/*target/fig/")
+    # parser.add_argument('-c',       dest="Nthreads",         action="store",
+    #                     help="Number of cpu (threads) to use, default is 1/2 of avalible ones (you have %i cpus (threads) avaliable)"%(mp.cpu_count()),
+    #                     type=int,   default=int(mp.cpu_count()//2) )
+    # parser.add_argument('-plot',    dest="plotfigs",        action="store_true",
+    #                     help="If set, will generate plots of A0 fitting results under ./Output/A0Fits/*target/fig/")
 
-    parser.add_argument('-n_use',   dest="nights_use",       action="store",
-                        help="If you don't want to process all nights under the ./Input/*target/ folder, specify an array of night you wish to process here. e.g., [20181111,20181112]",
-                        type=str,   default='')
-    parser.add_argument('-DeBug',    dest="debug",           action="store_true",
-                        help="If set, DeBug logging will be output, as well as (lots of) extra plots.")
-    parser.add_argument('--version',                         action='version',  version='%(prog)s 1.0.0')
-    args = parser.parse_args()
+    # parser.add_argument('-n_use',   dest="nights_use",       action="store",
+    #                     help="If you don't want to process all nights under the ./Input/*target/ folder, specify an array of night you wish to process here. e.g., [20181111,20181112]",
+    #                     type=str,   default='')
+    # parser.add_argument('-DeBug',    dest="debug",           action="store_true",
+    #                     help="If set, DeBug logging will be output, as well as (lots of) extra plots.")
+    # parser.add_argument('--version',                         action='version',  version='%(prog)s 1.0.0')
+    # args = parser.parse_args()
+    
+    args = _argparse_step1()
     inpath   = './Input/{}/'.format(args.targname)
     cdbs_loc = '~/cdbs/'
 #-------------------------------------------------------------------------------
