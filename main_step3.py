@@ -16,6 +16,130 @@ from Engine.crmask    import CRmasker
 
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
+def _setup_bound_cut(bound_cut_dic, band, order):
+    """ Retrieve pixel bounds for where within each other significant telluric absorption is present.
+    If these bounds were not applied, analyzing some orders would give garbage fits.
+
+    Parameters
+    ----------
+    bound_cut_dic : Dict
+        dict of pixel cuts on both sides (start & end) of the spectrum in different orders
+    band : str
+        H or K band
+    order : int
+        spectrun order
+
+    Returns
+    -------
+    list
+        pixel cuts on both sides (start & end) of the spectrum in the given order
+    """
+    
+    if band=='K':
+        if int(order) in [3, 4, 13, 14]:
+            bound_cut = bound_cut_dic[band][order]
+        else:
+            bound_cut = [150, 150]
+
+    elif band=='H':
+        if int(order) in [6, 10, 11, 13, 14, 16, 17, 20, 21, 22]:
+            bound_cut = bound_cut_dic[band][order]
+        else:
+            bound_cut = [150, 150]
+    
+    return bound_cut
+
+
+def setup_fitting_init_pars(band, initvsini, order):
+
+    # start at bucket loc = 1250 +- 100, width = 250 +- 100, depth = 100 +- 5000 but floor at 0
+    centerloc = 1250 if band == 'H' else 1180
+    
+    # Initialize parameter array for optimization as well as half-range values for each parameter during
+    # the various steps of the optimization.
+    # Many of the parameters initialized here will be changed throughout the code before optimization and
+    # in between optimization steps.
+    pars0 = np.array([np.nan,                   # 0: The shift of the stellar template (km/s) [assigned later]
+                      0.3,                      # 1: The scale factor for the stellar template
+                      0.0,                      # 2: The shift of the telluric template (km/s)
+                      0.6,                      # 3: The scale factor for the telluric template
+                      inparam.initvsini,        # 4: vsini (km/s)
+                      np.nan,                   # 5: The instrumental resolution (FWHM) in pixels
+                      np.nan,                   # 6: Wavelength 0-pt
+                      np.nan,                   # 7: Wavelength linear component
+                      np.nan,                   # 8: Wavelength quadratic component
+                      np.nan,                   # 9: Wavelength cubic component
+                      1.0,                      #10: Continuum zero point
+                      0.,                       #11: Continuum linear component
+                      0.,                       #12: Continuum quadratic component
+                      np.nan,                   #13: Instrumental resolution linear component
+                      np.nan,                   #14: Instrumental resolution quadratic component
+                      centerloc,                #15: Blaze dip center location
+                      330,                      #16: Blaze dip full width
+                      0.05,                     #17: Blaze dip depth
+                      90,                       #18: Secondary blaze dip full width
+                      0.05,                     #19: Blaze dip depth
+                      0.0,                      #20: Continuum cubic component
+                      0.0,                      #21: Continuum quartic component
+                      0.0,                      #22: Continuum pentic component
+                      0.0])                     #23: Continuum hexic component
+    
+    if int(order) == 13: pars0[1] = 0.8
+    
+    return pars0
+
+
+def base_dpars_dict(vsinivary, masterbeam, band, order):
+    """setup basic sets of par vary range array
+
+    Parameters
+    ----------
+    use_sets : list with str
+        list of dpars_org keys that wish to get
+
+    Returns
+    -------
+    Dict
+        dpars
+    """
+    
+    #                                | 0    1    2    3 |  | -- 4 -- | | 5 |   | 6     7     8           9  |  |10  11  12| |13 14|  |15   16   17   18    19 |  |20   21   22   23 |
+    dpars_org = {'cont' : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,        0.0,    0.0,  0.0,  0.0,        0.0,    1e7, 1, 1,   0, 0,    10., 30., 0.2, 50.0, 0.2,   1.0, 1.0, 1.0, 1.0 ]),
+                 'twave': np.array([  0.0, 0.0, 0.0, 1.0,   0.0,        0.0,   10.0, 10.0,  5.00000e-5, 1e-7,   0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ]),
+                 'ip'   : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,        0.5,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ]),
+                 's'    : np.array([  5.0, 1.0, 0.0, 0.0,   0.0,        0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ]),
+                 'v'    : np.array([  0.0, 0.0, 0.0, 0.0,   vsinivary,  0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ]),
+                 'ts'   : np.array([  5.0, 1.0, 0.0, 1.0,   0.0,        0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ])}
+    
+    if masterbeam == 'B':
+        dpars_org['cont'][15:20] = np.array([0.0, 0.0, 0.0, 0.0, 0.0]) # setting for the Blaze dip
+        
+    # blaze fitting order setting
+    if band == 'H':
+        if order in [13]:
+            # fit a quadratic (2) continuum
+            dpars_org['cont'][20:] = 0
+        elif order in [6,14,21]:
+            # fit a cubic (3) continuum
+            dpars_org['cont'][21:] = 0
+        else:
+            pass
+    elif band == 'K':
+        if order in [3,4,5]:
+            # fit a cubic (3) continuum
+            dpars_org['cont'][21:] = 0
+        elif order in [6]:
+            # fit a quartic (4) continuum
+            dpars_org['cont'][22:] = 0
+        else:
+            pass
+    
+    return dpars_org
+
+
+
+
+
 def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
     # Main function for RV fitting that will be threaded over by multiprocessing
@@ -38,7 +162,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     #-------------------------------------------------------------------------------
 
     # Collect relevant beam and filenum info
-    tagsnight = []; beamsnight = [];
+    tagsnight = []; beamsnight = []
     for tag in inparam.tagsA[night]:
         tagsnight.append(tag)
         beamsnight.append('A')
@@ -46,12 +170,12 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         tagsnight.append(tag)
         beamsnight.append('B')
 
-    nightsout = [];
-    rvsminibox     = np.ones(len(tagsnight));
-    vsiniminibox   = np.ones(len(tagsnight));
-    tagsminibox    = np.ones(len(tagsnight));
-    chisminibox    = np.ones(len(tagsnight));
-    parfitminibox  = np.ones((len(tagsnight),24)); # need to match the dpar numbers
+    nightsout = []
+    rvsminibox     = np.ones(len(tagsnight))
+    vsiniminibox   = np.ones(len(tagsnight))
+    tagsminibox    = np.ones(len(tagsnight))
+    chisminibox    = np.ones(len(tagsnight))
+    parfitminibox  = np.ones((len(tagsnight),24)) # need to match the dpar numbers
 
     rvsminibox[:]    = np.nan
     vsiniminibox[:]  = np.nan
@@ -75,43 +199,41 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         logger.warning(f'  --> Previous run of {night} found it inadequate, skipping...')
         return nightsout, rvsminibox, parfitminibox, vsiniminibox, tagsminibox
 
-    # start at bucket loc = 1250 +- 100, width = 250 +- 100, depth = 100 +- 5000 but floor at 0
-    if args.band == 'H':
-        centerloc = 1250
-    else:
-        centerloc = 1180
+    pars0 = setup_fitting_init_pars(args.band, inparam.initvsini, order)
+    
+#     # start at bucket loc = 1250 +- 100, width = 250 +- 100, depth = 100 +- 5000 but floor at 0
+#     centerloc = 1250 if args.band == 'H' else 1180
 
-#-------------------------------------------------------------------------------
-    ### Initialize parameter array for optimization as well as half-range values for each parameter during the various steps of the optimization.
-    ### Many of the parameters initialized here will be changed throughout the code before optimization and in between optimization steps.
-    pars0 = np.array([np.nan,                                                # 0: The shift of the stellar template (km/s) [assigned later]
-                      0.3,                                                   # 1: The scale factor for the stellar template
-                      0.0,                                                   # 2: The shift of the telluric template (km/s)
-                      0.6,                                                   # 3: The scale factor for the telluric template
-                      inparam.initvsini,                                     # 4: vsini (km/s)
-                      np.nan,                                                # 5: The instrumental resolution (FWHM) in pixels
-                      np.nan,                                                # 6: Wavelength 0-pt
-                      np.nan,                                                # 7: Wavelength linear component
-                      np.nan,                                                # 8: Wavelength quadratic component
-                      np.nan,                                                # 9: Wavelength cubic component
-                      1.0,                                                   #10: Continuum zero point
-                      0.,                                                    #11: Continuum linear component
-                      0.,                                                    #12: Continuum quadratic component
-                      np.nan,                                                #13: Instrumental resolution linear component
-                      np.nan,                                                #14: Instrumental resolution quadratic component
-                      centerloc,                                             #15: Blaze dip center location
-                      330,                                                   #16: Blaze dip full width
-                      0.05,                                                  #17: Blaze dip depth
-                      90,                                                    #18: Secondary blaze dip full width
-                      0.05,                                                  #19: Blaze dip depth
-                      0.0,                                                   #20: Continuum cubic component
-                      0.0,                                                   #21: Continuum quartic component
-                      0.0,                                                   #22: Continuum pentic component
-                      0.0])                                                  #23: Continuum hexic component
+# #-------------------------------------------------------------------------------
+#     ### Initialize parameter array for optimization as well as half-range values for each parameter during the various steps of the optimization.
+#     ### Many of the parameters initialized here will be changed throughout the code before optimization and in between optimization steps.
+#     pars0 = np.array([np.nan,                                                # 0: The shift of the stellar template (km/s) [assigned later]
+#                       0.3,                                                   # 1: The scale factor for the stellar template
+#                       0.0,                                                   # 2: The shift of the telluric template (km/s)
+#                       0.6,                                                   # 3: The scale factor for the telluric template
+#                       inparam.initvsini,                                     # 4: vsini (km/s)
+#                       np.nan,                                                # 5: The instrumental resolution (FWHM) in pixels
+#                       np.nan,                                                # 6: Wavelength 0-pt
+#                       np.nan,                                                # 7: Wavelength linear component
+#                       np.nan,                                                # 8: Wavelength quadratic component
+#                       np.nan,                                                # 9: Wavelength cubic component
+#                       1.0,                                                   #10: Continuum zero point
+#                       0.,                                                    #11: Continuum linear component
+#                       0.,                                                    #12: Continuum quadratic component
+#                       np.nan,                                                #13: Instrumental resolution linear component
+#                       np.nan,                                                #14: Instrumental resolution quadratic component
+#                       centerloc,                                             #15: Blaze dip center location
+#                       330,                                                   #16: Blaze dip full width
+#                       0.05,                                                  #17: Blaze dip depth
+#                       90,                                                    #18: Secondary blaze dip full width
+#                       0.05,                                                  #19: Blaze dip depth
+#                       0.0,                                                   #20: Continuum cubic component
+#                       0.0,                                                   #21: Continuum quartic component
+#                       0.0,                                                   #22: Continuum pentic component
+#                       0.0])                                                  #23: Continuum hexic component
 
     # This one specific order is small and telluric dominated, start with greater stellar template power to ensure good fits
-    if int(order) == 13:
-        pars0[1] = 0.8
+    
 
     # Iterate over all A/B exposures
     for t in np.arange(len(tagsnight)):
@@ -178,21 +300,25 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         a0contx = a0contx[(continuum != 0)]
         continuum = continuum[(continuum != 0)]
 
-        # Retrieve pixel bounds for where within each other significant telluric absorption is present.
-        # If these bounds were not applied, analyzing some orders would give garbage fits.
-        if args.band=='K':
-            if int(order) in [3, 4, 13, 14]:
-                bound_cut = inparam.bound_cut_dic[args.band][order]
-            else:
-                bound_cut = [150, 150]
 
-        elif args.band=='H':
-            if int(order) in [6, 10, 11, 13, 14, 16, 17, 20, 21, 22]:
-                bound_cut = inparam.bound_cut_dic[args.band][order]
-            else:
-                bound_cut = [150, 150]
+        bound_cut = _setup_bound_cut(inparam.bound_cut_dic, args.band, order)
+        
+        # # Retrieve pixel bounds for where within each other significant telluric absorption is present.
+        # # If these bounds were not applied, analyzing some orders would give garbage fits.
+        # if args.band=='K':
+        #     if int(order) in [3, 4, 13, 14]:
+        #         bound_cut = inparam.bound_cut_dic[args.band][order]
+        #     else:
+        #         bound_cut = [150, 150]
+
+        # elif args.band=='H':
+        #     if int(order) in [6, 10, 11, 13, 14, 16, 17, 20, 21, 22]:
+        #         bound_cut = inparam.bound_cut_dic[args.band][order]
+        #     else:
+        #         bound_cut = [150, 150]
 
         # Load target spectrum
+        
         x,wave,s,u = init_fitsread(f'{inparam.inpath}/{night}/{beam}/',
                                     'target',
                                     'separate',
@@ -244,41 +370,47 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
         # Get initial guess for cubic wavelength solution from reduction pipeline
         f = np.polyfit(x_piece,wave_piece,3)
-        par9in = f[0]*1e4; par8in = f[1]*1e4; par7in = f[2]*1e4; par6in = f[3]*1e4;
-        par[9] = par9in ; par[8] = par8in ; par[7] = par7in ; par[6] = par6in
+        par[9] = f[0]*1e4
+        par[8] = f[1]*1e4
+        par[7] = f[2]*1e4
+        par[6] = f[3]*1e4
+        # par[9] = par9in ; par[8] = par8in ; par[7] = par7in ; par[6] = par6in
 
         par[0] = initguesses-inparam.bvcs[night+tag] # Initial RV with barycentric correction
-        par[5] = IPpars[2]; par[13] = IPpars[1]; par[14] = IPpars[0];
+        par[5]  = IPpars[2]
+        par[13] = IPpars[1]
+        par[14] = IPpars[0]
+        
+        
+        # setup fitting boundary
+        dpars = base_dpars_dict(inparam.vsinivary, masterbeam, args.band, int(order))
+        
+        # # Arrays defining parameter variations during optimization steps
+        # #                            | 0    1    2    3 |  | ------ 4 ------ |  | 5 |   | 6     7     8           9  |  |10  11  12| |13 14|  |15   16   17   18    19 |  |20   21   22   23 |
+        # dpars = {'cont' : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    1e7, 1, 1,   0, 0,    10., 30., 0.2, 50.0, 0.2,   1.0, 1.0, 1.0, 1.0 ]),
+        #          'twave': np.array([  0.0, 0.0, 0.0, 1.0,   0.0,                 0.0,   10.0, 10.0,  5.00000e-5, 1e-7,   0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ]),
+        #          'ip'   : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.5,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ]),
+        #          's'    : np.array([  5.0, 1.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ]),
+        #          'v'    : np.array([  0.0, 0.0, 0.0, 0.0,   inparam.vsinivary,   0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ]),
+        #          'ts'   : np.array([  5.0, 1.0, 0.0, 1.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ])}
+        # if masterbeam == 'B':
+        #     dpars['cont'] = np.array([0.0, 0.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    1e7, 1, 1,   0, 0,     0.,  0., 0.0,  0.,  0.0,   1.0, 1.0 , 1.0, 1.0 ])
 
-
-        # Arrays defining parameter variations during optimization steps
-        #                            | 0    1    2    3 |  | ------ 4 ------ |  | 5 |   | 6     7     8           9  |  |10  11  12| |13 14|  |15   16   17   18    19 |  |20   21   22   23 |
-        dpars = {'cont' : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    1e7, 1, 1,   0, 0,    10., 30., 0.2, 50.0, 0.2,   1.0, 1.0, 1.0, 1.0 ]),
-                 'twave': np.array([  0.0, 0.0, 0.0, 1.0,   0.0,                 0.0,   10.0, 10.0,  5.00000e-5, 1e-7,   0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ]),
-                 'ip'   : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.5,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ]),
-                 's'    : np.array([  5.0, 1.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ]),
-                 'v'    : np.array([  0.0, 0.0, 0.0, 0.0,   inparam.vsinivary,   0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ]),
-                 'ts'   : np.array([  5.0, 1.0, 0.0, 1.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ])}
-        if masterbeam == 'B':
-            dpars['cont'] = np.array([0.0, 0.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    1e7, 1, 1,   0, 0,     0.,  0., 0.0,  0.,  0.0,   1.0, 1.0 , 1.0, 1.0 ])
-
-        # Use quadratic blaze correction for order 13; cubic for orders 6, 14, 21; quartic for orders 16 and 22
-        if args.band == 'H':
-            if int(order) in [13]:
-                dpars['cont'][20] = 0.; dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
-            elif int(order) in [6,14,21]:
-                dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
-            else:
-                pass
-        else:
-            # if np.int(order) in [3]:
-            #     dpars['cont'][20] = 0.; dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
-            if int(order) in [3,4,5]:
-                dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
-            elif int(order) in [6]:
-                dpars['cont'][22] = 0.; dpars['cont'][23] = 0.;
-            else:
-                pass
+        # # Use quadratic blaze correction for order 13; cubic for orders 6, 14, 21; quartic for orders 16 and 22
+        # if args.band == 'H':
+        #     if int(order) in [13]:
+        #         dpars['cont'][20] = 0.; dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.
+        #     elif int(order) in [6,14,21]:
+        #         dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.
+        #     else:
+        #         pass
+        # else:
+        #     if int(order) in [3,4,5]:
+        #         dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.
+        #     elif int(order) in [6]:
+        #         dpars['cont'][22] = 0.; dpars['cont'][23] = 0.
+        #     else:
+        #         pass
 
         continuum_in = rebin_jv(a0contx,continuum,x_piece,False)
         fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]),masterbeam,[np.array([],dtype=int),np.array([],dtype=int)])
