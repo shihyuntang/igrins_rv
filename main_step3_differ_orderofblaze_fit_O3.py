@@ -116,7 +116,7 @@ def base_dpars_dict(vsinivary, masterbeam, band, order):
         
     # blaze fitting order setting
     # fit a quartic (3) continuum
-    dpars_org['cubic'][21:] = 0
+    dpars_org['cont'][21:] = 0
     
     # if band == 'H':
     #     if order in [13]:
