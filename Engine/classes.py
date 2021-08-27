@@ -375,3 +375,37 @@ class tagstuffs:
         self.satm = satm
         self.night = night
         self.ip = ip
+
+
+def _setup_bound_cut(bound_cut_dic, band, order):
+    """ Retrieve pixel bounds for where within each other significant telluric absorption is present.
+    If these bounds were not applied, analyzing some orders would give garbage fits.
+
+    Parameters
+    ----------
+    bound_cut_dic : Dict
+        dict of pixel cuts on both sides (start & end) of the spectrum in different orders
+    band : str
+        H or K band
+    order : int
+        spectrun order
+
+    Returns
+    -------
+    list
+        pixel cuts on both sides (start & end) of the spectrum in the given order
+    """
+    
+    if band=='K':
+        if int(order) in [3, 4, 13, 14]:
+            bound_cut = bound_cut_dic[band][order]
+        else:
+            bound_cut = [150, 150]
+
+    elif band=='H':
+        if int(order) in [6, 10, 11, 13, 14, 16, 17, 20, 21, 22]:
+            bound_cut = bound_cut_dic[band][order]
+        else:
+            bound_cut = [150, 150]
+    
+    return bound_cut

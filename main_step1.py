@@ -4,7 +4,7 @@ from Engine.set_argparse import _argparse_step1
 from Engine.IO_AB     import setup_templates_tel, init_fitsread, stellarmodel_setup, setup_outdir
 from Engine.clips     import basicclip_above
 from Engine.contfit   import A0cont
-from Engine.classes   import fitobjs,inparamsA0,orderdict_cla
+from Engine.classes   import fitobjs,inparamsA0,orderdict_cla,_setup_bound_cut
 from Engine.rebin_jv  import rebin_jv
 from Engine.rotint    import rotint
 from Engine.Telfitter import telfitter
@@ -14,40 +14,6 @@ from Engine.outplotter import outplotter_tel
 from Engine.detect_peaks import detect_peaks
 from Engine.crmask    import CRmasker
 #-------------------------------------------------------------------------------
-
-def _setup_bound_cut(bound_cut_dic, band, order):
-    """ Retrieve pixel bounds for where within each other significant telluric absorption is present.
-    If these bounds were not applied, analyzing some orders would give garbage fits.
-
-    Parameters
-    ----------
-    bound_cut_dic : Dict
-        dict of pixel cuts on both sides (start & end) of the spectrum in different orders
-    band : str
-        H or K band
-    order : int
-        spectrun order
-
-    Returns
-    -------
-    list
-        pixel cuts on both sides (start & end) of the spectrum in the given order
-    """
-    
-    if band=='K':
-        if int(order) in [3, 4, 13, 14]:
-            bound_cut = bound_cut_dic[band][order]
-        else:
-            bound_cut = [150, 150]
-
-    elif band=='H':
-        if int(order) in [6, 10, 11, 13, 14, 16, 17, 20, 21, 22]:
-            bound_cut = bound_cut_dic[band][order]
-        else:
-            bound_cut = [150, 150]
-    
-    return bound_cut
-
 
 def A0_fits_write(hdu_1, firstorder, order, outpath, night, masterbeam, band):
     """output telfit generated synthetic telluric template
