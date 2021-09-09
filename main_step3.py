@@ -265,18 +265,22 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         wave_piece = wave[ (x > xbounds[0]) & (x < xbounds[-1]) ]
         x_piece    = x[    (x > xbounds[0]) & (x < xbounds[-1]) ]
 
-        # Trim stellar template to relevant wavelength range
-        mwave_in,mflux_in = stellarmodel_setup(wave_piece,inparam.mwave0,inparam.mflux0)
+        # Save data for second template cutting after optimization cycle 1 done
+        s_save = s_piece.copy(); x_save = x_piece.copy(); u_save = u_piece.copy();
 
-        # Trim telluric template to relevant wavelength range
-        satm_in = satm[(watm > np.min(wave_piece)*1e4 - 11) & (watm < np.max(wave_piece)*1e4 + 11)]
-        watm_in = watm[(watm > np.min(wave_piece)*1e4 - 11) & (watm < np.max(wave_piece)*1e4 + 11)]
+        # Trim telluric template to data range +- 15 AA. If telluric template buffer is cut short because A0 lines didn't extend 
+        # far past data range, cut data range accordingly.
+        satm_in = satm[(watm > np.min(wave_piece)*1e4 - 5) & (watm < np.max(wave_piece)*1e4 + 5)]
+        watm_in = watm[(watm > np.min(wave_piece)*1e4 - 5) & (watm < np.max(wave_piece)*1e4 + 5)]
 
-        # Make sure data is within telluric template range (shouldn't do anything)
-        s_piece    = s_piece[   (wave_piece*1e4 > np.min(watm_in)+5) & (wave_piece*1e4 < np.max(watm_in)-5)]
-        u_piece    = u_piece[   (wave_piece*1e4 > np.min(watm_in)+5) & (wave_piece*1e4 < np.max(watm_in)-5)]
-        x_piece    = x_piece[   (wave_piece*1e4 > np.min(watm_in)+5) & (wave_piece*1e4 < np.max(watm_in)-5)]
+        s_piece	= s_piece[   (wave_piece*1e4 > np.min(watm_in)+5) & (wave_piece*1e4 < np.max(watm_in)-5)]
+        u_piece	= u_piece[   (wave_piece*1e4 > np.min(watm_in)+5) & (wave_piece*1e4 < np.max(watm_in)-5)]
+        x_piece	= x_piece[   (wave_piece*1e4 > np.min(watm_in)+5) & (wave_piece*1e4 < np.max(watm_in)-5)]
         wave_piece = wave_piece[(wave_piece*1e4 > np.min(watm_in)+5) & (wave_piece*1e4 < np.max(watm_in)-5)]
+
+        # Trim stellar template to data range +- 10 AA
+        mflux_in = inparam.mflux0[(inparam.mwave0 > np.min(wave_piece)*1e4 - 2.5) & (inparam.mwave0 < np.max(wave_piece)*1e4 + 2.5)]
+        mwave_in = inparam.mwave0[(inparam.mwave0 > np.min(wave_piece)*1e4 - 2.5) & (inparam.mwave0 < np.max(wave_piece)*1e4 + 2.5)]
 
         # Normalize continuum from A0 to flux scale of data
         continuum /= np.nanmedian(continuum)
@@ -361,6 +365,20 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
             if nc == 1:
                 parfit = parfit_1.copy()
                 CRmaskF = CRmasker(parfit,fitobj)
+
+                w_temp = parfit[6] + parfit[7]*x_save + parfit[8]*(x_save**2.) + parfit[9]*(x_save**3.)
+
+                satm_in = satm[(watm > np.min(w_temp) - 5) & (watm < np.max(w_temp) + 5)]
+                watm_in = watm[(watm > np.min(w_temp) - 5) & (watm < np.max(w_temp) + 5)]
+
+                s_piece	= s_save[   (w_temp > np.min(watm_in)+5) & (w_temp < np.max(watm_in)-5)]
+                u_piece	= u_save[   (w_temp > np.min(watm_in)+5) & (w_temp < np.max(watm_in)-5)]
+                x_piece	= x_save[   (w_temp > np.min(watm_in)+5) & (w_temp < np.max(watm_in)-5)]
+                w_temp	 = w_temp[   (w_temp > np.min(watm_in)+5) & (w_temp < np.max(watm_in)-5)]
+
+                mflux_in = inparam.mflux0[(inparam.mwave0 > np.min(w_temp) - 2.5) & (inparam.mwave0 < np.max(w_temp) + 2.5)]
+                mwave_in = inparam.mwave0[(inparam.mwave0 > np.min(w_temp) - 2.5) & (inparam.mwave0 < np.max(w_temp) + 2.5)]
+
                 fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]),masterbeam,CRmaskF)
 
         parfit = parfit_1.copy()
@@ -693,6 +711,18 @@ Input Parameters:
 
     logger.info('Analyze with {} nights'.format(len(nightsFinal)))
 
+    nightsin = []; c1 = 0; c2 = 0;
+    for nnn in nightsFinal:
+        if nnn[:8] == '20161013' and c1 < 5:
+            nightsin.append(nnn)
+            c1 += 1
+        if nnn[:8] == '20160502' and c2 < 5:
+            nightsin.append(nnn)
+            c2 += 1
+        if c1 == 5 and c2 == 5:
+            break
+    nightsFinal = np.array(nightsin)
+
     #-------------------------------------------------------------------------------
 
     # Retrieve stellar and telluric templates
@@ -756,6 +786,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
     for jerp in range(len(orders)):
         if not args.debug: print('Working on order {} ({:02d}/{:02d})'.format(orders[jerp], int(jerp+1), len(orders)))
 
+        #rv_MPinst( args, inparam, orders, jerp, trk, step2or3 , 0)
         func = partial(rv_MPinst, args, inparam, orders, jerp, trk, step2or3 )
         outs = pqdm(np.arange(len(nightsFinal)), func, n_jobs=args.Nthreads)
         # pool = mp.Pool(processes = args.Nthreads)
