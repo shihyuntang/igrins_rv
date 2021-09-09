@@ -107,7 +107,7 @@ _telfit_default_vary_bound_dic = {"h2o": [1.0, 99.0],
                                   }
 
 
-def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam, c_order, logger):
+def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam, c_order,resolutions, logger):
     '''
     Produce synthetic telluric template from fit to telluric standard observation. How and why it works is detailed in comments throughout the code.
 
@@ -161,7 +161,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam,
     # across the detector, we (have) done so via the fits of the telluric and stellar templates to the
     # observed A0 and GJ281 spectra.
     
-    resolution = 55000.0 if (order <= 4) else 45000.0  # Resolution lambda/delta-lambda
+    resolution_min, resolution_med, resolution_max = resolutions
 
 
     # DCT data has parameters describing night of observation that the McDonald data does not.
@@ -175,6 +175,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam,
         if (3 < order < 9) & (args.band == 'K'):
             # Only 3 molecules present in chosen IGRINS orders' wavelength range are H2O, CH4, and CO.
             fitter.FitVariable({"h2o": humidity,
+                                "resolution" : resolution_med,
                                 "ch4": _telfit_default_values_dic["ch4"],
                                 "co" : _telfit_default_values_dic["co"], 
                                 "n2o": _telfit_default_values_dic["n2o"]}
@@ -184,7 +185,6 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam,
             fitter.AdjustValue({"angle": angle,
                                 "pressure"   : pressure,
                                 "temperature": temperature,
-                                "resolution" : resolution,
                                 "wavestart"  : data.x[0] -0.001,
                                 "waveend"    : data.x[-1]+0.001,
                                 "co2" : _telfit_default_values_dic["co2"],
@@ -199,6 +199,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam,
 
             #Set bounds on the variables being fit
             fitter.SetBounds({"h2o": _telfit_default_vary_bound_dic["h2o"],
+                              "resolution": [resolution_min,resolution_max],
                               "ch4": _telfit_default_vary_bound_dic["ch4"],
                               "n2o": _telfit_default_vary_bound_dic["n2o"],
                               "co" : _telfit_default_vary_bound_dic["co"]}
@@ -207,6 +208,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam,
         elif (order >= 9 or order <= 3) & (args.band == 'K'):
             # Only 4 molecules present in chosen IGRINS orders' wavelength range are H2O, CH4, N2O, and CO2.
             fitter.FitVariable({"h2o": humidity,
+                                "resolution" : resolution_med,
                                 "ch4": _telfit_default_values_dic["ch4"],
                                 "co2": _telfit_default_values_dic["co2"],
                                 "n2o": _telfit_default_values_dic["n2o"]}
@@ -216,7 +218,6 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam,
             fitter.AdjustValue({"angle": angle,
                                 "pressure"   : pressure,
                                 "temperature": temperature,
-                                "resolution" : resolution,
                                 "wavestart"  : data.x[0] -0.001,
                                 "waveend"    : data.x[-1]+0.001,
                                 "co"  : _telfit_default_values_dic["co"],
@@ -231,6 +232,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam,
 
             #Set bounds on the variables being fit
             fitter.SetBounds({"h2o": _telfit_default_vary_bound_dic["h2o"],
+                              "resolution": [resolution_min,resolution_max],
                               "ch4": _telfit_default_vary_bound_dic["ch4"],
                               "n2o": _telfit_default_vary_bound_dic["n2o"],
                               "co2": _telfit_default_vary_bound_dic["co2"]}
@@ -238,6 +240,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam,
             
         elif args.band =='H':
             fitter.FitVariable({"h2o": humidity,
+                                "resolution" : resolution_med,
                                 "ch4": _telfit_default_values_dic["ch4"],
                                 "co" : _telfit_default_values_dic["co"],
                                 "co2": _telfit_default_values_dic["co2"],
@@ -248,7 +251,6 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam,
             fitter.AdjustValue({"angle": angle,
                                 "pressure"   : pressure,
                                 "temperature": temperature,
-                                "resolution" : resolution,
                                 "wavestart"  : data.x[0] -0.001,
                                 "waveend"    : data.x[-1]+0.001,
                                 "o3"  : _telfit_default_values_dic["o3"],
@@ -262,6 +264,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam,
 
             #Set bounds on the variables being fit
             fitter.SetBounds({"h2o": _telfit_default_vary_bound_dic["h2o"],
+                              "resolution": [resolution_min,resolution_max],
                               "ch4": _telfit_default_vary_bound_dic["ch4"],
                               "n2o": _telfit_default_vary_bound_dic["n2o"],
                               "co" : _telfit_default_vary_bound_dic["co"],
@@ -278,6 +281,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam,
         if (3 < order < 9) & (args.band =='K'):
             # Only 3 molecules present in chosen IGRINS orders' wavelength range are H2O, CH4, and CO.
             fitter.FitVariable({"h2o": humidity,
+                                "resolution" : resolution_med,
                                 "ch4": _telfit_default_values_dic["ch4"],
                                 "co" : _telfit_default_values_dic["co"], 
                                 "n2o": _telfit_default_values_dic["n2o"], 
@@ -287,7 +291,6 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam,
 
             #Adjust parameters that will not be fit, but are important
             fitter.AdjustValue({"angle": angle,
-                                "resolution" : resolution,
                                 "wavestart"  : data.x[0] -0.001,
                                 "waveend"    : data.x[-1]+0.001,
                                 "co2" : _telfit_default_values_dic["co2"],
@@ -302,6 +305,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam,
 
             #Set bounds on the variables being fit
             fitter.SetBounds({"h2o": _telfit_default_vary_bound_dic["h2o"],
+                              "resolution": [resolution_min,resolution_max],
                               "ch4": _telfit_default_vary_bound_dic["ch4"],
                               "n2o": _telfit_default_vary_bound_dic["n2o"],
                               "co" : _telfit_default_vary_bound_dic["co"],
@@ -313,6 +317,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam,
             num_fit = 4
             # Only molecules present in chosen IGRINS orders' wavelength range are H2O, CH4, N2O, and CO2.
             fitter.FitVariable({"h2o": humidity,
+                                "resolution" : resolution_med,
                                 "ch4": _telfit_default_values_dic["ch4"],
                                 "co2": _telfit_default_values_dic["co2"],
                                 "n2o": _telfit_default_values_dic["n2o"],
@@ -321,8 +326,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam,
                                )
 
             #Adjust parameters that will not be fit, but are important
-            fitter.AdjustValue({"angle": angle,
-                                "resolution" : resolution,
+            fitter.AdjustValue({"angle": angle,=
                                 "wavestart"  : data.x[0] -0.001,
                                 "waveend"    : data.x[-1]+0.001,
                                 "co"  : _telfit_default_values_dic["co"],
@@ -340,12 +344,14 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam,
                               "ch4": _telfit_default_vary_bound_dic["ch4"],
                               "n2o": _telfit_default_vary_bound_dic["n2o"],
                               "co2": _telfit_default_vary_bound_dic["co2"],
+                              "resolution": [resolution_min,resolution_max],
                               "temperature": _telfit_default_vary_bound_dic["temperature"],
                               "pressure"   : _telfit_default_vary_bound_dic["pressure"]}
                              )
             
         elif args.band =='H':
             fitter.FitVariable({"h2o": humidity,
+                                "resolution" : resolution_med,
                                 "ch4": _telfit_default_values_dic["ch4"],
                                 "co" : _telfit_default_values_dic["co"],
                                 "co2": _telfit_default_values_dic["co2"],
@@ -356,7 +362,6 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam,
 
             #Adjust parameters that will not be fit, but are important
             fitter.AdjustValue({"angle": angle,
-                                "resolution" : resolution,
                                 "wavestart"  : data.x[0] -0.001,
                                 "waveend"    : data.x[-1]+0.001,
                                 "o3"  : _telfit_default_values_dic["o3"],
@@ -374,6 +379,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam,
                               "n2o": _telfit_default_vary_bound_dic["n2o"],
                               "co" : _telfit_default_vary_bound_dic["co"],
                               "co2": _telfit_default_vary_bound_dic["co2"],
+                              "resolution": [resolution_min,resolution_max],
                               "temperature": _telfit_default_vary_bound_dic["temperature"],
                               "pressure"   : _telfit_default_vary_bound_dic["pressure"]}
                              )
@@ -388,13 +394,13 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam,
                                 "ch4": _telfit_default_values_dic["ch4"],
                                 "co" : _telfit_default_values_dic["co"],
                                 "n2o": _telfit_default_values_dic["n2o"],
+                                "resolution" : resolution_med,
                                 "angle"      : _telfit_default_values_dic["angle"],
                                 "pressure"   : _telfit_default_values_dic["pressure"],
                                 "temperature": _telfit_default_values_dic["temperature"],})
 
             #Adjust parameters that will not be fit, but are important
-            fitter.AdjustValue({"resolution" : resolution,
-                                "wavestart"  : data.x[0] -0.001,
+            fitter.AdjustValue({"wavestart"  : data.x[0] -0.001,
                                 "waveend"    : data.x[-1]+0.001,
                                 "co2" : _telfit_default_values_dic["co2"],
                                 "o3"  : _telfit_default_values_dic["o3"],
@@ -411,6 +417,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam,
                               "ch4": _telfit_default_vary_bound_dic["ch4"],
                               "n2o": _telfit_default_vary_bound_dic["n2o"],
                               "co" : _telfit_default_vary_bound_dic["co"],
+                              "resolution": [resolution_min,resolution_max],
                               "temperature": _telfit_default_vary_bound_dic["temperature"],
                               "pressure"   : _telfit_default_vary_bound_dic["pressure"],
                               "angle"      : _telfit_default_vary_bound_dic["angle"]}
@@ -422,14 +429,14 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam,
                                 "ch4": _telfit_default_values_dic["ch4"],
                                 "co2": _telfit_default_values_dic["co2"],
                                 "n2o": _telfit_default_values_dic["n2o"],
+                                "resolution" : resolution_med,
                                 "angle"      : _telfit_default_values_dic["angle"],
                                 "pressure"   : _telfit_default_values_dic["pressure"],
                                 "temperature": _telfit_default_values_dic["temperature"]}
                                )
 
             #Adjust parameters that will not be fit, but are important
-            fitter.AdjustValue({"resolution" : resolution,
-                                "wavestart"  : data.x[0] -0.001,
+            fitter.AdjustValue({"wavestart"  : data.x[0] -0.001,
                                 "waveend"    : data.x[-1]+0.001,
                                 "co"  : _telfit_default_values_dic["co"],
                                 "o3"  : _telfit_default_values_dic["o3"],
@@ -446,6 +453,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam,
                               "ch4": _telfit_default_vary_bound_dic["ch4"],
                               "n2o": _telfit_default_vary_bound_dic["n2o"],
                               "co2": _telfit_default_vary_bound_dic["co2"],
+                              "resolution": [resolution_min,resolution_max],
                               "angle"      : _telfit_default_vary_bound_dic["angle"],
                               "temperature": _telfit_default_vary_bound_dic["temperature"],
                               "pressure"   : _telfit_default_vary_bound_dic["pressure"]}
@@ -457,13 +465,13 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam,
                                 "co" : _telfit_default_values_dic["co"],
                                 "co2": _telfit_default_values_dic["co2"],
                                 "n2o": _telfit_default_values_dic["n2o"],
+                                "resolution" : resolution_med,
                                 "angle"      : _telfit_default_values_dic["angle"], 
                                 "pressure"   : _telfit_default_values_dic["pressure"],  
                                 "temperature": _telfit_default_values_dic["temperature"]})
 
             #Adjust parameters that will not be fit, but are important
-            fitter.AdjustValue({"resolution" : resolution,
-                                "wavestart"  : data.x[0] -0.001,
+            fitter.AdjustValue({"wavestart"  : data.x[0] -0.001,
                                 "waveend"    : data.x[-1]+0.001,
                                 "o3"  : _telfit_default_values_dic["o3"],
                                 "o2"  : _telfit_default_values_dic["o2"],
@@ -480,6 +488,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam,
                               "n2o": _telfit_default_vary_bound_dic["n2o"],
                               "co" : _telfit_default_vary_bound_dic["co"],
                               "co2": _telfit_default_vary_bound_dic["co2"],
+                              "resolution": [resolution_min,resolution_max],
                               "angle"      : _telfit_default_vary_bound_dic["angle"],
                               "temperature": _telfit_default_vary_bound_dic["temperature"],
                               "pressure"   : _telfit_default_vary_bound_dic["pressure"]}
