@@ -62,7 +62,7 @@ def fmodel_chi(par,grad):
     #Make the wavelength scale
     initwave = fitobj_cp.initwave.copy()
     xgrid = (initwave - np.median(initwave)) / (np.max(initwave) - np.min(initwave))
-    dx = chebyshev.chebval(xgrid, parfit[6:10])
+    dx = chebyshev.chebval(xgrid, par[6:10])
     w = initwave + dx
 
     if np.all(np.diff(w) > 0) == False:
@@ -195,7 +195,7 @@ def fmod(par,fitobj):
     #Make the wavelength scale
     initwave = fitobj.initwave.copy()
     xgrid = (initwave - np.median(initwave)) / (np.max(initwave) - np.min(initwave))
-    dx = chebyshev.chebval(xgrid, parfit[6:10])
+    dx = chebyshev.chebval(xgrid, par[6:10])
     w = initwave + dx
 
     if np.all(np.diff(w) > 0) == False:
@@ -330,7 +330,7 @@ def fmod_conti(par,fitobj):
     #Make the wavelength scale
     initwave = fitobj.initwave.copy()
     xgrid = (initwave - np.median(initwave)) / (np.max(initwave) - np.min(initwave))
-    dx = chebyshev.chebval(xgrid, parfit[6:10])
+    dx = chebyshev.chebval(xgrid, par[6:10])
     w = initwave + dx
     
     if np.all(np.diff(w) > 0) == False:
