@@ -73,7 +73,7 @@ def setup_fitting_init_pars(a0x, a0wavelist, night, ips_tightmount_pars, band, m
                       0.0,           # 6: Wavelength 0-pt
                       0.0,           # 7: Wavelength linear component
                       0.0,           # 8: Wavelength quadratic component
-                      0.0            # 9: Wavelength cubic component
+                      0.0,            # 9: Wavelength cubic component
                       1.0,           #10: Continuum zero point
                       0.0,           #11: Continuum linear component
                       0.0,           #12: Continuum quadratic component
@@ -731,8 +731,8 @@ def MPinstA(args, inparam, jerp, orders, i):
             # Get best fit wavelength solution
             xgrid = (initwave - np.median(initwave)) / (np.max(initwave) - np.min(initwave))
             dx = chebyshev.chebval(xgrid, parfit[6:10])
-            a0w_out_fit = initwave + dx = parfit[6] + parfit[7]*x + parfit[8]*(x**2.) + parfit[9]*(x**3.)
-
+            a0w_out_fit = initwave + dx 
+            
             fwhmraw = parfit[5] + parfit[13]*(x) + parfit[14]*(x**2)
             resolution_max = np.max(a0w_out_fit)/(np.min(fwhmraw)*np.min(np.diff(a0w_out_fit)))
             resolution_min = np.min(a0w_out_fit)/(np.max(fwhmraw)*np.median(np.diff(a0w_out_fit))) #not max because pixels get skipped
