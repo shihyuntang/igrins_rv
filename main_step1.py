@@ -48,13 +48,7 @@ def A0_fits_write(hdu_1, firstorder, order, outpath, night, masterbeam, band):
     
 
 def setup_fitting_init_pars(a0x, a0wavelist, night, ips_tightmount_pars, band, masterbeam, order):
-    # Get initial guess for cubic wavelength solution from reduction pipeline
     
-    f = np.polyfit(a0x, a0wavelist, 3)
-    par9in = f[0]*1e4
-    par8in = f[1]*1e4
-    par7in = f[2]*1e4
-    par6in = f[3]*1e4
 
     # Determine whether IGRINS mounting was loose or night for the night in question
     if (int(night) < 20180401) or (int(night) > 20190531):
@@ -76,10 +70,10 @@ def setup_fitting_init_pars(a0x, a0wavelist, night, ips_tightmount_pars, band, m
                       1.0,           # 3: The scale factor for the telluric template
                       0.0,           # 4: vsini (km/s)
                       IPpars[2],     # 5: The instrumental resolution (FWHM) in pixels
-                      par6in,        # 6: Wavelength 0-pt
-                      par7in,        # 7: Wavelength linear component
-                      par8in,        # 8: Wavelength quadratic component
-                      par9in,        # 9: Wavelength cubic component
+                      0.0,           # 6: Wavelength 0-pt
+                      0.0,           # 7: Wavelength linear component
+                      0.0,           # 8: Wavelength quadratic component
+                      0.0            # 9: Wavelength cubic component
                       1.0,           #10: Continuum zero point
                       0.0,           #11: Continuum linear component
                       0.0,           #12: Continuum quadratic component
@@ -113,7 +107,7 @@ def base_dpars_dict(use_sets, band, order):
     
     #                                |0    1    2    3  |  | 4 |  | 5 |   | 6    7    8           9  |    |10 11 12|  |13 14|    |15    16    17   18    19|  |20   21   22    23 |
     dpars_org = {'cont' :   np.array([0.0, 0.0, 0.0, 0.0,   0.0,   0.0,    0.0,  0.0, 0.0,        0.,     1e7, 1, 1,    0, 0,     0.0,  0.0, 0.0,  0.0, 0.0,   1.0, 1.0, 1.0, 1.0 ]),
-                 'twave':   np.array([0.0, 0.0, 0.0, 1.0,   0.0,   0.0,   10.0, 10.0, 5.00000e-5, 1e-7,   0.0, 0, 0,    0, 0,     0.0,  0.0, 0.0,  0.0, 0.0,   0.0, 0.0, 0.0, 0.0 ]),
+                 'twave':   np.array([0.0, 0.0, 0.0, 1.0,   0.0,   0.0,    0.1,  0.1, 0.1,        0.1,    0.0, 0, 0,    0, 0,     0.0,  0.0, 0.0,  0.0, 0.0,   0.0, 0.0, 0.0, 0.0 ]),
                  'ip'   :   np.array([0.0, 0.0, 0.0, 0.0,   0.0,   0.5,    0.0,  0.0, 0.0,        0.0,    0.0, 0, 0,    0, 0,     0.0,  0.0, 0.0,  0.0, 0.0,   0.0, 0.0, 0.0, 0.0 ]),
                  't'    :   np.array([0.0, 0.0, 0.0, 1.0,   0.0,   0.0,    0.0,  0.0, 0.0,        0.0,    0.0, 0, 0,    0, 0,     0.0,  0.0, 0.0,  0.0, 0.0,   0.0, 0.0, 0.0, 0.0 ]),}
     
@@ -243,9 +237,14 @@ def MPinstB(args, inparam, jerp, orders, i):
 
     # Define main spectrum
     s = a0fluxlist.copy(); x = a0x.copy(); u = a0u.copy()
-
+    
+    # Get initial guess for cubic wavelength solution from reduction pipeline
+    f = np.polyfit(a0x, a0wavelist, 3)
+    q = np.poly1d(f)
+    initwave = q(a0x)*1e4
+    
     # Collect all fit variables into one class
-    fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, None, None, [], masterbeam, [np.array([],dtype=int),np.array([],dtype=int)])
+    fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, None, None, [], masterbeam, [np.array([],dtype=int),np.array([],dtype=int)], initwave)
 
     # setup fitting boundary
     dpars, c_order = base_dpars_dict(['cont', 'twave', 'ip'], args.band, order)
@@ -317,8 +316,10 @@ def MPinstB(args, inparam, jerp, orders, i):
             CRmaskF = CRmasker(parfit,fitobj, tel=True)
 
             # Redo rough blaze fit in case hot pixels were throwing it off
-            w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
-
+            xgrid = (initwave - np.median(initwave)) / (np.max(initwave) - np.min(initwave))
+            dx = chebyshev.chebval(xgrid, parfit[6:10])
+            w = initwave + dx
+            
             #--- sytang modified ---
             mask = np.ones_like(w,dtype=bool)
             for mb in CRmaskF[1]:
@@ -326,7 +327,7 @@ def MPinstB(args, inparam, jerp, orders, i):
             # mask[CRmaskF[1]] = False
             continuum    = A0cont(w[mask]/1e4,s[mask],night,order,args.band)
             continuum    = rebin_jv(w[mask],continuum,w,False)
-            fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, None, None, [], masterbeam, CRmaskF)
+            fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, None, None, [], masterbeam, CRmaskF, initwave)
             optgroup_use = optgroup
 
         parfit = parfit_1.copy()
@@ -342,8 +343,10 @@ def MPinstB(args, inparam, jerp, orders, i):
             outplotter_tel(parfit, fitobj, f'BeforeTelFit_Order{order}_{night}_{masterbeam}', inparam, args, order)
 
         # Get best fit wavelength solution
-        a0w_out_fit = parfit[6] + parfit[7]*x + parfit[8]*(x**2.) + parfit[9]*(x**3.)
-
+        xgrid = (initwave - np.median(initwave)) / (np.max(initwave) - np.min(initwave))
+        dx = chebyshev.chebval(xgrid, parfit[6:10])
+        a0w_out_fit = initwave + dx
+        
         fwhmraw = parfit[5] + parfit[13]*(x) + parfit[14]*(x**2)
         resolution_max = np.max(a0w_out_fit)/(np.min(fwhmraw)*np.min(np.diff(a0w_out_fit)))
         resolution_min = np.min(a0w_out_fit)/(np.max(fwhmraw)*np.median(np.diff(a0w_out_fit))) #not max because pixels get skipped
@@ -542,8 +545,13 @@ def MPinstA(args, inparam, jerp, orders, i):
         # Define main spectrum
         s = a0fluxlist.copy(); x = a0x.copy(); u = a0u.copy()
 
+        # Get initial guess for cubic wavelength solution from reduction pipeline
+        f = np.polyfit(a0x, a0wavelist, 3)
+        q = np.poly1d(f)
+        initwave = q(a0x)*1e4
+
         # Collect all fit variables into one class
-        fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, None, None, [], masterbeam, [np.array([],dtype=int),np.array([],dtype=int)])
+        fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, None, None, [], masterbeam, [np.array([],dtype=int),np.array([],dtype=int)], initwave)
 
         # setup fitting boundary
         dpars, c_order = base_dpars_dict(['cont', 't', 'twave', 'ip'], args.band, order)
@@ -655,7 +663,7 @@ def MPinstA(args, inparam, jerp, orders, i):
                           par_in[5]  - dpars['ip'][5],    par_in[5]  + dpars['ip'][5]
                          ]
 
-            fitobj = fitobjs(s, x, u, continuum, watm_inLIV, satm_inLIV, None, None, [], masterbeam, [np.array([],dtype=int),np.array([],dtype=int)])
+            fitobj = fitobjs(s, x, u, continuum, watm_inLIV, satm_inLIV, None, None, [], masterbeam, [np.array([],dtype=int),np.array([],dtype=int)], initwave)
 
             chisqs = []; parfitsaves = [];
             for telval in [0.5,1.0,1.5]:
@@ -695,7 +703,9 @@ def MPinstA(args, inparam, jerp, orders, i):
                     CRmaskF = CRmasker(parfit,fitobj, tel=True)
 
                     # Redo rough blaze fit in case hot pixels were throwing it off
-                    w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
+                    xgrid = (initwave - np.median(initwave)) / (np.max(initwave) - np.min(initwave))
+                    dx = chebyshev.chebval(xgrid, parfit[6:10])
+                    w = initwave + dx
 
                     #--- sytang modified ---
                     mask = np.ones_like(w,dtype=bool)
@@ -703,7 +713,7 @@ def MPinstA(args, inparam, jerp, orders, i):
                         mask[(x >= CRmaskF[0][mb]-1) & (x <= CRmaskF[0][mb]+1)] = False    
                     continuum    = A0cont(w[mask]/1e4,s[mask],night,order,args.band)
                     continuum    = rebin_jv(w[mask],continuum,w,False)
-                    fitobj = fitobjs(s, x, u, continuum, watm_inLIV, satm_inLIV, None, None, [], masterbeam, CRmaskF)
+                    fitobj = fitobjs(s, x, u, continuum, watm_inLIV, satm_inLIV, None, None, [], masterbeam, CRmaskF, initwave)
                     optgroup_use = optgroup2
                     
             parfit = parfit_1.copy()
@@ -719,7 +729,9 @@ def MPinstA(args, inparam, jerp, orders, i):
                 outplotter_tel(parfit, fitobj, f'BeforeTelFit_Order{order}_{night}_{masterbeam}', inparam, args, order)
 
             # Get best fit wavelength solution
-            a0w_out_fit = parfit[6] + parfit[7]*x + parfit[8]*(x**2.) + parfit[9]*(x**3.)
+            xgrid = (initwave - np.median(initwave)) / (np.max(initwave) - np.min(initwave))
+            dx = chebyshev.chebval(xgrid, parfit[6:10])
+            a0w_out_fit = initwave + dx = parfit[6] + parfit[7]*x + parfit[8]*(x**2.) + parfit[9]*(x**3.)
 
             fwhmraw = parfit[5] + parfit[13]*(x) + parfit[14]*(x**2)
             resolution_max = np.max(a0w_out_fit)/(np.min(fwhmraw)*np.min(np.diff(a0w_out_fit)))
