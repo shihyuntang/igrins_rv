@@ -9,7 +9,6 @@ from Engine.classes    import fitobjs,inparams,_setup_bound_cut
 from Engine.rebin_jv   import rebin_jv
 from Engine.rotint     import rotint
 from Engine.opt        import optimizer, fmod, fmod_conti
-# from Engine.opt_rebintel        import optimizer, fmod, fmod_conti
 from Engine.outplotter import outplotter_23
 from Engine.detect_peaks import detect_peaks
 from Engine.crmask    import CRmasker
@@ -167,39 +166,6 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
     pars0 = setup_fitting_init_pars(args.band, inparam.initvsini, order)
     
-#     # start at bucket loc = 1250 +- 100, width = 250 +- 100, depth = 100 +- 5000 but floor at 0
-#     centerloc = 1250 if args.band == 'H' else 1180
-
-# #-------------------------------------------------------------------------------
-#     ### Initialize parameter array for optimization as well as half-range values for each parameter during the various steps of the optimization.
-#     ### Many of the parameters initialized here will be changed throughout the code before optimization and in between optimization steps.
-#     pars0 = np.array([np.nan,                                                # 0: The shift of the stellar template (km/s) [assigned later]
-#                       0.3,                                                   # 1: The scale factor for the stellar template
-#                       0.0,                                                   # 2: The shift of the telluric template (km/s)
-#                       0.6,                                                   # 3: The scale factor for the telluric template
-#                       inparam.initvsini,                                     # 4: vsini (km/s)
-#                       np.nan,                                                # 5: The instrumental resolution (FWHM) in pixels
-#                       np.nan,                                                # 6: Wavelength 0-pt
-#                       np.nan,                                                # 7: Wavelength linear component
-#                       np.nan,                                                # 8: Wavelength quadratic component
-#                       np.nan,                                                # 9: Wavelength cubic component
-#                       1.0,                                                   #10: Continuum zero point
-#                       0.,                                                    #11: Continuum linear component
-#                       0.,                                                    #12: Continuum quadratic component
-#                       np.nan,                                                #13: Instrumental resolution linear component
-#                       np.nan,                                                #14: Instrumental resolution quadratic component
-#                       centerloc,                                             #15: Blaze dip center location
-#                       330,                                                   #16: Blaze dip full width
-#                       0.05,                                                  #17: Blaze dip depth
-#                       90,                                                    #18: Secondary blaze dip full width
-#                       0.05,                                                  #19: Blaze dip depth
-#                       0.0,                                                   #20: Continuum cubic component
-#                       0.0,                                                   #21: Continuum quartic component
-#                       0.0,                                                   #22: Continuum pentic component
-#                       0.0])                                                  #23: Continuum hexic component
-
-    # This one specific order is small and telluric dominated, start with greater stellar template power to ensure good fits
-    
 
     # Iterate over all A/B exposures
     for t in np.arange(len(tagsnight)):
@@ -269,20 +235,6 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
         bound_cut = _setup_bound_cut(inparam.bound_cut_dic, args.band, order)
         
-        # # Retrieve pixel bounds for where within each other significant telluric absorption is present.
-        # # If these bounds were not applied, analyzing some orders would give garbage fits.
-        # if args.band=='K':
-        #     if int(order) in [3, 4, 13, 14]:
-        #         bound_cut = inparam.bound_cut_dic[args.band][order]
-        #     else:
-        #         bound_cut = [150, 150]
-
-        # elif args.band=='H':
-        #     if int(order) in [6, 10, 11, 13, 14, 16, 17, 20, 21, 22]:
-        #         bound_cut = inparam.bound_cut_dic[args.band][order]
-        #     else:
-        #         bound_cut = [150, 150]
-
         # Load target spectrum
         
         x,wave,s,u = init_fitsread(f'{inparam.inpath}/{night}/{beam}/',
@@ -351,33 +303,6 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         # setup fitting boundary
         dpars = base_dpars_dict(inparam.vsinivary, masterbeam, args.band, int(order))
         
-        # # Arrays defining parameter variations during optimization steps
-        # #                            | 0    1    2    3 |  | ------ 4 ------ |  | 5 |   | 6     7     8           9  |  |10  11  12| |13 14|  |15   16   17   18    19 |  |20   21   22   23 |
-        # dpars = {'cont' : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    1e7, 1, 1,   0, 0,    10., 30., 0.2, 50.0, 0.2,   1.0, 1.0, 1.0, 1.0 ]),
-        #          'twave': np.array([  0.0, 0.0, 0.0, 1.0,   0.0,                 0.0,   10.0, 10.0,  5.00000e-5, 1e-7,   0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ]),
-        #          'ip'   : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.5,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ]),
-        #          's'    : np.array([  5.0, 1.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ]),
-        #          'v'    : np.array([  0.0, 0.0, 0.0, 0.0,   inparam.vsinivary,   0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ]),
-        #          'ts'   : np.array([  5.0, 1.0, 0.0, 1.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ])}
-        # if masterbeam == 'B':
-        #     dpars['cont'] = np.array([0.0, 0.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    1e7, 1, 1,   0, 0,     0.,  0., 0.0,  0.,  0.0,   1.0, 1.0 , 1.0, 1.0 ])
-
-        # # Use quadratic blaze correction for order 13; cubic for orders 6, 14, 21; quartic for orders 16 and 22
-        # if args.band == 'H':
-        #     if int(order) in [13]:
-        #         dpars['cont'][20] = 0.; dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.
-        #     elif int(order) in [6,14,21]:
-        #         dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.
-        #     else:
-        #         pass
-        # else:
-        #     if int(order) in [3,4,5]:
-        #         dpars['cont'][21] = 0.; dpars['cont'][22] = 0.; dpars['cont'][23] = 0.
-        #     elif int(order) in [6]:
-        #         dpars['cont'][22] = 0.; dpars['cont'][23] = 0.
-        #     else:
-        #         pass
-
         continuum_in = rebin_jv(a0contx,continuum,x_piece,False)
         fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]),masterbeam,[np.array([],dtype=int),np.array([],dtype=int)])
 
@@ -408,7 +333,8 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
         cycles = 4
 
-        optgroup = ['cont', 'twave', 'cont', 'ts',
+        # added new twave step at start
+        optgroup = ['twave', 'cont', 'twave', 'cont', 'ts',
                     'cont', 'twave', 's', 'cont',
                     'twave',
                     'ip', 'v',
