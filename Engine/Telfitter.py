@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from   Engine.rebin_jv import rebin_jv
 from   telfit import TelluricFitter, DataStructures
-from numpy.polynomial import chebyshev
 from scipy.optimize import leastsq
 
 
