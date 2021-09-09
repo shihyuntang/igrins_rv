@@ -19,8 +19,12 @@ def outplotter_tel(parfit, fitobj, title, inparam, args, order):
     fit,chi = fmod(parfit, fitobj)
 
     #--- to match the wavelengh scale of fit from fmod ---
-    w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
-
+    
+    initwave = fitobj.initwave.copy()
+    xgrid = (initwave - np.median(initwave)) / (np.max(initwave) - np.min(initwave))
+    dx = chebyshev.chebval(xgrid, parfit[6:10])
+    w = initwave + dx
+    
     xdata = fitobj.x.copy(); sdata = fitobj.s.copy(); 
     #---
     npars = len(parfit)
@@ -116,8 +120,11 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3, order):
 
     fit,chi = fmod(parfit, fitobj)
 
-    w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
-
+    initwave = fitobj.initwave.copy()
+    xgrid = (initwave - np.median(initwave)) / (np.max(initwave) - np.min(initwave))
+    dx = chebyshev.chebval(xgrid, parfit[6:10])
+    w = initwave + dx
+    
     xdata = fitobj.x.copy(); sdata = fitobj.s.copy(); 
 
     npars = len(parfit)
@@ -202,22 +209,22 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3, order):
             if m == 0:
                 ax0.tick_params(axis='both', labelsize=6, right=False, top=True, direction='in')
                 left = w[0]
-                right = parfit[6] + parfit[7]*fitobj.mask[m][0] + parfit[8]*(fitobj.mask[m][0]**2.) + parfit[9]*(fitobj.mask[m][0]**3.)
+                right = w[(xdata >= fitobj.mask[m][0])][0]
                 ax0.plot([right,right],[min(sdata),max(sdata)],'--k',lw=0.75)
             elif m == n:
                 ax0.tick_params(axis='both', labelsize=6, left=False, right=True, top=True, direction='in')
                 ax0.set_yticklabels([])
                 #ax0.vlines([left+1],'--k',lw=0.75)
-                left = parfit[6] + parfit[7]*fitobj.mask[m-1][1] + parfit[8]*(fitobj.mask[m-1][1]**2.) + parfit[9]*(fitobj.mask[m-1][1]**3.)
+                left = w[(xdata >= fitobj.mask[m-1][1])][0] 
                 right = w[-1]
             else:
                 ax0.tick_params(axis='both', labelsize=6, right=False, left=False,top=True, direction='in')
                 ax0.set_yticklabels([])
                 #ax0.vlines([left+1],'--k',lw=0.75)
                 ax0.plot([right,right],[min(sdata),max(sdata)],'--k',lw=0.75)
-                left = parfit[6] + parfit[7]*fitobj.mask[m-1][1] + parfit[8]*(fitobj.mask[m-1][1]**2.) + parfit[9]*(fitobj.mask[m-1][1]**3.)
-                right = parfit[6] + parfit[7]*fitobj.mask[m][0] + parfit[8]*(fitobj.mask[m][0]**2.) + parfit[9]*(fitobj.mask[m][0]**3.)
-
+                left = w[(xdata >= fitobj.mask[m-1][1])][0] 
+                right = w[(xdata >= fitobj.mask[m][0])][0]
+                
             ax0.set_xlim(left,right)
 
             if m != 0:
