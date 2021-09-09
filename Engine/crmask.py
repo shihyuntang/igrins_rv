@@ -25,7 +25,7 @@ def CRmasker(parfit, fitobj, tel=False):
         clip_pixel_tol = 6
 
     fit,chi = fmod(parfit, fitobj)
-    w,smod,cont,c2 = fmod_conti_tell(parfit, fitobj)
+    w,smod,cont,c2 = fmod_conti(parfit, fitobj)
     continuum = cont*c2
 
     # Everywhere where data protrudes high above model, check whether slope surrounding protrusion is /\ and mask if sufficiently steep
