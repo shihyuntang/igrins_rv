@@ -30,10 +30,10 @@ def setup_fitting_init_pars(band, initvsini, order):
                       0.6,                      # 3: The scale factor for the telluric template
                       inparam.initvsini,        # 4: vsini (km/s)
                       np.nan,                   # 5: The instrumental resolution (FWHM) in pixels
-                      np.nan,                   # 6: Wavelength 0-pt
-                      np.nan,                   # 7: Wavelength linear component
-                      np.nan,                   # 8: Wavelength quadratic component
-                      np.nan,                   # 9: Wavelength cubic component
+                      0.0,                      # 6: Wavelength 0-pt
+                      0.0,                      # 7: Wavelength linear component
+                      0.0,                      # 8: Wavelength quadratic component
+                      0.0,                      # 9: Wavelength cubic component
                       1.0,                      #10: Continuum zero point
                       0.,                       #11: Continuum linear component
                       0.,                       #12: Continuum quadratic component
@@ -70,7 +70,7 @@ def base_dpars_dict(vsinivary, band, order, run_num=1):
     
     #                                | 0    1    2    3 |  | -- 4 -- | | 5 |   | 6     7     8           9  |  |10  11  12| |13 14|  |15  16  17  18  19 |  |20   21   22   23 |
     dpars_org = {'cont' : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,        0.0,    0.0,  0.0,  0.0,        0.0,    1e7, 1, 1,   0, 0,    0., 0., 0., 0., 0.,   1.0, 1.0, 1.0, 1.0 ]),
-                 'twave': np.array([  0.0, 0.0, 0.0, 1.0,   0.0,        0.0,   10.0, 10.0,  5.00000e-5, 1e-7,   0,   0, 0,   0, 0,    0., 0., 0., 0., 0.,   0.0, 0.0, 0.0, 0.0 ]),
+                 'twave': np.array([  0.0, 0.0, 0.0, 1.0,   0.0,        0.0,    0.1,  0.1,  0.1,        0.1,    0,   0, 0,   0, 0,    0., 0., 0., 0., 0.,   0.0, 0.0, 0.0, 0.0 ]),
                  'ip'   : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,        0.5,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,    0., 0., 0., 0., 0.,   0.0, 0.0, 0.0, 0.0 ]),
                  's'    : np.array([ 20.0, 2.0, 0.0, 0.0,   0.0,        0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,    0., 0., 0., 0., 0.,   0.0, 0.0, 0.0, 0.0 ]),
                  'ts'   : np.array([ 20.0, 2.0, 0.0, 1.0,   0.0,        0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,    0., 0., 0., 0., 0.,   0.0, 0.0, 0.0, 0.0 ]),
@@ -279,12 +279,9 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
     # Get initial guess for cubic wavelength solution from reduction pipeline
     f = np.polyfit(x_piece,wave_piece,3)
-    par[9] = f[0]*1e4
-    par[8] = f[1]*1e4
-    par[7] = f[2]*1e4
-    par[6] = f[3]*1e4
-    # par[9] = par9in ; par[8] = par8in ; par[7] = par7in ; par[6] = par6in
-
+    q = np.poly1d(f)
+    initwave = q(x_piece)*1e4
+    
     par[0] = initguesses-inparam.bvcs[night+tag] # Initial RV with barycentric correction
     par[5]  = IPpars[2]
     par[13] = IPpars[1]
@@ -296,7 +293,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     
 
     continuum_in = rebin_jv(a0contx,continuum,x_piece,False)
-    fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]),masterbeam,[np.array([],dtype=int),np.array([],dtype=int)])
+    fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]),masterbeam,[np.array([],dtype=int),np.array([],dtype=int)], initwave)
 
     #-------------------------------------------------------------------------------
 
