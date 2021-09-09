@@ -292,7 +292,7 @@ def MPinstB(args, inparam, jerp, orders, i):
         for optkind in optgroupA:
             parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize)
             if args.debug == True:
-                outplotter_tell(parfit_1,fitobj,'{}_{}_beforeparfit_test_telval_{}_{}{}'.format(order,night,telval,nk,optkind),inparam, args, order)
+                outplotter_tel(parfit_1,fitobj,'{}_{}_beforeparfit_test_telval_{}_{}{}'.format(order,night,telval,nk,optkind),inparam, args, order)
             parstart = parfit_1.copy()
             nk += 1
         trash,chisq = fmod(parfit_1,fitobj)
@@ -304,10 +304,10 @@ def MPinstB(args, inparam, jerp, orders, i):
         
     for nc, cycle in enumerate(np.arange(cycles), start=1):
         for optkind in optgroup_use:
-            parfit_1 = optimizer_tell(parstart, dpars[optkind], hardbounds, fitobj, optimize)
+            parfit_1 = optimizer_tel(parstart, dpars[optkind], hardbounds, fitobj, optimize)
 
             if args.debug == True:
-                outplotter_tell(parfit_1,fitobj,'{}_{}_beforeparfit_{}{}'.format(order,night,nk,optkind),inparam, args, order)
+                outplotter_tel(parfit_1,fitobj,'{}_{}_beforeparfit_{}{}'.format(order,night,nk,optkind),inparam, args, order)
             parstart = parfit_1.copy()
             nk += 1
 
@@ -600,17 +600,17 @@ def MPinstA(args, inparam, jerp, orders, i):
 
                 nk = 1
                 for optkind in optgroup1:
-                    parfit_1 = optimizer_tell(parstart, dpars[optkind], hardbounds, fitobj, optimize)
+                    parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize)
 
                     if parfit_1[3] < 0.1:
                         fit_error = True
                         break
                     if args.debug == True:
-                        outplotter_tell(parfit_1,fitobj,'{}_{}_beforeparfitwithB_telval_{}_{}{}'.format(order,night,telval,nk,optkind),inparam, args, order)
+                        outplotter_tel(parfit_1,fitobj,'{}_{}_beforeparfitwithB_telval_{}_{}{}'.format(order,night,telval,nk,optkind),inparam, args, order)
                     parstart = parfit_1.copy()
                     nk += 1
                     
-                trash,chisq = fmod_tell(parfit_1,fitobj)
+                trash,chisq = fmod(parfit_1,fitobj)
                 parfitsaves.append(parfit_1)
                 if fit_error == True:
                     chisqs.append(1e10)
@@ -660,7 +660,7 @@ def MPinstA(args, inparam, jerp, orders, i):
 
                 nk = 1
                 for optkind in optgroup2A:
-                    parfit_1 = optimizer_tell(parstart, dpars[optkind], hardbounds, fitobj, optimize)
+                    parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize)
 
                     if args.debug == True:
                         outplotter(parfit_1,fitobj,'{}_{}_beforeparfit_telval_{}_{}{}'.format(order,night,telval,nk,optkind),inparam, args, order)
@@ -679,7 +679,7 @@ def MPinstA(args, inparam, jerp, orders, i):
                     parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize)
         
                     if args.debug == True:
-                        outplotter_tell(parfit_1,fitobj,'{}_{}_beforeparfit_{}{}'.format(order,night,nk,optkind),inparam, args, order)
+                        outplotter_tel(parfit_1,fitobj,'{}_{}_beforeparfit_{}{}'.format(order,night,nk,optkind),inparam, args, order)
                     parstart = parfit_1.copy()
                     nk += 1
 
