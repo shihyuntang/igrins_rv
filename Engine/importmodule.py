@@ -18,6 +18,7 @@ from astropy.coordinates import SkyCoord, solar_system, EarthLocation, ICRS
 from astropy       import units
 # Others  -----------------------------------------------------
 from scipy.interpolate import interp1d
+from numpy.polynomial import chebyshev
 
 import numpy as np
 import pandas as pd
