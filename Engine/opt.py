@@ -60,7 +60,7 @@ def fmodel_chi(par,grad):
     mflux = fitobj_cp.mflux_in;
 
     #Make the wavelength scale
-    initwave = fitobj.initwave.copy()
+    initwave = fitobj_cp.initwave.copy()
     xgrid = (initwave - np.median(initwave)) / (np.max(initwave) - np.min(initwave))
     dx = chebyshev.chebval(xgrid, parfit[6:10])
     w = initwave + dx
