@@ -252,18 +252,22 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     wave_piece = wave[ (x > xbounds[0]) & (x < xbounds[-1]) ]
     x_piece    = x[    (x > xbounds[0]) & (x < xbounds[-1]) ]
 
-    # Trim stellar template to relevant wavelength range
-    mwave_in,mflux_in = stellarmodel_setup(wave_piece,inparam.mwave0,inparam.mflux0)
+    # Save data for second template cutting after optimization cycle 1 done
+    s_save = s_piece.copy(); x_save = x_piece.copy(); u_save = u_piece.copy();
 
-    # Trim telluric template to relevant wavelength range
-    satm_in = satm[(watm > np.min(wave_piece)*1e4 - 11) & (watm < np.max(wave_piece)*1e4 + 11)]
-    watm_in = watm[(watm > np.min(wave_piece)*1e4 - 11) & (watm < np.max(wave_piece)*1e4 + 11)]
+    # Trim telluric template to data range +- 15 AA. If telluric template buffer is cut short because A0 lines didn't extend 
+    # far past data range, cut data range accordingly.
+    satm_in = satm[(watm > np.min(wave_piece)*1e4 - 10) & (watm < np.max(wave_piece)*1e4 + 10)]
+    watm_in = watm[(watm > np.min(wave_piece)*1e4 - 10) & (watm < np.max(wave_piece)*1e4 + 10)]
 
-    # Make sure data is within telluric template range (shouldn't do anything)
-    s_piece    = s_piece[   (wave_piece*1e4 > np.min(watm_in)+5) & (wave_piece*1e4 < np.max(watm_in)-5)]
-    u_piece    = u_piece[   (wave_piece*1e4 > np.min(watm_in)+5) & (wave_piece*1e4 < np.max(watm_in)-5)]
-    x_piece    = x_piece[   (wave_piece*1e4 > np.min(watm_in)+5) & (wave_piece*1e4 < np.max(watm_in)-5)]
-    wave_piece = wave_piece[(wave_piece*1e4 > np.min(watm_in)+5) & (wave_piece*1e4 < np.max(watm_in)-5)]
+    s_piece	= s_piece[   (wave_piece*1e4 > np.min(watm_in)+10) & (wave_piece*1e4 < np.max(watm_in)-10)]
+    u_piece	= u_piece[   (wave_piece*1e4 > np.min(watm_in)+10) & (wave_piece*1e4 < np.max(watm_in)-10)]
+    x_piece	= x_piece[   (wave_piece*1e4 > np.min(watm_in)+10) & (wave_piece*1e4 < np.max(watm_in)-10)]
+    wave_piece = wave_piece[(wave_piece*1e4 > np.min(watm_in)+10) & (wave_piece*1e4 < np.max(watm_in)-10)]
+
+    # Trim stellar template to data range +- 10 AA
+    mflux_in = inparam.mflux0[(inparam.mwave0 > np.min(wave_piece)*1e4 - 5) & (inparam.mwave0 < np.max(wave_piece)*1e4 + 5)]
+    mwave_in = inparam.mwave0[(inparam.mwave0 > np.min(wave_piece)*1e4 - 5) & (inparam.mwave0 < np.max(wave_piece)*1e4 + 5)]
 
     # Normalize continuum from A0 to flux scale of data
     continuum /= np.nanmedian(continuum)
