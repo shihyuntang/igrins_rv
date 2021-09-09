@@ -69,8 +69,8 @@ def wavefit(par0, dpar0):
 #------------
 # to suppress print out from Telfit
 @suppress_stdout
-def suppress_Fit(fitter, data):
-    model = fitter.Fit(data=data, resolution_fit_mode="SVD", adjust_wave="model", air_wave=False)
+def suppress_Fit(fitter, data, c_order):
+    model = fitter.Fit(data=data, resolution_fit_mode="SVD", adjust_wave="model", air_wave=False, continuum_fit_order=c_order)
     return model
 
 @suppress_stdout
@@ -107,7 +107,7 @@ _telfit_default_vary_bound_dic = {"h2o": [1.0, 99.0],
                                   }
 
 
-def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam, logger):
+def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam, c_order, logger):
     '''
     Produce synthetic telluric template from fit to telluric standard observation. How and why it works is detailed in comments throughout the code.
 
@@ -487,7 +487,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam,
 
     try:
         if args.debug:
-            model = fitter.Fit(data=data, resolution_fit_mode="SVD", adjust_wave="model", air_wave=False)
+            model = fitter.Fit(data=data, resolution_fit_mode="SVD", adjust_wave="model", air_wave=False, continuum_fit_order=c_order)
         else:
             model = suppress_Fit(fitter, data)
     except TypeError:
@@ -564,7 +564,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam,
 
     # Compute telluric template with highest resolution of Livingston template.
     # Add extra space at ends to make sure template covers wider range than data.
-    Livingston_minimum_wsep = .035/10
+    Livingston_minimum_wsep = .035/10 # <-- Set this to be lower to increase resolution of output template!
     IGRINS_minimum_wsep     = .130 # This would compute template with IGRINS resolution, sensibly coarser than Livingston
 
     newwave = np.arange(np.min(watm_in)-2.5, np.max(watm_in)+2.5, Livingston_minimum_wsep) # in nm
@@ -819,7 +819,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam,
 
     try:
         if args.debug:
-            modelL = fitterL.GenerateModel(parfittedL, nofit=True, air_wave=False)
+            modelL = fitterL.GenerateModel(paramsL, nofit=True, air_wave=False)
         else:
             modelL = suppress_GenerateModel(fitterL, parfittedL, args)
 
