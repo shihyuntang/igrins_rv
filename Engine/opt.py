@@ -70,50 +70,55 @@ def fmodel_chi(par,grad):
     npts = len(w)
 
     # Apply velocity shifts and scale
-    wspot = mwave*(1.+par[0]/c)
-    sspot = mflux**par[1]
     watm = watm_in*(1.+par[2]/c)
     satm = satm_in**par[3]
-
+    
     #Verify that new wavelength scale is a subset of old telluric wavelength scale.
     if (w[0] < watm[0]) or (w[-1] > watm[-1]):
         # print(f'{nc_cp}, {nk_cp}, {optkind_cp}: w not subset of watm, w goes from '+str(w[0])+' to '+str(w[-1])+' and watm goes from '+str(watm[0])+' to '+str(watm[-1]))
         return 1e10
 
-    #Verify that new wavelength scale is a subset of stellar wavelength scale.
-    if (w[0] < wspot[0]) or (w[-1] > wspot[-1]):
-        # print(f'{nc_cp}, {nk_cp}, {optkind_cp}: w not subset of wspot, w goes from '+str(w[0])+' to '+str(w[-1])+' and wspot goes from '+str(wspot[0])+' to '+str(wspot[-1]))
-        return 1e10
-    
-    #Verify that stellar wavelength scale is a subset of telluric wavelength scale.
-    if (wspot[0] < watm[0]) or (wspot[-1] > watm[-1]):
-        # print(f'{nc_cp}, {nk_cp}, {optkind_cp}: wspot not subset of satm, wspot goes from '+str(wspot[0])+' to '+str(wspot[-1])+' and watm goes from '+str(watm[0])+' to '+str(watm[-1]))
-        return 1e10
-    
-    # Rebin stellar template to uniform wavelength scale, trim very edges
-    dstep = np.median(np.diff(wspot))
-    nstep = int((wspot[-1]-wspot[0])/dstep)
-    wspot1 = np.linspace(wspot[0],wspot[-1],nstep)
-    sspot = rebin_jv(wspot,sspot,wspot1,False)
-    wspot = wspot1.copy()
-   
-    wspot = wspot[1:-1]
-    sspot = sspot[1:-1]
+    if wspot != None:
+        
+        wspot = mwave*(1.+par[0]/c)
+        sspot = mflux**par[1]
 
-    vsini = par[4]
+        #Verify that new wavelength scale is a subset of stellar wavelength scale.
+        if (w[0] < wspot[0]) or (w[-1] > wspot[-1]):
+            # print(f'{nc_cp}, {nk_cp}, {optkind_cp}: w not subset of wspot, w goes from '+str(w[0])+' to '+str(w[-1])+' and wspot goes from '+str(wspot[0])+' to '+str(wspot[-1]))
+            return 1e10
 
-    # Rotationally broaden stellar template
-    if vsini >= 0.5:
-        wspot2,rspot2 = rotint(wspot,sspot,vsini)
+        #Verify that stellar wavelength scale is a subset of telluric wavelength scale.
+        if (wspot[0] < watm[0]) or (wspot[-1] > watm[-1]):
+            # print(f'{nc_cp}, {nk_cp}, {optkind_cp}: wspot not subset of satm, wspot goes from '+str(wspot[0])+' to '+str(wspot[-1])+' and watm goes from '+str(watm[0])+' to '+str(watm[-1]))
+            return 1e10
+
+        # Rebin stellar template to uniform wavelength scale, trim very edges
+        dstep = np.median(np.diff(wspot))
+        nstep = int((wspot[-1]-wspot[0])/dstep)
+        wspot1 = np.linspace(wspot[0],wspot[-1],nstep)
+        sspot = rebin_jv(wspot,sspot,wspot1,False)
+        wspot = wspot1.copy()
+
+        wspot = wspot[1:-1]
+        sspot = sspot[1:-1]
+
+        vsini = par[4]
+
+        # Rotationally broaden stellar template
+        if vsini >= 0.5:
+            wspot2,rspot2 = rotint(wspot,sspot,vsini)
+        else:
+            wspot2 = wspot
+            rspot2 = sspot
+
+        #Now rebin the telluric spectrum onto the stellar wavelength scale
+        satm2 = rebin_jv(watm,satm,wspot2,False)
+
+        #Mutliply rotationally broadened spot by telluric to create total spectrum
+        smod2 = rspot2*satm2
     else:
-        wspot2 = wspot
-        rspot2 = sspot
-
-    #Now rebin the telluric spectrum onto the stellar wavelength scale
-    satm2 = rebin_jv(watm,satm,wspot2,False)
-
-    #Mutliply rotationally broadened spot by telluric to create total spectrum
-    smod2 = rspot2*satm2
+        smod2 = satm.copy(); wspot2 = watm.copy();
 
     #Find mean observed wavelength and create a telluric velocity scale
     mnw = np.mean(w)
@@ -195,50 +200,56 @@ def fmod(par,fitobj):
     npts = len(w)
 
     # Apply velocity shifts and scale
-    wspot = mwave*(1.+par[0]/c)
-    sspot = mflux**par[1]
     watm = watm_in*(1.+par[2]/c)
     satm = satm_in**par[3]
-
+    
     #Verify that new wavelength scale is a subset of old telluric wavelength scale.
     if (w[0] < watm[0]) or (w[-1] > watm[-1]):
         sys.exit('WAVE ERROR 2: w subset of watm, w goes from '+str(w[0])+' to '+str(w[-1])+' and watm goes from '+str(watm[0])+' to '+str(watm[-1]))
         return 1e10
-
-    #Verify that new wavelength scale is a subset of stellar wavelength scale.
-    if (w[0] < wspot[0]) or (w[-1] > wspot[-1]):
-        sys.exit('WAVE ERROR 3:  w not subset of wspot, w goes from '+str(w[0])+' to '+str(w[-1])+' and wspot goes from '+str(wspot[0])+' to '+str(wspot[-1]))
-        return 1e10
     
-    #Verify that stellar wavelength scale is a subset of telluric wavelength scale.
-    if (wspot[0] < watm[0]) or (wspot[-1] > watm[-1]):
-        sys.exit('WAVE ERROR 3: wspot not subset of satm, wspot goes from '+str(wspot[0])+' to '+str(wspot[-1])+' and watm goes from '+str(watm[0])+' to '+str(watm[-1]))
-        return 1e10
-    
-    # Rebin stellar template to uniform wavelength scale, trim very edges
-    dstep = np.median(np.diff(wspot))
-    nstep = int((wspot[-1]-wspot[0])/dstep)
-    wspot1 = np.linspace(wspot[0],wspot[-1],nstep)
-    sspot = rebin_jv(wspot,sspot,wspot1,False)
-    wspot = wspot1.copy()
-   
-    wspot = wspot[1:-1]
-    sspot = sspot[1:-1]
+    if wspot != None:
+        
+        wspot = mwave*(1.+par[0]/c)
+        sspot = mflux**par[1]
+        
+        #Verify that new wavelength scale is a subset of stellar wavelength scale.
+        if (w[0] < wspot[0]) or (w[-1] > wspot[-1]):
+            sys.exit('WAVE ERROR 3:  w not subset of wspot, w goes from '+str(w[0])+' to '+str(w[-1])+' and wspot goes from '+str(wspot[0])+' to '+str(wspot[-1]))
+            return 1e10
 
-    vsini = par[4]
+        #Verify that stellar wavelength scale is a subset of telluric wavelength scale.
+        if (wspot[0] < watm[0]) or (wspot[-1] > watm[-1]):
+            sys.exit('WAVE ERROR 3: wspot not subset of satm, wspot goes from '+str(wspot[0])+' to '+str(wspot[-1])+' and watm goes from '+str(watm[0])+' to '+str(watm[-1]))
+            return 1e10
+        
+        # Rebin stellar template to uniform wavelength scale, trim very edges
+        dstep = np.median(np.diff(wspot))
+        nstep = int((wspot[-1]-wspot[0])/dstep)
+        wspot1 = np.linspace(wspot[0],wspot[-1],nstep)
+        sspot = rebin_jv(wspot,sspot,wspot1,False)
+        wspot = wspot1.copy()
 
-    # Rotationally broaden stellar template
-    if vsini >= 0.5:
-        wspot2,rspot2 = rotint(wspot,sspot,vsini)
+        wspot = wspot[1:-1]
+        sspot = sspot[1:-1]
+
+        vsini = par[4]
+
+        # Rotationally broaden stellar template
+        if vsini >= 0.5:
+            wspot2,rspot2 = rotint(wspot,sspot,vsini)
+        else:
+            wspot2 = wspot
+            rspot2 = sspot
+
+        #Now rebin the telluric spectrum onto the stellar wavelength scale
+        satm2 = rebin_jv(watm,satm,wspot2,False)
+
+        #Mutliply rotationally broadened spot by telluric to create total spectrum
+        smod2 = rspot2*satm2
+        
     else:
-        wspot2 = wspot
-        rspot2 = sspot
-
-    #Now rebin the telluric spectrum onto the stellar wavelength scale
-    satm2 = rebin_jv(watm,satm,wspot2,False)
-
-    #Mutliply rotationally broadened spot by telluric to create total spectrum
-    smod2 = rspot2*satm2
+        smod2 = satm.copy(); wspot2 = watm.copy();
 
     #Find mean observed wavelength and create a telluric velocity scale
     mnw = np.mean(w)
@@ -321,50 +332,56 @@ def fmod_conti(par,fitobj):
     npts = len(w)
 
     # Apply velocity shifts and scale
-    wspot = mwave*(1.+par[0]/c)
-    sspot = mflux**par[1]
     watm = watm_in*(1.+par[2]/c)
     satm = satm_in**par[3]
-
+    
     #Verify that new wavelength scale is a subset of old telluric wavelength scale.
     if (w[0] < watm[0]) or (w[-1] > watm[-1]):
         sys.exit('WAVE ERROR 2: w subset of watm, w goes from '+str(w[0])+' to '+str(w[-1])+' and watm goes from '+str(watm[0])+' to '+str(watm[-1]))
         return 1e10
 
-    #Verify that new wavelength scale is a subset of stellar wavelength scale.
-    if (w[0] < wspot[0]) or (w[-1] > wspot[-1]):
-        sys.exit('WAVE ERROR 3:  w not subset of wspot, w goes from '+str(w[0])+' to '+str(w[-1])+' and wspot goes from '+str(wspot[0])+' to '+str(wspot[-1]))
-        return 1e10
-    
-    #Verify that stellar wavelength scale is a subset of telluric wavelength scale.
-    if (wspot[0] < watm[0]) or (wspot[-1] > watm[-1]):
-        sys.exit('WAVE ERROR 3: wspot not subset of satm, wspot goes from '+str(wspot[0])+' to '+str(wspot[-1])+' and watm goes from '+str(watm[0])+' to '+str(watm[-1]))
-        return 1e10
-    
-    # Rebin stellar template to uniform wavelength scale, trim very edges
-    dstep = np.median(np.diff(wspot))
-    nstep = int((wspot[-1]-wspot[0])/dstep)
-    wspot1 = np.linspace(wspot[0],wspot[-1],nstep)
-    sspot = rebin_jv(wspot,sspot,wspot1,False)
-    wspot = wspot1.copy()
-   
-    wspot = wspot[1:-1]
-    sspot = sspot[1:-1]
+    if wspot != None:
+        
+        wspot = mwave*(1.+par[0]/c)
+        sspot = mflux**par[1]
 
-    vsini = par[4]
+        #Verify that new wavelength scale is a subset of stellar wavelength scale.
+        if (w[0] < wspot[0]) or (w[-1] > wspot[-1]):
+            sys.exit('WAVE ERROR 3:  w not subset of wspot, w goes from '+str(w[0])+' to '+str(w[-1])+' and wspot goes from '+str(wspot[0])+' to '+str(wspot[-1]))
+            return 1e10
 
-    # Rotationally broaden stellar template
-    if vsini >= 0.5:
-        wspot2,rspot2 = rotint(wspot,sspot,vsini)
+        #Verify that stellar wavelength scale is a subset of telluric wavelength scale.
+        if (wspot[0] < watm[0]) or (wspot[-1] > watm[-1]):
+            sys.exit('WAVE ERROR 3: wspot not subset of satm, wspot goes from '+str(wspot[0])+' to '+str(wspot[-1])+' and watm goes from '+str(watm[0])+' to '+str(watm[-1]))
+            return 1e10
+
+        # Rebin stellar template to uniform wavelength scale, trim very edges
+        dstep = np.median(np.diff(wspot))
+        nstep = int((wspot[-1]-wspot[0])/dstep)
+        wspot1 = np.linspace(wspot[0],wspot[-1],nstep)
+        sspot = rebin_jv(wspot,sspot,wspot1,False)
+        wspot = wspot1.copy()
+
+        wspot = wspot[1:-1]
+        sspot = sspot[1:-1]
+
+        vsini = par[4]
+
+        # Rotationally broaden stellar template
+        if vsini >= 0.5:
+            wspot2,rspot2 = rotint(wspot,sspot,vsini)
+        else:
+            wspot2 = wspot
+            rspot2 = sspot
+
+        #Now rebin the telluric spectrum onto the stellar wavelength scale
+        satm2 = rebin_jv(watm,satm,wspot2,False)
+
+        #Mutliply rotationally broadened spot by telluric to create total spectrum
+        smod2 = rspot2*satm2
+        
     else:
-        wspot2 = wspot
-        rspot2 = sspot
-
-    #Now rebin the telluric spectrum onto the stellar wavelength scale
-    satm2 = rebin_jv(watm,satm,wspot2,False)
-
-    #Mutliply rotationally broadened spot by telluric to create total spectrum
-    smod2 = rspot2*satm2
+        smod2 = satm.copy(); wspot2 = watm.copy();
 
     #Find mean observed wavelength and create a telluric velocity scale
     mnw = np.mean(w)
