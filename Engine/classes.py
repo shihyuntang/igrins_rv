@@ -18,6 +18,7 @@ class fitobjs:
         self.mask = mask
         self.masterbeam = masterbeam
         self.CRmask = CRmask
+        self.initwave = initwave
 
 class inparams:
 
