@@ -1,5 +1,5 @@
 
-from Engine.opt   import fmod
+from Engine.opt   import fmod, fmod_conti_tell
 # from Engine.opt_rebintel   import fmod
 from Engine.importmodule import *
 from Engine.detect_peaks import detect_peaks
@@ -26,6 +26,8 @@ def CRmasker(parfit, fitobj, tel=False):
         clip_pixel_tol = 6
 
     fit,chi = fmod(parfit, fitobj)
+    w,smod,cont,c2 = fmod_conti_tell(parfit, fitobj)
+    continuum = cont*c2
 
     # Everywhere where data protrudes high above model, check whether slope surrounding protrusion is /\ and mask if sufficiently steep
 
@@ -75,6 +77,12 @@ def CRmasker(parfit, fitobj, tel=False):
             if (slopeL > clip_slope) and (slopeR < -clip_slope):
                 CRmaskF = np.concatenate((CRmaskF,group))
 
-    #mask = np.ones_like(xdata,dtype=bool)
+    sflat = sdata/continuum
+    sflat /= np.percentile(sflat,98)
+    ind = np.where(sflat < 0.2)[0]
+    if len(ind) > 0:
+        for group in mit.consecutive_groups(ind):
+            group = np.array(list(group))
+            CRmaskF = np.concatenate((CRmaskF,group))
 
     return [xdata,CRmaskF]
