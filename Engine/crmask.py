@@ -33,13 +33,7 @@ def CRmasker(parfit, fitobj, tel=False):
 
     w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
 
-    dstep = np.median(w[1:]-w[:-1])
-    nstep = int((w[-1]-w[0])/dstep)
-    wreg = np.linspace(w[0],w[-1],nstep)
-    sdata = rebin_jv(w,fitobj.s,wreg,False)
-    udata = rebin_jv(w,fitobj.u,wreg,False)
-    xdata = np.linspace(fitobj.x[0],fitobj.x[-1],nstep)
-    w = wreg.copy()
+    xdata = fitobj.x.copy(); sdata = fitobj.s.copy(); 
 
     residual = sdata/fit
     MAD = np.median(np.abs(np.median(residual)-residual))
