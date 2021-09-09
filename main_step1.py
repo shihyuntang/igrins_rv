@@ -649,7 +649,7 @@ def MPinstA(args, inparam, jerp, orders, i):
                           par_in[5]  - dpars['ip'][5],    par_in[5]  + dpars['ip'][5]
                          ]
 
-            fitobj = fitobjs(s, x, u, continuum, watm_inLIV, satm_inLIV, None, None, [], masterbeam, CRmaskF)
+            fitobj = fitobjs(s, x, u, continuum, watm_inLIV, satm_inLIV, None, None, [], masterbeam, [np.array([],dtype=int),np.array([],dtype=int)])
 
             chisqs = []; parfitsaves = [];
             for telval in [0.5,1.0,1.5]:
