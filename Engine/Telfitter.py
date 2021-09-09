@@ -326,7 +326,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam,
                                )
 
             #Adjust parameters that will not be fit, but are important
-            fitter.AdjustValue({"angle": angle,=
+            fitter.AdjustValue({"angle": angle,
                                 "wavestart"  : data.x[0] -0.001,
                                 "waveend"    : data.x[-1]+0.001,
                                 "co"  : _telfit_default_values_dic["co"],
