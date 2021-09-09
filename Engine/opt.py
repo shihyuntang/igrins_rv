@@ -7,6 +7,7 @@ from Engine.macbro_dynamic    import macbro_dyn
 from Engine.rebin_jv import rebin_jv
 # import time
 import sys
+from numpy.polynomial import chebyshev
 
 #-------------------------------------------------------------------------------
 def fmodel_chi(par,grad):
