@@ -283,7 +283,7 @@ def fmod(par,fitobj):
 
     # Apply continuum adjustment
     cont = par[10] + par[11]*fitobj.x + par[12]*(fitobj.x**2) + par[20]*(fitobj.x**3) + par[21]*(fitobj.x**4) + par[22]*(fitobj.x**5) + par[23]*(fitobj.x**6)
-    if fitobj_cp.masterbeam == 'A':
+    if fitobj.masterbeam == 'A':
         bucket = np.zeros_like(cont)
         bucket[(fitobj.x >= (par[15]-par[16]/2))         & (fitobj.x <= (par[15]+par[16]/2))] = par[17]
         bucket[(fitobj.x >= (par[15]+par[16]/2-par[18])) & (fitobj.x <= (par[15]+par[16]/2))] += par[19]
@@ -293,7 +293,7 @@ def fmod(par,fitobj):
     mask = np.ones_like(smod,dtype=bool)
     mask[(fitobj.s < .0)] = False
 
-    if len(fitobj_cp.mask) != 0:
+    if len(fitobj.mask) != 0:
         for maskbounds in fitobj.mask:
             mask[(fitobj.x > maskbounds[0]) & (fitobj.x < maskbounds[1]) ] = False
 
