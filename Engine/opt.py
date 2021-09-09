@@ -59,7 +59,10 @@ def fmodel_chi(par,grad):
     mflux = fitobj_cp.mflux_in;
 
     #Make the wavelength scale
-    w = par[6] + par[7]*fitobj_cp.x + par[8]*(fitobj_cp.x**2.) + par[9]*(fitobj_cp.x**3.)
+    initwave = fitobj.initwave.copy()
+    xgrid = (initwave - np.median(initwave)) / (np.max(initwave) - np.min(initwave))
+    dx = chebyshev.chebval(xgrid, parfit[6:10])
+    w = initwave + dx
 
     if np.all(np.diff(w) > 0) == False:
         # print(f'{nc_cp}, {nk_cp}, {optkind_cp}: Hitting negative wavelength solution for some reason !')
@@ -189,7 +192,10 @@ def fmod(par,fitobj):
     mflux = fitobj.mflux_in;
 
     #Make the wavelength scale
-    w = par[6] + par[7]*fitobj.x + par[8]*(fitobj.x**2.) + par[9]*(fitobj.x**3.)
+    initwave = fitobj.initwave.copy()
+    xgrid = (initwave - np.median(initwave)) / (np.max(initwave) - np.min(initwave))
+    dx = chebyshev.chebval(xgrid, parfit[6:10])
+    w = initwave + dx
 
     if np.all(np.diff(w) > 0) == False:
         sys.exit('WAVE ERROR 1 - Hitting negative wavelength solution for some reason - pars: {}'.format(par[6:10]))
@@ -321,8 +327,11 @@ def fmod_conti(par,fitobj):
     mflux = fitobj.mflux_in;
 
     #Make the wavelength scale
-    w = par[6] + par[7]*fitobj.x + par[8]*(fitobj.x**2.) + par[9]*(fitobj.x**3.)
-
+    initwave = fitobj.initwave.copy()
+    xgrid = (initwave - np.median(initwave)) / (np.max(initwave) - np.min(initwave))
+    dx = chebyshev.chebval(xgrid, parfit[6:10])
+    w = initwave + dx
+    
     if np.all(np.diff(w) > 0) == False:
         sys.exit('WAVE ERROR 1 - Hitting negative wavelength solution for some reason - pars: {}'.format(par[6:10]))
         return 1e10
