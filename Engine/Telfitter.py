@@ -5,66 +5,60 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from   Engine.rebin_jv import rebin_jv
 from   telfit import TelluricFitter, DataStructures
+from numpy.polynomial import chebyshev
+from scipy.optimize import leastsq
 
 
-def wavefunc(par, grad):
-    """Takes Telfitted template and uses an input wavelength solution to rebin it for direct comparison with Livingston.
+# From Telfit:
+def Poly( pars, middle, low, high, x):
+	"""
+	Generates a polynomial with the given parameters
+	for all of the x-values.
+	x is assumed to be a np.ndarray!
+	 Not meant to be called directly by the user!
+	"""
+	xgrid = (x - middle) / (high - low)  # re-scale
+	return chebyshev.chebval(xgrid, pars)
 
-    Parameters
-    ----------
-    par : ndarray
-        array of polynomial coefficients specifying wavelength solution
-    grad : None
-        Always "None" (has to be this way for NLOpt)
+# From Telfit:
+def WavelengthErrorFunctionNew(pars, datax,datay, telluricx, telluricy, maxdiff=0.05):
+        """
+        Cost function for the new wavelength fitter.
+        Not meant to be called directly by the user!
+        """
+        dx = Poly(pars, np.median(datax), min(datax), max(datax), datax)
+        penalty = np.sum(np.abs(dx[np.abs(dx) > maxdiff]))
+        #retval = (datay - model(datax + dx)) + penalty
+        retval = (datay - rebin_jv(telluricx,telluricy,datax + dx,False)) + penalty
+        return retval
 
-    Returns
-    -------
-    float
-        reduced chisq of model fit.
-    """
+# From Telfit:
+def FitWavelengthNew( data_originalx, data_originaly, telluricx, telluricy, fitorder=3, be_safe=True):
+	"""
+	This is a vastly simplified version of FitWavelength.
+	It takes the same inputs and returns the same thing,
+	so is a drop-in replacement for the old FitWavelength.
 
-    global watm_Liv, satm_Liv, satmLivGen, x
-    #Make the wavelength scale
-    f = np.poly1d(par)
-    w = f(x)
+	Instead of finding the lines, and generating a polynomial
+	to apply to the axis as x --> f(x), it fits a polynomial
+	to the delta-x. So, it fits the function for x --> x + f(x).
+	This way, we can automatically penalize large deviations in
+	the wavelength.
+	"""
+	#modelfcn = UnivariateSpline(telluricx, telluricy, s=0)
+	pars = np.zeros(fitorder + 1)
+	if be_safe:
+	    #args = (data_originalx, data_originaly, modelfcn, 0.05)
+	    args = (data_originalx, data_originaly, telluricx, telluricy, 0.05)
+	else:
+	    #args = (data_originalx, data_originaly, modelfcn, 100)
+	    args = (data_originalx, data_originaly, telluricx, telluricy, 100)
+	output = leastsq(WavelengthErrorFunctionNew, pars, args=args, full_output=True, xtol=1e-12, ftol=1e-12)
+	pars = output[0]
 
-    if (w[-1] < w[0]) or (w[-1] > watm_Liv[-1]+5):
-        return 1e3
-
-    satmTel2 = rebin_jv(w, satmLivGen, watm_Liv, False)
-    return np.sum((satm_Liv - satmTel2)**2) / (len(satmTel2) - len(par))
+	return partial(Poly, pars, np.median(data_originalx), min(data_originalx), max(data_originalx)), 0.0
 
 
-def wavefit(par0, dpar0):
-    """NLopt convenience function for fitting wavelength solution of Telfitted Livingston Atlas such that it matches with Livingston Atlas.
-
-    Parameters
-    ----------
-    par0 : ndarray
-        Initial guesses for polynomial coefficients specifying wavelength solution
-    dpar0 : ndarray
-        Amount each initial guess can vary (higher or lower)
-
-    Returns
-    -------
-    ndarry
-        Best fit polynomial coefficients specifying wavelength solution
-    """
- 
-    opt = nlopt.opt(nlopt.LN_NELDERMEAD, 7)
-    opt.set_min_objective(wavefunc)
-    
-    lows  = par0-dpar0
-    highs = par0+dpar0
-    
-    opt.set_lower_bounds(lows)
-    opt.set_upper_bounds(highs)
-    opt.set_maxtime(1200) #seconds
-    
-    # Quit optimization based on relative change in output fit parameters between iterations.
-    opt.set_ftol_rel(1e-14)
-    parfit = opt.optimize(par0)
-    return parfit
 
 #------------
 # to suppress print out from Telfit
@@ -841,21 +835,10 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam,
     satmLivGen = rebin_jv(modelL.x*10, modelL.y, newwave1*10, True, logger=logger) # nm --> AA
     watmLivGen = newwave1.copy() ; watmLivGen*=10 # nm --> AA
 
-    # Fit wavelength scale to Telfit'd Livingston
-    x = np.arange(len(satmLivGen))
-    initguess = np.polyfit(x, watmLivGen, 6)
-
-#    print('watmLivGen=\n', watmLivGen)
-#    print('x=\n', x)
-
-    watm_Liv  = inparam.watm[ (inparam.watm > watmLivGen[0]+1) & (inparam.watm < watmLivGen[-1]-1) ]
-    satm_Liv  = inparam.satm[ (inparam.watm > watmLivGen[0]+1) & (inparam.watm < watmLivGen[-1]-1) ]
-    dpar = np.abs(initguess)*10
-    dpar[-1] = 5
-
-    waveparfit = wavefit(initguess, dpar)
-    f = np.poly1d(waveparfit)
-    wavefitted = f(x)
+    watm_Liv  = inparam.watm[ (inparam.watm > watmLivGen[0]-2) & (inparam.watm < watmLivGen[-1]+2)]
+    satm_Liv  = inparam.satm[ (inparam.watm > watmLivGen[0]-2) & (inparam.watm < watmLivGen[-1]+2)]
+    modelfcn, mean = FitWavelengthNew(watmLivGen,satmLivGen, watm_Liv.copy(), satm_Liv.copy(), fitorder=3)
+    wavefitted = watmLivGen + modelfcn(watmLivGen - mean)
 
     satmTel[(satmTel < 1e-4)] = 0. # set very low points to zero so that they don't go to NaN when taken to an exponent by template power in fmodel_chi
 
