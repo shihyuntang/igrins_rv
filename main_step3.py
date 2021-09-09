@@ -710,17 +710,6 @@ Input Parameters:
 
     logger.info('Analyze with {} nights'.format(len(nightsFinal)))
 
-    nightsin = []; c1 = 0; c2 = 0;
-    for nnn in nightsFinal:
-        if nnn[:8] == '20161013' and c1 < 5:
-            nightsin.append(nnn)
-            c1 += 1
-        if nnn[:8] == '20160502' and c2 < 5:
-            nightsin.append(nnn)
-            c2 += 1
-        if c1 == 5 and c2 == 5:
-            break
-    nightsFinal = np.array(nightsin)
 
     #-------------------------------------------------------------------------------
 
