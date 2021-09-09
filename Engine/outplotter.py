@@ -21,13 +21,7 @@ def outplotter_tel(parfit, fitobj, title, inparam, args, order):
     #--- to match the wavelengh scale of fit from fmod ---
     w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
 
-    dstep = np.median(w[1:]-w[:-1])
-    nstep = int((w[-1]-w[0])/dstep)
-    wreg = np.linspace(w[0],w[-1],nstep)
-    sdata = rebin_jv(w,fitobj.s,wreg,False)
-    udata = rebin_jv(w,fitobj.u,wreg,False)
-    xdata = np.linspace(fitobj.x[0],fitobj.x[-1],nstep)
-    w = wreg.copy()
+    xdata = fitobj.x.copy(); sdata = fitobj.s.copy(); 
     #---
     npars = len(parfit)
 
@@ -75,7 +69,7 @@ def outplotter_tel(parfit, fitobj, title, inparam, args, order):
         bucket[(xdata >= (parfit[15]+parfit[16]/2-parfit[18])) & (xdata <= (parfit[15]+parfit[16]/2))] += parfit[19]
         cont -= bucket
 
-    c2 = rebin_jv(fitobj.x, fitobj.continuum, xdata,False)
+    c2 = fitobj.continuum
     cont *= c2
 
     mask2 = np.ones_like(xdata,dtype=bool)
@@ -124,13 +118,7 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3, order):
 
     w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
 
-    dstep = np.median(w[1:]-w[:-1])
-    nstep = int((w[-1]-w[0])/dstep)
-    wreg = np.linspace(w[0],w[-1],nstep)
-    sdata = rebin_jv(w,fitobj.s,wreg,False)
-    udata = rebin_jv(w,fitobj.u,wreg,False)
-    xdata = np.linspace(fitobj.x[0],fitobj.x[-1],nstep)
-    w = wreg.copy()
+    xdata = fitobj.x.copy(); sdata = fitobj.s.copy(); 
 
     npars = len(parfit)
 
@@ -178,7 +166,7 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3, order):
         bucket[(xdata >= (parfit[15]+parfit[16]/2-parfit[18])) & (xdata <= (parfit[15]+parfit[16]/2))] += parfit[19]
         cont -= bucket
 
-    c2 = rebin_jv(fitobj.x, fitobj.continuum, xdata,False)
+    c2 = fitobj.continuum
     cont *= c2
 
     fig, axes = plt.subplots(1, 1, figsize=(6,3), facecolor='white', dpi=250)
