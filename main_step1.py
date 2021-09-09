@@ -663,7 +663,7 @@ def MPinstA(args, inparam, jerp, orders, i):
                     parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize)
 
                     if args.debug == True:
-                        outplotter(parfit_1,fitobj,'{}_{}_beforeparfit_telval_{}_{}{}'.format(order,night,telval,nk,optkind),inparam, args, order)
+                        outplotter_tel(parfit_1,fitobj,'{}_{}_beforeparfit_telval_{}_{}{}'.format(order,night,telval,nk,optkind),inparam, args, order)
                     parstart = parfit_1.copy()
                     nk += 1
                 trash,chisq = fmod(parfit_1,fitobj)
