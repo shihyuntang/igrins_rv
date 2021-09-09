@@ -491,7 +491,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam,
         if args.debug:
             model = fitter.Fit(data=data, resolution_fit_mode="SVD", adjust_wave="model", air_wave=False, continuum_fit_order=c_order)
         else:
-            model = suppress_Fit(fitter, data)
+            model = suppress_Fit(fitter, data, c_order)
     except TypeError:
         return [np.nan], [np.nan], [np.nan], [np.nan], [np.nan], [np.nan]
 
