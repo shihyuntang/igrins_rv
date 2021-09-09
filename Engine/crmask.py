@@ -30,8 +30,11 @@ def CRmasker(parfit, fitobj, tel=False):
 
     # Everywhere where data protrudes high above model, check whether slope surrounding protrusion is /\ and mask if sufficiently steep
 
-    w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
-
+    initwave = fitobj.initwave.copy()
+    xgrid = (initwave - np.median(initwave)) / (np.max(initwave) - np.min(initwave))
+    dx = chebyshev.chebval(xgrid, parfit[6:10])
+    w = initwave + dx
+    
     xdata = fitobj.x.copy(); sdata = fitobj.s.copy(); 
 
     residual = sdata/fit
