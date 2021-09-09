@@ -304,7 +304,7 @@ def MPinstB(args, inparam, jerp, orders, i):
         
     for nc, cycle in enumerate(np.arange(cycles), start=1):
         for optkind in optgroup_use:
-            parfit_1 = optimizer_tel(parstart, dpars[optkind], hardbounds, fitobj, optimize)
+            parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize)
 
             if args.debug == True:
                 outplotter_tel(parfit_1,fitobj,'{}_{}_beforeparfit_{}{}'.format(order,night,nk,optkind),inparam, args, order)
