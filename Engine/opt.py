@@ -78,7 +78,7 @@ def fmodel_chi(par,grad):
         # print(f'{nc_cp}, {nk_cp}, {optkind_cp}: w not subset of watm, w goes from '+str(w[0])+' to '+str(w[-1])+' and watm goes from '+str(watm[0])+' to '+str(watm[-1]))
         return 1e10
 
-    if mwave != None:
+    if mwave is not None:
         
         wspot = mwave*(1.+par[0]/c)
         sspot = mflux**par[1]
@@ -208,7 +208,7 @@ def fmod(par,fitobj):
         sys.exit('WAVE ERROR 2: w subset of watm, w goes from '+str(w[0])+' to '+str(w[-1])+' and watm goes from '+str(watm[0])+' to '+str(watm[-1]))
         return 1e10
     
-    if mwave != None:
+    if mwave is not None:
         
         wspot = mwave*(1.+par[0]/c)
         sspot = mflux**par[1]
@@ -340,7 +340,7 @@ def fmod_conti(par,fitobj):
         sys.exit('WAVE ERROR 2: w subset of watm, w goes from '+str(w[0])+' to '+str(w[-1])+' and watm goes from '+str(watm[0])+' to '+str(watm[-1]))
         return 1e10
 
-    if mwave != None:
+    if mwave is not None:
         
         wspot = mwave*(1.+par[0]/c)
         sspot = mflux**par[1]
