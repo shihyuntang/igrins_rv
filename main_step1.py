@@ -585,8 +585,8 @@ def MPinstA(args, inparam, jerp, orders, i):
                      'ip', 'twave', 'cont',
                      'twave']
         # These are just optgroup2 first and second half
-        optgroup2A = optgroup[:5]
-        optgroup2B = optgroup[5:]
+        optgroup2A = optgroup2[:5]
+        optgroup2B = optgroup2[5:]
 
         # If dip present, use B frame template to fit it out and remove it before Telfit()
         if (order in [3,4]) and (args.band == 'K'):
