@@ -166,7 +166,7 @@ def fmodel_chi(par,grad):
 
     if len(fitobj_cp.mask) != 0:
         for maskbounds in fitobj_cp.mask:
-            mask[(xdata > maskbounds[0]) & (xdata < maskbounds[1]) ] = False
+            mask[(fitobj_cp.x > maskbounds[0]) & (fitobj_cp.x < maskbounds[1]) ] = False
 
     if len(fitobj_cp.CRmask[1]) > 0:
         for mb in fitobj_cp.CRmask[1]:
