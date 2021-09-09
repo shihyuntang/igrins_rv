@@ -30,10 +30,10 @@ def setup_fitting_init_pars(band, initvsini, order):
                       0.6,                      # 3: The scale factor for the telluric template
                       inparam.initvsini,        # 4: vsini (km/s)
                       np.nan,                   # 5: The instrumental resolution (FWHM) in pixels
-                      np.nan,                   # 6: Wavelength 0-pt
-                      np.nan,                   # 7: Wavelength linear component
-                      np.nan,                   # 8: Wavelength quadratic component
-                      np.nan,                   # 9: Wavelength cubic component
+                      0.0,                      # 6: Wavelength 0-pt
+                      0.0,                      # 7: Wavelength linear component
+                      0.0,                      # 8: Wavelength quadratic component
+                      0.0,                      # 9: Wavelength cubic component
                       1.0,                      #10: Continuum zero point
                       0.,                       #11: Continuum linear component
                       0.,                       #12: Continuum quadratic component
@@ -70,7 +70,7 @@ def base_dpars_dict(vsinivary, masterbeam, band, order):
     
     #                                | 0    1    2    3 |  | -- 4 -- | | 5 |   | 6     7     8           9  |  |10  11  12| |13 14|  |15   16   17   18    19 |  |20   21   22   23 |
     dpars_org = {'cont' : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,        0.0,    0.0,  0.0,  0.0,        0.0,    1e7, 1, 1,   0, 0,    10., 30., 0.2, 50.0, 0.2,   1.0, 1.0, 1.0, 1.0 ]),
-                 'twave': np.array([  0.0, 0.0, 0.0, 1.0,   0.0,        0.0,   10.0, 10.0,  5.00000e-5, 1e-7,   0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ]),
+                 'twave': np.array([  0.0, 0.0, 0.0, 1.0,   0.0,        0.0,    0.1,  0.1,  0.1,        0.1,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ]),
                  'ip'   : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,        0.5,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ]),
                  's'    : np.array([  5.0, 1.0, 0.0, 0.0,   0.0,        0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ]),
                  'v'    : np.array([  0.0, 0.0, 0.0, 0.0,   vsinivary,  0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ]),
@@ -290,14 +290,11 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
         par = pars0.copy()
 
-        # Get initial guess for cubic wavelength solution from reduction pipeline
-        f = np.polyfit(x_piece,wave_piece,3)
-        par[9] = f[0]*1e4
-        par[8] = f[1]*1e4
-        par[7] = f[2]*1e4
-        par[6] = f[3]*1e4
-        # par[9] = par9in ; par[8] = par8in ; par[7] = par7in ; par[6] = par6in
-
+		# Get initial guess for cubic wavelength solution from reduction pipeline
+		f = np.polyfit(x_piece,wave_piece,3)
+		q = np.poly1d(f)
+		initwave = q(x_piece)*1e4
+        
         par[0] = initguesses-inparam.bvcs[night+tag] # Initial RV with barycentric correction
         par[5]  = IPpars[2]
         par[13] = IPpars[1]
@@ -308,7 +305,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         dpars = base_dpars_dict(inparam.vsinivary, masterbeam, args.band, int(order))
         
         continuum_in = rebin_jv(a0contx,continuum,x_piece,False)
-        fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]),masterbeam,[np.array([],dtype=int),np.array([],dtype=int)])
+        fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]),masterbeam,[np.array([],dtype=int),np.array([],dtype=int)], initwave)
 
         #-------------------------------------------------------------------------------
 
@@ -366,8 +363,10 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                 parfit = parfit_1.copy()
                 CRmaskF = CRmasker(parfit,fitobj)
 
-                w_temp = parfit[6] + parfit[7]*x_save + parfit[8]*(x_save**2.) + parfit[9]*(x_save**3.)
-
+                xgrid = (initwave - np.median(initwave)) / (np.max(initwave) - np.min(initwave))
+                dx = chebyshev.chebval(xgrid, parfit[6:10])
+                w_temp = initwave + dx
+                
                 satm_in = satm[(watm > np.min(w_temp) - 5) & (watm < np.max(w_temp) + 5)]
                 watm_in = watm[(watm > np.min(w_temp) - 5) & (watm < np.max(w_temp) + 5)]
 
@@ -379,7 +378,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                 mflux_in = inparam.mflux0[(inparam.mwave0 > np.min(w_temp) - 2.5) & (inparam.mwave0 < np.max(w_temp) + 2.5)]
                 mwave_in = inparam.mwave0[(inparam.mwave0 > np.min(w_temp) - 2.5) & (inparam.mwave0 < np.max(w_temp) + 2.5)]
 
-                fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]),masterbeam,CRmaskF)
+                fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]),masterbeam,CRmaskF, initwave)
 
         parfit = parfit_1.copy()
 
