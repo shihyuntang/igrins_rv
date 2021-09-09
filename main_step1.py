@@ -344,6 +344,12 @@ def MPinstB(args, inparam, jerp, orders, i):
         # Get best fit wavelength solution
         a0w_out_fit = parfit[6] + parfit[7]*x + parfit[8]*(x**2.) + parfit[9]*(x**3.)
 
+        fwhmraw = parfit[5] + parfit[13]*(x) + parfit[14]*(x**2)
+        resolution_max = np.max(a0w_out_fit)/(np.min(fwhmraw)*np.min(np.diff(a0w_out_fit)))
+        resolution_min = np.min(a0w_out_fit)/(np.max(fwhmraw)*np.median(np.diff(a0w_out_fit))) #not max because pixels get skipped
+        resolution_med = np.median(a0w_out_fit)/(np.median(fwhmraw)*np.median(np.diff(a0w_out_fit))) 
+        resolutions = [resolution_min,resolution_med,resolution_max]
+        
         '''
         # If we wanted to have Telfit ignore regions of deep telluric lines in its fits, this is how we'd do it.
         # But it also requires changing a line in Telfit package itself, so...not great...
@@ -361,7 +367,7 @@ def MPinstB(args, inparam, jerp, orders, i):
         '''
         
         # Feed this new wavelength solution into Telfit. Returns high-res synthetic telluric template, parameters of that best fit, and blaze function best fit
-        watm1, satm1, telfitparnames, telfitpars, a0contwave, continuum = telfitter(a0w_out_fit, a0fluxlist, a0u, inparam, night, order, args, masterbeam, c_order, logger)
+        watm1, satm1, telfitparnames, telfitpars, a0contwave, continuum = telfitter(a0w_out_fit, a0fluxlist, a0u, inparam, night, order, args, masterbeam, c_order, resolutions, logger)
 
         # If Telfit encountered error (details in Telfitter.py), skip night/order combo
         if len(watm1) == 1:
@@ -715,6 +721,12 @@ def MPinstA(args, inparam, jerp, orders, i):
             # Get best fit wavelength solution
             a0w_out_fit = parfit[6] + parfit[7]*x + parfit[8]*(x**2.) + parfit[9]*(x**3.)
 
+            fwhmraw = parfit[5] + parfit[13]*(x) + parfit[14]*(x**2)
+            resolution_max = np.max(a0w_out_fit)/(np.min(fwhmraw)*np.min(np.diff(a0w_out_fit)))
+            resolution_min = np.min(a0w_out_fit)/(np.max(fwhmraw)*np.median(np.diff(a0w_out_fit))) #not max because pixels get skipped
+            resolution_med = np.median(a0w_out_fit)/(np.median(fwhmraw)*np.median(np.diff(a0w_out_fit))) 
+            resolutions = [resolution_min,resolution_med,resolution_max]
+
             '''
             # If we wanted to have Telfit ignore regions of deep telluric lines in its fits, this is how we'd do it.
             # But it also requires changing a line in Telfit package itself, so...not great...
@@ -732,7 +744,7 @@ def MPinstA(args, inparam, jerp, orders, i):
             '''
 
             # Feed this new wavelength solution into Telfit. Returns high-res synthetic telluric template, parameters of that best fit, and blaze function best fit
-            watm1, satm1, telfitparnames, telfitpars, a0contwave, continuum = telfitter(a0w_out_fit, a0fluxlist, a0u, inparam, night, order, args, masterbeam, c_order, logger)
+            watm1, satm1, telfitparnames, telfitpars, a0contwave, continuum = telfitter(a0w_out_fit, a0fluxlist, a0u, inparam, night, order, args, masterbeam, c_order, resolutions, logger)
 
             # If Telfit encountered error (details in Telfitter.py), skip night/order combo
             if len(watm1) == 1:
