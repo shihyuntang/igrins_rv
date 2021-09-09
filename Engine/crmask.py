@@ -1,5 +1,5 @@
 
-from Engine.opt   import fmod
+from Engine.opt   import fmod,fmod_conti
 from Engine.importmodule import *
 from Engine.detect_peaks import detect_peaks
 from Engine.rebin_jv import rebin_jv
