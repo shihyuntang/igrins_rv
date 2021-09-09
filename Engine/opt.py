@@ -53,8 +53,8 @@ def fmodel_chi(par,grad):
     #global fitobj, optimize
     global fitobj_cp, optimize_cp
 
-    watm = fitobj_cp.watm_in;
-    satm = fitobj_cp.satm_in;
+    watm_in = fitobj_cp.watm_in;
+    satm_in = fitobj_cp.satm_in;
     mwave = fitobj_cp.mwave_in;
     mflux = fitobj_cp.mflux_in;
 
@@ -65,14 +65,6 @@ def fmodel_chi(par,grad):
         # print(f'{nc_cp}, {nk_cp}, {optkind_cp}: Hitting negative wavelength solution for some reason !')
         return 1e10
 
-    dstep = np.median(w[1:]-w[:-1])
-    nstep = int((w[-1]-w[0])/dstep)
-    wreg = np.linspace(w[0],w[-1],nstep)
-    sdata = rebin_jv(w,fitobj_cp.s,wreg,False)
-    udata = rebin_jv(w,fitobj_cp.u,wreg,False)
-    xdata = np.linspace(fitobj_cp.x[0],fitobj_cp.x[-1],nstep)
-    w = wreg.copy()
-
     # Define the speed of light in km/s and other useful quantities
     c = 2.99792458e5
     npts = len(w)
@@ -80,22 +72,33 @@ def fmodel_chi(par,grad):
     # Apply velocity shifts and scale
     wspot = mwave*(1.+par[0]/c)
     sspot = mflux**par[1]
-    watm = watm*(1.+par[2]/c)
-    satm = satm**par[3]
+    watm = watm_in*(1.+par[2]/c)
+    satm = satm_in**par[3]
 
-    #Verify that new wavelength scale is a subset of old wavelength scale.
+    #Verify that new wavelength scale is a subset of old telluric wavelength scale.
     if (w[0] < watm[0]) or (w[-1] > watm[-1]):
         # print(f'{nc_cp}, {nk_cp}, {optkind_cp}: w not subset of watm, w goes from '+str(w[0])+' to '+str(w[-1])+' and watm goes from '+str(watm[0])+' to '+str(watm[-1]))
         return 1e10
 
-    dstep = np.median(wspot[1:]-wspot[:-1])
+    #Verify that new wavelength scale is a subset of stellar wavelength scale.
+    if (w[0] < wspot[0]) or (w[-1] > wspot[-1]):
+        # print(f'{nc_cp}, {nk_cp}, {optkind_cp}: w not subset of wspot, w goes from '+str(w[0])+' to '+str(w[-1])+' and wspot goes from '+str(wspot[0])+' to '+str(wspot[-1]))
+        return 1e10
+    
+    #Verify that stellar wavelength scale is a subset of telluric wavelength scale.
+    if (wspot[0] < watm[0]) or (wspot[-1] > watm[-1]):
+        # print(f'{nc_cp}, {nk_cp}, {optkind_cp}: wspot not subset of satm, wspot goes from '+str(wspot[0])+' to '+str(wspot[-1])+' and watm goes from '+str(watm[0])+' to '+str(watm[-1]))
+        return 1e10
+    
+    # Rebin stellar template to uniform wavelength scale, trim very edges
+    dstep = np.median(np.diff(wspot))
     nstep = int((wspot[-1]-wspot[0])/dstep)
     wspot1 = np.linspace(wspot[0],wspot[-1],nstep)
     sspot = rebin_jv(wspot,sspot,wspot1,False)
     wspot = wspot1.copy()
-
-    satm = satm[(watm >= w[0]) & (watm <= w[-1])]
-    watm = watm[(watm >= w[0]) & (watm <= w[-1])]
+   
+    wspot = wspot[1:-1]
+    sspot = sspot[1:-1]
 
     vsini = par[4]
 
@@ -106,48 +109,51 @@ def fmodel_chi(par,grad):
         wspot2 = wspot
         rspot2 = sspot
 
-    #Now rebin the spot spectrum onto the telluric wavelength scale
-    sspot2 = rebin_jv(wspot2,rspot2,watm,False)
+    #Now rebin the telluric spectrum onto the stellar wavelength scale
+    satm2 = rebin_jv(watm,satm,wspot2,False)
 
     #Mutliply rotationally broadened spot by telluric to create total spectrum
-    smod = sspot2*satm
+    smod2 = rspot2*satm2
 
     #Find mean observed wavelength and create a telluric velocity scale
     mnw = np.mean(w)
     dw = (w[-1] - w[0])/(npts-1.)
-    vel = (watm-mnw)/mnw*c
+    vel = (wspot2-mnw)/mnw*c
 
-    fwhmraw = par[5] + par[13]*(xdata) + par[14]*(xdata**2)
+    fwhmraw = par[5] + par[13]*(fitobj_cp.x) + par[14]*(fitobj_cp.x**2)
     try:
         spl = splrep(w,fwhmraw)
     except:
         return 1e10
-    fwhm = splev(watm,spl)
+    fwhm = splev(wspot2,spl)
+    # Have IP extend as constant past wave bounds of data
+    fwhm[(wspot2 < w[0])]  = fwhm[(wspot2 >= w[0])][0] 
+    fwhm[(wspot2 > w[-1])] = fwhm[(wspot2 <= w[-1])][-1]
     if (np.min(fwhm) < 1) or (np.max(fwhm) > 8):
         return 1e10
 
     #Handle instrumental broadening
     vhwhm = dw*np.abs(fwhm)/mnw*c/2.
-    nsmod = macbro_dyn(vel,smod,vhwhm)
+    nsmod = macbro_dyn(vel,smod2,vhwhm)
 
     #Rebin model to observed wavelength scale
-    smod = rebin_jv(watm,nsmod,w,False)
+    smod = rebin_jv(wspot2,nsmod,w,False)
 
     # Load saved continuum
-    c2 = rebin_jv(fitobj_cp.x,fitobj_cp.continuum,xdata,False)
+    c2 = fitobj_cp.continuum
     smod *= c2
 
     # Apply continuum adjustment
-    cont = par[10] + par[11]*xdata + par[12]*(xdata**2) + par[20]*(xdata**3) + par[21]*(xdata**4) + par[22]*(xdata**5) + par[23]*(xdata**6)
+    cont = par[10] + par[11]*fitobj_cp.x + par[12]*(fitobj_cp.x**2) + par[20]*(fitobj_cp.x**3) + par[21]*(fitobj_cp.x**4) + par[22]*(fitobj_cp.x**5) + par[23]*(fitobj_cp.x**6)
     if fitobj_cp.masterbeam == 'A':
         bucket = np.zeros_like(cont)
-        bucket[(xdata >= (par[15]-par[16]/2))         & (xdata <= (par[15]+par[16]/2))] = par[17]
-        bucket[(xdata >= (par[15]+par[16]/2-par[18])) & (xdata <= (par[15]+par[16]/2))] += par[19]
+        bucket[(fitobj_cp.x >= (par[15]-par[16]/2))         & (fitobj_cp.x <= (par[15]+par[16]/2))] = par[17]
+        bucket[(fitobj_cp.x >= (par[15]+par[16]/2-par[18])) & (fitobj_cp.x <= (par[15]+par[16]/2))] += par[19]
         cont -= bucket
     smod *= cont
 
     mask = np.ones_like(smod,dtype=bool)
-    mask[(sdata < .0)] = False
+    mask[(fitobj_cp.s < .0)] = False
 
     if len(fitobj_cp.mask) != 0:
         for maskbounds in fitobj_cp.mask:
@@ -155,11 +161,11 @@ def fmodel_chi(par,grad):
 
     if len(fitobj_cp.CRmask[1]) > 0:
         for mb in fitobj_cp.CRmask[1]:
-            mask[(xdata >= fitobj_cp.CRmask[0][mb]-1) & (xdata <= fitobj_cp.CRmask[0][mb]+1)] = False
+            mask[(fitobj_cp.x >= fitobj_cp.CRmask[0][mb]-1) & (fitobj_cp.x <= fitobj_cp.CRmask[0][mb]+1)] = False
 
 
     # Compute chisq
-    chisq = np.sum((sdata[mask] - smod[mask])**2. / udata[mask]**2.)
+    chisq = np.sum((fitobj_cp.s[mask] - smod[mask])**2. / fitobj_cp.u[mask]**2.)
     chisq = chisq / (len(smod[mask]) - len(par))
 
     if optimize_cp == True:
@@ -172,45 +178,52 @@ def fmod(par,fitobj):
     Same as fmodel_chi(), but meant to provide best fit model, not for optimization. Always returns both smod and chisq.
     '''
 
-    watm = fitobj.watm_in;
-    satm = fitobj.satm_in;
+    watm_in = fitobj.watm_in;
+    satm_in = fitobj.satm_in;
     mwave = fitobj.mwave_in;
     mflux = fitobj.mflux_in;
 
+    #Make the wavelength scale
     w = par[6] + par[7]*fitobj.x + par[8]*(fitobj.x**2.) + par[9]*(fitobj.x**3.)
 
     if np.all(np.diff(w) > 0) == False:
-        sys.exit('WAVE ERROR 1 {}'.format(par[6:10]))
+        sys.exit('WAVE ERROR 1 - Hitting negative wavelength solution for some reason - pars: {}'.format(par[6:10]))
         return 1e10
 
-    dstep = np.median(w[1:]-w[:-1])
-    nstep = int((w[-1]-w[0])/dstep)
-    wreg = np.linspace(w[0],w[-1],nstep)
-    sdata = rebin_jv(w,fitobj.s,wreg,False)
-    udata = rebin_jv(w,fitobj.u,wreg,False)
-    xdata = np.linspace(fitobj.x[0],fitobj.x[-1],nstep)
-    w = wreg.copy()
-
+    # Define the speed of light in km/s and other useful quantities
     c = 2.99792458e5
     npts = len(w)
 
+    # Apply velocity shifts and scale
     wspot = mwave*(1.+par[0]/c)
     sspot = mflux**par[1]
-    watm = watm*(1.+par[2]/c)
-    satm = satm**par[3]
+    watm = watm_in*(1.+par[2]/c)
+    satm = satm_in**par[3]
 
+    #Verify that new wavelength scale is a subset of old telluric wavelength scale.
     if (w[0] < watm[0]) or (w[-1] > watm[-1]):
-        sys.exit('WAVE ERROR 2 {} {} {} {} {}'.format(par[6:10],watm[0],watm[-1],w[0],w[-1]))
+        sys.exit('WAVE ERROR 2: w subset of watm, w goes from '+str(w[0])+' to '+str(w[-1])+' and watm goes from '+str(watm[0])+' to '+str(watm[-1]))
         return 1e10
 
-    dstep = np.median(wspot[1:]-wspot[:-1])
+    #Verify that new wavelength scale is a subset of stellar wavelength scale.
+    if (w[0] < wspot[0]) or (w[-1] > wspot[-1]):
+        sys.exit('WAVE ERROR 3:  w not subset of wspot, w goes from '+str(w[0])+' to '+str(w[-1])+' and wspot goes from '+str(wspot[0])+' to '+str(wspot[-1]))
+        return 1e10
+    
+    #Verify that stellar wavelength scale is a subset of telluric wavelength scale.
+    if (wspot[0] < watm[0]) or (wspot[-1] > watm[-1]):
+        sys.exit('WAVE ERROR 3: wspot not subset of satm, wspot goes from '+str(wspot[0])+' to '+str(wspot[-1])+' and watm goes from '+str(watm[0])+' to '+str(watm[-1]))
+        return 1e10
+    
+    # Rebin stellar template to uniform wavelength scale, trim very edges
+    dstep = np.median(np.diff(wspot))
     nstep = int((wspot[-1]-wspot[0])/dstep)
     wspot1 = np.linspace(wspot[0],wspot[-1],nstep)
     sspot = rebin_jv(wspot,sspot,wspot1,False)
     wspot = wspot1.copy()
-
-    satm = satm[(watm >= w[0]) & (watm <= w[-1])]
-    watm = watm[(watm >= w[0]) & (watm <= w[-1])]
+   
+    wspot = wspot[1:-1]
+    sspot = sspot[1:-1]
 
     vsini = par[4]
 
@@ -221,107 +234,122 @@ def fmod(par,fitobj):
         wspot2 = wspot
         rspot2 = sspot
 
-    sspot2 = rebin_jv(wspot2,rspot2,watm,False)
+    #Now rebin the telluric spectrum onto the stellar wavelength scale
+    satm2 = rebin_jv(watm,satm,wspot2,False)
 
-    smod = sspot2*satm
+    #Mutliply rotationally broadened spot by telluric to create total spectrum
+    smod2 = rspot2*satm2
 
     #Find mean observed wavelength and create a telluric velocity scale
     mnw = np.mean(w)
     dw = (w[-1] - w[0])/(npts-1.)
-    vel = (watm-mnw)/mnw*c
+    vel = (wspot2-mnw)/mnw*c
 
-    fwhmraw = par[5] + par[13]*(xdata) + par[14]*(xdata**2)
-    if np.round(np.min(fwhmraw),5) < 1 or np.round(np.max(fwhmraw),5) > 8:
-        sys.exit('IP ERROR 1 {} {} {} {} {}'.format(par[5],par[13],par[14],np.min(fwhmraw),np.max(fwhmraw) ))
-        return 1e10
+    fwhmraw = par[5] + par[13]*(fitobj.x) + par[14]*(fitobj.x**2)
     try:
         spl = splrep(w,fwhmraw)
-    except ValueError:
-        sys.exit('IP ERROR 2 {} {} {}'.format(par[5],par[13],par[14]))
+    except:
+        sys.exit('IP ERROR 1 {} {} {} {} {}'.format(par[5],par[13],par[14],np.min(fwhmraw),np.max(fwhmraw) ))
+        return 1e10
+    fwhm = splev(wspot2,spl)
+    # Have IP extend as constant past wave bounds of data
+    fwhm[(wspot2 < w[0])]  = fwhm[(wspot2 >= w[0])][0] 
+    fwhm[(wspot2 > w[-1])] = fwhm[(wspot2 <= w[-1])][-1]
+    if (np.min(fwhm) < 1) or (np.max(fwhm) > 8):
+        sys.exit('IP ERROR 2 {} {} {} {} {}'.format(par[5],par[13],par[14],np.min(fwhm),np.max(fwhm) ))
         return 1e10
 
-    fwhm = splev(watm,spl)
-
+    #Handle instrumental broadening
     vhwhm = dw*np.abs(fwhm)/mnw*c/2.
-    nsmod = macbro_dyn(vel,smod,vhwhm)
+    nsmod = macbro_dyn(vel,smod2,vhwhm)
 
     #Rebin model to observed wavelength scale
-    smod = rebin_jv(watm,nsmod,w,False)
+    smod = rebin_jv(wspot2,nsmod,w,False)
 
     # Load saved continuum
-    c2 = rebin_jv(fitobj.x,fitobj.continuum,xdata,False)
-    smod *= c2#/np.median(c2)
+    c2 = fitobj.continuum
+    smod *= c2
 
     # Apply continuum adjustment
-    cont = par[10] + par[11]*xdata + par[12]*(xdata**2) + par[20]*(xdata**3) + par[21]*(xdata**4) + par[22]*(xdata**5) + par[23]*(xdata**6)
-    if fitobj.masterbeam == 'A':
+    cont = par[10] + par[11]*fitobj.x + par[12]*(fitobj.x**2) + par[20]*(fitobj.x**3) + par[21]*(fitobj.x**4) + par[22]*(fitobj.x**5) + par[23]*(fitobj.x**6)
+    if fitobj_cp.masterbeam == 'A':
         bucket = np.zeros_like(cont)
-        bucket[(xdata >= (par[15]-par[16]/2))         & (xdata <= (par[15]+par[16]/2))] = par[17]
-        bucket[(xdata >= (par[15]+par[16]/2-par[18])) & (xdata <= (par[15]+par[16]/2))] += par[19]
+        bucket[(fitobj.x >= (par[15]-par[16]/2))         & (fitobj.x <= (par[15]+par[16]/2))] = par[17]
+        bucket[(fitobj.x >= (par[15]+par[16]/2-par[18])) & (fitobj.x <= (par[15]+par[16]/2))] += par[19]
         cont -= bucket
     smod *= cont
 
     mask = np.ones_like(smod,dtype=bool)
-    mask[(sdata < .0)] = False
+    mask[(fitobj.s < .0)] = False
 
-    if len(fitobj.mask) != 0:
+    if len(fitobj_cp.mask) != 0:
         for maskbounds in fitobj.mask:
-            mask[(xdata > maskbounds[0]) & (xdata < maskbounds[1]) ] = False
+            mask[(fitobj.x > maskbounds[0]) & (fitobj.x < maskbounds[1]) ] = False
 
     if len(fitobj.CRmask[1]) > 0:
         for mb in fitobj.CRmask[1]:
-            mask[(xdata >= fitobj.CRmask[0][mb]-1) & (xdata <= fitobj.CRmask[0][mb]+1)] = False
+            mask[(fitobj.x >= fitobj.CRmask[0][mb]-1) & (fitobj.x <= fitobj.CRmask[0][mb]+1)] = False
 
 
-    chisq = np.sum((sdata[mask] - smod[mask])**2. / udata[mask]**2.)
+    # Compute chisq
+    chisq = np.sum((fitobj.s[mask] - smod[mask])**2. / fitobj.u[mask]**2.)
     chisq = chisq / (len(smod[mask]) - len(par))
 
     return smod,chisq
+    
 
 def fmod_conti(par,fitobj):
+    
     '''
-    Same as fmod(), but provides best fit continuum model. For use in plotting.
+    Same as fmod(), but returns continuum and wavelength scale. For use with plotting and CRmask.py
     '''
-
-    watm = fitobj.watm_in;
-    satm = fitobj.satm_in;
+    
+    watm_in = fitobj.watm_in;
+    satm_in = fitobj.satm_in;
     mwave = fitobj.mwave_in;
     mflux = fitobj.mflux_in;
 
+    #Make the wavelength scale
     w = par[6] + par[7]*fitobj.x + par[8]*(fitobj.x**2.) + par[9]*(fitobj.x**3.)
 
     if np.all(np.diff(w) > 0) == False:
-        sys.exit('WAVE ERROR 1 {}'.format(par[6:10]))
+        sys.exit('WAVE ERROR 1 - Hitting negative wavelength solution for some reason - pars: {}'.format(par[6:10]))
         return 1e10
 
-    dstep = np.median(w[1:]-w[:-1])
-    nstep = int((w[-1]-w[0])/dstep)
-    wreg = np.linspace(w[0],w[-1],nstep)
-    sdata = rebin_jv(w,fitobj.s,wreg,False)
-    udata = rebin_jv(w,fitobj.u,wreg,False)
-    xdata = np.linspace(fitobj.x[0],fitobj.x[-1],nstep)
-    w = wreg.copy()
-
+    # Define the speed of light in km/s and other useful quantities
     c = 2.99792458e5
     npts = len(w)
 
+    # Apply velocity shifts and scale
     wspot = mwave*(1.+par[0]/c)
     sspot = mflux**par[1]
-    watm = watm*(1.+par[2]/c)
-    satm = satm**par[3]
+    watm = watm_in*(1.+par[2]/c)
+    satm = satm_in**par[3]
 
+    #Verify that new wavelength scale is a subset of old telluric wavelength scale.
     if (w[0] < watm[0]) or (w[-1] > watm[-1]):
-        sys.exit('WAVE ERROR 2 {} {} {} {} {}'.format(par[6:10],watm[0],watm[-1],w[0],w[-1]))
+        sys.exit('WAVE ERROR 2: w subset of watm, w goes from '+str(w[0])+' to '+str(w[-1])+' and watm goes from '+str(watm[0])+' to '+str(watm[-1]))
         return 1e10
 
-    dstep = np.median(wspot[1:]-wspot[:-1])
+    #Verify that new wavelength scale is a subset of stellar wavelength scale.
+    if (w[0] < wspot[0]) or (w[-1] > wspot[-1]):
+        sys.exit('WAVE ERROR 3:  w not subset of wspot, w goes from '+str(w[0])+' to '+str(w[-1])+' and wspot goes from '+str(wspot[0])+' to '+str(wspot[-1]))
+        return 1e10
+    
+    #Verify that stellar wavelength scale is a subset of telluric wavelength scale.
+    if (wspot[0] < watm[0]) or (wspot[-1] > watm[-1]):
+        sys.exit('WAVE ERROR 3: wspot not subset of satm, wspot goes from '+str(wspot[0])+' to '+str(wspot[-1])+' and watm goes from '+str(watm[0])+' to '+str(watm[-1]))
+        return 1e10
+    
+    # Rebin stellar template to uniform wavelength scale, trim very edges
+    dstep = np.median(np.diff(wspot))
     nstep = int((wspot[-1]-wspot[0])/dstep)
     wspot1 = np.linspace(wspot[0],wspot[-1],nstep)
     sspot = rebin_jv(wspot,sspot,wspot1,False)
     wspot = wspot1.copy()
-
-    satm = satm[(watm >= w[0]) & (watm <= w[-1])]
-    watm = watm[(watm >= w[0]) & (watm <= w[-1])]
+   
+    wspot = wspot[1:-1]
+    sspot = sspot[1:-1]
 
     vsini = par[4]
 
@@ -332,47 +360,52 @@ def fmod_conti(par,fitobj):
         wspot2 = wspot
         rspot2 = sspot
 
-    sspot2 = rebin_jv(wspot2,rspot2,watm,False)
+    #Now rebin the telluric spectrum onto the stellar wavelength scale
+    satm2 = rebin_jv(watm,satm,wspot2,False)
 
-    smod = sspot2*satm
+    #Mutliply rotationally broadened spot by telluric to create total spectrum
+    smod2 = rspot2*satm2
 
     #Find mean observed wavelength and create a telluric velocity scale
     mnw = np.mean(w)
     dw = (w[-1] - w[0])/(npts-1.)
-    vel = (watm-mnw)/mnw*c
+    vel = (wspot2-mnw)/mnw*c
 
-    fwhmraw = par[5] + par[13]*(xdata) + par[14]*(xdata**2)
-    if np.round(np.min(fwhmraw),5) < 1 or np.round(np.max(fwhmraw),5) > 8:
-        sys.exit('IP ERROR 1 {} {} {} {} {}'.format(par[5],par[13],par[14],np.min(fwhmraw),np.max(fwhmraw) ))
-        return 1e10
+    fwhmraw = par[5] + par[13]*(fitobj.x) + par[14]*(fitobj.x**2)
     try:
         spl = splrep(w,fwhmraw)
-    except ValueError:
-        sys.exit('IP ERROR 2 {} {} {}'.format(par[5],par[13],par[14]))
+    except:
+        sys.exit('IP ERROR 1 {} {} {} {} {}'.format(par[5],par[13],par[14],np.min(fwhmraw),np.max(fwhmraw) ))
+        return 1e10
+    fwhm = splev(wspot2,spl)
+    # Have IP extend as constant past wave bounds of data
+    fwhm[(wspot2 < w[0])]  = fwhm[(wspot2 >= w[0])][0] 
+    fwhm[(wspot2 > w[-1])] = fwhm[(wspot2 <= w[-1])][-1]
+    if (np.min(fwhm) < 1) or (np.max(fwhm) > 8):
+        sys.exit('IP ERROR 2 {} {} {} {} {}'.format(par[5],par[13],par[14],np.min(fwhm),np.max(fwhm) ))
         return 1e10
 
-    fwhm = splev(watm,spl)
-
+    #Handle instrumental broadening
     vhwhm = dw*np.abs(fwhm)/mnw*c/2.
-    nsmod = macbro_dyn(vel,smod,vhwhm)
+    nsmod = macbro_dyn(vel,smod2,vhwhm)
 
     #Rebin model to observed wavelength scale
-    smod = rebin_jv(watm,nsmod,w,False)
+    smod = rebin_jv(wspot2,nsmod,w,False)
 
     # Load saved continuum
-    c2 = rebin_jv(fitobj.x,fitobj.continuum,xdata,False)
-    smod *= c2#/np.median(c2)
+    c2 = fitobj.continuum
+    smod *= c2
 
     # Apply continuum adjustment
-    cont = par[10] + par[11]*xdata + par[12]*(xdata**2) + par[20]*(xdata**3) + par[21]*(xdata**4) + par[22]*(xdata**5) + par[23]*(xdata**6)
-    if fitobj.masterbeam == 'A':
+    cont = par[10] + par[11]*fitobj.x + par[12]*(fitobj.x**2) + par[20]*(fitobj.x**3) + par[21]*(fitobj.x**4) + par[22]*(fitobj.x**5) + par[23]*(fitobj.x**6)
+    if fitobj_cp.masterbeam == 'A':
         bucket = np.zeros_like(cont)
-        bucket[(xdata >= (par[15]-par[16]/2))         & (xdata <= (par[15]+par[16]/2))] = par[17]
-        bucket[(xdata >= (par[15]+par[16]/2-par[18])) & (xdata <= (par[15]+par[16]/2))] += par[19]
+        bucket[(fitobj.x >= (par[15]-par[16]/2))         & (fitobj.x <= (par[15]+par[16]/2))] = par[17]
+        bucket[(fitobj.x >= (par[15]+par[16]/2-par[18])) & (fitobj.x <= (par[15]+par[16]/2))] += par[19]
         cont -= bucket
     smod *= cont
 
-
+    
     return w, smod, cont, c2
 
 
