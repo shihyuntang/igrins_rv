@@ -47,14 +47,14 @@ def A0_fits_write(hdu_1, firstorder, order, outpath, night, masterbeam, band):
         hh.writeto('{}/{}A0_{}treated_{}.fits'.format(outpath, night, masterbeam, band), overwrite=True)
     
 
-def setup_fitting_init_pars(a0x, a0wavelist, night, ips_tightmount_pars, band, masterbeam, order):
+def setup_fitting_init_pars(a0x, a0wavelist, night, inparam, band, masterbeam, order):
     
 
     # Determine whether IGRINS mounting was loose or night for the night in question
     if (int(night) < 20180401) or (int(night) > 20190531):
-        IPpars = ips_tightmount_pars[band][masterbeam][order]
+        IPpars = inparam.ips_tightmount_pars[band][masterbeam][order]
     else:
-        IPpars = ips_loosemount_pars[band][masterbeam][order]
+        IPpars = inparam.ips_loosemount_pars[band][masterbeam][order]
 
     # start at bucket loc = 1250 +- 100, width = 250 +- 100, depth = 100 +- 5000 but floor at 0
     centerloc = 1250 if band == 'H' else 1180
@@ -226,7 +226,7 @@ def MPinstB(args, inparam, jerp, orders, i):
     satm_in /= contlevel
     
     # Initialize parameter array for optimization
-    parA0 = setup_fitting_init_pars(a0x, a0wavelist, night, inparam.ips_tightmount_pars, args.band, masterbeam, order)
+    parA0 = setup_fitting_init_pars(a0x, a0wavelist, night, inparam, args.band, masterbeam, order)
 
     # Make sure data is within telluric template range (shouldn't do anything)
     a0fluxlist = a0fluxlist[(a0wavelist*1e4 > np.min(watm_in)+5) & (a0wavelist*1e4 < np.max(watm_in)-5)]
@@ -528,7 +528,7 @@ def MPinstA(args, inparam, jerp, orders, i):
         continuum = continuum[(continuum != 0)]
 
         # Initialize parameter array for optimization
-        parA0 = setup_fitting_init_pars(a0x, a0wavelist, night, inparam.ips_tightmount_pars, args.band, masterbeam, order)
+        parA0 = setup_fitting_init_pars(a0x, a0wavelist, night, inparam, args.band, masterbeam, order)
 
         # Trim telluric template to relevant wavelength range
         satm_in = satm[(watm > np.min(a0wavelist)*1e4 - 11) & (watm < np.max(a0wavelist)*1e4 + 11)]
