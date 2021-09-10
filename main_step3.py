@@ -363,21 +363,6 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                 parfit = parfit_1.copy()
                 CRmaskF = CRmasker(parfit,fitobj)
 
-                xgrid = (initwave - np.median(initwave)) / (np.max(initwave) - np.min(initwave))
-                dx = chebyshev.chebval(xgrid, parfit[6:10])
-                w_temp = initwave + dx
-                
-                satm_in = satm[(watm > np.min(w_temp) - 5) & (watm < np.max(w_temp) + 5)]
-                watm_in = watm[(watm > np.min(w_temp) - 5) & (watm < np.max(w_temp) + 5)]
-
-                s_piece	= s_save[   (w_temp > np.min(watm_in)+5) & (w_temp < np.max(watm_in)-5)]
-                u_piece	= u_save[   (w_temp > np.min(watm_in)+5) & (w_temp < np.max(watm_in)-5)]
-                x_piece	= x_save[   (w_temp > np.min(watm_in)+5) & (w_temp < np.max(watm_in)-5)]
-                w_temp	 = w_temp[   (w_temp > np.min(watm_in)+5) & (w_temp < np.max(watm_in)-5)]
-
-                mflux_in = inparam.mflux0[(inparam.mwave0 > np.min(w_temp) - 2.5) & (inparam.mwave0 < np.max(w_temp) + 2.5)]
-                mwave_in = inparam.mwave0[(inparam.mwave0 > np.min(w_temp) - 2.5) & (inparam.mwave0 < np.max(w_temp) + 2.5)]
-
                 fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]),masterbeam,CRmaskF, initwave)
 
         parfit = parfit_1.copy()
