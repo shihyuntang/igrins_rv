@@ -97,16 +97,6 @@ def fmodel_chi(par,grad):
             # print(f'{nc_cp}, {nk_cp}, {optkind_cp}: wspot not subset of satm, wspot goes from '+str(wspot[0])+' to '+str(wspot[-1])+' and watm goes from '+str(watm[0])+' to '+str(watm[-1]))
             return 1e10
 
-        # Rebin stellar template to uniform wavelength scale, trim very edges
-        dstep = np.median(np.diff(wspot))
-        nstep = int((wspot[-1]-wspot[0])/dstep)
-        wspot1 = np.linspace(wspot[0],wspot[-1],nstep)
-        sspot = rebin_jv(wspot,sspot,wspot1,False)
-        wspot = wspot1.copy()
-
-        wspot = wspot[1:-1]
-        sspot = sspot[1:-1]
-
         vsini = par[4]
 
         # Rotationally broaden stellar template
@@ -229,16 +219,6 @@ def fmod(par,fitobj):
         if (wspot[0] < watm[0]) or (wspot[-1] > watm[-1]):
             sys.exit('WAVE ERROR 3: wspot not subset of satm, wspot goes from '+str(wspot[0])+' to '+str(wspot[-1])+' and watm goes from '+str(watm[0])+' to '+str(watm[-1]))
             return 1e10
-        
-        # Rebin stellar template to uniform wavelength scale, trim very edges
-        dstep = np.median(np.diff(wspot))
-        nstep = int((wspot[-1]-wspot[0])/dstep)
-        wspot1 = np.linspace(wspot[0],wspot[-1],nstep)
-        sspot = rebin_jv(wspot,sspot,wspot1,False)
-        wspot = wspot1.copy()
-
-        wspot = wspot[1:-1]
-        sspot = sspot[1:-1]
 
         vsini = par[4]
 
@@ -365,16 +345,6 @@ def fmod_conti(par,fitobj):
             sys.exit('WAVE ERROR 3: wspot not subset of satm, wspot goes from '+str(wspot[0])+' to '+str(wspot[-1])+' and watm goes from '+str(watm[0])+' to '+str(watm[-1]))
             return 1e10
 
-        # Rebin stellar template to uniform wavelength scale, trim very edges
-        dstep = np.median(np.diff(wspot))
-        nstep = int((wspot[-1]-wspot[0])/dstep)
-        wspot1 = np.linspace(wspot[0],wspot[-1],nstep)
-        sspot = rebin_jv(wspot,sspot,wspot1,False)
-        wspot = wspot1.copy()
-
-        wspot = wspot[1:-1]
-        sspot = sspot[1:-1]
-
         vsini = par[4]
 
         # Rotationally broaden stellar template
@@ -425,7 +395,7 @@ def fmod_conti(par,fitobj):
 
     # Apply continuum adjustment
     cont = par[10] + par[11]*fitobj.x + par[12]*(fitobj.x**2) + par[20]*(fitobj.x**3) + par[21]*(fitobj.x**4) + par[22]*(fitobj.x**5) + par[23]*(fitobj.x**6)
-    if fitobj_cp.masterbeam == 'A':
+    if fitobj.masterbeam == 'A':
         bucket = np.zeros_like(cont)
         bucket[(fitobj.x >= (par[15]-par[16]/2))         & (fitobj.x <= (par[15]+par[16]/2))] = par[17]
         bucket[(fitobj.x >= (par[15]+par[16]/2-par[18])) & (fitobj.x <= (par[15]+par[16]/2))] += par[19]
