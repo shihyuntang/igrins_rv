@@ -28,7 +28,7 @@ def setup_fitting_init_pars(band, initvsini, order):
                       0.3,                      # 1: The scale factor for the stellar template
                       0.0,                      # 2: The shift of the telluric template (km/s)
                       0.6,                      # 3: The scale factor for the telluric template
-                      inparam.initvsini,        # 4: vsini (km/s)
+                      initvsini,                # 4: vsini (km/s)
                       np.nan,                   # 5: The instrumental resolution (FWHM) in pixels
                       0.0,                      # 6: Wavelength 0-pt
                       0.0,                      # 7: Wavelength linear component
@@ -282,6 +282,19 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         mflux_in = inparam.mflux0[(inparam.mwave0 > np.min(wave_piece)*1e4 - 5) & (inparam.mwave0 < np.max(wave_piece)*1e4 + 5)]
         mwave_in = inparam.mwave0[(inparam.mwave0 > np.min(wave_piece)*1e4 - 5) & (inparam.mwave0 < np.max(wave_piece)*1e4 + 5)]
 
+        Rstell = np.median(np.diff(mwave_in)); Rtell = np.median(np.diff(watm_in));
+        if Rstell < Rtell:
+            sys.exit(f'Telluric template resolution ({round(Rtell,4)} AA) must be finer than stellar template resolution ({round(Rstell,4)} AA) !')
+
+        # Rebin stellar template to uniform wavelength scale
+        dstep = Rstell
+        nstep = int((mwave_in[-1]-mwave_in[0])/dstep)
+        mwave1 = np.linspace(mwave_in[0],mwave_in[-1],nstep)
+        mflux1 = rebin_jv(mwave_in,mflux_in,mwave1,False)
+        mwave_in = mwave1.copy(); mflux_in = mflux1.copy();
+        mwave_in = mwave_in[1:-1]
+        mflux_in = mflux_in[1:-1]
+	
         # Normalize continuum from A0 to flux scale of data
         continuum /= np.nanmedian(continuum)
         continuum *= np.nanpercentile(s_piece,99)
@@ -290,10 +303,10 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
         par = pars0.copy()
 
-		# Get initial guess for cubic wavelength solution from reduction pipeline
-		f = np.polyfit(x_piece,wave_piece,3)
-		q = np.poly1d(f)
-		initwave = q(x_piece)*1e4
+	# Get initial guess for cubic wavelength solution from reduction pipeline
+	f = np.polyfit(x_piece,wave_piece,3)
+	q = np.poly1d(f)
+	initwave = q(x_piece)*1e4
         
         par[0] = initguesses-inparam.bvcs[night+tag] # Initial RV with barycentric correction
         par[5]  = IPpars[2]
@@ -522,11 +535,18 @@ if __name__ == '__main__':
     #------------------------------
 
     syntemp = os.listdir(f'./Engine/syn_template')
-    syntemp = [i for i in syntemp if i[:3] == 'syn'] #list of all syntheticstellar
 
-    synT    = [ i.split('_')[2][1:]  for i in syntemp ]
-    synlogg = [ i.split('_')[3][4:7] for i in syntemp ]
-
+    if args.template.lower() == 'synthetic':
+        syntemp = [i for i in syntemp if i[:3] == 'syn'] #list of all syntheticstellar
+        synT    = [ i.split('_')[2][1:]  for i in syntemp ]
+        synlogg = [ i.split('_')[3][4:7] for i in syntemp ]
+    elif args.template.lower() == 'phoenix':
+        syntemp = [i for i in syntemp if i[:3] == 'PHO'] #list of all phoenix
+        synT    = [ i.split('-')[1][4:]  for i in syntemp ]
+        synlogg = [ i.split('-')[2][:3] for i in syntemp ]
+    else:
+        synT = [args.temperature]; synlogg = [args.logg];
+	
     if args.temperature not in synT:
         sys.exit(f'ERROR: UNEXPECTED STELLAR TEMPERATURE FOR "-temp" INPUT! {syntemp} AVALIABLE UNDER ./Engine/syn_template/')
 
@@ -731,12 +751,12 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
     nightsL = nights[indL]
     obsT    = obs[indT]
     obsL    = obs[indL]
-    rvmasterboxT  = np.ones((len(nightsT),len(orders)))
-    stdmasterboxT = np.ones((len(nightsT),len(orders)))
-    rvmasterboxL  = np.ones((len(nightsL),len(orders)))
-    stdmasterboxL = np.ones((len(nightsL),len(orders)))
-    vsinisT = np.ones((len(nightsT),len(orders)))
-    vsinisL  = np.ones((len(nightsL),len(orders)))
+    rvmasterboxT  = np.ones((len(nightsT),len(orders)))*np.nan
+    stdmasterboxT = np.ones((len(nightsT),len(orders)))*np.nan
+    rvmasterboxL  = np.ones((len(nightsL),len(orders)))*np.nan
+    stdmasterboxL = np.ones((len(nightsL),len(orders)))*np.nan
+    vsinisT       = np.ones((len(nightsT),len(orders)))*np.nan
+    vsinisL       = np.ones((len(nightsL),len(orders)))*np.nan
 
     if len(nightsL) > 0 and len(nightsT) > 0:
         nightscomblist = [nightsT,nightsL]
