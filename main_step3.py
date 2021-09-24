@@ -940,15 +940,18 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
         if args.abs.lower() == 'rel':
             rvBase = {}
             for obs_name in np.unique(obsbox):
-                rvBase[obs_name] = np.nanmean([np.nanmean(rvmasterbox[(obsbox == obs_name),ll]) for ll in range(len(orders))])
+                #rvBase[obs_name] = np.nanmean([np.nanmean(rvmasterbox[(obsbox == obs_name),ll]) for ll in range(len(orders))])
+		rvBase[obs_name] = np.nanmean([np.nansum( ( (1./(stdmasterbox[(obsbox == obs_name),ll]**2)) / (np.nansum(1./(stdmasterbox[(obsbox == obs_name),ll]**2))) )*rvmasterbox[(obsbox == obs_name),ll]) for ll in range(len(orders))])
+        
+	for ll in range(len(orders)):
 
-        for ll in range(len(orders)):
-
+	    # Mean-subtract each order's RVs within an observatory epoch
             if args.abs.lower() == 'rel':
                 for obs_name in np.unique(obsbox):
-                    rvmasterbox[(obsbox == obs_name),ll] -= np.nanmean(rvmasterbox[(obsbox == obs_name),ll]) - (rvZeroBase - rvBase[obs_name])
-
-            # Mean-subtract each order's RVs within an observatory epoch
+                    #rvmasterbox[(obsbox == obs_name),ll] -= np.nanmean(rvmasterbox[(obsbox == obs_name),ll]) - (rvZeroBase - rvBase[obs_name])
+                    meanweights = (1./(stdmasterbox[(obsbox == obs_name),ll]**2)) / (np.nansum(1./(stdmasterbox[(obsbox == obs_name),ll]**2))) 
+                    rvmasterbox[(obsbox == obs_name),ll] -= np.nansum( meanweights*rvmasterbox[(obsbox == obs_name),ll]) - (rvZeroBase - rvBase[obs_name])
+            
             for rvin in rvmasterbox[(obsbox == 'NA'),ll]:
                 if np.isnan(rvin) == False:
                     sys.exit('File listed as NA for A0 presence output a RV! Your Prepdata files are not the same version as your A0Fit files!')
