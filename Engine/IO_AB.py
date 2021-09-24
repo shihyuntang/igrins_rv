@@ -284,6 +284,20 @@ def setup_templates(logger, kind='synthetic', band='K', temperature=5000, logg=4
         mwave0 = mwave0[mask]
         mflux0 = mflux0[mask]
         
+    dstep0 = np.median(np.diff(mwave0))
+    if dstep0 > 0.045:
+        logger.info(f'Stellar template resolution is ~{round(dstep,4)} Angstrom, leaving alone...')
+    else:
+        dstep = 0.045
+        nstep = int((mwave0[-1]-mwave0[0])/dstep)
+        mwave1 = np.linspace(mwave0[0],mwave0[-1],nstep)
+        mflux1 = rebin_jv(mwave0,mflux0,mwave1,False)
+        mwave0 = mwave1.copy(); mflux0 = mflux1.copy();
+        mwave0 = mwave0[1:-1]
+        mflux0 = mflux0[1:-1]
+
+        logger.info(f'Stellar template resolution is ~{round(dstep0,4)} Angstrom, rebinning to 0.045 Angstrom...')
+        
     return watm, satm, mwave0, mflux0
 
 
