@@ -12,7 +12,7 @@ dependencies:
   - multiprocess
   - cython
   - requests
-  - nlopt
+  - nlopt=2.7.*
   - pip
   - pip:
     - pysynphot
