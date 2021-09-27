@@ -11,6 +11,7 @@ from os import listdir
 from os.path import isfile, join#, isdir
 import re
 import sys
+from Engine.rebin_jv import rebin_jv
 
 def partial_loader(inpath0,order):
     '''
