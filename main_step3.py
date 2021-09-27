@@ -303,10 +303,10 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
         par = pars0.copy()
 
-	# Get initial guess for cubic wavelength solution from reduction pipeline
-	f = np.polyfit(x_piece,wave_piece,3)
-	q = np.poly1d(f)
-	initwave = q(x_piece)*1e4
+        # Get initial guess for cubic wavelength solution from reduction pipeline
+        f = np.polyfit(x_piece,wave_piece,3)
+        q = np.poly1d(f)
+        initwave = q(x_piece)*1e4
         
         par[0] = initguesses-inparam.bvcs[night+tag] # Initial RV with barycentric correction
         par[5]  = IPpars[2]
@@ -941,9 +941,9 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
             rvBase = {}
             for obs_name in np.unique(obsbox):
                 #rvBase[obs_name] = np.nanmean([np.nanmean(rvmasterbox[(obsbox == obs_name),ll]) for ll in range(len(orders))])
-		rvBase[obs_name] = np.nanmean([np.nansum( ( (1./(stdmasterbox[(obsbox == obs_name),ll]**2)) / (np.nansum(1./(stdmasterbox[(obsbox == obs_name),ll]**2))) )*rvmasterbox[(obsbox == obs_name),ll]) for ll in range(len(orders))])
+                rvBase[obs_name] = np.nanmean([np.nansum( ( (1./(stdmasterbox[(obsbox == obs_name),ll]**2)) / (np.nansum(1./(stdmasterbox[(obsbox == obs_name),ll]**2))) )*rvmasterbox[(obsbox == obs_name),ll]) for ll in range(len(orders))])
         
-	for ll in range(len(orders)):
+        for ll in range(len(orders)):
 
 	    # Mean-subtract each order's RVs within an observatory epoch
             if args.abs.lower() == 'rel':
