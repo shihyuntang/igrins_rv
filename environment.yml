@@ -13,6 +13,7 @@ dependencies:
   - cython
   - requests
   - nlopt=2.7.*
+  - numba
   - pip
   - pip:
     - pysynphot
