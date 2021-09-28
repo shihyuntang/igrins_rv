@@ -64,8 +64,6 @@ def outplotter_tel(parfit, fitobj, title, inparam, args, order):
 
     chi_new = chi*(len(sdata[mask]) - len(parfit))/(len(sdata[mask]) - npars) # correct reduce chisq
 
-    w = parfit[6] + parfit[7]*xdata + parfit[8]*(xdata**2.) + parfit[9]*(xdata**3.)
-
     cont = parfit[10] + parfit[11]*xdata+ parfit[12]*(xdata**2) + parfit[20]*(xdata**3) + parfit[21]*(xdata**4) + parfit[22]*(xdata**5) + parfit[23]*(xdata**6)
     if fitobj.masterbeam == 'A':
         bucket = np.zeros_like(cont)
