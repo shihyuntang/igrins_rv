@@ -453,7 +453,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args, masterbeam,
                              )
 
         elif args.band =='H':
-            fitter.FitVariable({"h2o": humidity,
+            fitter.FitVariable({"h2o": _telfit_default_vary_bound_dic["h2o"],
                                 "ch4": _telfit_default_values_dic["ch4"],
                                 "co" : _telfit_default_values_dic["co"],
                                 "co2": _telfit_default_values_dic["co2"],
