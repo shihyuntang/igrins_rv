@@ -895,10 +895,6 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
         vsinicomblist  = [vsinisT]
         obscomblist    = [obsT]
 
-    # Avg zero-point offset of the different observatory and mounting epoch RVs, to add back in later
-    if args.abs.lower() == 'rel':
-        rvZeroBase = np.nanmean([np.nanmean(rvboxcomblist[0][(obscomblist[0] == np.unique(obscomblist[0])[0]),ll]) for ll in range(len(orders))])
-
     # Iterate over tight and loose mounting data sets...
     for boxind in range(len(rvboxcomblist)):
 
@@ -937,20 +933,17 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
         # Note rvmasterbox indexed as [nights,orders]
         Nnights = len(rvmasterbox[:,0])
 
-        if args.abs.lower() == 'rel':
-            rvBase = {}
-            for obs_name in np.unique(obsbox):
-                #rvBase[obs_name] = np.nanmean([np.nanmean(rvmasterbox[(obsbox == obs_name),ll]) for ll in range(len(orders))])
-                rvBase[obs_name] = np.nanmean([np.nansum( ( (1./(stdmasterbox[(obsbox == obs_name),ll]**2)) / (np.nansum(1./(stdmasterbox[(obsbox == obs_name),ll]**2))) )*rvmasterbox[(obsbox == obs_name),ll]) for ll in range(len(orders))])
-        
+	# Save RV array to get absolute values with to correct for differences between different epochs
+        if args.abs_out == 'rel':
+            rvmasterboxABS = rvmasterbox.copy()
+	
         for ll in range(len(orders)):
 
 	    # Mean-subtract each order's RVs within an observatory epoch
             if args.abs.lower() == 'rel':
                 for obs_name in np.unique(obsbox):
-                    #rvmasterbox[(obsbox == obs_name),ll] -= np.nanmean(rvmasterbox[(obsbox == obs_name),ll]) - (rvZeroBase - rvBase[obs_name])
                     meanweights = (1./(stdmasterbox[(obsbox == obs_name),ll]**2)) / (np.nansum(1./(stdmasterbox[(obsbox == obs_name),ll]**2))) 
-                    rvmasterbox[(obsbox == obs_name),ll] -= np.nansum( meanweights*rvmasterbox[(obsbox == obs_name),ll]) - (rvZeroBase - rvBase[obs_name])
+                    rvmasterbox[(obsbox == obs_name),ll] -= np.nansum( meanweights*rvmasterbox[(obsbox == obs_name),ll])
             
             for rvin in rvmasterbox[(obsbox == 'NA'),ll]:
                 if np.isnan(rvin) == False:
@@ -964,10 +957,11 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
         if args.abs.lower() == 'abs':
             sigma_order_to_order = np.nanstd([np.nanmean(rvmasterbox[:,ll]) for ll in range(len(orders))])/np.sqrt(len(orders))
 
-        rvfinal    = np.ones(Nnights, dtype=np.float64)
-        stdfinal   = np.ones(Nnights, dtype=np.float64)
-        vsinifinal = np.ones(Nnights, dtype=np.float64)
-        jds_out   = np.ones(Nnights, dtype=np.float64)
+        rvfinal       = np.ones(Nnights, dtype=np.float64)
+        stdfinal      = np.ones(Nnights, dtype=np.float64)
+        vsinifinal    = np.ones(Nnights, dtype=np.float64)
+        jds_out       = np.ones(Nnights, dtype=np.float64)
+        rvfinalABS    = np.ones(Nnights, dtype=np.float64)*np.nan    
 
         if T_Ls[boxind] == 'T':
             nights_use = nightsT.copy(); kind = 'Focused';
@@ -982,6 +976,8 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
 
             rvfinal[n]  = np.nansum( weights*rvmasterbox[n,:] )
             stdfinal[n] = 1/np.sqrt(np.nansum(stdspre))
+            if args.abs_out == 'rel':
+                rvfinalABS[n]  = np.nansum( weights*rvmasterboxABS[n,:] )
 
             vsinifinal[n] = np.nansum(weights*vsinibox[n,:])
             jds_out[n]   = jds[nights_use[n]]
@@ -991,28 +987,39 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
                 rvfinal[n]    = np.nan
                 stdfinal[n]   = np.nan
                 vsinifinal[n] = np.nan
+                rvfinalABS[n] = np.nan
 
             # if more than half of the orders going into the observation's final RV calculation were NaN due to any pevious errors, pass NaN
             if np.sum( np.isnan(rvmasterbox[n,:]) ) > np.floor( len(orders) * 0.5 ):
                 rvfinal[n]    = np.nan
                 stdfinal[n]   = np.nan
                 vsinifinal[n] = np.nan
+                rvfinalABS[n] = np.nan
 
         #-------------------------------------------------------------------------------
 
         if args.abs.lower() == 'abs':
             stdfinal = np.sqrt(stdfinal**2 + sigma_order_to_order**2)
         else:
-            # Correct for zero-point offset between loose and tight epochs
+	    weights = (1./(stdfinal**2)) / (np.nansum(1./(stdfinal**2))) # normalized
+	
+	    #If multiple observatories, correct by difference of error-weighted means
+            if len(np.unique(obsbox)) > 1: 
+                rvbase = np.nansum(rvfinalABS[(obsbox == np.unique(obsbox)[0])]*weights[(obsbox == np.unique(obsbox)[0])])
+                for nn in range(1,len(np.unique(obsbox))):
+                    rvfinal[(obsbox == np.unique(obsbox)[nn])] -= np.nansum(rvfinalABS[(obsbox == np.unique(obsbox)[0])]*weights[(obsbox == np.unique(obsbox)[0])]) - rvbase 
+            
+	    # Correct for zero-point offset between loose and tight epochs
             if T_Ls[boxind] == 'T':
-                rvMeanTight = np.nanmean(rvfinal)
+                rvMeanTight = np.nansum(rvfinal*weights)
 
             elif (T_Ls[boxind] == 'L') & (len(T_Ls)==2):
-                logger.info('Mean RV during the Defocus mounting period, before subtraction = {:1.4f} km/s'.format(np.nanmean(rvfinal)))
+                logger.info('Weighted Mean RV during the Defocus mounting period, before subtraction = {:1.4f} km/s'.format(np.nansum(rvfinal*weights)))
                 logger.info('Mean RV during the Focused mounting period, before subtraction = {:1.4f} km/s'.format(rvMeanTight))
-                logger.info('Value used to correct for this = {:1.4f} km/s'.format(np.nanmean(rvfinal) - rvMeanTight))
-                rvfinal -= np.nanmean(rvfinal) - rvMeanTight
+                logger.info('Value used to correct for this = {:1.4f} km/s'.format(np.nansum(rvfinal*weights) - rvMeanTight))
+                rvfinal -= np.nansum(rvfinal*weights) - rvMeanTight
 
+		
         # Plot results
         f, axes = plt.subplots(1, 1, figsize=(5,3), facecolor='white', dpi=300)
 
