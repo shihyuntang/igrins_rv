@@ -961,7 +961,6 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
         stdfinal      = np.ones(Nnights, dtype=np.float64)
         vsinifinal    = np.ones(Nnights, dtype=np.float64)
         jds_out       = np.ones(Nnights, dtype=np.float64)
-        rvfinalABS    = np.ones(Nnights, dtype=np.float64)*np.nan    
 
         if T_Ls[boxind] == 'T':
             nights_use = nightsT.copy(); kind = 'Focused';
@@ -971,15 +970,14 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
 
         # Combine RVs between orders using weights calculated from uncertainties
         for n in range(Nnights):
-            weights = (1./sigma_ON2[n,:]) / (np.nansum(1./sigma_ON2[n,:])) # normalized
-            stdspre = (1./sigma_ON2[n,:]) #unnormalized weights
+            ind = np.where(np.isfinite(sigma_ON2[n,:]) & np.isfinite(rvmasterbox[n,:]))[0]
+            weights = (1./sigma_ON2[n,ind]) / (np.nansum(1./sigma_ON2[n,ind])) # normalized
+            stdspre = (1./sigma_ON2[n,ind]) #unnormalized weights
 
-            rvfinal[n]  = np.nansum( weights*rvmasterbox[n,:] )
+            rvfinal[n]  = np.nansum( weights*rvmasterbox[n,ind] )
             stdfinal[n] = 1/np.sqrt(np.nansum(stdspre))
-            if args.abs_out == 'rel':
-                rvfinalABS[n]  = np.nansum( weights*rvmasterboxABS[n,:] )
 
-            vsinifinal[n] = np.nansum(weights*vsinibox[n,:])
+            vsinifinal[n] = np.nansum(weights*vsinibox[n,ind])
             jds_out[n]   = jds[nights_use[n]]
 
             # if all the RVs going into the observation's final RV calculation were NaN due to any pevious errors, pass NaN
@@ -1000,25 +998,6 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
 
         if args.abs.lower() == 'abs':
             stdfinal = np.sqrt(stdfinal**2 + sigma_order_to_order**2)
-        else:
-	    weights = (1./(stdfinal**2)) / (np.nansum(1./(stdfinal**2))) # normalized
-	
-	    #If multiple observatories, correct by difference of error-weighted means
-            if len(np.unique(obsbox)) > 1: 
-                rvbase = np.nansum(rvfinalABS[(obsbox == np.unique(obsbox)[0])]*weights[(obsbox == np.unique(obsbox)[0])])
-                for nn in range(1,len(np.unique(obsbox))):
-                    rvfinal[(obsbox == np.unique(obsbox)[nn])] -= np.nansum(rvfinalABS[(obsbox == np.unique(obsbox)[0])]*weights[(obsbox == np.unique(obsbox)[0])]) - rvbase 
-            
-	    # Correct for zero-point offset between loose and tight epochs
-            if T_Ls[boxind] == 'T':
-                rvMeanTight = np.nansum(rvfinal*weights)
-
-            elif (T_Ls[boxind] == 'L') & (len(T_Ls)==2):
-                logger.info('Weighted Mean RV during the Defocus mounting period, before subtraction = {:1.4f} km/s'.format(np.nansum(rvfinal*weights)))
-                logger.info('Mean RV during the Focused mounting period, before subtraction = {:1.4f} km/s'.format(rvMeanTight))
-                logger.info('Value used to correct for this = {:1.4f} km/s'.format(np.nansum(rvfinal*weights) - rvMeanTight))
-                rvfinal -= np.nansum(rvfinal*weights) - rvMeanTight
-
 		
         # Plot results
         f, axes = plt.subplots(1, 1, figsize=(5,3), facecolor='white', dpi=300)
