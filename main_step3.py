@@ -934,7 +934,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
         Nnights = len(rvmasterbox[:,0])
 
 	# Save RV array to get absolute values with to correct for differences between different epochs
-        if args.abs_out == 'rel':
+        if args.abs.lower() == 'rel':
             rvmasterboxABS = rvmasterbox.copy()
 	
         for ll in range(len(orders)):
