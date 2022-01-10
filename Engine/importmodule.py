@@ -25,11 +25,12 @@ import pandas as pd
 import time
 
 from itertools import groupby
-import more_itertools as mit
 from operator  import itemgetter
 from functools import partial, wraps
 from datetime  import datetime
+from copy      import deepcopy
 
+import more_itertools as mit
 import multiprocessing as mp
 from pqdm.processes import pqdm
 # matplotlib  -----------------------------------------------------

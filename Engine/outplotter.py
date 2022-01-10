@@ -80,6 +80,9 @@ def outplotter_tel(parfit, fitobj, title, inparam, args, order):
         for mb in fitobj.CRmask[1]:
             mask2[(xdata >= fitobj.CRmask[0][mb]-1) & (xdata <= fitobj.CRmask[0][mb]+1)] = False
 
+    if len(fitobj.molmask) > 0:
+        for mb in fitobj.molmask:
+            mask2[(xdata >= mb[0]) & (xdata <= mb[1])] = False
 
     fig, axes = plt.subplots(1, 1, figsize=(6,3), facecolor='white', dpi=250)
 
@@ -134,10 +137,6 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3, order):
         for maskbounds in fitobj.mask:
             mask[(xdata > maskbounds[0]) & (xdata < maskbounds[1]) ] = False
 
-    if len(fitobj.CRmask[1]) > 0:
-        for mb in fitobj.CRmask[1]:
-            mask[(xdata >= fitobj.CRmask[0][mb]-1) & (xdata <= fitobj.CRmask[0][mb]+1)] = False
-
     if args.band == 'H':
         if np.int(order) in [13]:
             npars -= 4
@@ -182,6 +181,10 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3, order):
         for mb in fitobj.CRmask[1]:
             mask2[(xdata >= fitobj.CRmask[0][mb]-1) & (xdata <= fitobj.CRmask[0][mb]+1)] = False
 
+    if len(fitobj.molmask) > 0:
+        for mb in fitobj.molmask:
+            mask2[(xdata >= mb[0]) & (xdata <= mb[1])] = False
+            
     n = len(fitobj.mask)
 
     if n > 0:

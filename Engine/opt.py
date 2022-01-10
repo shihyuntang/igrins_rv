@@ -158,6 +158,10 @@ def fmodel_chi(par,grad):
         for maskbounds in fitobj_cp.mask:
             mask[(fitobj_cp.x > maskbounds[0]) & (fitobj_cp.x < maskbounds[1]) ] = False
 
+    if len(fitobj_cp.molmask) > 0:
+        for mb in fitobj_cp.molmask:
+            mask[(fitobj_cp.x >= mb[0]) & (fitobj_cp.x <= mb[1])] = False
+            
     if len(fitobj_cp.CRmask[1]) > 0:
         for mb in fitobj_cp.CRmask[1]:
             mask[(fitobj_cp.x >= fitobj_cp.CRmask[0][mb]-1) & (fitobj_cp.x <= fitobj_cp.CRmask[0][mb]+1)] = False
@@ -283,6 +287,10 @@ def fmod(par,fitobj):
     if len(fitobj.mask) != 0:
         for maskbounds in fitobj.mask:
             mask[(fitobj.x > maskbounds[0]) & (fitobj.x < maskbounds[1]) ] = False
+
+    if len(fitobj.molmask) > 0:
+        for mb in fitobj.molmask:
+            mask[(fitobj.x >= mb[0]) & (fitobj.x <= mb[1])] = False
 
     if len(fitobj.CRmask[1]) > 0:
         for mb in fitobj.CRmask[1]:

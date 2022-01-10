@@ -2,17 +2,18 @@ from Engine.importmodule import *
 from Engine.importmodule import read_prepdata
 from Engine.set_argparse import _argparse_step2
 
-from Engine.IO_AB      import setup_templates, init_fitsread,stellarmodel_setup, setup_outdir
+from Engine.IO_AB      import setup_templates, init_fitsread, setup_outdir
 from Engine.clips      import basicclip_above
 from Engine.contfit    import A0cont
 from Engine.classes    import fitobjs,inparams,_setup_bound_cut
 from Engine.rebin_jv   import rebin_jv
 from Engine.rotint     import rotint
 from Engine.opt        import optimizer, fmod, fmod_conti
-# from Engine.opt_rebintel        import optimizer, fmod, fmod_conti
 from Engine.outplotter import outplotter_23
 from Engine.detect_peaks import detect_peaks
 from Engine.crmask    import CRmasker
+from Engine.molmask    import H2Omasker
+
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 def setup_fitting_init_pars(band, initvsini, order):
@@ -28,7 +29,7 @@ def setup_fitting_init_pars(band, initvsini, order):
                       0.3,                      # 1: The scale factor for the stellar template
                       0.0,                      # 2: The shift of the telluric template (km/s)
                       0.6,                      # 3: The scale factor for the telluric template
-                      inparam.initvsini,        # 4: vsini (km/s)
+                      initvsini,                # 4: vsini (km/s)
                       np.nan,                   # 5: The instrumental resolution (FWHM) in pixels
                       0.0,                      # 6: Wavelength 0-pt
                       0.0,                      # 7: Wavelength linear component
@@ -54,7 +55,7 @@ def setup_fitting_init_pars(band, initvsini, order):
     return pars0
 
 
-def base_dpars_dict(vsinivary, band, order, run_num=1):
+def base_dpars_dict(vsinivary, band, order, run_num):
     """setup basic sets of par vary range array
 
     Parameters
@@ -68,13 +69,13 @@ def base_dpars_dict(vsinivary, band, order, run_num=1):
         dpars
     """
     
-    #                                | 0    1    2    3 |  | -- 4 -- | | 5 |   | 6     7     8           9  |  |10  11  12| |13 14|  |15  16  17  18  19 |  |20   21   22   23 |
-    dpars_org = {'cont' : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,        0.0,    0.0,  0.0,  0.0,        0.0,    1e7, 1, 1,   0, 0,    0., 0., 0., 0., 0.,   1.0, 1.0, 1.0, 1.0 ]),
-                 'twave': np.array([  0.0, 0.0, 0.0, 1.0,   0.0,        0.0,    0.1,  0.1,  0.1,        0.1,    0,   0, 0,   0, 0,    0., 0., 0., 0., 0.,   0.0, 0.0, 0.0, 0.0 ]),
-                 'ip'   : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,        0.5,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,    0., 0., 0., 0., 0.,   0.0, 0.0, 0.0, 0.0 ]),
-                 's'    : np.array([ 20.0, 2.0, 0.0, 0.0,   0.0,        0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,    0., 0., 0., 0., 0.,   0.0, 0.0, 0.0, 0.0 ]),
-                 'ts'   : np.array([ 20.0, 2.0, 0.0, 1.0,   0.0,        0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,    0., 0., 0., 0., 0.,   0.0, 0.0, 0.0, 0.0 ]),
-                 'v'    : np.array([  0.0, 0.0, 0.0, 0.0,   vsinivary,  0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,    0., 0., 0., 0., 0.,   0.0, 0.0, 0.0, 0.0 ])}
+    #                                | 0    1    2    3 |  | -- 4 -- | | 5 |   | 6     7     8           9  |  |10  11  12| |13 14|  |15   16   17   18    19 |  |20   21   22   23 |
+    dpars_org = {'cont' : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,        0.0,    0.0,  0.0,  0.0,        0.0,    1e7, 1, 1,   0, 0,    10., 30., 0.2, 50.0, 0.2,   1.0, 1.0, 1.0, 1.0 ]),
+                 'twave': np.array([  0.0, 0.0, 0.0, 1.0,   0.0,        0.0,    1.0,  1.0,  1.0,        1.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ]),
+                 'ip'   : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,        0.5,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ]),
+                 's'    : np.array([ 20.0, 2.0, 0.0, 0.0,   0.0,        0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ]),
+                 'v'    : np.array([  0.0, 0.0, 0.0, 0.0,   vsinivary,  0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ]),
+                 'ts'   : np.array([ 20.0, 2.0, 0.0, 1.0,   0.0,        0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ])}
     
     
     # blaze fitting order setting
@@ -99,8 +100,11 @@ def base_dpars_dict(vsinivary, band, order, run_num=1):
     
     if run_num == 2:
         dpars_org['s'][0] = 5.0 # The shift of the stellar template (km/s)
-    
+        dpars_org['ts'][0] = 5.0 # The shift of the stellar template (km/s)
+	
     return dpars_org
+
+
 
 
 
@@ -108,10 +112,10 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
     # Main function for RV fitting that will be threaded over by multiprocessing
 
-    nights = inparam.nights
-    night  = nights[i] # current looped night
+    nights   = inparam.nights
+    night = nights[i] # current looped night
 
-    order   = order_use
+    order = order_use
     xbounds = inparam.xbounddict[order]
 
     if args.debug:
@@ -122,14 +126,14 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                                                                                                mp.current_process().pid) )
 
     #-------------------------------------------------------------------------------
-
+    
     # Collect initial RV guesses
     if type(inparam.initguesses) == dict:
         initguesses = inparam.initguesses[night]
     elif type(inparam.initguesses) == float:
         initguesses = inparam.initguesses
     else:
-        sys.exit('ERROR! EXPECING SINGAL NUMBER OR FILE FOR INITGUESSES! QUITTING!')
+        sys.exit('ERROR! EXPECING SINGLE NUMBER OR FILE FOR INITGUESSES! QUITTING!')
 
     if np.isnan(initguesses) == True:
         logger.warning(f'  --> Previous run of {night} found it inadequate, skipping...')
@@ -148,14 +152,10 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     except IndexError:
         logger.warning(f'  --> No B nodding(frame) for night {night}, skipping...')
         return night, np.nan, np.nan
+    
+    pars0 = setup_fitting_init_pars(args.band, inparam.initvsini, order)
 
-
-    #-------------------------------------------------------------------------------
-    pars0 = setup_fitting_init_pars(args.band, inparam.initvsini, int(order))
-
-    # Load synthetic telluric template generated during Step 1
-    # [:8] here is to ensure program works under Night_Split mode
-
+    
     A0loc = f'./Output/{args.targname}_{args.band}/A0Fits/{night[:8]}A0_{beam}treated_{args.band}.fits'
 
     try:
@@ -200,13 +200,21 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         if nexto == len(orders):
             logger.warning(f'  --> TELFIT ENCOUNTERED CRITICAL ERROR IN ALL ORDERS FOR NIGHT: {night}, skipping...')
             return night, np.nan, np.nan
-
+        
+        
+     
+    # Use instrumental profile dictionary corresponding to whether IGRINS mounting was loose or not
+    if np.int(night[:8]) < 20180401 or np.int(night[:8]) > 20190531:
+        IPpars = inparam.ips_tightmount_pars[args.band][masterbeam][order]
+    else:
+        IPpars = inparam.ips_loosemount_pars[args.band][masterbeam][order]
 
     watm = tbdata['WATM'+str(order)]
     satm = tbdata['SATM'+str(order)]
     a0contx    = tbdata['X'+str(order)]
     continuum  = tbdata['BLAZE'+str(order)]
-
+    molnames   = tbdata['MOLNAMES']
+	
     # Remove extra rows leftover from having columns of unequal length
     satm = satm[(watm != 0)]
     watm = watm[(watm != 0)]
@@ -214,16 +222,12 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     a0contx = a0contx[(continuum != 0)]
     continuum = continuum[(continuum != 0)]
 
-
-    # Use instrumental profile dictionary corresponding to whether IGRINS mounting was loose or not
-    if (np.int(night[:8]) < 20180401) or (np.int(night[:8]) > 20190531):
-        IPpars = inparam.ips_tightmount_pars[args.band][masterbeam][order]
-    else:
-        IPpars = inparam.ips_loosemount_pars[args.band][masterbeam][order]
+    #-------------------------------------------------------------------------------
 
     bound_cut = _setup_bound_cut(inparam.bound_cut_dic, args.band, order)
-    
+
     # Load target spectrum
+
     x,wave,s,u = init_fitsread(f'{inparam.inpath}/',
                                 'target',
                                 'combined'+str(masterbeam),
@@ -233,14 +237,12 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                                 args.band,
                                 bound_cut)
 
-    #-------------------------------------------------------------------------------
-
     # Execute S/N cut
     s2n = s/u
     if np.nanmedian(s2n) < np.float(args.SN_cut):
         logger.warning('  --> Bad S/N {:1.3f} < {} for {}{} {}... '.format( np.nanmedian(s2n), args.SN_cut, night, beam, tag))
         pass
-
+        
     # Trim obvious outliers above the blaze (i.e. cosmic rays)
     nzones = 5
     x = basicclip_above(x,s,nzones); wave = basicclip_above(wave,s,nzones); u = basicclip_above(u,s,nzones); s = basicclip_above(s,s,nzones);
@@ -293,7 +295,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     
 
     continuum_in = rebin_jv(a0contx,continuum,x_piece,False)
-    fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]),masterbeam,[np.array([],dtype=int),np.array([],dtype=int)], initwave)
+    fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]),masterbeam,[np.array([],dtype=int),np.array([],dtype=int)], initwave, [])
 
     #-------------------------------------------------------------------------------
 
@@ -392,67 +394,6 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 if __name__ == '__main__':
-    # parser = argparse.ArgumentParser(
-    #                                  prog        = 'IGRINS Spectra Radial Velocity Pipeline - Step 2',
-    #                                  description = '''
-    #                                  Required if the average RV of the target star is unknown to > 5 km/s precision. \n
-    #                                  Performs an abbreviated analysis of the target star observations in order to converge to coarsely accurate RVs, which will be used as starting points for the more precise analysis in the next step; \n
-    #                                  simultaneously does the same for target star's vsini. \n
-    #                                  Only the single most precise wavelength region is used, and all separate observations for a given exposure are combined into one higher S/N spectrum before being fit.
-    #                                  ''',
-    #                                  epilog = "Contact authors: asa.stahl@rice.edu; sytang@lowell.edu")
-    # parser.add_argument("targname",                          action="store",
-    #                     help="Enter your *target name, no space",            type=str)
-    # parser.add_argument("-HorK",    dest="band",             action="store",
-    #                     help="Which band to process? H or K?. Default = K",
-    #                     type=str,   default='K')
-    # parser.add_argument("-Wr",      dest="WRegion",          action="store",
-    #                     help="Which list of wavelength regions file (./Input/UseWv/WaveRegions_X) to use? Defaults to those chosen by IGRINS RV team, -Wr 1",
-    #                     type=int,   default=int(1))
-    # parser.add_argument("-l_use",   dest="label_use",        action="store",
-    #                     help="Specify ORDER used. Default is the first in WRegion list",
-    #                     type=int,   default=int(0))
-    # parser.add_argument("-SN",      dest="SN_cut",           action="store",
-    #                     help="Spectrum S/N quality cut. Spectra with median S/N below this will not be analyzed. Default = 50 ",
-    #                     type=str,   default='50')
-    # parser.add_argument('-i',       dest="initvsini",        action="store",
-    #                     help="Initial vsini (float, km/s)",
-    #                     type=str,   default='' )
-    # parser.add_argument('-v',       dest="vsinivary",        action="store",
-    #                     help="Range of allowed vsini variation during optimization (float, if set to zero vsini will be held constant), default = 5.0 km/s",
-    #                     type=str,   default='5' )
-    # parser.add_argument('-g',       dest="guesses",          action="store",
-    #                     help="Initial guess for RV (int or float, km/s) for all nights. Use -gX instead if you want to reference an Initguesser_results file from a previous run of this step, which will have a different initial guess for each night",
-    #                     type=str,   default='')
-    # parser.add_argument('-gX',      dest="guessesX",         action="store",
-    #                     help="The number, X, that refers to the ./*targname/Initguesser_results_X file you wish to use for initial RV guesses",
-    #                     type=str,   default='')
-    # parser.add_argument('-t',       dest="template",         action="store",
-    #                     help="Stellar template. Pick from 'synthetic', 'PHOENIX', or 'livingston'. Default = 'synthetic'",
-    #                     type=str,   default='synthetic' )
-    # parser.add_argument('-temp',      dest="temperature",           action="store",
-    #                     help="The synthetic template temperature used, e.g., 5000",
-    #                     type=str,   default='' )
-    # parser.add_argument('-logg',      dest="logg",           action="store",
-    #                     help="The synthetic template logg used, e.g., 4.5",
-    #                     type=str,   default='' )
-    # # parser.add_argument('-sp',      dest="sptype",           action="store",
-    # #                     help="The spectral type of the *target. (Letter only)",
-    # #                     type=str,   default='' )
-    # parser.add_argument('-c',       dest="Nthreads",         action="store",
-    #                     help="Number of cpu (threads) to use, default is 1/2 of avalible ones (you have %i cpus (threads) avaliable)"%(mp.cpu_count()),
-    #                     type=int,   default=int(mp.cpu_count()//2) )
-    # parser.add_argument('-plot',    dest="plotfigs",          action="store_true",
-    #                     help="If set, will generate plots of the basic fitting results under ./Output/*targname_*band/figs/main_step2_*band_*runnumber")
-    # parser.add_argument('-n_use',   dest="nights_use",       action="store",
-    #                     help="If you don't want to process all nights under the ./Input/*target/ folder, specify an array of night you wish to process here. e.g., [20181111,20181112]",
-    #                     type=str,   default='')
-    # parser.add_argument('-DeBug',    dest="debug",           action="store_true",
-    #                     help="If set, DeBug logging will be output, as well as (lots of) extra plots.")
-    # parser.add_argument('-sk_check', dest="skip",           action="store_true",
-    #                     help="If set, will skip the input parameters check. Handy when running mutiple targets line by line")
-    # parser.add_argument('--version',                          action='version',  version='%(prog)s 1.0.0')
-    # args = parser.parse_args()
     
     args = _argparse_step2()
     inpath   = './Input/{}'.format(args.targname)
@@ -669,10 +610,6 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
     # Run order by order, multiprocessing over nights within an order
     func = partial(rv_MPinst, args, inparam, orders, int(args.label_use), trk, step2or3 )
     outs = pqdm(np.arange(len(nightsFinal)), func, n_jobs=args.Nthreads)
-    # pool = mp.Pool(processes = args.Nthreads)
-    # outs = pool.map(func, np.arange(len(nightsFinal)))
-    # pool.close()
-    # pool.join()
 
     # Write outputs to file
     vsinis = []; finalrvs = [];
@@ -709,3 +646,4 @@ WARNING!! you got warning message during this run. Please check the log file und
     print('You can now try to get a better RV initial guess with by rerunning Step 2 with -gX set to the run number you just completed.')
     print('OR, you can go on to the full RV analysis in Step 3.')
     print('####################################################################################')
+

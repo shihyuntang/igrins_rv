@@ -212,10 +212,7 @@ def _argparse_step3():
     parser.add_argument('-logg',      dest="logg",           action="store",
                         help="The synthetic template logg used, e.g., 4.5",
                         type=str,   default='' )
-    
-    parser.add_argument('-abs_out',   dest="abs",            action="store",
-                        help="Take REL and ABS. REL for relative RVs as output, ABS for absolute RVs. Default = REL. Note that ABS mode will have worser precision.",
-                        type=str,   default='REL' )
+   
     
     parser.add_argument('-c',       dest="Nthreads",         action="store",
                         help="Number of cpu (threads) to use, default is 1/2 of avalible ones (you have %i cpus (threads) avaliable)"%(mp.cpu_count()),

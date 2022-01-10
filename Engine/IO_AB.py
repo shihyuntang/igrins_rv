@@ -337,26 +337,6 @@ def setup_templates_tel():
     return watm, satm, mwave0, mflux0
 
 
-def stellarmodel_setup(wave,mwave0,mflux0):
-    '''
-    Convenience function to trim stellar template to cover just a bit more wavelength than data.
-    (This was once a meatier function)
-
-    Inputs:
-    wave    : Wavelength scale of data
-    mwave0  : Wavelength scale of stellar template
-    mflux0  : Corresponding flux of stellar template
-
-    Outputs:
-    mwave0  : Trimmed wavelength scale of stellar template
-    mflux0  : Trimmed flux of stellar template
-    '''
-
-    mflux = mflux0[(mwave0/1e4 >= np.min(wave) - .003) & (mwave0/1e4 <= np.max(wave) + .002)]
-    mwave = mwave0[(mwave0/1e4 >= np.min(wave) - .003) & (mwave0/1e4 <= np.max(wave) + .002)]
-
-    return mwave, mflux
-
 
 def setup_outdir(prefix):
     '''
