@@ -247,6 +247,8 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args,
                 toadjust[par] = data.x[0] - 0.001
             elif par == 'waveend':
                 toadjust[par] = data.x[-1] + 0.001
+            elif par == 'h2o':
+                pass
             else:
                 toadjust[par] = _telfit_default_values_dic[par]
             
