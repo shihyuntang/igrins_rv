@@ -167,7 +167,11 @@ def base_dpars_dict(use_sets, band, order):
             c_order = 6
             pass
     elif band == 'K':
-        if order in [3, 4, 5, 6]:
+        if order in [3]:
+            # fit a cubic (3) continuum
+            dpars_org['cont'][21:] = 0
+            c_order = 3
+        elif order in [4, 5, 6]:
             # fit a quartic (4) continuum
             dpars_org['cont'][22:] = 0
             c_order = 4
