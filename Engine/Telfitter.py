@@ -26,7 +26,7 @@ def WavelengthErrorFunctionNew(pars, datax,datay, telluricx,
         Cost function for the new wavelength fitter.
         Not meant to be called directly by the user!
         """
-        dx = Poly(pars, np.median(datax), min(datax), max(datax), datax)
+        dx = Poly(pars, np.median(datax), np.min(datax), np.max(datax), datax)
         penalty = np.sum(np.abs(dx[np.abs(dx) > maxdiff]))
         #retval = (datay - model(datax + dx)) + penalty
         retval = (datay - rebin_jv(telluricx,telluricy,datax + dx,False)) \
@@ -59,7 +59,7 @@ def FitWavelengthNew(data_originalx, data_originaly, telluricx,
                             full_output=True, xtol=1e-12, ftol=1e-12)
         pars = output[0]
 
-        return partial(Poly, pars, np.median(data_originalx), min(data_originalx), max(data_originalx)), 0.0
+        return partial(Poly, pars, np.median(data_originalx), np.min(data_originalx), np.max(data_originalx)), 0.0
 
 
 
@@ -133,12 +133,14 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args,
 
     os.environ['PYSYN_CDBS'] = inparam.cdbsloc
 
-    # Define to fitter objects, one for actual fit and one for high res model generation
+    # Define to fitter objects, one for actual fit and one for high 
+    # res model generation
     fitter  = TelluricFitter(debug=False, print_lblrtm_output=args.debug)
-    fitter2 = TelluricFitter(debug=False, print_lblrtm_output = args.debug)
+    fitter2 = TelluricFitter(debug=False, print_lblrtm_output=args.debug)
 
-    #Set the observatory location with a keyword
-    DCT_props     = {"latitude":  34.744, "altitude": 2.36} # altitude in km
+    # Set the observatory location with a keyword
+    # altitude in km
+    DCT_props     = {"latitude":  34.744, "altitude": 2.36} 
     McD_props     = {"latitude":  30.710, "altitude": 2.07}
     GeminiS_props = {"latitude": -30.241, "altitude": 2.72}
 
@@ -156,9 +158,10 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args,
                     'IN THIS VERSION!')
 
     # Read in data
-    # do not use astropy units in telfit to speed things up. telfit default 
-    # wavelength units is in nm
+    # Dot using astropy units in telfit to speed things up. 
+    # Telfit default wavelength units is in nm
     watm_in = watm_in/10 # AA --> nm
+    
     # input wavelength in nm
     data = DataStructures.xypoint(x=watm_in, y=satm_in, cont=None, err=a0ucut) 
     
@@ -205,7 +208,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args,
     
     # For each of these parameters, check if they haven't been fetched from fits file. If not, set to default values.
     fitthis = False 
-    for par in ["pressure", "temperature", "angle","h2o"]:
+    for par in ["pressure", "temperature", "angle", "h2o"]:
         if par != "h2o":
             try:
                 toadjust[par]
@@ -225,24 +228,24 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args,
     if (3 < order < 9) & (args.band == 'K'):
         # Only 4 molecules present in chosen IGRINS orders' wavelength range 
         # are H2O, CH4, N2O, and CO.
-        molstofit = ["ch4","co","n2o"]   
+        mols2fit = ["ch4", "co", "n2o"]   
     elif (order >= 9 or order <= 3) & (args.band == 'K'): 
         # Only 4 molecules present in chosen IGRINS orders' wavelength range 
         # are H2O, CH4, N2O and CO2.
-        molstofit = ["ch4","co2","n2o"]   
+        mols2fit = ["ch4", "co2", "n2o"]   
     elif args.band =='H':
-        molstofit = ["ch4","co","co2","n2o"]
+        mols2fit = ["ch4", "co", "co2", "n2o"]
         
-    for mol in molstofit:
+    for mol in mols2fit:
         tofit[mol]   = _telfit_default_values_dic[mol]
         tobound[mol] = _telfit_default_vary_bound_dic[mol]
         
-    tofit["resolution"]     = resolution_med
+    tofit["resolution"] = resolution_med
     tobound["resolution"] = [resolution_min,resolution_max]
 
     # Rest of molecules are set to defaults
     for par in names[4:]:
-        if par not in molstofit:
+        if par not in mols2fit:
             if par == 'wavestart':
                 toadjust[par] = data.x[0] - 0.001
             elif par == 'waveend':
@@ -301,13 +304,13 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args,
             the wavelength solution to vary.
     '''
 
-    #Get the improved continuum from the fitter
+    # Get the improved continuum from the fitter
     cont1  = fitter.data.cont
     wcont1 = model.x*10 # nm-->AA
 
     if args.plotfigs:
         fig, axes = plt.subplots(1, 1, figsize=(6,3), facecolor='white', 
-            dpi=250)
+            dpi=200)
 
         axes.plot(10*watm_in, satm_in, color='black', alpha=.8, 
             label='data', lw=0.7)
@@ -341,8 +344,8 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args,
     parfittedL = np.ones_like(names, dtype=float)
     parfittedD = {}
     for k in range(len(names)):
-        parfittedL[k]        = np.float(fitter.GetValue(names[k]) )
-        parfittedD[names[k]] = np.float(fitter.GetValue(names[k]) )
+        parfittedL[k]        = float(fitter.GetValue(names[k]) )
+        parfittedD[names[k]] = float(fitter.GetValue(names[k]) )
     parfittedD0 = deepcopy(parfittedD)
 
     # Compute telluric template with highest resolution of Livingston template.
@@ -396,7 +399,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args,
 
     # For every molecule being fit, copy the fit params, set all other molecules 
     # to 0, and produce a model with only that molecule
-    molsout = molstofit+["h2o"]
+    molsout = mols2fit + ["h2o"]
 
     for mol in molsout:
         parfittedDmol = deepcopy(parfittedD0)
