@@ -486,12 +486,19 @@ def main(args, inparam, jerp, orders, masterbeam, i):
             nk += 1
         parfit = parfit_1.copy()
 
-        # If dip present, correct it out of data before running Telfit to enable better fit
-        cont = parfit[10] + parfit[11]*fitobj.x+ parfit[12]*(fitobj.x**2) + parfit[20]*(fitobj.x**3) + parfit[21]*(fitobj.x**4) + parfit[22]*(fitobj.x**5) + parfit[23]*(fitobj.x**6)
+        # If dip present, correct it out of data before running Telfit 
+        # to enable better fit
+        cont = parfit[10] + parfit[11]*fitobj.x+ parfit[12]*(fitobj.x**2) \
+                + parfit[20]*(fitobj.x**3) + parfit[21]*(fitobj.x**4) \
+                + parfit[22]*(fitobj.x**5) + parfit[23]*(fitobj.x**6)
         cont0 = cont.copy()
         bucket = np.zeros_like(cont)
-        bucket[(fitobj.x >= (parfit[15]-parfit[16]/2)) & (fitobj.x <= (parfit[15]+parfit[16]/2))] = parfit[17]
-        bucket[(fitobj.x >= (parfit[15]+parfit[16]/2-parfit[18])) & (fitobj.x <= (parfit[15]+parfit[16]/2))] += parfit[19]
+        bucket[(fitobj.x >= (parfit[15]-parfit[16]/2)) \
+            & (fitobj.x <= (parfit[15]+parfit[16]/2))] = parfit[17]
+
+        bucket[(fitobj.x >= (parfit[15]+parfit[16]/2-parfit[18])) \
+            & (fitobj.x <= (parfit[15]+parfit[16]/2))] += parfit[19]
+        
         cont -= bucket
 
         cont *= continuum
