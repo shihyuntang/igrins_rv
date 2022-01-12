@@ -481,6 +481,21 @@ def main(args, inparam, jerp, orders, masterbeam, i):
             parstart = parfit_1.copy()
             nk += 1
         parfit = parfit_1.copy()
+
+        # If dip present, correct it out of data before running Telfit to enable better fit
+        cont = parfit[10] + parfit[11]*fitobj.x+ parfit[12]*(fitobj.x**2) + parfit[20]*(fitobj.x**3) + parfit[21]*(fitobj.x**4) + parfit[22]*(fitobj.x**5) + parfit[23]*(fitobj.x**6)
+        cont0 = cont.copy()
+        bucket = np.zeros_like(cont)
+        bucket[(fitobj.x >= (parfit[15]-parfit[16]/2)) & (fitobj.x <= (parfit[15]+parfit[16]/2))] = parfit[17]
+        bucket[(fitobj.x >= (parfit[15]+parfit[16]/2-parfit[18])) & (fitobj.x <= (parfit[15]+parfit[16]/2))] += parfit[19]
+        cont -= bucket
+
+        cont *= continuum
+        cont0 *= continuum
+        justdip = cont/cont0
+        a0fluxlistforTelfit = a0fluxlist / justdip
+    else:
+        a0fluxlistforTelfit = a0fluxlist.copy()
     
     # Plot results
     if inparam.plotfigs: 
@@ -507,7 +522,7 @@ def main(args, inparam, jerp, orders, masterbeam, i):
     # Feed this new wavelength solution into Telfit. Returns high-res synthetic 
     # telluric template, parameters of that best fit, and blaze function best fit
     watm1, satm1, telfitparnames, telfitpars, a0contwave, continuum, molnames, molwaves, molfluxes = telfitter(
-        a0w_out_fit, a0fluxlist, a0u, inparam, night, order, args, masterbeam, c_order, resolutions, logger
+        a0w_out_fit, a0fluxlistforTelfit, a0u, inparam, night, order, args, masterbeam, c_order, resolutions, logger
         )
 
     # If Telfit encountered error (details in Telfitter.py), skip night/order combo
