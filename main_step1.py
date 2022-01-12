@@ -344,12 +344,19 @@ def main(args, inparam, jerp, orders, masterbeam, i):
         a0contx = a0contx[(continuum != 0)]
         continuum = continuum[(continuum != 0)]
         
-        satm_in = satm[(watm > np.min(a0wavelist)*1e4 - 11) &
+        satm_in_fine = satm[(watm > np.min(a0wavelist)*1e4 - 11) &
                        (watm < np.max(a0wavelist)*1e4 + 11)
                        ]
-        watm_in = watm[(watm > np.min(a0wavelist)*1e4 - 11) & 
+        watm_in_fine = watm[(watm > np.min(a0wavelist)*1e4 - 11) & 
                        (watm < np.max(a0wavelist)*1e4 + 11)
                        ]
+        
+        coarse_wavesep = 0.10 #AA
+        coarse_nstep   = int((watm_in_fine[-1]-watm_in_fine[0])/coarse_wavesep)
+
+        watm_in = np.linspace(watm_in_fine[0],watm_in_fine[-1],coarse_nstep)
+        satm_in = rebin_jv(watm_in_fine,satm_in_fine,watm_in,False)
+        satm_in[(satm_in < 1e-4)] = 0. 
         
         a0x = a0x[ (a0wavelist*1e4 > np.min(watm_in)+5) & 
                    (a0wavelist*1e4 < np.max(watm_in)-5)
