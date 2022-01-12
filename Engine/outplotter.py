@@ -53,10 +53,6 @@ def outplotter_tel(parfit, fitobj, title, inparam, args, order):
         else:
             pass
     else:
-        # print("We haven't determined what polynomial orders 
-        # for K band yet and hardcoded this!")
-        # if np.int(order) in [3]:
-        #     npars -= 4
         if np.int(order) in [3,4,5]:
             npars -= 3
         else:

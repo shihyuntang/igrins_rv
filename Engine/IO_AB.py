@@ -205,7 +205,7 @@ def init_fitsread(path,kind,beam,night,order,tag,band,Ncuts=None):
 
     return x, wave, s, u
 
-def airtovac(wave):
+def air2vac(wave):
     """
     This code is from the PyAstronomy repository and is referenced as such 
     (Czela et al. 2019, https://pyastronomy.readthedocs.io/en/latest/index.html)

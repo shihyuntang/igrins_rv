@@ -5,7 +5,7 @@ from Engine.detect_peaks import detect_peaks
 from Engine.rebin_jv import rebin_jv
 
 
-def CRmasker(parfit, fitobj, tel=False):
+def cr_masker(parfit, fitobj, tel=False):
     '''
     Identify cosmic rays and hot pixels in spectrum, as well as places where 
     the model does not have the ability to reflect the data.

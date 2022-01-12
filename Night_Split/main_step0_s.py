@@ -2,13 +2,15 @@ import sys
 sys.path.append("..") # Adds higher directory to python modules path.
 
 from Engine.importmodule import *
-from Engine.IO_AB    import setup_templates, init_fitsread, stellarmodel_setup, setup_outdir
+from Engine.IO_AB    import (setup_templates, init_fitsread, stellarmodel_setup, 
+                                setup_outdir)
 from Engine.clips    import basicclip_above
-from Engine.contfit  import A0cont
+from Engine.contfit  import a0cont
 from Engine.classes  import FitObjs, InParamsA0
 from Engine.rebin_jv import rebin_jv
 from Engine.rotint   import rotint
 from Engine.opt      import optimizer
+from Engine.set_argparse import _argparse_step0_s
 # -------------------------------------------------------------------------------
 # -------------------------------------------------------------------------------
 def DataPrep(args, tar_night, tar_num, tar_frame, file_night_num, 
@@ -290,38 +292,16 @@ def DataPrep(args, tar_night, tar_num, tar_frame, file_night_num,
 # -------------------------------------------------------------------------------
 # -------------------------------------------------------------------------------
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(
-        prog        = 'IGRINS Spectra Radial Velocity Pipeline',
-        description = '''
-        This is a pipeline that helps you to extract radial velocity \n
-        from IGRINS spectra. \n
-        ''',
-        epilog = "Contact authors: asa.stahl@rice.edu; sytang@lowell.edu")
-    parser.add_argument("targname",                          action="store",
-                        help="Enter your *target name",            type=str)
-    parser.add_argument("-HorK",    dest="band",            action="store",
-                        help="Which band to process? H or K?",
-                        type=str,   default='K')
 
-    parser.add_argument("-coord",    dest="coord",            action="store",
-                        help="Optional [-XX.xx,-XX.xx] deg, GaiaDR2 coordinates at J2015.5. If give, will calculate BVC base on this info.",
-                        type=str,   default='')
-    parser.add_argument("-pm",       dest="pm",               action="store",
-                        help="Optional [-XX.xx,-XX.xx] [mas/yr], GaiaDR2 proper motion. If give, will calculate BVC base on this info.",
-                        type=str,   default='')
-
-    parser.add_argument('-c',       dest="Nthreads",         action="store",
-                        help="Number of cpu (threads) to use, default is 1/2 of available ones (you have %i cpus (threads) avaliable)" % (
-                            mp.cpu_count()),
-                        type=int,   default=int(mp.cpu_count()//2))
-    parser.add_argument('--version',
-                        action='version',  version='%(prog)s 0.9')
-    args = parser.parse_args()
-    cdbs_loc = '~/cdbs/'
+    args = _argparse_step0_s()
     inpath     = '../Input/{}/'.format(args.targname)
 
-    new_tar_list = os.listdir('./{}_recipes'.format(args.targname.replace(' ', '')))
-    target_have  = np.sort([int(dump[:8]) for dump in new_tar_list if dump[-1] == 'p'])
+    new_tar_list = os.listdir(
+        './{}_recipes'.format(args.targname.replace(' ', ''))
+        )
+    target_have = np.sort(
+        [int(dump[:8]) for dump in new_tar_list if dump[-1] == 'p']
+        )
 
     tar_night = []
     tar_num   = []

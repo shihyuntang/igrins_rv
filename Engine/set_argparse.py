@@ -9,17 +9,57 @@ _epilog = "Contact authors: Asa Stahl (asa.stahl@rice.edu);\
                 Shih-Yun Tang (sytang@lowell.edu)"
 _igrins_version = '1.5.0 alpha'
 
+def _argparse_step0_s():
+    """Take care of all the argparse stuff."""
+    parser = argparse.ArgumentParser(
+        prog        = 'IGRINS Spectra Radial Velocity Pipeline - Step 0_s',
+        description = '''
+        The .py do the same as the Step0, but split the AB beam (nodding) \n
+        into sets that user assign in the .recipes files. \n
+        See more detail on 
+        https://github.com/shihyuntang/igrins_rv/wiki/Setup:-PrepData-Files#muti-rvs-per-night-version-of-step0py-night_splitstep0_spy
+        This step collects and organizes all relevant information on target \n
+        observations and associated telluric standard observations, for ease \n
+        of use in later steps. It requires that your observations be listed \n
+        in IGRINS_RV_MASTERLOG.csv, which comes with this package in the \n
+        /Engine folder. If your target is not listed, you must construct \n
+        your own PrepData files. See ReadMe for more details. \n
+        ''',
+        epilog = _epilog)
+    parser.add_argument("targname", action="store",
+        help="Enter your *target name", 
+        type=str)
+    parser.add_argument("-HorK", dest="band", action="store",
+        help="Which band to process? H or K?",
+        type=str, default='K')
+
+    parser.add_argument("-coord", dest="coord", action="store",
+        help="Optional [-XX.xx,-XX.xx] deg, GaiaDR2 coordinates at J2015.5. \
+                If give, will calculate BVC base on this info.",
+        type=str, default='')
+    parser.add_argument("-pm", dest="pm", action="store",
+        help="Optional [-XX.xx,-XX.xx] [mas/yr], GaiaDR2 proper motion. \
+                If give, will calculate BVC base on this info.",
+        type=str, default='')
+
+    parser.add_argument(
+        '--version', action='version', 
+        version='%(prog)s {}'.format(_igrins_version))
+
+    return parser.parse_args()
+
+
 
 def _argparse_step0():
     """Take care of all the argparse stuff."""
     parser = argparse.ArgumentParser(
         prog        = 'IGRINS Spectra Radial Velocity Pipeline - Step 0',
         description = '''
-        This step collects and organizes all relevant information on target 
-        observations and associated telluric standard observations, for ease 
-        of use in later steps. It requires that your observations be listed 
-        in IGRINS_RV_MASTERLOG.csv, which comes with this package in the 
-        /Engine folder. If your target is not listed, you must construct 
+        This step collects and organizes all relevant information on target \n
+        observations and associated telluric standard observations, for ease \n
+        of use in later steps. It requires that your observations be listed \n
+        in IGRINS_RV_MASTERLOG.csv, which comes with this package in the \n
+        /Engine folder. If your target is not listed, you must construct \n
         your own PrepData files. See ReadMe for more details. \n
         ''',
         epilog = _epilog)

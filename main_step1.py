@@ -3,7 +3,7 @@ from Engine.set_argparse import _argparse_step1
 
 from Engine.IO_AB import setup_templates_tel, init_fitsread, setup_outdir
 from Engine.clips import basicclip_above
-from Engine.contfit import A0cont
+from Engine.contfit import a0cont
 from Engine.classes import (FitObjs, InParamsA0, 
                             OrderDictCla, _setup_bound_cut)
 from Engine.rebin_jv import rebin_jv
@@ -12,32 +12,26 @@ from Engine.Telfitter import telfitter
 from Engine.opt import optimizer, fmod
 from Engine.outplotter import outplotter_tel
 from Engine.detect_peaks import detect_peaks
-from Engine.crmask import CRmasker
-from Engine.molmask import H2Omasker
+from Engine.crmask import cr_masker
+from Engine.molmask import h2o_masker
 #-------------------------------------------------------------------------------
 
 def a0_fits_write(hdu_0, firstorder, order, outpath, night, masterbeam, 
-                    band, skip=False):
-    """output telfit generated synthetic telluric template
+                    band):
+    """Output telfit generated synthetic telluric template
 
-    Parameters
-    ----------
-    hdu_1 : astropy.fits.BinTableHDU
-        save table
-    firstorder : int
-        the first order to run in this run
-    order : int
-        current run order
-    outpath : str
-        output dir
-    night : str
-        observation night (or + _tag)
-    masterbeam : str
-        mean (nodding), A or B
-    band : str
-        H or K band
+    Args:
+        hdu_0 (astropy.fits.BinTableHDU): Table to be write out
+        firstorder (int): The first order to run in this run
+        order (int): Current run order
+        outpath (str): Output dir
+        night (str): Observation night (or + _tag)
+        masterbeam (str): Beam (nodding). Can only be A or B
+        band (str): H or K band
     """
-    if skip:
+
+    if hdu_0 is None:
+        # write a error flag = 1 
         c0 = fits.Column(name = f'ERRORFLAG{order}', 
                             array = np.array([1]),
                             format='K'
@@ -69,9 +63,21 @@ def a0_fits_write(hdu_0, firstorder, order, outpath, night, masterbeam,
     
 
 def setup_fitting_init_pars(inparam, night, band, masterbeam, order):
+    """Setup the initial values for the parameters to be optimized (fitted)
+
+    Args:
+        inparam (class): [description]
+        night (str): Observation night (or + _tag)
+        band (str): H or K band
+        masterbeam (str): Beam (nodding). Can only be A or B
+        order (int): Current run order
+
+    Returns:
+        np.array: Initial values for the parameters to be optimized 
+    """
     
     # Determine whether IGRINS mounting was loose or 
-    #  the night of interest is in question
+    # the night of interest is in question
     if (int(night) < 20180401) or (int(night) > 20190531):
         IPpars = inparam.ips_tightmount_pars[band][masterbeam][order]
     else:
@@ -81,52 +87,65 @@ def setup_fitting_init_pars(inparam, night, band, masterbeam, order):
     #  depth = 100 +- 5000 but floor at 0
     centerloc = 1250 if band == 'H' else 1180
     
-
     # Initialize parameter array for optimization as well as half-range values 
     # for each parameter during the various steps of the optimization.
     # Many of the parameters initialized here will be changed throughout the 
     # code before optimization and in between optimization steps.
 
     parA0 = np.array([
-        0.0,           # 0: The shift of the stellar template (km/s)
-        0.0,           # 1: The scale factor for the stellar template
-        0.0,           # 2: The shift of the telluric  template (km/s)
-        1.0,           # 3: The scale factor for the telluric template
-        0.0,           # 4: vsini (km/s)
-        IPpars[2],     # 5: The instrumental resolution (FWHM) in pixels
-        0.0,           # 6: Wavelength 0-pt
-        0.0,           # 7: Wavelength linear component
-        0.0,           # 8: Wavelength quadratic component
-        0.0,           # 9: Wavelength cubic component
-        1.0,           #10: Continuum zero point
-        0.0,           #11: Continuum linear component
-        0.0,           #12: Continuum quadratic component
-        IPpars[1],     #13: Insrumental resolution linear component
-        IPpars[0],     #14: Instrumental resolution quadratic component
-        centerloc,     #15: Blaze dip center location
-        330,           #16: Blaze dip full width
-        0.05,          #17: Blaze dip depth
-        90,            #18: Secondary blaze dip full width
-        0.05,          #19: Blaze dip depth
-        0.0,           #20: Continuum cubic component
-        0.0,           #21: Continuum quartic component
-        0.0,           #22: Continuum quintic component
-        0.0,])          #23: Continuum hexic component
+        0.0,       # 0: The shift of the stellar template (km/s)
+        0.0,       # 1: The scale factor for the stellar template
+        0.0,       # 2: The shift of the telluric template (km/s)
+        1.0,       # 3: The scale factor for the telluric template
+        0.0,       # 4: vsini (km/s)
+        IPpars[2], # 5: The instrumental resolution (FWHM) in pixels
+        0.0,       # 6: Wavelength 0-pt
+        0.0,       # 7: Wavelength linear component
+        0.0,       # 8: Wavelength quadratic component
+        0.0,       # 9: Wavelength cubic component
+        1.0,       #10: Continuum zero point
+        0.0,       #11: Continuum linear component
+        0.0,       #12: Continuum quadratic component
+        IPpars[1], #13: Instrumental resolution linear component
+        IPpars[0], #14: Instrumental resolution quadratic component
+        centerloc, #15: Blaze dip center location
+        330,       #16: Blaze dip full width
+        0.05,      #17: Blaze dip depth
+        90,        #18: Secondary blaze dip full width
+        0.05,      #19: Blaze dip depth
+        0.0,       #20: Continuum cubic component
+        0.0,       #21: Continuum quartic component
+        0.0,       #22: Continuum quintic component
+        0.0,       #23: Continuum hexic component
+    ])
     
     return parA0
 
-def base_dpars_dict(use_sets, band, order):
-    """setup basic sets of par vary range array
+
+    """
 
     Parameters
     ----------
     use_sets : list with str
-        list of dpars_org keys that wish to get
+        
 
     Returns
     -------
     Dict
         dpars
+    """
+
+def base_dpars_dict(use_sets, band, order):
+    """Setup basic sets of paramaeter variable ranges
+
+    Args:
+        use_sets (list with str): List of dpars_org keys that wish to get
+        band (str): H or K band
+        order (int): Current run order
+
+    Returns:
+        dpars (dict): Optimize parameters' variable ranges
+        c_order (int): Continuum fitted orders
     """
     
     #                     | 0    1    2    3 | | 4 | | 5 | | 6    7    8    9 | |10  11 12| |13 14| |15   16   17   18   19|  |20   21   22    23|
@@ -162,13 +181,15 @@ def base_dpars_dict(use_sets, band, order):
     return dpars, c_order
 
 
-def MPinst(args, inparam, jerp, orders, masterbeam, i):
-    # Main function for A0 fitting that will be threaded over by multiprocessing
+def main(args, inparam, jerp, orders, masterbeam, i):
+    """Main function for A0 fitting that will be threaded over 
+    by multiprocessing
+    """
 
     order = orders[jerp]            # current looped order
     night = str(inparam.nights[i])  # multiprocess assigned night
     firstorder = orders[0]          # First order that will be analyzed, 
-                                    #  related to file writing
+                                    # related to file writing
 
     if args.debug:
         print('Working on order {:02d}/{:02d} ({}), ',
@@ -206,7 +227,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
             logger.warning(f'  --> NIGHT {night}, ORDER {order} '
                                 'HIT ERROR DURING PRE_OPT')
             a0_fits_write(None, firstorder, order, inparam.outpath, night,
-                            masterbeam, args.band, True)
+                            masterbeam, args.band)
             return
 
     except ZeroDivisionError:
@@ -218,25 +239,26 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
         logger.warning(f'  --> NIGHT {night}, ORDER {order} '
                             'HIT ERROR (flux error = 0) DURING PRE_OPT')
         a0_fits_write(None, firstorder, order, inparam.outpath, night, 
-                        masterbeam, args.band, True)
+                        masterbeam, args.band)
         return
 
     # Trim obvious outliers above the blaze (i.e. cosmic rays)
+    # Do twice
     nzones = 12
-    a0wavelist = basicclip_above(a0wavelist,a0fluxlist,nzones)
-    a0x = basicclip_above(x,a0fluxlist,nzones)
-    a0u        = basicclip_above(u,a0fluxlist,nzones)
-    a0fluxlist = basicclip_above(a0fluxlist,a0fluxlist,nzones)
-    a0wavelist = basicclip_above(a0wavelist,a0fluxlist,nzones)
-    a0x = basicclip_above(a0x,a0fluxlist,nzones)
-    a0u        = basicclip_above(a0u,a0fluxlist,nzones)
-    a0fluxlist = basicclip_above(a0fluxlist,a0fluxlist,nzones)
+    a0wavelist = basicclip_above(a0wavelist, a0fluxlist, nzones)
+    a0x = basicclip_above(x, a0fluxlist, nzones)
+    a0u        = basicclip_above(u, a0fluxlist, nzones)
+    a0fluxlist = basicclip_above(a0fluxlist, a0fluxlist, nzones)
+
+    a0wavelist = basicclip_above(a0wavelist, a0fluxlist, nzones)
+    a0x = basicclip_above(a0x, a0fluxlist, nzones)
+    a0u        = basicclip_above(a0u, a0fluxlist, nzones)
+    a0fluxlist = basicclip_above(a0fluxlist, a0fluxlist, nzones)
 
     if masterbeam == 'B':
-        
         # Compute rough blaze function estimate. 
-        #  Better fit will be provided by Telfit later.
-        continuum = A0cont(a0wavelist, a0fluxlist, night, order, args.band)
+        # Better fit will be provided by Telfit later.
+        continuum = a0cont(a0wavelist, a0fluxlist, night, order, args.band)
         a0masterwave = a0wavelist.copy()
         a0masterwave *= 1e4 # um --> AA
         
@@ -268,7 +290,6 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
                                 (a0wavelist*1e4 < np.max(watm_in)-5)
                             ]
     
-    # else:
     elif masterbeam == 'A':
     
         A0loc = f'./Output/{args.targname}_{args.band}/A0Fits/{night[:8]}A0_Btreated_{args.band}.fits'
@@ -276,7 +297,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
         try:
             hdulist = fits.open(A0loc)
             # Find corresponding table in fits file, given the tables do not go
-            #  sequentially by order number due to multiprocessing in Step 1
+            # sequentially by order number due to multiprocessing in Step 1
             num_orders = 0
             for i in range(25):
                 try:
@@ -290,19 +311,19 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
             flag = np.array(tbdata[f'ERRORFLAG{order}'])[0]
             
             # Check whether Telfit hit critical error in Step 1 for the chosen 
-            #  order with this night. If so, skip.
+            # order with this night. If so, skip.
             if flag == 1:
                 logger.warning(f'  --> TELFIT ENCOUNTERED CRITICAL ERROR '
                                 f'IN ORDER: {order} NIGHT: {night}, skipping...')
                 a0_fits_write(None, firstorder, order, inparam.outpath, 
-                                night, masterbeam, args.band, True)
+                                night, masterbeam, args.band)
                 return
             
         except IOError:
             logger.warning(f'  --> No A0-fitted template for night {night}, '
                                 'skipping...')
             a0_fits_write(None, firstorder, order, inparam.outpath, night, 
-                            masterbeam, args.band, True)
+                            masterbeam, args.band)
             return
         
         watm = tbdata['WATM'+str(order)]
@@ -314,7 +335,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
         satm = satm[(watm != 0)]
         watm = watm[(watm != 0)]
         # Set very low points to zero so that they don't go to NaN when taken 
-        #  to an exponent by template power in fmodel_chi
+        # to an exponent by template power in fmodel_chi
         satm[(satm < 1e-4)] = 0. 
         a0contx = a0contx[(continuum != 0)]
         continuum = continuum[(continuum != 0)]
@@ -443,7 +464,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
         logger.warning(f'  --> NIGHT {night}, ORDER {order} HAD TOO LITTLE '
                             'ABSORPTION OR DEVIATED FROM LIVINGSTON TOO MUCH')
         a0_fits_write(None, firstorder, order, inparam.outpath, night, 
-                        masterbeam, args.band, True)
+                        masterbeam, args.band)
         return
     
      # If A beam and fitting cont dip, do one more cycle of optimization
@@ -495,7 +516,7 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
             f'  --> TELFIT ENCOUNTERED CRITICAL ERROR IN ORDER: {order} '
                 f'NIGHT: {night}')
         a0_fits_write(None, firstorder, order, inparam.outpath, night, 
-                        masterbeam, args.band, True)
+                        masterbeam, args.band)
         return
         
     else: # If Telfit exited normally, proceed.
@@ -530,7 +551,8 @@ def MPinst(args, inparam, jerp, orders, masterbeam, i):
 #-------------------------------------------------------------------------------
 
 def use_w(args):
-    # Load wavelength regions list file
+    """Load wavelength regions list file
+    """
     try:
         bounddata = Table.read(
             f'./Input/UseWv/WaveRegions_{args.WRegion}_{args.band}.csv', 
@@ -721,7 +743,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the
         if not args.debug: 
             print('Working on order {} ({:02d}/{:02d})'.format(
                                 orders[jerp], int(jerp+1), len(orders)))
-        func = partial(MPinst, args, inparam, jerp, orders, 'B')
+        func = partial(main, args, inparam, jerp, orders, 'B')
         outs = pqdm(np.arange(len(nightsFinal)), func, n_jobs=args.Nthreads)
 
     print('B nods done! Halfway there! \n Now processing the A nods...')
@@ -729,7 +751,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the
         if not args.debug: 
             print('Working on order {} ({:02d}/{:02d})'.format(
                                 orders[jerp], int(jerp+1), len(orders)))
-        func = partial(MPinst, args, inparam, jerp, orders, 'A')
+        func = partial(main, args, inparam, jerp, orders, 'A')
         outs = pqdm(np.arange(len(nightsFinal)), func, n_jobs=args.Nthreads)
 
     warning_r = log_warning_id(

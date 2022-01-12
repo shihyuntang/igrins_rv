@@ -6,7 +6,7 @@ from Engine.importmodule import read_prepdata
 
 from Engine.IO_AB      import setup_templates, init_fitsread, stellarmodel_setup, setup_outdir
 from Engine.clips      import basicclip_above
-from Engine.contfit    import A0cont
+from Engine.contfit    import a0cont
 from Engine.classes    import FitObjs, InParams
 from Engine.macbro     import macbro
 from Engine.rebin_jv   import rebin_jv

@@ -4,19 +4,29 @@ from Engine.set_argparse import _argparse_step3
 
 from Engine.IO_AB      import setup_templates, init_fitsread, setup_outdir
 from Engine.clips      import basicclip_above
-from Engine.contfit    import A0cont
+from Engine.contfit    import a0cont
 from Engine.classes    import FitObjs,InParams,_setup_bound_cut
 from Engine.rebin_jv   import rebin_jv
 from Engine.rotint     import rotint
 from Engine.opt        import optimizer, fmod, fmod_conti
 from Engine.outplotter import outplotter_23
 from Engine.detect_peaks import detect_peaks
-from Engine.crmask    import CRmasker
-from Engine.molmask    import H2Omasker
+from Engine.crmask    import cr_masker
+from Engine.molmask    import h2o_masker
 
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 def setup_fitting_init_pars(band, initvsini, order):
+    """Setup the initial values for the parameters to be optimized (fitted)
+
+    Args:
+        band (str): H or K band
+        initvsini (float): Initial vsini value
+        order (int): Current run order
+
+    Returns:
+        np.array: Initial values for the parameters to be optimized 
+    """
 
     # start at bucket loc = 1250 +- 100, width = 250 +- 100, 
     # depth = 100 +- 5000 but floor at 0
@@ -28,30 +38,31 @@ def setup_fitting_init_pars(band, initvsini, order):
     # code before optimization and in between optimization steps.
 
     pars0 = np.array([
-        np.nan,                   # 0: The shift of the stellar template (km/s) [assigned later]
-        0.3,                      # 1: The scale factor for the stellar template
-        0.0,                      # 2: The shift of the telluric template (km/s)
-        0.6,                      # 3: The scale factor for the telluric template
-        initvsini,                # 4: vsini (km/s)
-        np.nan,                   # 5: The instrumental resolution (FWHM) in pixels
-        0.0,                      # 6: Wavelength 0-pt
-        0.0,                      # 7: Wavelength linear component
-        0.0,                      # 8: Wavelength quadratic component
-        0.0,                      # 9: Wavelength cubic component
-        1.0,                      #10: Continuum zero point
-        0.,                       #11: Continuum linear component
-        0.,                       #12: Continuum quadratic component
-        np.nan,                   #13: Instrumental resolution linear component
-        np.nan,                   #14: Instrumental resolution quadratic component
-        centerloc,                #15: Blaze dip center location
-        330,                      #16: Blaze dip full width
-        0.05,                     #17: Blaze dip depth
-        90,                       #18: Secondary blaze dip full width
-        0.05,                     #19: Blaze dip depth
-        0.0,                      #20: Continuum cubic component
-        0.0,                      #21: Continuum quartic component
-        0.0,                      #22: Continuum pentic component
-        0.0])                     #23: Continuum hexic component
+        np.nan,    # 0: The shift of the stellar template (km/s) [assigned later]
+        0.3,       # 1: The scale factor for the stellar template
+        0.0,       # 2: The shift of the telluric template (km/s)
+        0.6,       # 3: The scale factor for the telluric template
+        initvsini, # 4: vsini (km/s)
+        np.nan,    # 5: The instrumental resolution (FWHM) in pixels
+        0.0,       # 6: Wavelength 0-pt
+        0.0,       # 7: Wavelength linear component
+        0.0,       # 8: Wavelength quadratic component
+        0.0,       # 9: Wavelength cubic component
+        1.0,       #10: Continuum zero point
+        0.0,       #11: Continuum linear component
+        0.0,       #12: Continuum quadratic component
+        np.nan,    #13: Instrumental resolution linear component
+        np.nan,    #14: Instrumental resolution quadratic component
+        centerloc, #15: Blaze dip center location
+        330,       #16: Blaze dip full width
+        0.05,      #17: Blaze dip depth
+        90,        #18: Secondary blaze dip full width
+        0.05,      #19: Blaze dip depth
+        0.0,       #20: Continuum cubic component
+        0.0,       #21: Continuum quartic component
+        0.0,       #22: Continuum pentic component
+        0.0,       #23: Continuum hexic component
+    ])
     
     if int(order) == 13: pars0[1] = 0.8
     
@@ -59,17 +70,16 @@ def setup_fitting_init_pars(band, initvsini, order):
 
 
 def base_dpars_dict(vsinivary, masterbeam, band, order):
-    """setup basic sets of par vary range array
+    """Setup basic sets of paramaeter variable ranges
 
-    Parameters
-    ----------
-    use_sets : list with str
-        list of dpars_org keys that wish to get
+    Args:
+        initvsini (float): Initial vsini value
+        band (str): H or K band
+        order (int): Current run order
+        run_num (int): Number of the optimize sequence that is being running
 
-    Returns
-    -------
-    Dict
-        dpars
+    Returns:
+        dpars_org (dict): Sets of optimize parameters' variable ranges
     """
     
     #                     | 0    1    2    3 |  | -- 4 -- || 5 | | 6     7     8     9 | |10  11  12| |13 14||15   16   17   18    19 | |20   21   22   23 |
@@ -112,9 +122,10 @@ def base_dpars_dict(vsinivary, masterbeam, band, order):
 
 
 
-def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
-
-    # Main function for RV fitting that will be threaded over by multiprocessing
+def main(args, inparam, orders, order_use, trk, step2or3, i):
+    """Main function for RV fitting that will be threaded over 
+    by multiprocessing
+    """
 
     nights   = inparam.nights
     night = nights[i] # current looped night
@@ -197,7 +208,8 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         elif beam == 'B':
             antibeam = 'A'
         else:
-            sys.exit('uhoh')
+            sys.exit(
+                f'EXIT, beam (nodding) can only be A or B, getting {beam}...')
 
         A0loc = f'./Output/{args.targname}_{args.band}/A0Fits/{night[:8]}A0_{beam}treated_{args.band}.fits'
         
@@ -230,6 +242,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         # Remove extra rows leftover from having columns of unequal length
         satm = satm[(watm != 0)]
         watm = watm[(watm != 0)]
+
         # set very low points to zero so that they don't go to NaN when taken 
         # to an exponent by template power in fmodel_chi
         satm[(satm < 1e-4)] = 0. 
@@ -245,7 +258,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                 watm1mol = watm1mol[(watm1mol != 0)]
                 watmmols[mol] = watm1mol; satmmols[mol] = satm1mol
 
-        maskwaves = H2Omasker(inparam, args, order, night, watm, satm, 
+        maskwaves = h2o_masker(inparam, args, order, night, watm, satm, 
                                 molnames, watmmols, satmmols)
 	
         #-------------------------------------------------------------------------------
@@ -311,7 +324,8 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         x_save = x_piece.copy()
         u_save = u_piece.copy()
 
-        # Trim telluric template to data range +- 15 AA. If telluric template buffer is cut short because A0 lines didn't extend 
+        # Trim telluric template to data range +- 15 AA. If telluric 
+        # template buffer is cut short because A0 lines didn't extend 
         # far past data range, cut data range accordingly.
         satm_in = satm[(watm > np.min(wave_piece)*1e4 - 10) \
                             & (watm < np.max(wave_piece)*1e4 + 10)]
@@ -436,7 +450,8 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
             if nc == cycles:
                 optgroup = optgroup[:-1] # if is the last run, skip the 'ts'
             for optkind in optgroup:
-                parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize)
+                parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, 
+                                        fitobj, optimize)
                 parstart = parfit_1.copy()
                 if args.debug == True:
                     outplotter_23(
@@ -450,7 +465,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
             ## After first cycle, use best fit model to identify CRs/hot pixels
             if nc == 1:
                 parfit = parfit_1.copy()
-                CRmaskF = CRmasker(parfit,fitobj)
+                CRmaskF = cr_masker(parfit,fitobj)
 
                 w,smod,cont,c2 = fmod_conti(parfit, fitobj)
                 molmask = []
@@ -472,7 +487,8 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                     ax.axvline(w[-1],color='black')
                     ax.set_title(f'Order {order}')
                     plt.savefig(
-                        f'{inparam.outpath}/figs/main_step{step2or3}_{args.band}_{trk}/MaskRegionsBOUNDED_{order}_{night[:8]}.png', 
+                        f'{inparam.outpath}/figs/main_step{step2or3}_{args.band}_{trk}/'
+                            f'MaskRegionsBOUNDED_{order}_{night[:8]}.png', 
                         bbox_inches='tight', format='png', overwrite=True) 
                     plt.clf()
                     plt.close()
@@ -631,7 +647,8 @@ if __name__ == '__main__':
 
     #------------------------------
 
-    if args.mode.lower() == 'std': # Specify initial RV guesses as a single value applied to all nights
+    # Specify initial RV guesses as a single value applied to all nights
+    if args.mode.lower() == 'std': 
         initguesses = np.float(args.guesses)
         initguesses_show = initguesses
     else: # Load initial RV guesses from file
@@ -724,7 +741,8 @@ Input Parameters:
         os.mkdir(f'./Output/{args.targname}_{args.band}/figs')
 
     step2or3 = '3'
-    temp_dir = f'./Output/{args.targname}_{args.band}/figs/main_step{step2or3}_{args.band}_{trk}'
+    temp_dir = f'./Output/{args.targname}_{args.band}/figs/' \
+                    f'main_step{step2or3}_{args.band}_{trk}'
     if not os.path.isdir(temp_dir):
         os.mkdir(temp_dir)
 
@@ -843,7 +861,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the
                 orders[jerp], int(jerp+1), len(orders)
                 ))
 
-        func = partial(rv_MPinst, args, inparam, orders, jerp, trk, step2or3 )
+        func = partial(main, args, inparam, orders, jerp, trk, step2or3 )
         outs = pqdm(np.arange(len(nightsFinal)), func, n_jobs=args.Nthreads)
 	
         #-------------------------------------------------------------------------------
@@ -871,7 +889,8 @@ For H band RVs: We do not expect any systematic changes in the H band as the
         # Save results to fits file
         c1    = fits.Column(name='NIGHT'+str(order),  array=nightsbox, format='{}A'.format(len(nights[0])) )
         c2    = fits.Column(name='RV'+str(order),     array=rvbox,     format='D')
-        c3    = fits.Column(name='PARFIT'+str(order), array=parfitbox, format=str(len(parfitbox[0,:]))+'D', dim=(1,len(parfitbox[0,:])))
+        c3    = fits.Column(name='PARFIT'+str(order), array=parfitbox, format=str(len(parfitbox[0,:]))+'D', 
+                            dim=(1,len(parfitbox[0,:])))
         c4    = fits.Column(name='VSINI'+str(order),  array=vsinibox,  format='D')
         c5    = fits.Column(name='TAG'+str(order),    array=tagbox,    format='4A')
         cols  = fits.ColDefs([c1,c2,c3,c4,c5])
@@ -885,7 +904,8 @@ For H band RVs: We do not expect any systematic changes in the H band as the
         else:
             hh = fits.open('{}/{}/RVresultsRawBox.fits'.format(inparam.outpath, name))
             hh.append(hdu_1)
-            hh.writeto('{}/{}/RVresultsRawBox.fits'.format(inparam.outpath, name),overwrite=True)
+            hh.writeto('{}/{}/RVresultsRawBox.fits'.format(inparam.outpath, name),
+                overwrite=True)
 
         #-------------------------------------------------------------------------------
 
@@ -1069,7 +1089,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the
 
         # Save results to fits file separately for each tight/loose dataset
         c1 = fits.Column( name='NIGHT',         array=nights_use,    format='8A')
-        c2 = fits.Column( name='JD',            array=jds_out,      format='D')
+        c2 = fits.Column( name='JD',            array=jds_out,       format='D')
         c3 = fits.Column( name='RVBOX',         array=rvmasterbox,   format='{}D'.format(len(orders)))
         c4 = fits.Column( name='STDBOX',        array=stdmasterbox,  format='{}D'.format(len(orders)))
         c7 = fits.Column( name='Sigma_method2', array=sigma_method2, format='D')
@@ -1170,11 +1190,11 @@ For H band RVs: We do not expect any systematic changes in the H band as the
         bbox_inches='tight')
 
     # Output combined final results to fits file
-    c1 = fits.Column(name='NIGHT',    array=nightsCombined,         format='{}A'.format(len(nights[0])) )
-    c2 = fits.Column(name='JD',       array=jdsCombined,           format='D')
-    c3 = fits.Column(name='RVfinal',  array=rvfinalCombined,        format='D')
-    c4 = fits.Column(name='STDfinal', array=stdfinalCombined,       format='D')
-    c5 = fits.Column(name='VSINI',    array=vsinifinalCombined,     format='D')
+    c1 = fits.Column(name='NIGHT',    array=nightsCombined,     format='{}A'.format(len(nights[0])) )
+    c2 = fits.Column(name='JD',       array=jdsCombined,        format='D')
+    c3 = fits.Column(name='RVfinal',  array=rvfinalCombined,    format='D')
+    c4 = fits.Column(name='STDfinal', array=stdfinalCombined,   format='D')
+    c5 = fits.Column(name='VSINI',    array=vsinifinalCombined, format='D')
 
     cols = fits.ColDefs([c1,c2,c3,c4,c5])
     hdu_1 = fits.BinTableHDU.from_columns(cols)

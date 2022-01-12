@@ -4,19 +4,29 @@ from Engine.set_argparse import _argparse_step2
 
 from Engine.IO_AB      import setup_templates, init_fitsread, setup_outdir
 from Engine.clips      import basicclip_above
-from Engine.contfit    import A0cont
+from Engine.contfit    import a0cont
 from Engine.classes    import FitObjs,InParams,_setup_bound_cut
 from Engine.rebin_jv   import rebin_jv
 from Engine.rotint     import rotint
 from Engine.opt        import optimizer, fmod, fmod_conti
 from Engine.outplotter import outplotter_23
 from Engine.detect_peaks import detect_peaks
-from Engine.crmask    import CRmasker
-from Engine.molmask    import H2Omasker
+from Engine.crmask    import cr_masker
+from Engine.molmask    import h2o_masker
 
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 def setup_fitting_init_pars(band, initvsini, order):
+    """Setup the initial values for the parameters to be optimized (fitted)
+
+    Args:
+        band (str): H or K band
+        initvsini (float): Initial vsini value
+        order (int): Current run order
+
+    Returns:
+        np.array: Initial values for the parameters to be optimized 
+    """
 
     # start at bucket loc = 1250 +- 100, width = 250 +- 100, 
     # depth = 100 +- 5000 but floor at 0
@@ -28,30 +38,31 @@ def setup_fitting_init_pars(band, initvsini, order):
     # code before optimization and in between optimization steps.
     
     pars0 = np.array([
-        np.nan,                   # 0: The shift of the stellar template (km/s) [assigned later]
-        0.3,                      # 1: The scale factor for the stellar template
-        0.0,                      # 2: The shift of the telluric template (km/s)
-        0.6,                      # 3: The scale factor for the telluric template
-        initvsini,                # 4: vsini (km/s)
-        np.nan,                   # 5: The instrumental resolution (FWHM) in pixels
-        0.0,                      # 6: Wavelength 0-pt
-        0.0,                      # 7: Wavelength linear component
-        0.0,                      # 8: Wavelength quadratic component
-        0.0,                      # 9: Wavelength cubic component
-        1.0,                      #10: Continuum zero point
-        0.,                       #11: Continuum linear component
-        0.,                       #12: Continuum quadratic component
-        np.nan,                   #13: Instrumental resolution linear component
-        np.nan,                   #14: Instrumental resolution quadratic component
-        0.0,                      #15: Blaze dip center location
-        0.0,                      #16: Blaze dip full width
-        0.0,                      #17: Blaze dip depth
-        0.0,                      #18: Secondary blaze dip full width
-        0.0,                      #19: Blaze dip depth
-        0.0,                      #20: Continuum cubic component
-        0.0,                      #21: Continuum quartic component
-        0.0,                      #22: Continuum pentic component
-        0.0])                     #23: Continuum hexic component
+        np.nan,    # 0: The shift of the stellar template (km/s) [assigned later]
+        0.3,       # 1: The scale factor for the stellar template
+        0.0,       # 2: The shift of the telluric template (km/s)
+        0.6,       # 3: The scale factor for the telluric template
+        initvsini, # 4: vsini (km/s)
+        np.nan,    # 5: The instrumental resolution (FWHM) in pixels
+        0.0,       # 6: Wavelength 0-pt
+        0.0,       # 7: Wavelength linear component
+        0.0,       # 8: Wavelength quadratic component
+        0.0,       # 9: Wavelength cubic component
+        1.0,       #10: Continuum zero point
+        0.0,       #11: Continuum linear component
+        0.0,       #12: Continuum quadratic component
+        np.nan,    #13: Instrumental resolution linear component
+        np.nan,    #14: Instrumental resolution quadratic component
+        0.0,       #15: Blaze dip center location
+        0.0,       #16: Blaze dip full width
+        0.0,       #17: Blaze dip depth
+        0.0,       #18: Secondary blaze dip full width
+        0.0,       #19: Blaze dip depth
+        0.0,       #20: Continuum cubic component
+        0.0,       #21: Continuum quartic component
+        0.0,       #22: Continuum pentic component
+        0.0,       #23: Continuum hexic component
+    ])
     
     if int(order) == 13: pars0[1] = 0.8
     
@@ -59,17 +70,16 @@ def setup_fitting_init_pars(band, initvsini, order):
 
 
 def base_dpars_dict(vsinivary, band, order, run_num):
-    """setup basic sets of par vary range array
+    """Setup basic sets of paramaeter variable ranges
 
-    Parameters
-    ----------
-    use_sets : list with str
-        list of dpars_org keys that wish to get
+    Args:
+        initvsini (float): Initial vsini value
+        band (str): H or K band
+        order (int): Current run order
+        run_num (int): Number of the optimize sequence that is being running
 
-    Returns
-    -------
-    Dict
-        dpars
+    Returns:
+        dpars_org (dict): Sets of optimize parameters' variable ranges
     """
     
     #                      | 0    1    2    3 | | -- 4 -- | | 5 | | 6   7    8    9  | |10  11  12| |13 14|  |15   16   17   18    19|  |20   21   22   23 |
@@ -113,9 +123,10 @@ def base_dpars_dict(vsinivary, band, order, run_num):
 
 
 
-def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
-
-    # Main function for RV fitting that will be threaded over by multiprocessing
+def main(args, inparam, orders, order_use, trk, step2or3, i):
+    """Main function for RV fitting that will be threaded over 
+    by multiprocessing
+    """
 
     nights   = inparam.nights
     night = nights[i] # current looped night
@@ -139,20 +150,24 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     elif type(inparam.initguesses) == float:
         initguesses = inparam.initguesses
     else:
-        sys.exit('ERROR! EXPECTING SINGLE NUMBER OR FILE FOR INITGUESSES! QUITTING!')
+        sys.exit(
+            'ERROR! EXPECTING SINGLE NUMBER OR FILE FOR INITGUESSES! QUITTING!'
+            )
 
     if np.isnan(initguesses) == True:
-        logger.warning(f'  --> Previous run of {night} found it inadequate, skipping...')
+        logger.warning(
+            f'  --> Previous run of {night} found it inadequate, skipping...'
+            )
         return night, np.nan, np.nan
 
     # Collect relevant beam and filenum info
-    tagsnight = []; beamsnight = np.array([]);
+    tagsnight = []; beamsnight = np.array([])
     for tag in inparam.tagsB[night]:
         tagsnight.append(tag)
         beamsnight = np.append(beamsnight, 'B')
 
     # Only do B exposures, and just use first B nodding
-    masterbeam = 'B'; beam = 'B';
+    masterbeam = 'B'; beam = 'B'
     try:
         tag  = tagsnight[0]
     except IndexError:
@@ -167,7 +182,9 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     try:
         hdulist = fits.open(A0loc)
     except IOError:
-        logger.warning(f'  --> No A0-fitted template for night {night}, skipping...')
+        logger.warning(
+            f'  --> No A0-fitted template for night {night}, skipping...'
+            )
         return night, np.nan, np.nan
 
     # Find corresponding table in fits file, given the tables do not go 
@@ -216,7 +233,6 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                                 f'ORDERS FOR NIGHT: {night}, skipping...')
             return night, np.nan, np.nan
         
-        
      
     # Use instrumental profile dictionary corresponding to whether IGRINS 
     # mounting was loose or not
@@ -234,6 +250,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     # Remove extra rows leftover from having columns of unequal length
     satm = satm[(watm != 0)]
     watm = watm[(watm != 0)]
+
     # set very low points to zero so that they don't go to NaN when taken 
     # to an exponent by template power in fmodel_chi
     satm[(satm < 1e-4)] = 0. 
@@ -241,7 +258,6 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     continuum = continuum[(continuum != 0)]
 
     #-------------------------------------------------------------------------------
-
     bound_cut = _setup_bound_cut(inparam.bound_cut_dic, args.band, order)
 
     # Load target spectrum
@@ -286,7 +302,8 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     # Save data for second template cutting after optimization cycle 1 done
     s_save = s_piece.copy(); x_save = x_piece.copy(); u_save = u_piece.copy()
 
-    # Trim telluric template to data range +- 15 AA. If telluric template buffer is cut short because A0 lines didn't extend 
+    # Trim telluric template to data range +- 15 AA. If telluric template 
+    # buffer is cut short because A0 lines didn't extend 
     # far past data range, cut data range accordingly.
     satm_in = satm[(watm > np.min(wave_piece)*1e4 - 10) \
                         & (watm < np.max(wave_piece)*1e4 + 10)]
@@ -317,7 +334,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     par = pars0.copy()
 
     # Get initial guess for cubic wavelength solution from reduction pipeline
-    f = np.polyfit(x_piece,wave_piece,3)
+    f = np.polyfit(x_piece, wave_piece, 3)
     q = np.poly1d(f)
     initwave = q(x_piece)*1e4
     
@@ -332,7 +349,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     dpars2 = base_dpars_dict(inparam.vsinivary, args.band, int(order), run_num=2)
     
 
-    continuum_in = rebin_jv(a0contx,continuum,x_piece,False)
+    continuum_in = rebin_jv(a0contx, continuum, x_piece, False)
     fitobj = FitObjs(
         s_piece, x_piece, u_piece, continuum_in, watm_in, satm_in, 
         mflux_in, mwave_in, ast.literal_eval(inparam.maskdict[order]),
@@ -522,12 +539,14 @@ if __name__ == '__main__':
     if args.guessesX != '':
         try:
             guessdata = Table.read(
-                f'./Output/{args.targname}_{args.band}/Initguesser_results_{args.guessesX}.csv', 
+                f'./Output/{args.targname}_{args.band}/'
+                    f'Initguesser_results_{args.guessesX}.csv', 
                 format='csv')
 
         except:
             sys.exit(
-                f'ERROR: "./Output/{args.targname}_{args.band}/Initguesser_results_{args.guessesX}.csv" NOT FOUND!')
+                f'ERROR: "./Output/{args.targname}_{args.band}/'
+                    f'Initguesser_results_{args.guessesX}.csv" NOT FOUND!')
 
         initnights = np.array(guessdata['night'])
         initrvs    = np.array(guessdata['bestguess'])
@@ -542,7 +561,8 @@ if __name__ == '__main__':
 
     if int(args.label_use) not in orders:
         sys.exit(
-            f'Oops! -l_use INPUT "{args.label_use}" is not in "{orders}" from the given WRegion list!!')
+            f'Oops! -l_use INPUT "{args.label_use}" is not in "{orders}" '
+                'from the given WRegion list!!')
 
 #-------------------------------------------------------------------------------
 
@@ -693,7 +713,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
     print('\n')
 
     # Run order by order, multiprocessing over nights within an order
-    func = partial(rv_MPinst, args, inparam, orders, 
+    func = partial(main, args, inparam, orders, 
                         int(args.label_use), trk, step2or3 )
     outs = pqdm(np.arange(len(nightsFinal)), func, n_jobs=args.Nthreads)
 

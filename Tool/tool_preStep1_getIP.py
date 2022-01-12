@@ -5,7 +5,7 @@ from Engine.importmodule import *
 
 from Engine.IO_AB     import setup_templates_tel, init_fitsread, stellarmodel_setup, setup_outdir
 from Engine.clips     import basicclip_above
-from Engine.contfit   import A0cont
+from Engine.contfit   import a0cont
 from Engine.classes   import FitObjs,InParamsA0,OrderDictCla
 from Engine.rebin_jv  import rebin_jv
 from Engine.rotint    import rotint
@@ -13,7 +13,7 @@ from Engine.Telfitter import telfitter
 from Engine.opt       import optimizer, fmod
 from Engine.outplotter import outplotter_tel
 from Engine.detect_peaks import detect_peaks
-from Engine.crmask    import CRmasker
+from Engine.crmask    import cr_masker
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 
@@ -96,7 +96,7 @@ def MPinstB(args, inparam, jerp, orders, i):
     a0u        = basicclip_above(a0u,a0fluxlist,nzones);   a0fluxlist = basicclip_above(a0fluxlist,a0fluxlist,nzones);
 
     # Compute rough blaze function estimate. Better fit will be provided by Telfit later.
-    continuum    = A0cont(a0wavelist,a0fluxlist,night,order,args.band)
+    continuum    = a0cont(a0wavelist,a0fluxlist,night,order,args.band)
     a0masterwave = a0wavelist.copy()
     a0masterwave *= 1e4
 
@@ -263,13 +263,13 @@ def MPinstB(args, inparam, jerp, orders, i):
                 ## After first cycle, use best fit model to identify CRs/hot pixels
                 if nc == 1:
                     parfit = parfit_1.copy()
-                    CRmaskF = CRmasker(parfit,fitobj)
+                    CRmaskF = cr_masker(parfit,fitobj)
 
                     # Redo rough blaze fit in case hot pixels were throwing it off
                     w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
                     mask = np.ones_like(w,dtype=bool)
                     mask[CRmaskF] = False
-                    continuum    = A0cont(w[mask]/1e4,s[mask],night,order,args.band)
+                    continuum    = a0cont(w[mask]/1e4,s[mask],night,order,args.band)
                     continuum    = rebin_jv(w[mask],continuum,w,False)
                     fitobj = FitObjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam, CRmaskF)
 
@@ -366,7 +366,7 @@ def MPinstB(args, inparam, jerp, orders, i):
             ## After first cycle, use best fit model to identify CRs/hot pixels
             if nc == 1:
                 parfit = parfit_1.copy()
-                CRmaskF = CRmasker(parfit,fitobj)
+                CRmaskF = cr_masker(parfit,fitobj)
                 fitobj = FitObjs(s, x, u, continuum, watm1, satm1, mflux_in, mwave_in, [], masterbeam, CRmaskF)
 
         parfit = parfit_1.copy()
@@ -752,7 +752,7 @@ def MPinstA(args, inparam, jerp, orders, i):
                     ## After first cycle, use best fit model to identify CRs/hot pixels
                     if nc == 1:
                         parfit = parfit_1.copy()
-                        CRmaskF = CRmasker(parfit,fitobj)
+                        CRmaskF = cr_masker(parfit,fitobj)
                         fitobj = FitObjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam, CRmaskF)
 
                 if misfit_flag_low == 0 or restarted == True:
@@ -918,7 +918,7 @@ def MPinstA(args, inparam, jerp, orders, i):
                 ## After first cycle, use best fit model to identify CRs/hot pixels
                 if nc == 1:
                     parfit = parfit_1.copy()
-                    CRmaskF = CRmasker(parfit,fitobj)
+                    CRmaskF = cr_masker(parfit,fitobj)
                     fitobj = FitObjs(s, x, u, continuum, watm1, satm1, mflux_in, mwave_in, [], masterbeam, CRmaskF)
 
             parfit = parfit_1.copy()

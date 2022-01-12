@@ -5,7 +5,7 @@ from Engine.importmodule import *
 
 from Engine.IO_AB     import setup_templates, init_fitsread, stellarmodel_setup, setup_outdir
 from Engine.clips     import basicclip_above
-from Engine.contfit   import A0cont
+from Engine.contfit   import a0cont
 from Engine.classes   import FitObjs,InParamsA0
 from Engine.macbro    import macbro
 from Engine.rebin_jv  import rebin_jv
@@ -266,7 +266,7 @@ def MPinst(i, order0, order):
     a0fluxlist /= np.median(a0fluxlist)
 
     # Compute rough blaze fn estimate
-    continuum    = A0cont(a0wavelist,a0fluxlist,night,order)
+    continuum    = a0cont(a0wavelist,a0fluxlist,night,order)
     a0contwave   = a0wavelist.copy()
     a0masterwave = a0wavelist.copy()
     a0masterwave *= 1e4

@@ -3,7 +3,7 @@ from scipy import interpolate
 
 from Engine.detect_peaks import detect_peaks
 
-def A0cont(a0wavecut,a0vcut,night,order,band):
+def a0cont(a0wavecut,a0vcut,night,order,band):
     '''
     Performs first-pass fit to blaze shape of telluric standard spectrum.
 

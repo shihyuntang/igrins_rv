@@ -4,7 +4,7 @@ from   Engine.rebin_jv import rebin_jv
 import matplotlib.pyplot as plt
 
 
-def H2Omasker(inparam, args, order, night, watm, satm, molnames, 
+def h2o_masker(inparam, args, order, night, watm, satm, molnames, 
                 molwaves, molfluxes):
 
         go = True
