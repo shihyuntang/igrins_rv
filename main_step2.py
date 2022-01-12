@@ -625,7 +625,7 @@ Input Parameters:
 
     step2or3 = 2
     temp_f_dir = f'./Output/{args.targname}_{args.band}/figs/'\
-                        'main_step{step2or3}_{args.band}_{trk}'
+                        f'main_step{step2or3}_{args.band}_{trk}'
     if not os.path.isdir(temp_f_dir):
         os.mkdir(temp_f_dir)
 
