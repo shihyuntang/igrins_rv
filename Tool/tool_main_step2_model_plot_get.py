@@ -7,7 +7,7 @@ from Engine.importmodule import read_prepdata
 from Engine.IO_AB      import setup_templates, init_fitsread, stellarmodel_setup, setup_outdir
 from Engine.clips      import basicclip_above
 from Engine.contfit    import A0cont
-from Engine.classes    import fitobjs, inparams
+from Engine.classes    import FitObjs, InParams
 from Engine.macbro     import macbro
 from Engine.rebin_jv   import rebin_jv
 from Engine.rotint     import rotint
@@ -218,7 +218,7 @@ def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
         continuum_in = rebin_jv(a0contx,continuum,x_piece,False)
         s_piece /= np.median(s_piece)
-        fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]))
+        fitobj = FitObjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]))
 
         #-------------------------------------------------------------------------------
         # Initialize an array that puts hard bounds on vsini and the instrumental resolution to make sure they do not diverge to unphysical values
@@ -506,7 +506,7 @@ Input Parameters:
     watm,satm, mwave0, mflux0 = setup_templates(logger, args.template, args.band, args.sptype)
 
     # Save pars in class for future use
-    inparam = inparams(inpath,outpath,initvsini,vsinivary,args.plotfigs,
+    inparam = InParams(inpath,outpath,initvsini,vsinivary,args.plotfigs,
                        initguesses,bvcs,tagsA,tagsB,nightsFinal,mwave0,mflux0,None,xbounddict,maskdict)
 
     #-------------------------------------------------------------------------------

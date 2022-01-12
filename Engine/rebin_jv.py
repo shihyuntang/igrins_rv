@@ -1,5 +1,3 @@
-
-
 import numpy as np
 from scipy.interpolate import interp1d, splev, splrep
 
@@ -73,7 +71,8 @@ def rebin_jv(Wold, Sold, Wnew, verbose, logger=None):
         #pixel scale decreased. Interpolation by cubic spline.
         #Dummy = long(0)
         #Snew = spline(Wold,Sold,Wnew) # inerpolated spectrum
-        f = interp1d(Wold,Sold,'cubic',bounds_error=False,fill_value='extrapolate') #interpolated old spectrum
+        f = interp1d(Wold, Sold, 'cubic', bounds_error=False,
+                        fill_value='extrapolate') #interpolated old spectrum
         Snew = f(Wnew)
     else:
         #pixel scale increased. Integration under cubic spline.
@@ -103,6 +102,6 @@ def rebin_jv(Wold, Sold, Wnew, verbose, logger=None):
         S = splev(W,splrep(Wold, Sold))
         S /= XFac #take average in each pixel
         # Snew = S.reshape(Nnew,XFac).sum(1)
-        Snew = np.sum(S.reshape(Nnew,XFac), axis=1 )
+        Snew = np.sum(S.reshape(Nnew, XFac), axis=1 )
 
     return Snew

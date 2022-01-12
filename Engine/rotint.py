@@ -1,9 +1,7 @@
-
-# coding: utf-8
+import time
 
 import numpy as np
 from scipy.interpolate import interp1d, splrep,splev
-import time
 
 
 # def rotint(w,s,vsini,eps=None,nr=None,ntheta=None,dif=None):

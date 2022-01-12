@@ -4,8 +4,7 @@ import logging.handlers
 from os      import listdir
 from os.path import isfile, join, isdir
 # Check python version
-#-------------------------------------------------------------------------------
-ver     = sys.version_info # Get Python version
+ver     = sys.version_info
 version = ver.major + 0.1*ver.minor
 if version < 3.7:
     sys.exit(f'Python 3.7 or later is required! You are using py{version}')
@@ -92,7 +91,8 @@ def log_warning_id(file, start_t):
             int(line_str[:4])
         except ValueError:
             continue
-        date_str = line_str[:23] # extract the date, e.g., '2021-04-11 08:29:50,987'
+        # extract the date, e.g., '2021-04-11 08:29:50,987'
+        date_str = line_str[:23] 
         datetemp = datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S,%f')
 
         if start_t > datetemp:
@@ -125,44 +125,56 @@ def read_prepdata(args):
     jds         : Julian Dates
     bvcs        : Barycentric velocity corrections
     nightsFinal : Dates of observations in YYYYMMDD
-    orders      : Echelle orders, as characterized by file index (as opposed to m number; for conversion between the two, see Stahl et al. 2021)
-    obs         : Dictionary of observatory corresponding to observation, referencedby night
+    orders      : Echelle orders, as characterized by file index (as opposed to 
+                    m number; for conversion between the two, see Stahl et al. 2021)
+    obs         : Dictionary of observatory corresponding to observation, referenced by night
     '''
 
-    ##
     if 'igrins' in os.getcwd().split('/')[-1]:
-        A0data   = Table.read('./Input/Prepdata/Prepdata_A0_{}.txt'.format(args.targname), format='ascii')
+        A0data   = Table.read(
+            './Input/Prepdata/Prepdata_A0_{}.txt'.format(args.targname), 
+            format='ascii')
     else:
-        A0data   = Table.read('../Input/Prepdata/Prepdata_A0_{}.txt'.format(args.targname), format='ascii')
+        A0data   = Table.read(
+            '../Input/Prepdata/Prepdata_A0_{}.txt'.format(args.targname), 
+            format='ascii')
     A0nights = np.array(A0data['night'],dtype='str')
-    ams0     = np.array(A0data['airmass'])
-    obs0     = {str(k):str(v) for k,v in zip(A0data['night'],A0data['obs'])}
+    ams0 = np.array(A0data['airmass'])
+    obs0 = {str(k):str(v) for k,v in zip(A0data['night'],A0data['obs'])}
 
     if 'igrins' in os.getcwd().split('/')[-1]:
-        targdata = Table.read('./Input/Prepdata/Prepdata_targ_{}.txt'.format(args.targname), format='ascii')
+        targdata = Table.read(
+            './Input/Prepdata/Prepdata_targ_{}.txt'.format(args.targname), 
+            format='ascii')
     else:
-        targdata = Table.read('../Input/Prepdata/Prepdata_targ_{}.txt'.format(args.targname), format='ascii')
+        targdata = Table.read(
+            '../Input/Prepdata/Prepdata_targ_{}.txt'.format(args.targname), 
+            format='ascii')
     Tnights = np.array(targdata['night'],dtype='str')
-    tags0   = np.array(targdata['tag'], dtype='int')
-    beams0  = np.array(targdata['beam'],dtype='str')
-    jds0   = np.array(targdata['jd'],dtype=float)
-    bvcs0   = np.array(targdata['bvc'])
-    ams     = np.array(targdata['airmass'])
+    tags0 = np.array(targdata['tag'], dtype='int')
+    beams0 = np.array(targdata['beam'], dtype='str')
+    jds0 = np.array(targdata['jd'], dtype=float)
+    bvcs0 = np.array(targdata['bvc'])
+    ams = np.array(targdata['airmass'])
 
     if 'igrins' in os.getcwd().split('/')[-1]:
-        bounddata = Table.read('./Input/UseWv/XRegions_{}_{}.csv'.format(args.WRegion, args.band), format='csv')
+        bounddata = Table.read(
+            './Input/UseWv/XRegions_{}_{}.csv'.format(args.WRegion, args.band), 
+            format='csv')
     else:
-        bounddata = Table.read('../Input/UseWv/XRegions_{}_{}.csv'.format(args.WRegion, args.band), format='csv')
-    starts  = np.array(bounddata['start'])
-    ends    = np.array(bounddata['end'])
-    orders  = np.array(bounddata['order'], dtype=int)
-    masks    = np.array(bounddata['masks'])
+        bounddata = Table.read(
+            '../Input/UseWv/XRegions_{}_{}.csv'.format(args.WRegion, args.band), 
+            format='csv')
+    starts = np.array(bounddata['start'])
+    ends = np.array(bounddata['end'])
+    orders = np.array(bounddata['order'], dtype=int)
+    masks = np.array(bounddata['masks'])
     xbounddict = {orders[i]:np.array([starts[i],ends[i]]) for i in range(len(starts))}
     maskdict = {orders[i]:masks[i] for i in range(len(starts))}
 
     # Attribute A and B exposures to right file numbers
-    tagsA = {}; tagsB = {}; jds = {}; bvcs = {};
-    night_orig = Tnights[0]; tagsA0 = []; tagsB0 = [];
+    tagsA = {}; tagsB = {}; jds = {}; bvcs = {}
+    night_orig = Tnights[0]; tagsA0 = []; tagsB0 = []
 
     nights_unique = np.unique(Tnights)
     for hrt in range(len(nights_unique)):
@@ -182,7 +194,7 @@ def read_prepdata(args):
         else:
             tagsA[Tnights[hrt-1]] = tagsA0
             tagsB[Tnights[hrt-1]] = tagsB0
-            tagsA0 = []; tagsB0 = [];
+            tagsA0 = []; tagsB0 = []
             if beams0[hrt] == 'A':
                 tagsA0.append(tag1)
             else:

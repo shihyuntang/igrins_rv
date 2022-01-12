@@ -5,7 +5,7 @@ from Engine.set_argparse import _argparse_step2
 from Engine.IO_AB      import setup_templates, init_fitsread, setup_outdir
 from Engine.clips      import basicclip_above
 from Engine.contfit    import A0cont
-from Engine.classes    import fitobjs,inparams,_setup_bound_cut
+from Engine.classes    import FitObjs,InParams,_setup_bound_cut
 from Engine.rebin_jv   import rebin_jv
 from Engine.rotint     import rotint
 from Engine.opt        import optimizer, fmod, fmod_conti
@@ -18,37 +18,40 @@ from Engine.molmask    import H2Omasker
 #-------------------------------------------------------------------------------
 def setup_fitting_init_pars(band, initvsini, order):
 
-    # start at bucket loc = 1250 +- 100, width = 250 +- 100, depth = 100 +- 5000 but floor at 0
+    # start at bucket loc = 1250 +- 100, width = 250 +- 100, 
+    # depth = 100 +- 5000 but floor at 0
     centerloc = 1250 if band == 'H' else 1180
     
-    # Initialize parameter array for optimization as well as half-range values for each parameter during
-    # the various steps of the optimization.
-    # Many of the parameters initialized here will be changed throughout the code before optimization and
-    # in between optimization steps.
-    pars0 = np.array([np.nan,                   # 0: The shift of the stellar template (km/s) [assigned later]
-                      0.3,                      # 1: The scale factor for the stellar template
-                      0.0,                      # 2: The shift of the telluric template (km/s)
-                      0.6,                      # 3: The scale factor for the telluric template
-                      initvsini,                # 4: vsini (km/s)
-                      np.nan,                   # 5: The instrumental resolution (FWHM) in pixels
-                      0.0,                      # 6: Wavelength 0-pt
-                      0.0,                      # 7: Wavelength linear component
-                      0.0,                      # 8: Wavelength quadratic component
-                      0.0,                      # 9: Wavelength cubic component
-                      1.0,                      #10: Continuum zero point
-                      0.,                       #11: Continuum linear component
-                      0.,                       #12: Continuum quadratic component
-                      np.nan,                   #13: Instrumental resolution linear component
-                      np.nan,                   #14: Instrumental resolution quadratic component
-                      0.0,                      #15: Blaze dip center location
-                      0.0,                      #16: Blaze dip full width
-                      0.0,                      #17: Blaze dip depth
-                      0.0,                      #18: Secondary blaze dip full width
-                      0.0,                      #19: Blaze dip depth
-                      0.0,                      #20: Continuum cubic component
-                      0.0,                      #21: Continuum quartic component
-                      0.0,                      #22: Continuum pentic component
-                      0.0])                     #23: Continuum hexic component
+    # Initialize parameter array for optimization as well as half-range values 
+    # for each parameter during the various steps of the optimization.
+    # Many of the parameters initialized here will be changed throughout the 
+    # code before optimization and in between optimization steps.
+    
+    pars0 = np.array([
+        np.nan,                   # 0: The shift of the stellar template (km/s) [assigned later]
+        0.3,                      # 1: The scale factor for the stellar template
+        0.0,                      # 2: The shift of the telluric template (km/s)
+        0.6,                      # 3: The scale factor for the telluric template
+        initvsini,                # 4: vsini (km/s)
+        np.nan,                   # 5: The instrumental resolution (FWHM) in pixels
+        0.0,                      # 6: Wavelength 0-pt
+        0.0,                      # 7: Wavelength linear component
+        0.0,                      # 8: Wavelength quadratic component
+        0.0,                      # 9: Wavelength cubic component
+        1.0,                      #10: Continuum zero point
+        0.,                       #11: Continuum linear component
+        0.,                       #12: Continuum quadratic component
+        np.nan,                   #13: Instrumental resolution linear component
+        np.nan,                   #14: Instrumental resolution quadratic component
+        0.0,                      #15: Blaze dip center location
+        0.0,                      #16: Blaze dip full width
+        0.0,                      #17: Blaze dip depth
+        0.0,                      #18: Secondary blaze dip full width
+        0.0,                      #19: Blaze dip depth
+        0.0,                      #20: Continuum cubic component
+        0.0,                      #21: Continuum quartic component
+        0.0,                      #22: Continuum pentic component
+        0.0])                     #23: Continuum hexic component
     
     if int(order) == 13: pars0[1] = 0.8
     
@@ -69,14 +72,16 @@ def base_dpars_dict(vsinivary, band, order, run_num):
         dpars
     """
     
-    #                                | 0    1    2    3 |  | -- 4 -- | | 5 |   | 6     7     8           9  |  |10  11  12| |13 14|  |15   16   17   18    19 |  |20   21   22   23 |
-    dpars_org = {'cont' : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,        0.0,    0.0,  0.0,  0.0,        0.0,    1e7, 1, 1,   0, 0,    10., 30., 0.2, 50.0, 0.2,   1.0, 1.0, 1.0, 1.0 ]),
-                 'twave': np.array([  0.0, 0.0, 0.0, 1.0,   0.0,        0.0,    1.0,  1.0,  1.0,        1.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ]),
-                 'ip'   : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,        0.5,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ]),
-                 's'    : np.array([ 20.0, 2.0, 0.0, 0.0,   0.0,        0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ]),
-                 'v'    : np.array([  0.0, 0.0, 0.0, 0.0,   vsinivary,  0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ]),
-                 'ts'   : np.array([ 20.0, 2.0, 0.0, 1.0,   0.0,        0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,     0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ])}
-    
+    #                      | 0    1    2    3 | | -- 4 -- | | 5 | | 6   7    8    9  | |10  11  12| |13 14|  |15   16   17   18    19|  |20   21   22   23 |
+    dpars_org = {
+        'cont' : np.array([ 0.0, 0.0, 0.0, 0.0,  0.0,        0.0,  0.0, 0.0, 0.0, 0.0,  1e7, 1, 1,   0, 0,   10., 30., 0.2, 50.0, 0.2,   1.0, 1.0, 1.0, 1.0 ]),
+        'twave': np.array([ 0.0, 0.0, 0.0, 1.0,  0.0,        0.0,  1.0, 1.0, 1.0, 1.0,  0,   0, 0,   0, 0,    0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ]),
+        'ip'   : np.array([ 0.0, 0.0, 0.0, 0.0,  0.0,        0.5,  0.0, 0.0, 0.0, 0.0,  0,   0, 0,   0, 0,    0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ]),
+        's'    : np.array([20.0, 2.0, 0.0, 0.0,  0.0,        0.0,  0.0, 0.0, 0.0, 0.0,  0,   0, 0,   0, 0,    0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ]),
+        'v'    : np.array([ 0.0, 0.0, 0.0, 0.0,  vsinivary,  0.0,  0.0, 0.0, 0.0, 0.0,  0,   0, 0,   0, 0,    0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ]),
+        'ts'   : np.array([20.0, 2.0, 0.0, 1.0,  0.0,        0.0,  0.0, 0.0, 0.0, 0.0,  0,   0, 0,   0, 0,    0.,  0., 0.0,  0.,  0.0,   0.0, 0.0, 0.0, 0.0 ])
+        }
+
     
     # blaze fitting order setting
     if band == 'H':
@@ -119,11 +124,12 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     xbounds = inparam.xbounddict[order]
 
     if args.debug:
-        print('Working on order {:02d}, night {:03d}/{:03d} ({}) PID:{}...'.format(int(order),
-                                                                                               i+1,
-                                                                                               len(inparam.nights),
-                                                                                               night,
-                                                                                               mp.current_process().pid) )
+        print('Working on order {:02d}, night {:03d}/{:03d} ',
+                '({}) PID:{}...'.format(int(order),
+                                        i+1,
+                                        len(inparam.nights),
+                                        night,
+                                        mp.current_process().pid) )
 
     #-------------------------------------------------------------------------------
     
@@ -133,7 +139,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     elif type(inparam.initguesses) == float:
         initguesses = inparam.initguesses
     else:
-        sys.exit('ERROR! EXPECING SINGLE NUMBER OR FILE FOR INITGUESSES! QUITTING!')
+        sys.exit('ERROR! EXPECTING SINGLE NUMBER OR FILE FOR INITGUESSES! QUITTING!')
 
     if np.isnan(initguesses) == True:
         logger.warning(f'  --> Previous run of {night} found it inadequate, skipping...')
@@ -164,7 +170,8 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         logger.warning(f'  --> No A0-fitted template for night {night}, skipping...')
         return night, np.nan, np.nan
 
-    # Find corresponding table in fits file, given the tables do not go sequentially by order number due to multiprocessing in Step 1
+    # Find corresponding table in fits file, given the tables do not go 
+    # sequentially by order number due to multiprocessing in Step 1
     num_orders = 0
     for i in range(25):
         try:
@@ -173,24 +180,31 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         except:
             continue
 
-    fits_layer = [ i for i in np.arange(num_orders)+1 if np.int(hdulist[i].columns[0].name[9:]) == order ][0]
+    fits_layer = [ i for i in np.arange(num_orders)+1 \
+                    if np.int(hdulist[i].columns[0].name[9:]) == order ][0]
 
     tbdata = hdulist[ fits_layer ].data
     flag = np.array(tbdata[f'ERRORFLAG{order}'])[0]
 
-    # Check whether Telfit hit critical error in Step 1 for the chosen order with this night. If so, try another order. If all hit the error, skip the night.
+    # Check whether Telfit hit critical error in Step 1 for the chosen order 
+    # with this night. If so, try another order. If all hit the error, skip the night.
     nexto = 0
     ordertry = order
     while 1 == 1:
-        fits_layer = [ i for i in np.arange(num_orders)+1 if np.int(hdulist[i].columns[0].name[9:]) == ordertry ][0]
+        fits_layer = [ i for i in np.arange(num_orders)+1 \
+                        if np.int(hdulist[i].columns[0].name[9:]) == ordertry ][0]
 
         tbdata = hdulist[ fits_layer ].data
         flag = np.array(tbdata[f'ERRORFLAG{ordertry}'])[0]
 
-        if flag == 1:  # If Telfit hit unknown critical error in Step 1, this order can't be used for this night. Try another.
+        # If Telfit hit unknown critical error in Step 1, this order can't 
+        # be used for this night. Try another.
+        if flag == 1:  
             orderbad = ordertry
             ordertry = orders[nexto]
-            logger.warning(f'  --> TELFIT ENCOUNTERED CRITICAL ERROR IN ORDER: {orderbad} NIGHT: {night}, TRYING ORDER {ordertry} INSTEAD...')
+            logger.warning(f'  --> TELFIT ENCOUNTERED CRITICAL ERROR IN ORDER: '
+                                f'{orderbad} NIGHT: {night}, TRYING ORDER '
+                                f'{ordertry} INSTEAD...')
 
         else: # All good, continue
             order = ordertry
@@ -198,12 +212,14 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
         nexto += 1
         if nexto == len(orders):
-            logger.warning(f'  --> TELFIT ENCOUNTERED CRITICAL ERROR IN ALL ORDERS FOR NIGHT: {night}, skipping...')
+            logger.warning(f'  --> TELFIT ENCOUNTERED CRITICAL ERROR IN ALL '
+                                f'ORDERS FOR NIGHT: {night}, skipping...')
             return night, np.nan, np.nan
         
         
      
-    # Use instrumental profile dictionary corresponding to whether IGRINS mounting was loose or not
+    # Use instrumental profile dictionary corresponding to whether IGRINS 
+    # mounting was loose or not
     if np.int(night[:8]) < 20180401 or np.int(night[:8]) > 20190531:
         IPpars = inparam.ips_tightmount_pars[args.band][masterbeam][order]
     else:
@@ -218,7 +234,9 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     # Remove extra rows leftover from having columns of unequal length
     satm = satm[(watm != 0)]
     watm = watm[(watm != 0)]
-    satm[(satm < 1e-4)] = 0. # set very low points to zero so that they don't go to NaN when taken to an exponent by template power in fmodel_chi
+    # set very low points to zero so that they don't go to NaN when taken 
+    # to an exponent by template power in fmodel_chi
+    satm[(satm < 1e-4)] = 0. 
     a0contx = a0contx[(continuum != 0)]
     continuum = continuum[(continuum != 0)]
 
@@ -228,25 +246,36 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
     # Load target spectrum
 
-    x,wave,s,u = init_fitsread(f'{inparam.inpath}/',
-                                'target',
-                                'combined'+str(masterbeam),
-                                night,
-                                order,
-                                inparam.tagsB[night][0],
-                                args.band,
-                                bound_cut)
+    x,wave,s,u = init_fitsread(
+        f'{inparam.inpath}/',
+        'target',
+        'combined'+str(masterbeam),
+        night,
+        order,
+        inparam.tagsB[night][0],
+        args.band,
+        bound_cut
+        )
 
     # Execute S/N cut
     s2n = s/u
     if np.nanmedian(s2n) < np.float(args.SN_cut):
-        logger.warning('  --> Bad S/N {:1.3f} < {} for {}{} {}... '.format( np.nanmedian(s2n), args.SN_cut, night, beam, tag))
+        logger.warning(
+            '  --> Bad S/N {:1.3f} < {} for {}{} {}... '.format( 
+                np.nanmedian(s2n), args.SN_cut, night, beam, tag
+                ))
         pass
         
     # Trim obvious outliers above the blaze (i.e. cosmic rays)
     nzones = 5
-    x = basicclip_above(x,s,nzones); wave = basicclip_above(wave,s,nzones); u = basicclip_above(u,s,nzones); s = basicclip_above(s,s,nzones);
-    x = basicclip_above(x,s,nzones); wave = basicclip_above(wave,s,nzones); u = basicclip_above(u,s,nzones); s = basicclip_above(s,s,nzones);
+    x = basicclip_above(x,s,nzones)
+    wave = basicclip_above(wave,s,nzones)
+    u = basicclip_above(u,s,nzones)
+    s = basicclip_above(s,s,nzones)
+    x = basicclip_above(x,s,nzones)
+    wave = basicclip_above(wave,s,nzones)
+    u = basicclip_above(u,s,nzones)
+    s = basicclip_above(s,s,nzones)
 
     # Cut spectrum to within wavelength regions defined in input list
     s_piece    = s[    (x > xbounds[0]) & (x < xbounds[-1]) ]
@@ -255,21 +284,29 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     x_piece    = x[    (x > xbounds[0]) & (x < xbounds[-1]) ]
 
     # Save data for second template cutting after optimization cycle 1 done
-    s_save = s_piece.copy(); x_save = x_piece.copy(); u_save = u_piece.copy();
+    s_save = s_piece.copy(); x_save = x_piece.copy(); u_save = u_piece.copy()
 
     # Trim telluric template to data range +- 15 AA. If telluric template buffer is cut short because A0 lines didn't extend 
     # far past data range, cut data range accordingly.
-    satm_in = satm[(watm > np.min(wave_piece)*1e4 - 10) & (watm < np.max(wave_piece)*1e4 + 10)]
-    watm_in = watm[(watm > np.min(wave_piece)*1e4 - 10) & (watm < np.max(wave_piece)*1e4 + 10)]
+    satm_in = satm[(watm > np.min(wave_piece)*1e4 - 10) \
+                        & (watm < np.max(wave_piece)*1e4 + 10)]
+    watm_in = watm[(watm > np.min(wave_piece)*1e4 - 10) \
+                        & (watm < np.max(wave_piece)*1e4 + 10)]
 
-    s_piece	= s_piece[   (wave_piece*1e4 > np.min(watm_in)+10) & (wave_piece*1e4 < np.max(watm_in)-10)]
-    u_piece	= u_piece[   (wave_piece*1e4 > np.min(watm_in)+10) & (wave_piece*1e4 < np.max(watm_in)-10)]
-    x_piece	= x_piece[   (wave_piece*1e4 > np.min(watm_in)+10) & (wave_piece*1e4 < np.max(watm_in)-10)]
-    wave_piece = wave_piece[(wave_piece*1e4 > np.min(watm_in)+10) & (wave_piece*1e4 < np.max(watm_in)-10)]
+    s_piece	= s_piece[ (wave_piece*1e4 > np.min(watm_in)+10) \
+                            & (wave_piece*1e4 < np.max(watm_in)-10)]
+    u_piece	= u_piece[ (wave_piece*1e4 > np.min(watm_in)+10) \
+                            & (wave_piece*1e4 < np.max(watm_in)-10)]
+    x_piece	= x_piece[ (wave_piece*1e4 > np.min(watm_in)+10) \
+                            & (wave_piece*1e4 < np.max(watm_in)-10)]
+    wave_piece = wave_piece[(wave_piece*1e4 > np.min(watm_in)+10) \
+                            & (wave_piece*1e4 < np.max(watm_in)-10)]
 
     # Trim stellar template to data range +- 10 AA
-    mflux_in = inparam.mflux0[(inparam.mwave0 > np.min(wave_piece)*1e4 - 5) & (inparam.mwave0 < np.max(wave_piece)*1e4 + 5)]
-    mwave_in = inparam.mwave0[(inparam.mwave0 > np.min(wave_piece)*1e4 - 5) & (inparam.mwave0 < np.max(wave_piece)*1e4 + 5)]
+    mflux_in = inparam.mflux0[(inparam.mwave0 > np.min(wave_piece)*1e4 - 5) \
+                                & (inparam.mwave0 < np.max(wave_piece)*1e4 + 5)]
+    mwave_in = inparam.mwave0[(inparam.mwave0 > np.min(wave_piece)*1e4 - 5) \
+                                & (inparam.mwave0 < np.max(wave_piece)*1e4 + 5)]
 
     # Normalize continuum from A0 to flux scale of data
     continuum /= np.nanmedian(continuum)
@@ -284,7 +321,8 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     q = np.poly1d(f)
     initwave = q(x_piece)*1e4
     
-    par[0] = initguesses-inparam.bvcs[night+tag] # Initial RV with barycentric correction
+    # Initial RV with barycentric correction
+    par[0] = initguesses-inparam.bvcs[night+tag] 
     par[5]  = IPpars[2]
     par[13] = IPpars[1]
     par[14] = IPpars[0]
@@ -295,11 +333,16 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     
 
     continuum_in = rebin_jv(a0contx,continuum,x_piece,False)
-    fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]),masterbeam,[np.array([],dtype=int),np.array([],dtype=int)], initwave, [])
+    fitobj = FitObjs(
+        s_piece, x_piece, u_piece, continuum_in, watm_in, satm_in, 
+        mflux_in, mwave_in, ast.literal_eval(inparam.maskdict[order]),
+        masterbeam, [np.array([],dtype=int),np.array([],dtype=int)],
+        initwave, [])
 
     #-------------------------------------------------------------------------------
 
-    # Initialize an array that puts hard bounds on vsini and the instrumental resolution to make sure they do not diverge to unphysical values
+    # Initialize an array that puts hard bounds on vsini and the instrumental 
+    # resolution to make sure they do not diverge to unphysical values
     optimize = True
     par_in = par.copy()
     hardbounds = [par_in[4] - dpars1['v'][4],  par_in[4] + dpars1['v'][4],
@@ -311,8 +354,10 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     if hardbounds[2] < 1:
         hardbounds[2] = 1
 
-    # Begin optimization. Fit the blaze, the wavelength solution, the telluric template power and RV, the stellar template power and RV, the
-    # zero point for the instrumental resolution, and the vsini of the star separately, iterating and cycling between each set of parameter fits.
+    # Begin optimization. Fit the blaze, the wavelength solution, the telluric 
+    # template power and RV, the stellar template power and RV, the
+    # zero point for the instrumental resolution, and the vsini of the star 
+    # separately, iterating and cycling between each set of parameter fits.
 
     cycles = 2
 
@@ -347,7 +392,10 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
             parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize)
             parstart = parfit_1.copy()
             if args.debug == True:
-                outplotter_23(parfit_1,fitobj,'{}_{}_{}_parfit_{}{}'.format(order,night,tag,nk,optkind), trk, inparam, args, step2or3, order)
+                outplotter_23(
+                    parfit_1,fitobj,'{}_{}_{}_parfit_{}{}'.format(
+                        order,night,tag,nk,optkind), 
+                        trk, inparam, args, step2or3, order)
                 logger.debug(f'{order}_{tag}_{nk}_{optkind}:\n {parfit_1}')
             nk += 1
 
@@ -358,18 +406,25 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
     # if best fit stellar template power is very low, throw out result
     if parfit[1] < 0.1:
-        logger.warning(f'  --> Stellar template power is low for {night}! Data likely being misfit! Throwing out result...')
+        logger.warning(f'  --> Stellar template power is low for {night}! '
+                            'Data likely being misfit! Throwing out result...')
         return night, np.nan, np.nan
 
-    # if best fit stellar or telluric template powers are exactly equal to their starting values, fit failed, throw out result
+    # if best fit stellar or telluric template powers are exactly equal 
+    # to their starting values, fit failed, throw out result
     if parfit[1] == par_in[1] or parfit[3] == par_in[3]:
-        logger.warning(f'  --> Stellar or telluric template powers have not budged from starting values for {night}! Fit is broken! Optimizer bounds may be unfeasible, or chi-squared may be NaN? Throwing out result...')
+        logger.warning(f'  --> Stellar or telluric template powers have not '
+                            f'budged from starting values for {night}! Fit is '
+                            'broken! Optimizer bounds may be unfeasible, or '
+                            'chi-squared may be NaN? Throwing out result...')
         return night, np.nan, np.nan
 
-    # if best fit model dips below zero at any point, we're to close to edge of blaze, fit may be comrpomised, throw out result
-    smod,chisq = fmod(parfit,fitobj)
+    # if best fit model dips below zero at any point, we're to close to edge of 
+    # blaze, fit may be compromised, throw out result
+    smod, chisq = fmod(parfit, fitobj)
     if len(smod[(smod < 0)]) > 0:
-        logger.warning(f'  --> Best fit model dips below 0 for {night}! May be too close to edge of blaze, throwing out result...')
+        logger.warning(f'  --> Best fit model dips below 0 for {night}! May '
+                            'be too close to edge of blaze, throwing out result...')
         return night, np.nan, np.nan
 
 
@@ -378,12 +433,20 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     if args.plotfigs == True:
         parfitS = parfit.copy(); parfitS[3] = 0
         parfitT = parfit.copy(); parfitT[1] = 0
-        outplotter_23(parfitS, fitobj, 'parfitS_{}_{}_{}'.format(order,night,tag), trk, inparam, args, step2or3, order)
-        outplotter_23(parfitT, fitobj, 'parfitT_{}_{}_{}'.format(order,night,tag), trk, inparam, args, step2or3, order)
-        outplotter_23(parfit, fitobj,  'parfit_{}_{}_{}'.format(order,night,tag), trk, inparam, args, step2or3, order)
+        outplotter_23(parfitS, fitobj, 
+                    'parfitS_{}_{}_{}'.format(order,night,tag), 
+                    trk, inparam, args, step2or3, order)
+        outplotter_23(parfitT, fitobj, 
+                    'parfitT_{}_{}_{}'.format(order,night,tag), 
+                    trk, inparam, args, step2or3, order)
+        outplotter_23(parfit, fitobj, 
+                    'parfit_{}_{}_{}'.format(order,night,tag), 
+                    trk, inparam, args, step2or3, order)
 
     rv0 = parfit[0]
-    rvsmini    = rv0 + inparam.bvcs[night+tag] + rv0*inparam.bvcs[night+tag]/(2.99792458e5**2) # Barycentric correction
+    # Barycentric correction
+    rvsmini    = rv0 + inparam.bvcs[night+tag] \
+                    + rv0*inparam.bvcs[night+tag]/(2.99792458e5**2) 
     vsinismini = parfit[4]
 
     bestguess = np.round(rvsmini,5)
@@ -410,10 +473,13 @@ if __name__ == '__main__':
         sys.exit('ERROR: YOU MUST PROVIDE AN INITIAL GUESS FOR VSINI VALUE, "-i"')
 
     if (args.guesses == '') & (args.guessesX == ''):
-        sys.exit('ERROR: YOU MUST PROVIDE AN INITIAL GUESS FOR RV VALUE(S) BY USING "-g" OR "-gX"')
+        sys.exit('ERROR: YOU MUST PROVIDE AN INITIAL GUESS FOR RV VALUE(S) '
+                    'BY USING "-g" OR "-gX"')
 
     if (args.temperature == '') & (args.logg == ''):
-        sys.exit('ERROR: YOU MUST PROVIDE THE TEMPERATURE AND LOGG VALUE FOR STELLAR TEMPLATE. GO TO "./Engine/syn_template/" TO SEE AVAILABLE TEMPLATES')
+        sys.exit('ERROR: YOU MUST PROVIDE THE TEMPERATURE AND LOGG VALUE FOR '
+                    'STELLAR TEMPLATE. GO TO "./Engine/syn_template/" TO '
+                    'SEE AVAILABLE TEMPLATES')
     #------------------------------
 
     if args.template.lower() not in ['synthetic', 'livingston', 'phoenix']:
@@ -428,10 +494,12 @@ if __name__ == '__main__':
     synlogg = [ i.split('_')[3][4:7] for i in syntemp ]
 
     if args.temperature not in synT:
-        sys.exit(f'ERROR: UNEXPECTED STELLAR TEMPERATURE FOR "-temp" INPUT! {syntemp} AVALIABLE UNDER ./Engine/syn_template/')
+        sys.exit(f'ERROR: UNEXPECTED STELLAR TEMPERATURE FOR "-temp" INPUT! '
+                    f'{syntemp} AVALIABLE UNDER ./Engine/syn_template/')
 
     if args.logg not in synlogg:
-        sys.exit(f'ERROR: UNEXPECTED STELLAR LOGG FOR "-logg" INPUT! {syntemp} AVALIABLE UNDER ./Engine/syn_template/')
+        sys.exit(f'ERROR: UNEXPECTED STELLAR LOGG FOR "-logg" INPUT! {syntemp} '
+                    'AVALIABLE UNDER ./Engine/syn_template/')
 
     #------------------------------
 
@@ -453,10 +521,13 @@ if __name__ == '__main__':
     # Load initial RV guesses from file
     if args.guessesX != '':
         try:
-            guessdata = Table.read(f'./Output/{args.targname}_{args.band}/Initguesser_results_{args.guessesX}.csv', format='csv')
+            guessdata = Table.read(
+                f'./Output/{args.targname}_{args.band}/Initguesser_results_{args.guessesX}.csv', 
+                format='csv')
 
         except:
-            sys.exit(f'ERROR: "./Output/{args.targname}_{args.band}/Initguesser_results_{args.guessesX}.csv" NOT FOUND!')
+            sys.exit(
+                f'ERROR: "./Output/{args.targname}_{args.band}/Initguesser_results_{args.guessesX}.csv" NOT FOUND!')
 
         initnights = np.array(guessdata['night'])
         initrvs    = np.array(guessdata['bestguess'])
@@ -470,7 +541,8 @@ if __name__ == '__main__':
     xbounddict, maskdict, tagsA, tagsB, mjds, bvcs, nightsFinal, orders, obs = read_prepdata(args)
 
     if int(args.label_use) not in orders:
-        sys.exit(f'Oops! -l_use INPUT "{args.label_use}" is not in "{orders}" from the given WRegion list!!')
+        sys.exit(
+            f'Oops! -l_use INPUT "{args.label_use}" is not in "{orders}" from the given WRegion list!!')
 
 #-------------------------------------------------------------------------------
 
@@ -491,8 +563,9 @@ Input Parameters:
     syn template temp   = \33[37;1;41m {} \033[0m
     syn template logg   = \33[37;1;41m {} \033[0m
     Threads use         =  {}
-    '''.format(args.targname, args.band, args.WRegion, args.SN_cut, args.label_use,
-               initvsini, vsinivary, initguesses_show, args.template, args.temperature, args.logg, args.Nthreads))
+    '''.format(args.targname, args.band, args.WRegion, args.SN_cut, 
+                args.label_use, initvsini, vsinivary, initguesses_show, 
+                args.template, args.temperature, args.logg, args.Nthreads))
 
 # Target Spectral Type= \33[41m {} \033[0m             <-------  [late K, M] recommended 'synthetic', [F, G, early K] SpTy recommended 'livingston'
     if not args.skip:
@@ -520,7 +593,7 @@ Input Parameters:
         os.mkdir(f'./Output/{args.targname}_{args.band}')
     filesndirs = os.listdir(f'./Output/{args.targname}_{args.band}')
 
-    trk = 1; go = True;
+    trk = 1; go = True
     while go == True:
         iniguess_dir = 'Initguesser_results_{}.csv'.format(trk)
         if iniguess_dir not in filesndirs:
@@ -531,8 +604,10 @@ Input Parameters:
         os.mkdir(f'./Output/{args.targname}_{args.band}/figs')
 
     step2or3 = 2
-    if not os.path.isdir(f'./Output/{args.targname}_{args.band}/figs/main_step{step2or3}_{args.band}_{trk}'):
-        os.mkdir(f'./Output/{args.targname}_{args.band}/figs/main_step{step2or3}_{args.band}_{trk}')
+    temp_f_dir = f'./Output/{args.targname}_{args.band}/figs/'\
+                        'main_step{step2or3}_{args.band}_{trk}'
+    if not os.path.isdir(temp_f_dir):
+        os.mkdir(temp_f_dir)
 
     outpath = f'./Output/{args.targname}_{args.band}'
 
@@ -545,9 +620,11 @@ Input Parameters:
         logger.setLevel(logging.DEBUG)
     else:
         logger.setLevel(logging.INFO)
-    formatter = logging.Formatter('%(asctime)s: %(module)s.py: %(levelname)s--> %(message)s')
+    formatter = logging.Formatter(
+        '%(asctime)s: %(module)s.py: %(levelname)s--> %(message)s')
 
-    file_hander  = logging.FileHandler(f'{outpath}/{args.targname}_{args.band}.log')
+    file_hander  = logging.FileHandler(
+        f'{outpath}/{args.targname}_{args.band}.log')
     stream_hander= logging.StreamHandler()
 
     # file_hander.setLevel()
@@ -559,9 +636,11 @@ Input Parameters:
 
     #-------------------------------------------------------------------------------
     # Create output file to write to
-    logger.info(f'Writing output to ./Output/{args.targname}_{args.band}/{iniguess_dir}')
+    logger.info(
+        f'Writing output to ./Output/{args.targname}_{args.band}/{iniguess_dir}')
 
-    filew = open(f'./Output/{args.targname}_{args.band}/{iniguess_dir}','w')
+    filew = open(
+        f'./Output/{args.targname}_{args.band}/{iniguess_dir}','w')
     filew.write('night, bestguess, vsini')
     filew.write('\n')
 
@@ -573,7 +652,10 @@ Input Parameters:
         nightstemp = np.array(ast.literal_eval(args.nights_use), dtype=str)
         for nnn in nightstemp:
             if nnn not in nightsFinal:
-                sys.exit('NIGHT {} NOT FOUND UNDER ./Input_Data/{}'.format(nnn, args.targname))
+                sys.exit(
+                    'NIGHT {} NOT FOUND UNDER ./Input_Data/{}'.format(
+                        nnn, args.targname
+                        ))
         nightsFinal = nightstemp
         print('Only processing nights: {}'.format(nightsFinal))
 
@@ -596,11 +678,14 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
     #-------------------------------------------------------------------------------
 
     # Retrieve stellar and telluric templates
-    watm,satm, mwave0, mflux0 = setup_templates(logger, args.template, args.band, int(args.temperature), float(args.logg))
+    watm,satm, mwave0, mflux0 = setup_templates(
+        logger, args.template, args.band, int(args.temperature), float(args.logg)
+        )
 
     # Save pars in class for future use
-    inparam = inparams(inpath,outpath,initvsini,vsinivary,args.plotfigs,
-                       initguesses,bvcs,tagsA,tagsB,nightsFinal,mwave0,mflux0,None,xbounddict,maskdict)
+    inparam = InParams(inpath, outpath, initvsini, vsinivary, args.plotfigs,
+                       initguesses, bvcs, tagsA, tagsB, nightsFinal, mwave0,
+                       mflux0, None, xbounddict, maskdict)
 
     #-------------------------------------------------------------------------------
     # if not in debug mode than enter quite mode, i.e., all message saved in log file
@@ -608,11 +693,12 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
     print('\n')
 
     # Run order by order, multiprocessing over nights within an order
-    func = partial(rv_MPinst, args, inparam, orders, int(args.label_use), trk, step2or3 )
+    func = partial(rv_MPinst, args, inparam, orders, 
+                        int(args.label_use), trk, step2or3 )
     outs = pqdm(np.arange(len(nightsFinal)), func, n_jobs=args.Nthreads)
 
     # Write outputs to file
-    vsinis = []; finalrvs = [];
+    vsinis = []; finalrvs = []
     for n in range(len(nightsFinal)):
         nightout = outs[n]
         filew.write('{}, {}, {}'.format(nightout[0], nightout[1], nightout[2]))
