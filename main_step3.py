@@ -987,19 +987,19 @@ For H band RVs: We do not expect any systematic changes in the H band as the
         vsinibox     = vsinicomblist[boxind]
         obsbox       = obscomblist[boxind]
 	
-	# For every order, check what portion of observations did not
-	# return RVs. If that portion is less than half those from the
-	# most successful order, then it was masked too much to be
-	# useable for this target and it would be inconsistent to 
-	# consider it for such a small fraction of the data --
-	# so we throw it out.
-	goodcounts = np.array(
-		[len(np.where(np.isfinite(rvmasterbox[:,ll]))[0])
-		for ll in range(len(orders))]
-	        )
-	for ll in range(len(orders)):
-	    if goodcounts[ll] < 0.5*np.max(goodcounts):
-		rvmasterbox[:,ll] = np.nan
+        # For every order, check what portion of observations did not
+        # return RVs. If that portion is less than half those from the
+        # most successful order, then it was masked too much to be
+        # useable for this target and it would be inconsistent to 
+        # consider it for such a small fraction of the data --
+        # so we throw it out.
+        goodcounts = np.array(
+            [len(np.where(np.isfinite(rvmasterbox[:,ll]))[0]) for ll in range(len(orders))]
+            )
+
+        for ll in range(len(orders)):
+            if goodcounts[ll] < 0.5*np.max(goodcounts):
+                rvmasterbox[:,ll] = np.nan
 
         #-------------------------------------------------------------------------------
 

@@ -699,8 +699,8 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
 
     # Retrieve stellar and telluric templates
     watm,satm, mwave0, mflux0 = setup_templates(
-        logger, args.template, args.band, int(args.temperature), float(args.logg)
-	float(args.B)
+        logger, args.template, args.band, int(args.temperature), 
+        float(args.logg), float(args.B)
         )
 
     # Save pars in class for future use
