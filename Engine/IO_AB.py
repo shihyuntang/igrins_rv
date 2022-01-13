@@ -234,7 +234,7 @@ def air2vac(wave):
     return newwave
 
 def setup_templates(logger, kind='synthetic', band='K', 
-        temperature=5000, logg=4.5):
+        temperature=5000, logg=4.5, B=0):
     '''
     Fetches static stellar and/or telluric templates from file.
 
@@ -259,13 +259,17 @@ def setup_templates(logger, kind='synthetic', band='K',
         logger.info(
             f'synthetic stellar template with T{temperature} logg{logg}!!!!!')
 
+        if str(B) == '0':
+            temploc = f'syntheticstellar_{band.lower()}band_T{temperature}_logg{logg}.txt'
+        else:
+            temploc = f'syntheticstellar_{band.lower()}band_T{temperature}_logg{logg}_{B}kG.txt'
         if 'igrins' in os.getcwd().split('/')[-1]:
             stelldata = Table.read(
-                f'./Engine/syn_template/syntheticstellar_{band.lower()}band_T{temperature}_logg{logg}.txt',
+                f'./Engine/syn_template/{temploc}',
                 format='ascii')
         else:
             stelldata = Table.read(
-                f'../Engine/syn_template/syntheticstellar_{band.lower()}band_T{temperature}_logg{logg}.txt',
+                f'../Engine/syn_template/{temploc}',
                 format='ascii')
 
         mwave0 = np.array(stelldata['wave'])#*10000.0

@@ -206,6 +206,9 @@ def _argparse_step2():
         help="The synthetic template logg used, e.g., 4.5",
         type=str, default='' )
     
+    parser.add_argument('-B',      dest="B",           action="store",
+                        help="The synthetic template B used in kG, e.g., 2.5",
+                        type=str,   default='0' )
     parser.add_argument('-c', dest="Nthreads", action="store",
         help="Number of cpu (threads) to use, default is 1/2 of available \
                 ones (you have %i cpus (threads) avaliable)"%(mp.cpu_count()),
@@ -313,6 +316,9 @@ def _argparse_step3():
         help="The synthetic template logg used, e.g., 4.5",
         type=str, default='' )
    
+    parser.add_argument('-B',      dest="B",           action="store",
+                        help="The synthetic template B used in kG, e.g., 2.5",
+                        type=str,   default='0' )
     
     parser.add_argument('-c', dest="Nthreads", action="store",
         help="Number of cpu (threads) to use, default is 1/2 of available \
