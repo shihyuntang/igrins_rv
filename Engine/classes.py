@@ -181,6 +181,13 @@ class InParams:
             'K': np.array([0.0225548, 0.00215941, 0.00119834])
             }
 
+        self.BImethodvariance_tight = { 
+        #                       4           5           6
+            'K': np.array([0.00084845, 0.001273, 0.0005419]])
+            }
+        self.BImethodvariance_loose = { 
+            'K': np.array([0.0254526, 0.02148516, 0.00906467])
+            }
 
 
 class InParamsA0:
