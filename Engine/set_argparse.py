@@ -381,6 +381,80 @@ def _argparse_step4():
         help="If set, will skip the input parameters check. Handy when running \
                 multiple targets line by line")
     
+    
+def _argparse_step5():
+    """Take care of all the argparse stuff."""
+    parser = argparse.ArgumentParser(
+        prog        = 'IGRINS Spectra Radial Velocity Pipeline - Step 5',
+        description = '''
+        Outputs telluric and continuum-corrected stellar residuals based on a \n
+        run of Step 3. Combines A's and B's and saves results, but also saves \n
+        results on an individual tag-by-tag basis. The latter can be used \n
+        to compute bisectors if the corresponding flag is set. If you've \n
+        already produced the stellar residuals, you can set a flag to skip \n
+        the first part of Step 5 and go straight to calculating bisectors.
+        ''',
+        epilog = _epilog)
+    parser.add_argument("targname", action="store",
+        help="Enter your *target name", type=str)
+    parser.add_argument("-HorK", dest="band", action="store",
+        help="Which band to process? H or K?. Default = K",
+        type=str, default='K')
+    parser.add_argument("-Wr", dest="WRegion", action="store",
+        help="Which list of wavelength regions file (./Input/UseWv/WaveRegions_X) \
+                to use? Defaults to those chosen by IGRINS RV team, -Wr 1",
+        type=int, default=int(1))
+
+    parser.add_argument("-mode", dest="mode", action="store",
+        help="RV standard star (STD) or a normal target (TAR)?",
+        type=str, default='')
+    parser.add_argument("-run",    dest="run",             action="store",
+        help="Takes the string that suffixes \
+                'RV_results_', e.g. for 'RV_results_1', you would set this to '1'.",
+        type=str,   default='')
+
+    parser.add_argument('-t', dest="template", action="store",
+        help="Stellar template. Pick from 'synthetic', 'PHOENIX', or \
+                'livingston'. Default = 'synthetic'",
+        type=str, default='synthetic' )
+    parser.add_argument('-temp', dest="temperature", action="store",
+        help="The synthetic template temperature used, e.g., 5000",
+        type=str, default='' )
+    parser.add_argument('-logg', dest="logg", action="store",
+        help="The synthetic template logg used, e.g., 4.5",
+        type=str, default='' )
+
+    parser.add_argument('-B',      dest="B",           action="store",
+                        help="The synthetic template B used in kG, e.g., 2.5",
+                        type=str,   default='0' )
+
+    parser.add_argument('-c', dest="Nthreads", action="store",
+        help="Number of cpu (threads) to use, default is 1/2 of available \
+                ones (you have %i cpus (threads) avaliable)"%(mp.cpu_count()),
+        type=int,   default=int(mp.cpu_count()//2) )
+    parser.add_argument('-plot', dest="plotfigs", action="store_true",
+        help="If set, will generate plots of the fitting results under \
+                ./Output/*targname_*band/figs/main_step3_*band_*runnumber")
+    parser.add_argument('-n_use', dest="nights_use", action="store",
+        help="If you don't want to process all nights under the ./Input/*target/ \
+                folder, specify an array of night you wish to process here. \
+                e.g., [20181111,20181112]",
+        type=str, default='')
+
+    parser.add_argument('-skipmod',    dest="skipmod",          action="store_true",
+        help="If set, will skip computing residuals if you have done so already")
+    parser.add_argument('-DeBug', dest="debug", action="store_true",
+        help="If set, DeBug logging will be output, as well as (lots of) extra plots.")
+    parser.add_argument('-sk_check', dest="skip", action="store_true",
+        help="If set, will skip the input parameters check. Handy when running \
+                multiple targets line by line")
+
+    parser.add_argument(
+        '--version', action='version',
+        version='%(prog)s {}'.format(_igrins_version))
+
+    return parser.parse_args()
+    
     parser.add_argument(
         '--version', action='version', 
         version='%(prog)s {}'.format(_igrins_version))
