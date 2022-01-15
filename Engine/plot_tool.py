@@ -109,14 +109,13 @@ def modtool(args,jerp,nightsbox,tagbox,parfitbox,inparam,index):
     parfittags    =  parfitbox[indnight]
     tags          =     tagbox[indnight]
 
-
     tags1 = ['%4.0f' % float(t) for t in tags]
     tags2 = np.array([t.replace(' ','0') for t in tags1])
 
     firsttag = True; pre_err = True;
 
-    #print(night)
     #plt.figure(figsize=(12,10))
+    badtags = []
 
     for beam in ['A','B']:
         if beam == 'A':
@@ -133,7 +132,7 @@ def modtool(args,jerp,nightsbox,tagbox,parfitbox,inparam,index):
             hdulist = fits.open(A0loc)
         except IOError:
             print(f'  --> No A0-fitted template for night {night}, skipping...')
-            badtags = taglist.copy()
+            badtags = badtags + list(taglist)
             continue
 
         num_orders = 0
@@ -152,16 +151,14 @@ def modtool(args,jerp,nightsbox,tagbox,parfitbox,inparam,index):
         # Check whether Telfit hit critical error in Step 1 for the chosen order with this night. If so, skip.
         if flag == 1:
             print(f'  --> TELFIT ENCOUNTERED CRITICAL ERROR IN ORDER: {order} NIGHT: {night}, skipping...')
-            badtags = taglist.copy()
+            badtags = badtags + list(taglist)
             continue
 
-        badtags = []
 
         for tag in taglist:
 
             if len(parfittags[(tag == tags2)]) == 0:
                 badtags.append(tag)
-                #print(night,tag)
                 continue
             else:
                 parfit = parfittags[(tag == tags2)][0]
