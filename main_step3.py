@@ -311,7 +311,8 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
                 testmask[(wave_piece*1e4 > maskbounds[0]) \
                             & (wave_piece*1e4 < maskbounds[1]) ] = False
 
-        if len(s_piece[testmask]) / len(s_piece) < 0.3 or len(s_piece[testmask]) < 450:
+        if (len(s_piece[testmask]) / len(s_piece) < 0.3) \
+            or (len(s_piece[testmask]) < 350):
             logger.warning(
                 'Only {} unmasked pixels for {} order {}, SKIP'.format( 
                     len(s_piece[testmask]), night, order
@@ -1065,6 +1066,19 @@ For H band RVs: We do not expect any systematic changes in the H band as the
 
             vsinifinal[n] = np.nansum(weights*vsinibox[n,ind])
             jds_out[n]   = jds[nights_use[n]]
+
+            # Check scatter between orders within a given night and
+            # add extra uncertainty to represent order to order offset
+            # if merited.
+            try:
+                Nind = np.where(intnights == int(nightsFinal[n][:8]))[0]
+                mnnights = [np.nanmean(rvmasterbox[Nind,ir]) for ir in ind]
+                sigma_btwordersnight = (np.max(mnnights)-np.min(mnnights))**2
+                sigma_N = np.sqrt( sigma_btwordersnight - np.sum(sigma_method2[ind]))
+                if np.isfinite(sigma_N):
+                    stdfinal[n] = np.sqrt( stdfinal[n]**2 + sigma_N**2 )
+            except ValueError:
+                pass
 
             # if all the RVs going into the observation's final RV calculation 
             # were NaN due to any pevious errors, pass NaN
