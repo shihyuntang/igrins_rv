@@ -1073,8 +1073,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the
             try:
                 Nind = np.where(intnights == int(nightsFinal[n][:8]))[0]
                 mnnights = [np.nanmean(rvmasterbox[Nind,ir]) for ir in ind]
-                sigma_btwordersnight = np.nanstd(mnnights)/np.sqrt(len(ind))
-                sigma_N = np.sqrt( sigma_btwordersnight - np.sum(sigma_method2[ind]))
+                sigma_N = np.nanstd(mnnights)/np.sqrt(len(ind))
                 if np.isfinite(sigma_N):
                     stdfinal[n] = np.sqrt( stdfinal[n]**2 + sigma_N**2 )
             except ValueError:
