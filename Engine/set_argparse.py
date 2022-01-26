@@ -381,6 +381,11 @@ def _argparse_step4():
         help="If set, will skip the input parameters check. Handy when running \
                 multiple targets line by line")
     
+    parser.add_argument(
+        '--version', action='version', 
+        version='%(prog)s {}'.format(_igrins_version))
+    
+    return parser.parse_args()   
     
 def _argparse_step5():
     """Take care of all the argparse stuff."""
@@ -454,9 +459,4 @@ def _argparse_step5():
         version='%(prog)s {}'.format(_igrins_version))
 
     return parser.parse_args()
-    
-    parser.add_argument(
-        '--version', action='version', 
-        version='%(prog)s {}'.format(_igrins_version))
-    
-    return parser.parse_args()
+
