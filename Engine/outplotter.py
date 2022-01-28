@@ -11,7 +11,7 @@ def outplotter_tel(parfit, fitobj, title, inparam, args, order):
     fitobj     : Class containing spectral data to be fit and templates for use in fit
     title      : Title of plot file
     inparam    : Class containing variety of information (e.g. on observing conditions)
-    order      : Echelle order, as characterized by file index (as opposed to 
+    order      : Echelle order, as characterized by file index (as opposed to
                     m number; for conversion between the two, see Stahl et al. 2021)
     args       : Information as input by user from command line
     '''
@@ -19,13 +19,13 @@ def outplotter_tel(parfit, fitobj, title, inparam, args, order):
     fit, chi = fmod(parfit, fitobj)
 
     #--- to match the wavelengh scale of fit from fmod ---
-    
+
     initwave = fitobj.initwave.copy()
     xgrid = (initwave - np.median(initwave)) \
                 / (np.max(initwave) - np.min(initwave))
     dx = chebyshev.chebval(xgrid, parfit[6:10])
     w = initwave + dx
-    
+
     xdata = fitobj.x.copy()
     sdata = fitobj.s.copy()
     #---
@@ -61,12 +61,12 @@ def outplotter_tel(parfit, fitobj, title, inparam, args, order):
     if fitobj.masterbeam == 'B':
         npars -= 5
 
-    # Subtract 6 from npars total: 2 for linear/quadratic IP, 1 for RV_telluric, 
+    # Subtract 6 from npars total: 2 for linear/quadratic IP, 1 for RV_telluric,
     # 2 fot stellar template power and RV, 1 for vsini
-    npars -= 6 
+    npars -= 6
 
     # Correct reduce chisq
-    chi_new = chi * (len(sdata[mask])-len(parfit)) / (len(sdata[mask])-npars) 
+    chi_new = chi * (len(sdata[mask])-len(parfit)) / (len(sdata[mask])-npars)
 
     cont = parfit[10] + parfit[11]*xdata + parfit[12]*(xdata**2) \
             + parfit[20]*(xdata**3) + parfit[21]*(xdata**4) \
@@ -82,34 +82,34 @@ def outplotter_tel(parfit, fitobj, title, inparam, args, order):
     c2 = fitobj.continuum
     cont *= c2
 
-    mask2 = np.ones_like(xdata, dtype=bool)
+    mask = np.ones_like(xdata, dtype=bool)
 
     if len(fitobj.CRmask[1]) > 0:
         for mb in fitobj.CRmask[1]:
-            mask2[(xdata >= fitobj.CRmask[0][mb]-1) \
+            mask[(xdata >= fitobj.CRmask[0][mb]-1) \
                     & (xdata <= fitobj.CRmask[0][mb]+1)] = False
 
     if len(fitobj.molmask) > 0:
         for mb in fitobj.molmask:
-            mask2[(xdata >= mb[0]) & (xdata <= mb[1])] = False
+            mask[(xdata >= mb[0]) & (xdata <= mb[1])] = False
 
     fig, axes = plt.subplots(1, 1, figsize=(6,3), facecolor='white', dpi=200)
 
     axes.plot(w ,sdata, '-',  c = 'k', lw=0.7, label='data',  alpha=.3)
-    axes.plot(w[mask2] ,sdata[mask2], '-',  c='k', lw=0.7, 
+    axes.plot(w[mask] ,sdata[mask], '-',  c='k', lw=0.7,
         label='data (emission removed)',  alpha=.8)
-    axes.plot(w[mask2] ,fit[mask2], '--', c='tab:red', lw=0.7, 
+    axes.plot(w[mask] ,fit[mask], '--', c='tab:red', lw=0.7,
         label='model', alpha=.8)
-    axes.plot(w[mask2] ,cont[mask2], '--', c='tab:blue',  lw=0.7, 
+    axes.plot(w[mask] ,cont[mask], '--', c='tab:blue',  lw=0.7,
         label='cont', alpha=.8)
 
     axes.set_title( title, size=6, style='normal', family='sans-serif')
     axes.set_ylabel(r'Flux', size=6, style='normal', family='sans-serif')
-    axes.set_xlabel(r'Wavelength [$\AA$]', size=6, style='normal', 
+    axes.set_xlabel(r'Wavelength [$\AA$]', size=6, style='normal',
         family='sans-serif')
     axes.xaxis.set_minor_locator(AutoMinorLocator(5))
     axes.yaxis.set_minor_locator(AutoMinorLocator(2))
-    axes.tick_params(axis='both', which='both', labelsize=6, right=True, 
+    axes.tick_params(axis='both', which='both', labelsize=6, right=True,
         top=True, direction='in')
     axes.legend(fontsize=5, edgecolor='white')
     fig.text(0.65, 0.2, r'$\rm \chi^{{2}}_{{\nu}}$ = {:1.2f}'.format(chi_new),
@@ -131,7 +131,7 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3, order):
     inparam    : Class containing variety of information (e.g. on observing conditions)
     args       : Information as input by user from command line
     step2or3   : Whether run is Step 2 or Step 3
-    order      : Echelle order, as characterized by file index (as opposed to m 
+    order      : Echelle order, as characterized by file index (as opposed to m
                     number; for conversion between the two, see Stahl et al. 2021)
     '''
 
@@ -141,8 +141,8 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3, order):
     xgrid = (initwave - np.median(initwave)) / (np.max(initwave) - np.min(initwave))
     dx = chebyshev.chebval(xgrid, parfit[6:10])
     w = initwave + dx
-    
-    xdata = fitobj.x.copy(); sdata = fitobj.s.copy(); 
+
+    xdata = fitobj.x.copy(); sdata = fitobj.s.copy();
 
     npars = len(parfit)
 
@@ -152,6 +152,15 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3, order):
     if len(fitobj.mask) != 0:
         for maskbounds in fitobj.mask:
             mask[(xdata > maskbounds[0]) & (xdata < maskbounds[1]) ] = False
+
+    if len(fitobj.CRmask[1]) > 0:
+        for mb in fitobj.CRmask[1]:
+            mask[(xdata >= fitobj.CRmask[0][mb]-1) \
+                    & (xdata <= fitobj.CRmask[0][mb]+1)] = False
+
+    if len(fitobj.molmask) > 0:
+        for mb in fitobj.molmask:
+            mask[(xdata >= mb[0]) & (xdata <= mb[1])] = False
 
     if args.band == 'H':
         if np.int(order) in [13]:
@@ -195,30 +204,20 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3, order):
 
     fig, axes = plt.subplots(1, 1, figsize=(6,3), facecolor='white', dpi=250)
 
-    mask2 = np.ones_like(xdata, dtype=bool)
 
-    if len(fitobj.CRmask[1]) > 0:
-        for mb in fitobj.CRmask[1]:
-            mask2[(xdata >= fitobj.CRmask[0][mb]-1) \
-                    & (xdata <= fitobj.CRmask[0][mb]+1)] = False
-
-    if len(fitobj.molmask) > 0:
-        for mb in fitobj.molmask:
-            mask2[(xdata >= mb[0]) & (xdata <= mb[1])] = False
-            
     n = len(fitobj.mask)
 
     # masked_w = w.copy()
-    # masked_w[~mask2] = np.nan
+    # masked_w[~mask] = np.nan
 
     masked_sdata = sdata.copy()
-    masked_sdata[~mask2] = np.nan
+    masked_sdata[~mask] = np.nan
 
     masked_fit = fit.copy()
-    masked_fit[~mask2] = np.nan
-    
+    masked_fit[~mask] = np.nan
+
     masked_cont = cont.copy()
-    masked_cont[~mask2] = np.nan
+    masked_cont[~mask] = np.nan
 
     if n > 0:
         widths = [fitobj.mask[0][0]-xdata[0]]
@@ -230,32 +229,32 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3, order):
             ax0 = plt.subplot(gs[m])
 
             ax0.plot(w, sdata, '--', c='k', lw=0.7, label='data', alpha=.3)
-            ax0.plot(w, masked_sdata, '-',  c='k', lw=0.7, 
+            ax0.plot(w, masked_sdata, '-',  c='k', lw=0.7,
                 label='data (emission removed)',  alpha=.8)
-            ax0.plot(w, masked_fit, '--', c='tab:red', lw=0.7, 
+            ax0.plot(w, masked_fit, '--', c='tab:red', lw=0.7,
                 label='model', alpha=.8)
-            ax0.plot(w, masked_cont, '--', c='tab:blue',  lw=0.7, 
+            ax0.plot(w, masked_cont, '--', c='tab:blue',  lw=0.7,
                 label='cont', alpha=.8)
 
             if title[6]=='_':
                 # only plot residual on the "parfit"
-                ax0.plot(w, masked_fit - masked_sdata, 's', c='k', ms=0.3, 
+                ax0.plot(w, masked_fit - masked_sdata, 's', c='k', ms=0.3,
                     mew=0.3, label='residual', alpha=1)
                 ax0.axhline(0, color='tab:grey', lw=0.2, zorder=0, alpha=1)
 
             kwargs = dict(transform=ax0.transAxes, color='k', clip_on=False,lw= 0.6)
             if m == 0:
-                ax0.tick_params(axis='both', labelsize=6, right=False, top=True, 
+                ax0.tick_params(axis='both', labelsize=6, right=False, top=True,
                     direction='in')
                 left = w[0]
                 right = w[(xdata >= fitobj.mask[m][0])][0]
                 ax0.plot([right,right],[np.min(sdata),np.max(sdata)],'--k',lw=0.75)
             elif m == n:
-                ax0.tick_params(axis='both', labelsize=6, left=False, right=True, 
+                ax0.tick_params(axis='both', labelsize=6, left=False, right=True,
                     top=True, direction='in')
                 ax0.set_yticklabels([])
                 #ax0.vlines([left+1],'--k',lw=0.75)
-                left = w[(xdata >= fitobj.mask[m-1][1])][0] 
+                left = w[(xdata >= fitobj.mask[m-1][1])][0]
                 right = w[-1]
             else:
                 ax0.tick_params(axis='both', labelsize=6, right=False, left=False,
@@ -263,9 +262,9 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3, order):
                 ax0.set_yticklabels([])
                 #ax0.vlines([left+1],'--k',lw=0.75)
                 ax0.plot([right,right],[np.min(sdata),np.max(sdata)],'--k',lw=0.75)
-                left = w[(xdata >= fitobj.mask[m-1][1])][0] 
+                left = w[(xdata >= fitobj.mask[m-1][1])][0]
                 right = w[(xdata >= fitobj.mask[m][0])][0]
-                
+
             ax0.set_xlim(left,right)
 
             if m != 0:
@@ -274,11 +273,11 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3, order):
                 ax0.spines['right'].set_visible(False)
 
         fig.tight_layout(pad=0.0)
-        fig.suptitle( title,     x=0.5,y=1.05, size=6, style='normal', 
+        fig.suptitle( title,     x=0.5,y=1.05, size=6, style='normal',
             family='sans-serif')
-        fig.text(0.5, -0.04, r'Wavelength [$\rm\AA$]', ha='center', size=6, 
+        fig.text(0.5, -0.04, r'Wavelength [$\rm\AA$]', ha='center', size=6,
             style='normal', family='sans-serif')
-        fig.text(-0.04, 0.5, r'Flux',       va='center', rotation='vertical', 
+        fig.text(-0.04, 0.5, r'Flux',       va='center', rotation='vertical',
             size=6, style='normal', family='sans-serif')
         fig.text(0.65, 0.2, r'$\rm \chi^{{2}}_{{\nu}}$ = {:1.2f}'.format(chi_new),
                             size=6, style='normal', family='sans-serif')
@@ -287,32 +286,32 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3, order):
     else:
         fig, axes = plt.subplots(1, 1, figsize=(6,3), facecolor='white', dpi=200)
         axes.plot(w, sdata, '--', c='k', lw=0.7, label='data', alpha=.3)
-        axes.plot(w, masked_sdata, '-',  c='k', lw=0.7, 
+        axes.plot(w, masked_sdata, '-',  c='k', lw=0.7,
             label='data (emission removed)',  alpha=.8)
-        axes.plot(w, masked_fit, '--', c='tab:red', lw=0.7, 
+        axes.plot(w, masked_fit, '--', c='tab:red', lw=0.7,
             label='model', alpha=.8)
-        axes.plot(w, masked_cont, '--', c='tab:blue',  lw=0.7, 
+        axes.plot(w, masked_cont, '--', c='tab:blue',  lw=0.7,
             label='cont', alpha=.8)
 
         if title[6]=='_':
             # only plot residual on the "parfit"
-            axes.plot(w, masked_fit - masked_sdata, 's', c='k', ms=0.3, 
+            axes.plot(w, masked_fit - masked_sdata, 's', c='k', ms=0.3,
                 mew=0.3, label='residual', alpha=0.8)
             axes.axhline(0, color='tab:grey', lw=0.2, zorder=0, alpha=1)
 
-        axes.tick_params(axis='both', labelsize=6, right=True, top=True, 
+        axes.tick_params(axis='both', labelsize=6, right=True, top=True,
             direction='in')
         axes.set_title(title, size=6, style='normal' , family='sans-serif' )
         axes.set_ylabel(r'Flux', size=6, style='normal', family='sans-serif')
-        axes.set_xlabel(r'Wavelength [$\rm\AA$]',  size=6, style='normal', 
+        axes.set_xlabel(r'Wavelength [$\rm\AA$]',  size=6, style='normal',
             family='sans-serif' )
         fig.text(0.65, 0.2, r'$\rm \chi^{{2}}_{{\nu}}$ = {:1.2f}'.format(chi_new),
                             size=6, style='normal', family='sans-serif')
 
-        axes.tick_params(axis='both', labelsize=6, right=True, top=True, 
+        axes.tick_params(axis='both', labelsize=6, right=True, top=True,
             direction='in')
         axes.legend(fontsize=5, edgecolor='white', markerscale=2.5)
 
     fig.savefig(
-        f'{inparam.outpath}/figs/main_step{step2or3}_{args.band}_{trk}/{title}.png', 
+        f'{inparam.outpath}/figs/main_step{step2or3}_{args.band}_{trk}/{title}.png',
         bbox_inches='tight', format='png', overwrite=True)
