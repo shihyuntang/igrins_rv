@@ -8,7 +8,7 @@ from Engine.IO_AB      import setup_templates, init_fitsread, setup_outdir
 from Engine.clips      import basicclip_above
 from Engine.classes    import FitObjs,InParams,_setup_bound_cut
 from Engine.rebin_jv   import rebin_jv
-from Engine.opt        import optimizer, fmod, fmod_conti
+from Engine.opt        import optimizer, fmod
 
 #-------------------------------------------------------------------------------
 
@@ -273,16 +273,14 @@ def modtool(args,jerp,nightsbox,tagbox,parfitbox,inparam,index):
             parfitS = parfit.copy(); parfitS[3] = 0;
             parfitT = parfit.copy(); parfitT[1] = 0;
 
-            wave_out, smod_tell, cont_dontuse, c2_dontuse = fmod_conti(parfitT,fitobj)
+            smod_tell, chi_dontuse, wave_out, cont_dontuse = fmod(parfitT,fitobj)
             stell = fitobj.s / smod_tell
             s2n = fitobj.s / fitobj.u
 
             # Regular model fit
-            wave_reg,   mod_out, cont_out, c2_out = fmod_conti(parfit,fitobj)
-            wave_reg, stell_reg, cont_out, c2_out = fmod_conti(parfitS,fitobj)
-            wave_reg,  tell_reg, cont_out, c2_out = fmod_conti(parfitT,fitobj)
-            continuum_out = cont_out*c2_out
-
+            mod_out, chi_dontuse, wave_reg, continuum_out = fmod(parfit,fitobj)
+            stell_reg, chi_dontuse, wave_reg, continuum_out  = fmod(parfitS,fitobj)
+            tell_reg, chi_dontuse, wave_reg, continuum_out = fmod(parfitT,fitobj)
             # Unbroadened stellar model
             stell_unbrod,tell_unbrod = templates_semibroadened(parfit,fitobj,broad='none')
 
