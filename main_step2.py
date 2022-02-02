@@ -368,7 +368,7 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
         mwave_in2 = mwave_in2[1:-1]
         mflux_in2 = mflux_in2[1:-1]
     else:
-        extra1 = 0; extra2 = 0;
+        extra1 = 0; extra2 = 0; Rstell = Rstell1;
 
     # Trim stellar template to data range +- 10 AA
     mflux_in = inparam.mflux0[
