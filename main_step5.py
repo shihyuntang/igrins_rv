@@ -268,9 +268,6 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
         refspec = NightSpecs(inpath, refnight, orders, jerp)
         order = orders[jerp]
 
-        if order == 4:
-            continue
-
         if refspec.flag == 1: #whole order absent
             nightsbox = nightsFinal.copy()
             bibox  = np.ones_like(nightsFinal,dtype=float)*np.nan
