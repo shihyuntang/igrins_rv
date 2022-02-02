@@ -21,11 +21,13 @@ def setup_fitting_init_pars(band, initvsini, order, initvsini2=0, fluxratio=0):
 
     Args:
         band (str): H or K band
-        initvsini (float): Initial vsini value
+        initvsini (float): initial vsini value
         order (int): Current run order
+        initvsini2 (float): initial vsini value for the secondary
+        fluxratio (float): flux ration between the secondary and the promary
 
     Returns:
-        np.array: Initial values for the parameters to be optimized
+        np.array: initial values for the parameters to be optimized
     """
 
     # start at bucket loc = 1250 +- 100, width = 250 +- 100,
@@ -72,34 +74,106 @@ def setup_fitting_init_pars(band, initvsini, order, initvsini2=0, fluxratio=0):
 
     return pars0
 
+def _make_dpars(key_name, locs, dpar, numofpars, dpars_org):
+    """Conventional func for make new dpar array.
+    Not meant to call by the user.
 
-def base_dpars_dict(vsinivary1, masterbeam, band, order, vsinivary2=-1):
+    Args:
+        key_name (srt): dict key name
+        locs (list): location where dpar needs to change
+        dpar (list): dpar values for the locs
+        numofpars (int): number of parameters
+        dpars_org (dict): dict for the dpars_org
+
+    Returns:
+        [dict]: dpars_org
+    """
+    
+    init_dpars = np.zeros(numofpars)
+    init_dpars[locs] = dpar
+
+    dpars_org[key_name] = init_dpars
+
+    return dpars_org
+
+
+def base_dpars_dict(
+    vsini_v1, masterbeam, band, order, numofpars, vsini_v2=-1):
     """Setup basic sets of paramaeter variable ranges
 
     Args:
-        initvsini (float): Initial vsini value
+        vsini_v1 (float): initial vsini value
+        masterbeam (str): A or B beam (nodding) that is running 
         band (str): H or K band
         order (int): Current run order
-        run_num (int): Number of the optimize sequence that is being running
+        vsini_v2 (float): initial vsini value for the secondary
 
     Returns:
         dpars_org (dict): Sets of optimize parameters' variable ranges
     """
 
-    #                     | 0    1    2    3 |  | -- 4 -- || 5 | | 6     7     8     9 | |10  11  12| |13 14||15   16   17   18    19 | |20   21   22   23 | 24 25 26
-    dpars_org = {
-        'cont' : np.array([0.0, 0.0, 0.0, 0.0,  0.0,        0.0,  0.0,  0.0,  0.0,  0.0,  1e7, 1, 1,   0, 0,  10., 30., 0.2, 50.0, 0.2,  1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0 ]),
-        'twave': np.array([0.0, 0.0, 0.0, 1.0,  0.0,        0.0,  1.0,  1.0,  1.0,  1.0,  0,   0, 0,   0, 0,   0.,  0., 0.0,  0.,  0.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ]),
-        'ip'   : np.array([0.0, 0.0, 0.0, 0.0,  0.0,        0.5,  0.0,  0.0,  0.0,  0.0,  0,   0, 0,   0, 0,   0.,  0., 0.0,  0.,  0.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ]),
-        's'    : np.array([5.0, 1.0, 0.0, 0.0,  0.0,        0.0,  0.0,  0.0,  0.0,  0.0,  0,   0, 0,   0, 0,   0.,  0., 0.0,  0.,  0.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ]),
-        'v'    : np.array([0.0, 0.0, 0.0, 0.0,  vsinivary1,  0.0,  0.0,  0.0,  0.0,  0.0,  0,   0, 0,   0, 0,   0.,  0., 0.0,  0.,  0.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ]),
-        'ts'   : np.array([5.0, 1.0, 0.0, 1.0,  0.0,        0.0,  0.0,  0.0,  0.0,  0.0,  0,   0, 0,   0, 0,   0.,  0., 0.0,  0.,  0.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ])
-        }
+    dpars_org = {}
+    dpars_org = _make_dpars('cont', 
+                            [10, 11, 12, 15, 16, 17,  18,  19, 20, 21, 22, 23], 
+                            [1e7, 1,  1, 10, 30, 0.2, 50, 0.2,  1,  1,  1,  1], 
+                            numofpars, dpars_org
+                            )
+    dpars_org = _make_dpars('twave', 
+                            [3, 6, 7, 8, 9], 
+                            [1, 1, 1, 1, 1], 
+                            numofpars, dpars_org
+                            )
+    dpars_org = _make_dpars('ip', 
+                            [5], 
+                            [0.5], 
+                            numofpars, dpars_org
+                            )
+    dpars_org = _make_dpars('s', 
+                            [0, 1], 
+                            [5, 1], 
+                            numofpars, dpars_org
+                            )
+    dpars_org = _make_dpars('v', 
+                            [4], 
+                            [vsini_v1], 
+                            numofpars, dpars_org
+                            )
+    dpars_org = _make_dpars('ts', 
+                            [0, 1, 3], 
+                            [5, 1, 1], 
+                            numofpars, dpars_org
+                            )
 
-    if vsinivary2 != -1:
-        dpars_org['s2']   = np.array([0.0, 0.0, 0.0, 0.0,  0.0,        0.0,  0.0,  0.0,  0.0,  0.0,  0,   0, 0,   0, 0,   0.,  0., 0.0,  0.,  0.0,  0.0, 0.0, 0.0, 0.0, 20.0, 1.0, 0.0, 0.0 ])
-        dpars_org['v2']   = np.array([0.0, 0.0, 0.0, 0.0,  0.0,         0.0,  0.0,  0.0,  0.0,  0.0,  0,   0, 0,   0, 0,   0.,  0., 0.0,  0.,  0.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, vsinivary2, 0.0 ])
-        dpars_org['s1s2'] = np.array([5.0, 1.0, 0.0, 0.0,  0.0,        0.0,  0.0,  0.0,  0.0,  0.0,  0,   0, 0,   0, 0,   0.,  0., 0.0,  0.,  0.0,  0.0, 0.0, 0.0, 0.0, 20.0, 1.0, 0.0, 0.0 ])
+#                   | 0    1    2    3 |  | -- 4 -- || 5 | | 6     7     8     9 | |10  11  12| |13 14||15   16   17   18    19 | |20   21   22   23 |  24  25  26  27
+# 'cont' : np.array([0.0, 0.0, 0.0, 0.0,  0.0,  0.0,  0.0, 0.0, 0.0, 0.0,  1e7, 1, 1,   0, 0,  10., 30., 0.2, 50.0, 0.2,  1.0, 1.0, 1.0, 1.0,  0.0, 0.0, 0.0, 0.0 ])
+# 'twave': np.array([0.0, 0.0, 0.0, 1.0,  0.0,      0.0,  1.0,  1.0,  1.0,  1.0,  0,   0, 0,   0, 0,   0.,  0., 0.0,  0.,  0.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ]),
+# 'ip'   : np.array([0.0, 0.0, 0.0, 0.0,  0.0,      0.5,  0.0,  0.0,  0.0,  0.0,  0,   0, 0,   0, 0,   0.,  0., 0.0,  0.,  0.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ]),
+# 's'    : np.array([5.0, 1.0, 0.0, 0.0,  0.0,      0.0,  0.0,  0.0,  0.0,  0.0,  0,   0, 0,   0, 0,   0.,  0., 0.0,  0.,  0.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ]),
+# 'v'    : np.array([0.0, 0.0, 0.0, 0.0,  vsini_v1, 0.0,  0.0,  0.0,  0.0,  0.0,  0,   0, 0,   0, 0,   0.,  0., 0.0,  0.,  0.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ]),
+# 'ts'   : np.array([5.0, 1.0, 0.0, 1.0,  0.0,      0.0,  0.0,  0.0,  0.0,  0.0,  0,   0, 0,   0, 0,   0.,  0., 0.0,  0.,  0.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ])
+# }
+#                              | 0    1    2    3 |  | -- 4 -- || 5 | | 6     7     8     9 | |10  11  12| |13 14| |15   16   17   18    19 | |20   21   22   23 |  24    25   26  27
+# dpars_org['s2']   = np.array([0.0, 0.0, 0.0, 0.0,  0.0,        0.0,  0.0,  0.0,  0.0,  0.0,  0,   0, 0,   0, 0,   0.,  0., 0.0,  0.,  0.0,  0.0, 0.0, 0.0, 0.0,  20.0, 1.0, 0.0, 0.0 ])
+# dpars_org['v2']   = np.array([0.0, 0.0, 0.0, 0.0,  0.0,        0.0,  0.0,  0.0,  0.0,  0.0,  0,   0, 0,   0, 0,   0.,  0., 0.0,  0.,  0.0,  0.0, 0.0, 0.0, 0.0,  0.0,  0.0, vsini_v2, 0.0 ])
+# dpars_org['s1s2'] = np.array([5.0, 1.0, 0.0, 0.0,  0.0,        0.0,  0.0,  0.0,  0.0,  0.0,  0,   0, 0,   0, 0,   0.,  0., 0.0,  0.,  0.0,  0.0, 0.0, 0.0, 0.0,  20.0, 1.0, 0.0, 0.0 ])
+
+
+    if vsini_v2 != -1:
+        dpars_org = _make_dpars('s2', 
+                            [24, 25], 
+                            [20, 1], 
+                            dpars_org
+                            )
+        dpars_org = _make_dpars('v2', 
+                            [26], 
+                            [vsini_v2], 
+                            dpars_org
+                            )
+        dpars_org = _make_dpars('s1s2', 
+                            [0, 1, 24, 25], 
+                            [5, 1, 20, 1], 
+                            dpars_org
+                            )
 
     if masterbeam == 'B':
         # setting for the Blaze dip
@@ -127,7 +201,161 @@ def base_dpars_dict(vsinivary1, masterbeam, band, order, vsinivary2=-1):
 
     return dpars_org
 
+def setup_tel(args, night, beam, order):
+    """Load synthetic telluric template generated during Step 1.
+    Also loc molecule line loc that need to be masked
 
+    Args:
+        args: information specified by user at command line
+        night (str): current run night
+        beam (str): A or B beam (nodding) that is running
+        order (int): current run order
+
+    Returns:
+        watm (array): model telluric wavelength
+        satm (array): model telluric flux
+        a0contx (array): model telluric x
+        continuum (array): model telluric continuum (blaze)
+        molnames (list): molecule present in select wave region
+        watmmols (array): molecule line wavelength in select wave region
+        satmmols (array): molecule line flux in select wave region
+    """
+
+    A0loc = f'./Output/{args.targname}_{args.band}/A0Fits/'\
+                f'{night[:8]}A0_{beam}treated_{args.band}.fits'
+
+    hdulist = fits.open(A0loc)
+    num_orders = 0
+    for i in range(25):
+        try:
+            hdulist[i].columns[0].name[9:]
+            num_orders += 1
+        except:
+            continue
+    fits_layer = [ i for i in np.arange(num_orders)+1 \
+                    if int(hdulist[i].columns[0].name[9:]) == order ][0]
+    tbdata = hdulist[ fits_layer ].data
+    flag = np.array(tbdata[f'ERRORFLAG{order}'])[0]
+
+    # Check whether Telfit hit critical error in Step 1 for the chosen
+    # order with this night. If so, skip.
+    if flag == 1:
+        logger.warning(f'  --> TELFIT ENCOUNTERED CRITICAL ERROR IN ORDER: '
+                            f'{order} NIGHT: {night}, skipping...')
+        return nightsout, rvsminibox, parfitminibox, vsiniminibox, tagsminibox, rvsminibox2, vsiniminibox2
+
+    watm = tbdata['WATM'+str(order)]
+    satm = tbdata['SATM'+str(order)]
+    a0contx    = tbdata['X'+str(order)]
+    continuum  = tbdata['BLAZE'+str(order)]
+    molnames   = tbdata['MOLNAMES']
+
+    # Remove extra rows leftover from having columns of unequal length
+    satm = satm[(watm != 0)]
+    watm = watm[(watm != 0)]
+
+    # set very low points to zero so that they don't go to NaN when taken
+    # to an exponent by template power in fmodel_chi
+    satm[(satm < 1e-4)] = 0.
+    a0contx = a0contx[(continuum != 0)]
+    continuum = continuum[(continuum != 0)]
+    molnames  =  molnames[(molnames != '')]
+
+    watmmols = {}; satmmols = {}
+    for mol in molnames:
+            watm1mol = tbdata['WATM'+mol+str(order)]
+            satm1mol = tbdata['SATM'+mol+str(order)]
+            satm1mol = satm1mol[(watm1mol != 0)]
+            watm1mol = watm1mol[(watm1mol != 0)]
+            watmmols[mol] = watm1mol; satmmols[mol] = satm1mol
+    
+    return watm, satm, a0contx, continuum, molnames, watmmols, satmmols
+
+def trim_obs_data(x, wave, s, u, xbounds, maskwaves):
+    """ Trim obvious outliers above the blaze (i.e. cosmic rays)
+    """
+    nzones = 5
+    x = basicclip_above(x,s,nzones)
+    wave = basicclip_above(wave,s,nzones)
+    u = basicclip_above(u,s,nzones)
+    s = basicclip_above(s,s,nzones)
+    x = basicclip_above(x,s,nzones)
+    wave = basicclip_above(wave,s,nzones)
+    u = basicclip_above(u,s,nzones)
+    s = basicclip_above(s,s,nzones)
+
+    # Cut spectrum to within wavelength regions defined in input list
+    s_piece    = s[    (x > xbounds[0]) & (x < xbounds[-1]) ]
+    u_piece    = u[    (x > xbounds[0]) & (x < xbounds[-1]) ]
+    wave_piece = wave[ (x > xbounds[0]) & (x < xbounds[-1]) ]
+    x_piece    = x[    (x > xbounds[0]) & (x < xbounds[-1]) ]
+
+    testmask = np.ones_like(s_piece, dtype=bool)
+    if len(maskwaves) != 0:
+        for maskbounds in maskwaves:
+            testmask[(wave_piece*1e4 > maskbounds[0]) \
+                        & (wave_piece*1e4 < maskbounds[1]) ] = False
+    
+    return s_piece, u_piece, wave_piece, x_piece, testmask
+
+def trim_tel_data(watm, satm, wave_piece, s_piece, u_piece, x_piece):
+    """Trim telluric template to data range +- 15 AA. If telluric
+    template buffer is cut short because A0 lines didn't extend
+    far past data range, cut data range accordingly.
+    """
+
+    satm_in = satm[(watm > np.min(wave_piece)*1e4 - 10) \
+                        & (watm < np.max(wave_piece)*1e4 + 10)]
+    watm_in = watm[(watm > np.min(wave_piece)*1e4 - 10) \
+                        & (watm < np.max(wave_piece)*1e4 + 10)]
+
+    s_piece	= s_piece[ (wave_piece*1e4 > np.min(watm_in)+10) \
+                        & (wave_piece*1e4 < np.max(watm_in)-10)]
+    u_piece	= u_piece[ (wave_piece*1e4 > np.min(watm_in)+10) \
+                        & (wave_piece*1e4 < np.max(watm_in)-10)]
+    x_piece	= x_piece[ (wave_piece*1e4 > np.min(watm_in)+10) \
+                        & (wave_piece*1e4 < np.max(watm_in)-10)]
+    wave_piece = wave_piece[(wave_piece*1e4 > np.min(watm_in)+10) \
+                        & (wave_piece*1e4 < np.max(watm_in)-10)]
+
+    return satm_in, watm_in, wave_piece, s_piece, u_piece, x_piece
+                        
+def check_if_template_exist(args, syntemp, singleORdouble = 1):
+
+    if singleORdouble == 1:
+        template_kind = args.template.lower()
+        temperature = args.temperature
+        logg = args.logg
+        ll = ''
+    elif singleORdouble == 2:
+        template_kind = args.template2.lower()
+        temperature = args.temperature2
+        logg = args.logg2
+        ll = '2'
+    else:
+        sys.exit(f'singleORdouble gives {singleORdouble}, can onlu be 1 or 2.')
+
+    if template_kind == 'synthetic':
+        #list of all syntheticstellar
+        syntemp = [i for i in syntemp if i[:3] == 'syn']
+        synT    = [ i.split('_')[2][1:]  for i in syntemp ]
+        synlogg = [ i.split('_')[3][4:7] for i in syntemp ]
+    elif template_kind == 'phoenix':
+        #list of all phoenix
+        syntemp = [i for i in syntemp if i[:3] == 'PHO']
+        synT    = [ i.split('-')[1][4:]  for i in syntemp ]
+        synlogg = [ i.split('-')[2][:3] for i in syntemp ]
+    else:
+        synT = [temperature]
+        synlogg = [logg]
+
+    if temperature not in synT:
+        sys.exit(f'ERROR: UNEXPECTED STELLAR TEMPERATURE FOR "-temp{ll}" INPUT! '
+                    f'{syntemp} AVALIABLE UNDER ./Engine/syn_template/')
+
+    if logg not in synlogg:
+        sys.exit(f'ERROR: UNEXPECTED STELLAR LOGG FOR "-logg{ll}" INPUT! {syntemp} '
+                    'AVALIABLE UNDER ./Engine/syn_template/')
 
 
 
@@ -136,7 +364,7 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
     by multiprocessing
     """
 
-    nights   = inparam.nights
+    nights = inparam.nights
     night = nights[i] # current looped night
 
     order = orders[order_use]
@@ -150,9 +378,18 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
                                                     i+1,
                                                     len(inparam.nights),
                                                     night,
-                                                    mp.current_process().pid) )
+                                                    mp.current_process().pid) 
+                                                    )
 
-    #-------------------------------------------------------------------------------
+    if args.binary:
+        pars0 = setup_fitting_init_pars(
+            args.band, inparam.initvsini, order, 
+            inparam.initvsini2, float(args.fluxratio)
+            )
+    else:
+        pars0 = setup_fitting_init_pars(
+            args.band, inparam.initvsini, order
+            )
 
     # Collect relevant beam and filenum info
     tagsnight = []; beamsnight = []
@@ -163,17 +400,19 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
         tagsnight.append(tag)
         beamsnight.append('B')
 
-    nightsout = []
-    rvsminibox     = np.ones(len(tagsnight))*np.nan
-    vsiniminibox   = np.ones(len(tagsnight))*np.nan
-    rvsminibox2     = np.ones(len(tagsnight))*np.nan
-    vsiniminibox2   = np.ones(len(tagsnight))*np.nan
-    tagsminibox    = np.ones(len(tagsnight))*np.nan
-    chisminibox    = np.ones(len(tagsnight))*np.nan
+    rvsminibox    = np.ones(len(tagsnight))*np.nan
+    vsiniminibox  = np.ones(len(tagsnight))*np.nan
+    rvsminibox2   = np.ones(len(tagsnight))*np.nan
+    vsiniminibox2 = np.ones(len(tagsnight))*np.nan
+    tagsminibox   = np.ones(len(tagsnight))*np.nan
+    chisminibox   = np.ones(len(tagsnight))*np.nan
     # need to match the dpar numbers
-    parfitminibox  = np.ones((len(tagsnight),28))*np.nan
+    parfitminibox = np.ones(
+        (len(tagsnight), len(pars0))
+        )*np.nan
 
-    for t in tagsnight:
+    nightsout = []
+    for _ in tagsnight:
         nightsout.append(night)
 
 #-------------------------------------------------------------------------------
@@ -197,31 +436,27 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
 
     if np.isnan(initguesses) == True:
         logger.warning(f'  --> Previous run of {night} found it '
-                                'inadequate, skipping...')
-        return nightsout, rvsminibox, parfitminibox, vsiniminibox, tagsminibox, rvsminibox2, vsiniminibox2
+                                'inadequate (nan), skipping...')
+        return (nightsout, rvsminibox, parfitminibox, vsiniminibox, 
+                    tagsminibox, rvsminibox2, vsiniminibox2)
 
-    if args.binary:
-        pars0 = setup_fitting_init_pars(args.band, inparam.initvsini, order, inparam.initvsini2, float(args.fluxratio))
-    else:
-        pars0 = setup_fitting_init_pars(args.band, inparam.initvsini, order)
 
     # Iterate over all A/B exposures
-    for t in np.arange(len(tagsnight)):
+    for t in range(len(tagsnight)):
         tag = tagsnight[t]
         beam = beamsnight[t]
         masterbeam = beam
 
-        if np.int(night[:8]) == 20170216 \
+        if int(night[:8]) == 20170216 \
             and args.targname == 'GJ281' \
-            and np.float(tag) == 63:
+            and float(tag) == 63:
             continue
 
-        # Load synthetic telluric template generated during Step 1
-        # [:8] here is to ensure program works under Night_Split mode
 
         # Use instrumental profile dictionary corresponding to whether
         # IGRINS mounting was loose or not
-        if np.int(night[:8]) < 20180401 or np.int(night[:8]) > 20190531:
+        # [:8] here is to ensure program works under Night_Split mode
+        if int(night[:8]) < 20180401 or int(night[:8]) > 20190531:
             IPpars = inparam.ips_tightmount_pars[args.band][masterbeam][order]
         else:
             IPpars = inparam.ips_loosemount_pars[args.band][masterbeam][order]
@@ -234,63 +469,19 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
             sys.exit(
                 f'EXIT, beam (nodding) can only be A or B, getting {beam}...')
 
-        A0loc = f'./Output/{args.targname}_{args.band}/A0Fits/{night[:8]}A0_{beam}treated_{args.band}.fits'
 
-        hdulist = fits.open(A0loc)
-        num_orders = 0
-        for i in range(25):
-            try:
-                hdulist[i].columns[0].name[9:]
-                num_orders += 1
-            except:
-                continue
-        fits_layer = [ i for i in np.arange(num_orders)+1 \
-                        if np.int(hdulist[i].columns[0].name[9:]) == order ][0]
-        tbdata = hdulist[ fits_layer ].data
-        flag = np.array(tbdata[f'ERRORFLAG{order}'])[0]
-
-        # Check whether Telfit hit critical error in Step 1 for the chosen
-        # order with this night. If so, skip.
-        if flag == 1:
-            logger.warning(f'  --> TELFIT ENCOUNTERED CRITICAL ERROR IN ORDER: '
-                                f'{order} NIGHT: {night}, skipping...')
-            return nightsout, rvsminibox, parfitminibox, vsiniminibox, tagsminibox, rvsminibox2, vsiniminibox2
-
-        watm = tbdata['WATM'+str(order)]
-        satm = tbdata['SATM'+str(order)]
-        a0contx    = tbdata['X'+str(order)]
-        continuum  = tbdata['BLAZE'+str(order)]
-        molnames   = tbdata['MOLNAMES']
-
-        # Remove extra rows leftover from having columns of unequal length
-        satm = satm[(watm != 0)]
-        watm = watm[(watm != 0)]
-
-        # set very low points to zero so that they don't go to NaN when taken
-        # to an exponent by template power in fmodel_chi
-        satm[(satm < 1e-4)] = 0.
-        a0contx = a0contx[(continuum != 0)]
-        continuum = continuum[(continuum != 0)]
-        molnames  =  molnames[(molnames != '')]
-
-        watmmols = {}; satmmols = {}
-        for mol in molnames:
-                watm1mol = tbdata['WATM'+mol+str(order)]
-                satm1mol = tbdata['SATM'+mol+str(order)]
-                satm1mol = satm1mol[(watm1mol != 0)]
-                watm1mol = watm1mol[(watm1mol != 0)]
-                watmmols[mol] = watm1mol; satmmols[mol] = satm1mol
-
+        watm, satm, a0contx, continuum, molnames, watmmols, satmmols = setup_tel(
+            args, night, beam, order
+            )
         maskwaves = h2o_masker(inparam, args, order, night, watm, satm,
                                 molnames, watmmols, satmmols)
-
         #-------------------------------------------------------------------------------
 
         bound_cut = _setup_bound_cut(inparam.bound_cut_dic,
-                                        args.band, order)
+            args.band, order
+            )
 
         # Load target spectrum
-
         x,wave,s,u = init_fitsread(
             f'{inparam.inpath}/{night}/{beam}/',
             'target',
@@ -304,35 +495,17 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
 
         # Execute S/N cut
         s2n = s/u
-        if np.nanmedian(s2n) < np.float(args.SN_cut):
+        if np.nanmedian(s2n) < float(args.SN_cut):
             logger.warning(
                 '  --> Bad S/N {:1.3f} < {} for {}{} {}, SKIP'.format(
                     np.nanmedian(s2n), args.SN_cut, night, beam, tag
-                    ))
+                    )
+                )
             continue
 
-        # Trim obvious outliers above the blaze (i.e. cosmic rays)
-        nzones = 5
-        x = basicclip_above(x,s,nzones)
-        wave = basicclip_above(wave,s,nzones)
-        u = basicclip_above(u,s,nzones)
-        s = basicclip_above(s,s,nzones)
-        x = basicclip_above(x,s,nzones)
-        wave = basicclip_above(wave,s,nzones)
-        u = basicclip_above(u,s,nzones)
-        s = basicclip_above(s,s,nzones)
-
-        # Cut spectrum to within wavelength regions defined in input list
-        s_piece    = s[    (x > xbounds[0]) & (x < xbounds[-1]) ]
-        u_piece    = u[    (x > xbounds[0]) & (x < xbounds[-1]) ]
-        wave_piece = wave[ (x > xbounds[0]) & (x < xbounds[-1]) ]
-        x_piece    = x[    (x > xbounds[0]) & (x < xbounds[-1]) ]
-
-        testmask = np.ones_like(s_piece, dtype=bool)
-        if len(maskwaves) != 0:
-            for maskbounds in maskwaves:
-                testmask[(wave_piece*1e4 > maskbounds[0]) \
-                            & (wave_piece*1e4 < maskbounds[1]) ] = False
+        s_piece, u_piece, wave_piece, x_piece, testmask = trim_obs_data(
+            x, wave, s, u, xbounds, maskwaves
+            )
 
         if (len(s_piece[testmask]) / len(s_piece) < 0.3) \
             or (len(s_piece[testmask]) < 350):
@@ -340,30 +513,17 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
                 'Only {} unmasked pixels for {} order {}, SKIP'.format(
                     len(s_piece[testmask]), night, order
                     ))
-            return nightsout, rvsminibox, parfitminibox, vsiniminibox, tagsminibox, rvsminibox2, vsiniminibox2
-
+            return (nightsout, rvsminibox, parfitminibox, vsiniminibox, 
+                        tagsminibox, rvsminibox2, vsiniminibox2)
 
         # Save data for second template cutting after optimization cycle 1 done
         s_save = s_piece.copy()
         x_save = x_piece.copy()
         u_save = u_piece.copy()
 
-        # Trim telluric template to data range +- 15 AA. If telluric
-        # template buffer is cut short because A0 lines didn't extend
-        # far past data range, cut data range accordingly.
-        satm_in = satm[(watm > np.min(wave_piece)*1e4 - 10) \
-                            & (watm < np.max(wave_piece)*1e4 + 10)]
-        watm_in = watm[(watm > np.min(wave_piece)*1e4 - 10) \
-                            & (watm < np.max(wave_piece)*1e4 + 10)]
-
-        s_piece	= s_piece[ (wave_piece*1e4 > np.min(watm_in)+10) \
-                            & (wave_piece*1e4 < np.max(watm_in)-10)]
-        u_piece	= u_piece[ (wave_piece*1e4 > np.min(watm_in)+10) \
-                            & (wave_piece*1e4 < np.max(watm_in)-10)]
-        x_piece	= x_piece[ (wave_piece*1e4 > np.min(watm_in)+10) \
-                            & (wave_piece*1e4 < np.max(watm_in)-10)]
-        wave_piece = wave_piece[(wave_piece*1e4 > np.min(watm_in)+10) \
-                            & (wave_piece*1e4 < np.max(watm_in)-10)]
+        satm_in, watm_in, wave_piece, s_piece, u_piece, x_piece = trim_tel_data(
+            watm, satm, wave_piece, s_piece, u_piece, x_piece
+            )
 
         Rstell1 = np.median(np.diff(inparam.mwave0))
 
@@ -371,9 +531,9 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
             Rstell2 = np.median(np.diff(inparam.mwave2))
 
             if  Rstell1 > Rstell2:
-                rebin2to1 = True; extra1 = 0.; extra2 = 10.;
+                rebin2to1 = True; extra1 = 0.; extra2 = 10.
             else:
-                rebin2to1 = False; extra1 = 10.; extra2 = 0.;
+                rebin2to1 = False; extra1 = 10.; extra2 = 0.
 
             mflux_in2 = inparam.mflux2[
                     (inparam.mwave2 > np.min(wave_piece)*1e4 - 5 - extra2) \
@@ -393,7 +553,9 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
             mwave_in2 = mwave_in2[1:-1]
             mflux_in2 = mflux_in2[1:-1]
         else:
-            extra1 = 0; extra2 = 0; Rstell = Rstell1;
+            extra1 = 0
+            extra2 = 0
+            Rstell = Rstell1
 
         # Trim stellar template to data range +- 10 AA
         mflux_in = inparam.mflux0[
@@ -406,29 +568,29 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
             ]
         Rtell = np.median(np.diff(watm_in))
         if Rstell < Rtell:
-            sys.exit(f'Telluric template resolution ({round(Rtell,4)} AA) '
+            sys.exit(f'Telluric template resolution ({np.round(Rtell,4)} AA) '
                         'must be finer than stellar template resolution '
                         '({round(Rstell,4)} AA) !')
 
         # Rebin stellar template to uniform wavelength scale
         dstep = Rstell1
         nstep = int((mwave_in[-1]-mwave_in[0])/dstep)
-        mwave1 = np.linspace(mwave_in[0],mwave_in[-1],nstep)
-        mflux1 = rebin_jv(mwave_in,mflux_in,mwave1,False)
+        mwave1 = np.linspace(mwave_in[0], mwave_in[-1], nstep)
+        mflux1 = rebin_jv(mwave_in, mflux_in, mwave1, False)
         mwave_in = mwave1.copy(); mflux_in = mflux1.copy()
         mwave_in = mwave_in[1:-1]
         mflux_in = mflux_in[1:-1]
 
         # Normalize continuum from A0 to flux scale of data
         continuum /= np.nanmedian(continuum)
-        continuum *= np.nanpercentile(s_piece,99)
+        continuum *= np.nanpercentile(s_piece, 99)
 
         # --------------------------------------------------------------
 
         par = pars0.copy()
 
         # Get initial guess for cubic wavelength solution from reduction pipeline
-        f = np.polyfit(x_piece,wave_piece,3)
+        f = np.polyfit(x_piece, wave_piece, 3)
         q = np.poly1d(f)
         initwave = q(x_piece)*1e4
 
@@ -439,18 +601,21 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
         par[14] = IPpars[0]
 
         if args.binary:
-            par[24] = initguesses2-inparam.bvcs[night+tag]
+            par[24] = initguesses2 - inparam.bvcs[night+tag]
 
 
         # setup fitting boundary
         if args.binary:
             dpars = base_dpars_dict(inparam.vsinivary, masterbeam,
-                                    args.band, int(order),inparam.vsinivary2)
+                                    args.band, int(order), len(pars0),
+                                    inparam.vsinivary2
+                                    )
         else:
             dpars = base_dpars_dict(inparam.vsinivary, masterbeam,
-                                    args.band, int(order))
+                                    args.band, int(order), len(pars0)
+                                    )
 
-        continuum_in = rebin_jv(a0contx,continuum,x_piece,False)
+        continuum_in = rebin_jv(a0contx, continuum, x_piece, False)
         fitobj = FitObjs(s_piece, x_piece, u_piece, continuum_in, watm_in,
                             satm_in, mflux_in, mwave_in,
                             ast.literal_eval(inparam.maskdict[order]),
@@ -459,7 +624,7 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
                             initwave, [])
 
         if args.binary:
-            fitobj.addsecondary(mwave_in2,mflux_in2,rebin2to1)
+            fitobj.addsecondary(mwave_in2, mflux_in2, rebin2to1)
 
         #-------------------------------------------------------------------------------
 
@@ -543,7 +708,7 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
             ## After first cycle, use best fit model to identify CRs/hot pixels
             if nc == 1:
                 parfit = parfit_1.copy()
-                CRmaskF = cr_masker(parfit,fitobj,args.binary)
+                CRmaskF = cr_masker(parfit, fitobj, args.binary)
 
                 smod,chi,w,cont = fmod(parfit, fitobj)
                 molmask = []
@@ -562,8 +727,7 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
 
                 if args.binary:
                     optgroup = optgroup2.copy()
-                    fitobj.addsecondary(mwave_in2,mflux_in2,rebin2to1)
-
+                    fitobj.addsecondary(mwave_in2, mflux_in2, rebin2to1)
 
         parfit = parfit_1.copy()
 
@@ -581,7 +745,8 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
 
         # if best fit stellar or telluric template powers are exactly
         # equal to their starting values, fit failed, throw out result
-        if parfit[1] == par_in[1] or parfit[3] == par_in[3] or (args.binary and (parfit[25] == par_in[25])):
+        if parfit[1] == par_in[1] or parfit[3] == par_in[3] \
+            or (args.binary and (parfit[25] == par_in[25])):
             logger.warning(f'  --> Stellar or telluric template powers have '
                                 f'not budged from starting values for {night}! '
                                 'Fit is broken! Optimizer bounds may be '
@@ -602,9 +767,9 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
         #-------------------------------------------------------------------------------
 
         if args.plotfigs == True:
-            parfitS1 = parfit.copy(); parfitS1[3] = 0; parfitS1[24] = 0;
-            parfitS2 = parfit.copy(); parfitS2[3] = 0; parfitS2[1] = 0;
-            parfitT = parfit.copy(); parfitT[1] = 0; parfitT[24] = 0;
+            parfitS1 = parfit.copy(); parfitS1[3] = 0; parfitS1[24] = 0
+            parfitS2 = parfit.copy(); parfitS2[3] = 0; parfitS2[1] = 0
+            parfitT = parfit.copy(); parfitT[1] = 0; parfitT[24] = 0
             if args.binary:
                 outplotter_23(
                     parfitS1, fitobj, 'parfitS1_{}_{}_{}'.format(order,night,tag),
@@ -650,7 +815,8 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
                 rvsminibox[t]   = np.nan
                 vsiniminibox[t] = np.nan
 
-    return nightsout, rvsminibox, parfitminibox, vsiniminibox, tagsminibox, rvsminibox2, vsiniminibox2
+    return (nightsout, rvsminibox, parfitminibox, vsiniminibox, 
+                tagsminibox, rvsminibox2, vsiniminibox2)
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
@@ -661,7 +827,6 @@ if __name__ == '__main__':
     cdbs_loc = '~/cdbs/'
 
     #-------------------------------------------------------------------------------
-
     # Check user input
 
     initvsini = float(args.initvsini)
@@ -687,6 +852,7 @@ if __name__ == '__main__':
         sys.exit('ERROR: UNEXPECTED STELLAR TEMPLATE FOR "-t" INPUT!')
 
     syntemp = os.listdir(f'./Engine/syn_template')
+    check_if_template_exist(args, syntemp, singleORdouble = 1)
 
     if args.binary:
         if args.fluxratio == '':
@@ -703,51 +869,7 @@ if __name__ == '__main__':
         initvsini2 = float(args.initvsini2)
         vsinivary2 = float(args.vsinivary2)
         
-        if args.template2.lower() == 'synthetic':
-            #list of all syntheticstellar
-            syntemp = [i for i in syntemp if i[:3] == 'syn']
-            synT    = [ i.split('_')[2][1:]  for i in syntemp ]
-            synlogg = [ i.split('_')[3][4:7] for i in syntemp ]
-        elif args.template2.lower() == 'phoenix':
-            #list of all phoenix
-            syntemp = [i for i in syntemp if i[:3] == 'PHO']
-            synT    = [ i.split('-')[1][4:]  for i in syntemp ]
-            synlogg = [ i.split('-')[2][:3] for i in syntemp ]
-        else:
-            synT = [args.temperature2]; synlogg = [args.logg2]
-
-        if args.temperature2 not in synT:
-            sys.exit(f'ERROR: UNEXPECTED STELLAR TEMPERATURE FOR "-temp2" INPUT! '
-                        f'{syntemp} AVALIABLE UNDER ./Engine/syn_template/')
-
-        if args.logg2 not in synlogg:
-            sys.exit(f'ERROR: UNEXPECTED STELLAR LOGG FOR "-logg2" INPUT! {syntemp} '
-                        'AVALIABLE UNDER ./Engine/syn_template/')
-
-    #------------------------------
-
-    syntemp = os.listdir(f'./Engine/syn_template')
-
-    if args.template.lower() == 'synthetic':
-        #list of all syntheticstellar
-        syntemp = [i for i in syntemp if i[:3] == 'syn']
-        synT    = [ i.split('_')[2][1:]  for i in syntemp ]
-        synlogg = [ i.split('_')[3][4:7] for i in syntemp ]
-    elif args.template.lower() == 'phoenix':
-        #list of all phoenix
-        syntemp = [i for i in syntemp if i[:3] == 'PHO']
-        synT    = [ i.split('-')[1][4:]  for i in syntemp ]
-        synlogg = [ i.split('-')[2][:3] for i in syntemp ]
-    else:
-        synT = [args.temperature]; synlogg = [args.logg]
-
-    if args.temperature not in synT:
-        sys.exit(f'ERROR: UNEXPECTED STELLAR TEMPERATURE FOR "-temp" INPUT! '
-                    f'{syntemp} AVALIABLE UNDER ./Engine/syn_template/')
-
-    if args.logg not in synlogg:
-        sys.exit(f'ERROR: UNEXPECTED STELLAR LOGG FOR "-logg" INPUT! {syntemp} '
-                    'AVALIABLE UNDER ./Engine/syn_template/')
+        check_if_template_exist(args, syntemp, singleORdouble = 2)
 
     #------------------------------
 
@@ -769,7 +891,7 @@ if __name__ == '__main__':
 
     # Specify initial RV guesses as a single value applied to all nights
     if args.mode.lower() == 'std':
-        initguesses = np.float(args.guesses)
+        initguesses = float(args.guesses)
         initguesses_show = initguesses
     else: # Load initial RV guesses from file
         if args.guesses_source == 'init': # From Step 2 results
@@ -803,7 +925,7 @@ if __name__ == '__main__':
             initguesses = {}
             initguesses_show = f'RVresultsSummary_{args.guessesX}.csv'
             for hrt in range(len(initnights)):
-                initguesses[str(initnights[hrt])] = np.float(initrvs[hrt])
+                initguesses[str(initnights[hrt])] = float(initrvs[hrt])
             if args.binary:
                 initrvs2    = np.array(guessdata['RV2final'])
                 initguesses2 = {}
@@ -836,13 +958,13 @@ Input Parameters:
                args.temperature, args.logg, args.B, args.Nthreads))
     if args.binary:
         print(u'''
-    PLUS BINARY PARAMETERS:
-       Initial vsini #2      = \33[37;1;41m {} km/s \033[0m
-       vsini #2 vary range    \u00B1 \33[37;1;41m {} km/s \033[0m
-       Stellar template #2 use= \33[37;1;41m {} \033[0m
-       syn template temp #2  = \33[37;1;41m {} \033[0m
-       syn template logg #2   = \33[37;1;41m {} \033[0m
-       syn template B #2   = \33[37;1;41m {} \033[0m
+PLUS BINARY PARAMETERS:
+    Initial vsini #2       = \33[37;1;41m {} km/s \033[0m
+    vsini #2 vary range    \u00B1 \33[37;1;41m {} km/s \033[0m
+    Stellar template #2 use= \33[37;1;41m {} \033[0m
+    syn template temp #2   = \33[37;1;41m {} \033[0m
+    syn template logg #2   = \33[37;1;41m {} \033[0m
+    syn template B #2      = \33[37;1;41m {} \033[0m
        '''.format(initvsini2, vsinivary2, args.template2,
                   args.temperature2, args.logg2, args.B2))
     if not args.skip:
@@ -937,8 +1059,8 @@ Input Parameters:
     # Retrieve stellar and telluric templates
     print('\n Loading stellar template... \n')
     watm,satm, mwave0, mflux0 = setup_templates(
-        logger, args.template, args.band, np.int(args.temperature),
-        np.float(args.logg), np.float(args.B)
+        logger, args.template, args.band, int(args.temperature),
+        float(args.logg), float(args.B)
         )
 
     # Save pars in class for future use
@@ -949,8 +1071,8 @@ Input Parameters:
     if args.binary:
         print('\n Loading secondary stellar template... \n')
         watm,satm, mwave2, mflux2 = setup_templates(
-            logger, args.template2, args.band, np.int(args.temperature2),
-            np.float(args.logg2), np.float(args.B2)
+            logger, args.template2, args.band, int(args.temperature2),
+            float(args.logg2), float(args.B2)
             )
         inparam.addsecondary(initvsini2,vsinivary2,mwave2,mflux2,initguesses2)
 
@@ -1018,8 +1140,6 @@ For H band RVs: We do not expect any systematic changes in the H band as the
                 orders[jerp], int(jerp+1), len(orders)
                 ))
 
-        #main(args, inparam, orders, jerp, trk, step2or3 ,0)
-
         func = partial(main, args, inparam, orders, jerp, trk, step2or3 )
         outs = pqdm(np.arange(len(nightsFinal)), func, n_jobs=args.Nthreads)
 
@@ -1034,8 +1154,8 @@ For H band RVs: We do not expect any systematic changes in the H band as the
                 parfitbox = outsbox[2]
                 vsinibox  = outsbox[3]
                 tagbox    = outsbox[4]
-                rvbox2     = outsbox[5]
-                vsinibox2  = outsbox[6]
+                rvbox2    = outsbox[5]
+                vsinibox2 = outsbox[6]
             else:
                 nightsbox = nightsbox + outsbox[0]
                 rvbox     = np.concatenate((rvbox,outsbox[1]))
@@ -1043,19 +1163,19 @@ For H band RVs: We do not expect any systematic changes in the H band as the
                 vsinibox  = np.concatenate((vsinibox,outsbox[3]))
                 tagbox    = np.concatenate((tagbox,outsbox[4]))
                 rvbox2    = np.concatenate((rvbox2,outsbox[5]))
-                vsinibox2  = np.concatenate((vsinibox2,outsbox[6]))
+                vsinibox2 = np.concatenate((vsinibox2,outsbox[6]))
 
         order = orders[jerp]
         nightsbox = np.array(nightsbox)
         vsinitags = []
 
         # Save results to fits file
-        c1    = fits.Column(name='NIGHT'+str(order),  array=nightsbox, format='{}A'.format(len(nights[0])) )
-        c2    = fits.Column(name='RV'+str(order),     array=rvbox,     format='D')
-        c3    = fits.Column(name='PARFIT'+str(order), array=parfitbox, format=str(len(parfitbox[0,:]))+'D',
+        c1 = fits.Column(name='NIGHT'+str(order),  array=nightsbox, format='{}A'.format(len(nights[0])) )
+        c2 = fits.Column(name='RV'+str(order),     array=rvbox,     format='D')
+        c3 = fits.Column(name='PARFIT'+str(order), array=parfitbox, format=str(len(parfitbox[0,:]))+'D',
                             dim=(1,len(parfitbox[0,:])))
-        c4    = fits.Column(name='VSINI'+str(order),  array=vsinibox,  format='D')
-        c5    = fits.Column(name='TAG'+str(order),    array=tagbox,    format='4A')
+        c4 = fits.Column(name='VSINI'+str(order),  array=vsinibox,  format='D')
+        c5 = fits.Column(name='TAG'+str(order),    array=tagbox,    format='4A')
         if args.binary:
             c6    = fits.Column(name='RV2'+str(order),     array=rvbox2,     format='D')
             c7    = fits.Column(name='VSINI2'+str(order),  array=vsinibox2,  format='D')
@@ -1254,13 +1374,13 @@ For H band RVs: We do not expect any systematic changes in the H band as the
                 sigma_ON2[night,ll] = sigma_method2[ll] + stdmasterbox[night,ll]**2
                 sigma_ON2bi[night,ll] = sigma_method2[ll] + stdmasterbox2[night,ll]**2
 
-        rvfinal    = np.ones(Nnights, dtype=np.float64)
-        stdfinal   = np.ones(Nnights, dtype=np.float64)
-        vsinifinal = np.ones(Nnights, dtype=np.float64)
-        rvfinal2    = np.ones(Nnights, dtype=np.float64)
-        stdfinal2   = np.ones(Nnights, dtype=np.float64)
-        vsinifinal2 = np.ones(Nnights, dtype=np.float64)
-        jds_out   = np.ones(Nnights, dtype=np.float64)
+        rvfinal    = np.ones(Nnights, dtype=float64)
+        stdfinal   = np.ones(Nnights, dtype=float64)
+        vsinifinal = np.ones(Nnights, dtype=float64)
+        rvfinal2    = np.ones(Nnights, dtype=float64)
+        stdfinal2   = np.ones(Nnights, dtype=float64)
+        vsinifinal2 = np.ones(Nnights, dtype=float64)
+        jds_out   = np.ones(Nnights, dtype=float64)
 
         if T_Ls[boxind] == 'T':
             nights_use = nightsT.copy(); kind = 'Focused'
