@@ -9,7 +9,7 @@ from Engine.rebin_jv   import rebin_jv
 from Engine.outplotter import outplotter_23
 from Engine.detect_peaks import detect_peaks
 from Engine.bisectorcalc    import NightSpecs,BIinst
-#from Engine.LS         import LS
+from Engine.LS         import LSandfold
 from Engine.plot_tool import modtool
 from scipy.stats import pearsonr
 
@@ -211,7 +211,8 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
                     orders[jerp], int(jerp+1), len(orders)
                     ))
 
-            #modtool(args,jerp,nightsbox,tagbox,parfitbox,inparam,0)
+            #for i in range(len(nightsFinal)):
+            #    modtool(args,jerp,nightsbox,tagbox,parfitbox,inparam,i)
             func = partial(modtool,args,jerp,nightsbox,tagbox,parfitbox,inparam)
             outs = pqdm(np.arange(len(nightsFinal)), func, n_jobs=args.Nthreads)
 
@@ -233,6 +234,9 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
         if nightspec.flag != 1:
             s2ns[i] = np.nanmedian(nightspec.flux/nightspec.unc)
     refnight = nightsFinal[np.argmax(s2ns)]
+    #refnight = nightsFinal[0]
+    #refnight = nightsFinal[3]
+
 
     bimasterboxT  = np.ones((len(nightsT),len(orders)))*np.nan
     stdmasterboxT = np.ones((len(nightsT),len(orders)))*np.nan
@@ -263,6 +267,9 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
 
         refspec = NightSpecs(inpath, refnight, orders, jerp)
         order = orders[jerp]
+
+        if order == 4:
+            continue
 
         if refspec.flag == 1: #whole order absent
             nightsbox = nightsFinal.copy()
@@ -445,8 +452,8 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
         axes.text(0.05, 0.93, r'BI mean= ${:1.5f}$ $\pm$ {:1.5f} km/s'.format(
             np.nanmean(bifinal), np.nanstd(bifinal)),
             transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
-        #axes.set_ylim(np.nanmin(bifinal)-.08, np.nanmax(bifinal)+.08)
-        axes.set_ylim(-0.3,0.3)
+        axes.set_ylim(np.nanmin(bifinal)-.08, np.nanmax(bifinal)+.08)
+        #axes.set_ylim(-0.3,0.3)
         axes.set_ylabel('Bisector Span [km/s]', size=6, style='normal', family='sans-serif' )
         axes.set_xlabel('Night (#)', size=6, style='normal', family='sans-serif' )
         axes.xaxis.set_minor_locator(AutoMinorLocator(5))
@@ -477,9 +484,9 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
         axes.errorbar(rvfinal, bifinal, xerr=rvstdfinal,yerr=stdfinal, ls='none', lw=.5, ecolor='black')
         axes.text(0.05, 0.93, 'Correlation Coeff = {} , P = {}'.format(round(pp[0],5),round(pp[1],5)),
                              transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
-        #axes.set_ylim(np.nanmin(bifinal)-.08,
-        #             np.nanmax(bifinal)+.08)
-        axes.set_ylim(-0.3,0.3)
+        axes.set_ylim(np.nanmin(bifinal)-.08,
+                     np.nanmax(bifinal)+.08)
+        #axes.set_ylim(-0.3,0.3)
         axes.set_xlabel('RV [km/s]', size=6, style='normal', family='sans-serif' )
         axes.set_ylabel('Bisector Span [km/s]', size=6, style='normal', family='sans-serif' )
         axes.xaxis.set_minor_locator(AutoMinorLocator(5))
@@ -574,8 +581,8 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
                 style='normal', family='sans-serif' )
             axes.text(0.9,  0.1, 'Defocused', transform=axes.transAxes, size=6,
                 style='normal', family='sans-serif' )
-    #axes.set_ylim(np.nanmin(bifinalCombined)-.08,np.nanmax(bifinalCombined)+.08)
-    axes.set_ylim(-0.3,0.3)
+    axes.set_ylim(np.nanmin(bifinalCombined)-.08,np.nanmax(bifinalCombined)+.08)
+    #axes.set_ylim(-0.3,0.3)
     axes.set_ylabel('Bisector Span (km/s)', size=6, style='normal', family='sans-serif' )
     axes.set_xlabel('Night (#)', size=6, style='normal', family='sans-serif' )
     axes.xaxis.set_minor_locator(AutoMinorLocator(5))
@@ -596,9 +603,9 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
     axes.errorbar(rvfinalCombined, bifinalCombined, xerr=rvstdfinalCombined,yerr=stdfinalCombined, ls='none', lw=.5, ecolor='black')
     axes.text(0.05, 0.93, 'Correlation Coeff = {} , P = {}'.format(round(pp[0],5),round(pp[1],5)),
                          transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
-    #axes.set_ylim(np.nanmin(bifinalCombined)-.08,
-    #             np.nanmax(bifinalCombined)+.08)
-    axes.set_ylim(-0.3,0.3)
+    axes.set_ylim(np.nanmin(bifinalCombined)-.08,
+                 np.nanmax(bifinalCombined)+.08)
+    #axes.set_ylim(-0.3,0.3)
     axes.set_xlabel('RV [km/s]', size=6, style='normal', family='sans-serif' )
     axes.set_ylabel('Bisector Span [km/s]', size=6, style='normal', family='sans-serif' )
     axes.xaxis.set_minor_locator(AutoMinorLocator(5))
