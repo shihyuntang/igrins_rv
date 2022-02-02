@@ -1281,6 +1281,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the
             vsinifinal[n] = np.nansum(weights*vsinibox[n,ind])
             jds_out[n]   = jds[nights_use[n]]
 
+            '''
             # Check scatter between orders within a given night and
             # add extra uncertainty to represent order to order offset
             # if merited.
@@ -1292,6 +1293,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the
                     stdfinal[n] = np.sqrt( stdfinal[n]**2 + sigma_N**2 )
             except ValueError:
                 pass
+            '''
 
             # if all the RVs going into the observation's final RV calculation
             # were NaN due to any pevious errors, pass NaN
