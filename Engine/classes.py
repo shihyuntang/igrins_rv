@@ -1,9 +1,9 @@
-# These classes are all for convenient passing of variables between the main 
+# These classes are all for convenient passing of variables between the main
 # code, the telluric spectrum fitter, and the model function.
 
 import numpy as np
 
-ips_tight = { 
+ips_tight = {
     'H':{
         'A':{
             6: np.array([-0.0000014645, +0.0017169700, +3.3011855894]),
@@ -54,7 +54,7 @@ ips_tight = {
         }
     }
 
-ips_loose = { 
+ips_loose = {
     'H':{
         'A':{
             6: np.array([-0.0000016233, +0.0020134037, +3.3487332787]),
@@ -105,7 +105,7 @@ ips_loose = {
         }
     }
 
-bound_cuts = { 
+bound_cuts = {
     'H':{
         6: [455, 230],
         10: [250, 150],
@@ -127,7 +127,7 @@ bound_cuts = {
 
 class FitObjs:
 
-    def __init__(self, s, x, u, continuum, watm_in, satm_in, mflux_in, 
+    def __init__(self, s, x, u, continuum, watm_in, satm_in, mflux_in,
                     mwave_in, mask, masterbeam, CRmask, initwave,
                     molmask):
         self.s = s
@@ -144,10 +144,16 @@ class FitObjs:
         self.initwave = initwave
         self.molmask = molmask
 
+    def addsecondary(self,mwave2,mflux2,rebin2to1):
+
+        self.mflux_in2 = mflux2
+        self.mwave_in2 = mwave2
+        self.rebin2to1 = rebin2to1
+
 
 class InParams:
 
-    def __init__(self, inpath, outpath, initvsini, vsinivary, plotfigs, 
+    def __init__(self, inpath, outpath, initvsini, vsinivary, plotfigs,
                     initguesses, bvcs, tagsA, tagsB, nights, mwave, mflux,
                     a0dict, xbounddict, maskdict):
         self.inpath      = inpath
@@ -169,26 +175,32 @@ class InParams:
         self.ips_loosemount_pars = ips_loose
         self.bound_cut_dic = bound_cuts
 
-        
-        self.methodvariance_tight = { 
+
+        self.methodvariance_tight = {
         #                      6           14          16         21          22
             'H': np.array([0.0115497, 0.00834182, 0.00496473, 0.16538301, 0.00582415]),
         #                       4           5           6
-            'K': np.array([0.00330766, 0.00114949, 0.00113677])
+            'K': np.array([0.00433336, 0.00113205, 0.00115613])
             }
-        self.methodvariance_loose = { 
+        self.methodvariance_loose = {
             'H': np.array([0.0115497, 0.00834182, 0.00496473, 0.16538301, 0.00582415]),
-            'K': np.array([0.0263233, 0.00200185, 0.00120389])
+            'K': np.array([0.0225548, 0.00215941, 0.00119834])
             }
 
-        self.BImethodvariance_tight = { 
+        self.BImethodvariance_tight = {
         #                       4           5           6
             'K': np.array([0.00084845, 0.001273, 0.0005419])
             }
-        self.BImethodvariance_loose = { 
+        self.BImethodvariance_loose = {
             'K': np.array([0.0254526, 0.02148516, 0.00906467])
             }
 
+    def addsecondary(self,initvsini2,vsinivary2,mwave2,mflux2,initguesses2):
+        self.initvsini2   = initvsini2
+        self.vsinivary2   = vsinivary2
+        self.mwave2      = mwave2
+        self.mflux2      = mflux2
+        self.initguesses2 = initguesses2
 
 class InParamsA0:
 
@@ -220,7 +232,7 @@ class InParamsA0:
 
 class OrderDictCla:
     def __init__(self,):
-        self.orderdict = { 
+        self.orderdict = {
             'H':{
                 1: [1.79350, 1.81560],
                 2: [1.77602, 1.79791],
@@ -287,14 +299,14 @@ class TagStuffs:
 
 
 def _setup_bound_cut(bound_cut_dic, band, order):
-    """ Retrieve pixel bounds for where within each other significant telluric 
-    absorption is present. If these bounds were not applied, analyzing some 
+    """ Retrieve pixel bounds for where within each other significant telluric
+    absorption is present. If these bounds were not applied, analyzing some
     orders would give garbage fits.
 
     Parameters
     ----------
     bound_cut_dic : Dict
-        dict of pixel cuts on both sides (start & end) of the spectrum in 
+        dict of pixel cuts on both sides (start & end) of the spectrum in
         different orders
     band : str
         H or K band
@@ -306,7 +318,7 @@ def _setup_bound_cut(bound_cut_dic, band, order):
     list
         pixel cuts on both sides (start & end) of the spectrum in the given order
     """
-    
+
     if band=='K':
         if int(order) in [3, 4, 13, 14]:
             bound_cut = bound_cut_dic[band][order]
@@ -318,5 +330,5 @@ def _setup_bound_cut(bound_cut_dic, band, order):
             bound_cut = bound_cut_dic[band][order]
         else:
             bound_cut = [150, 150]
-    
+
     return bound_cut

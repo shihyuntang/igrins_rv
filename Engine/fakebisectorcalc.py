@@ -3,7 +3,12 @@
 from Engine.importmodule import *
 from Engine.rebin_jv   import rebin_jv
 from Engine.detect_peaks import detect_peaks
+from scipy.interpolate import splrep,splev #, interp1d
+from Engine.IO_AB      import setup_templates, init_fitsread, setup_outdir
 from scipy.optimize import curve_fit
+from Engine.rotint import rotint
+from Engine.macbro_dynamic    import macbro_dyn
+from Engine.rebin_jv import rebin_jv
 import numpy as np
 
 c = 2.99792458e5
@@ -61,31 +66,144 @@ def correlator(flux,fluxT,rv_sep):
     return rvs,cc
 
 
-# Convenience class for storing stellar residual data
-class NightSpecs:
+class FakeSpec:
 
-    def __init__(self,inpath, night, orders, jerp):
-        self.filename = '{}/Cutout_{}Combined.fits'.format(inpath, night)
-        hdu = fits.open(self.filename)
+    def __init__(self,kind, T1, T2, pow1, pow2, rv1,rv2, s2n, night,order,jerp,IPnights1,IP2,IP3,logger):
+
+        IP1 = IPnights1[night]
+
+        watm,satm, mwave1, mflux1 = setup_templates(
+            logger, 'synthetic', 'K', np.int(T1),
+            np.float(4.5), np.float(0)
+            )
+
+        if 'RV' in kind:
+            kind = kind[:5]
+
+        if kind[0] == 'M':
+            mininamedict = {'M2obs':'HD95735_M2_V_K','M3obs':'BD+443567_M3_V_K',
+                            'M5obs':'BD-074003_M5_V_K','M6obs':'HD1326B_M6_V_K'}
+            tempdat = Table.read(f'./Engine/spec_library/{mininamedict[kind]}.txt',format='ascii')
+            mwave2   = np.array(tempdat.columns[0],dtype=float)*1e4
+            mflux2   = np.array(tempdat.columns[1],dtype=float)
+            #runc    = np.array(tempdat.columns[2],dtype=float)
+            #rs2n    = mflux2/runc
+            mflux2  /= np.median(mflux2)
+            #runc    = mflux2/rs2n
+        else:
+            mininamedict = {'3500_4p0':'syntheticstellar_kband_T3500_logg4.0_0.0kG',
+                            '3500_4p5':'syntheticstellar_kband_T3500_logg4.5_0.0kG',
+                            '3000_4p0':'syntheticstellar_kband_T3000_logg4.0_0.0kG',
+                            '4000_4p5':'syntheticstellar_kband_T4000_logg4.5_0.0kG',
+                            '3000_4p0_phx':'PHOENIX-lte03000-4.00-0.0_contadjK',
+                            '3000_4p5_phx':'PHOENIX-lte03000-4.50-0.0_contadjK'}
+            tempdat = Table.read(f'./Engine/syn_template/{mininamedict[kind]}.txt',format='ascii')
+            mwave2   = np.array(tempdat['wave'],dtype=float)
+            mflux2   = np.array(tempdat['flux'],dtype=float)
+            # Remove duplicate wavelength values from stellar template
+            # (doesn't affect steps 1-3, but needed for bisectors)
+            ind = []
+            maxwave = mwave2[0]
+            for j in range(1,len(mwave2)-1):
+                if mwave2[j] > maxwave:
+                    maxwave = mwave2[j]
+                else:
+                    ind.append(j)
+            ind = np.array(ind)
+            mask = np.ones(len(mwave2), dtype=bool)
+            if len(ind) > 0:
+                mask[ind] = False
+                mwave2 = mwave2[mask]
+                mflux2 = mflux2[mask]
+
+        vsini = 12.3774
+        fluxratio = 1/8.
+
+        filename = './Output/DITau_K/RV_results_2/Cutouts/Cutout_{}Combined.fits'.format(night)
+        hdu = fits.open(filename)
         tbdata = hdu[jerp+1].data
-        order = orders[jerp]
-        self.flag = 1
-        try:
-            self.flag  = np.array(tbdata['ERRORFLAG'+str(order)])[0]
-        except KeyError:
-            for nnn in range(1,10):
-                try:
-                    tbdata = hdu[jerp+1+nnn].data
-                    self.flag  = np.array(tbdata['ERRORFLAG'+str(order)])[0]
-                except:
-                    continue
-                break
+        w  = np.array(tbdata['WAVE'+str(order)],dtype=float)
+        c = 2.99792458e5
+        npts = len(w)
 
-        if self.flag == 0:
-            self.wave  = np.array(tbdata['WAVE'+str(order)],dtype=float)
-            self.flux  = np.array(tbdata['FLUX'],dtype=float)
-            self.unc   = np.array(tbdata['UNC'],dtype=float)
-            self.night = str(night)
+        if np.median(np.diff(mwave1)) > np.median(np.diff(mwave2)):
+            rebin2to1 = True; extra1 = 0.; extra2 = 10.;
+        else:
+            rebin2to1 = False; extra1 = 10.; extra2 = 0.;
+
+        mflux1 = mflux1[(mwave1 > w[0]-30-extra1) & (mwave1 < w[-1]+30+extra1)]
+        mwave1 = mwave1[(mwave1 > w[0]-30-extra1) & (mwave1 < w[-1]+30+extra1)]
+        mflux2 = mflux2[(mwave2 > w[0]-30-extra2) & (mwave2 < w[-1]+30+extra2)]
+        mwave2 = mwave2[(mwave2 > w[0]-30-extra2) & (mwave2 < w[-1]+30+extra2)]
+
+        # Apply velocity shifts and scale
+        mwave1 = mwave1*(1.+rv1/c)
+        mflux1 = mflux1**pow1
+        mwave2 = mwave2*(1.+rv2/c)
+        mflux2 = mflux2**pow2
+
+        wspot1,rspot1 = rotint(mwave1, mflux1, vsini)
+        wspot2,rspot2 = rotint(mwave2, mflux2, vsini)
+
+        rspot2   *=  fluxratio
+
+        matplotlib.use('Qt5Agg')
+
+        if rebin2to1:
+            rspot2n = rebin_jv(wspot2,rspot2,wspot1,False)
+            rspot   = rspot1 + rspot2n
+            wspot   = wspot1.copy()
+        else:
+            rspot1n = rebin_jv(wspot1,rspot1,wspot2,False)
+            rspot   = rspot2 + rspot1n
+            wspot   = wspot2.copy()
+
+        rspot /= (1+fluxratio)
+
+        #Find mean observed wavelength and create a telluric velocity scale
+        mnw = np.mean(w)
+        dw = (w[-1] - w[0])/(npts-1.)
+        vel = (wspot-mnw)/mnw*c
+
+        xdict = {4:np.arange(159,940),5:np.arange(164,1477),6:np.arange(180,1842)}
+        x = xdict[order]
+        if len(x) > len(w):
+            x = x[:len(w)-len(x)]
+
+        fwhmraw = IP1 + IP2*(x) + IP3*(x**2)
+        spl = splrep(w, fwhmraw)
+        fwhm = splev(wspot,spl)
+
+        # Have IP extend as constant past wave bounds of data
+        fwhm[(wspot < w[0])]  = fwhm[(wspot >= w[0])][0]
+        fwhm[(wspot > w[-1])] = fwhm[(wspot <= w[-1])][-1]
+        if (np.min(fwhm) < 1) or (np.max(fwhm) > 8):
+            sys.exit('IP Error!')
+
+        #Handle instrumental broadening
+        vhwhm = dw*np.abs(fwhm)/mnw*c/2.
+        nsmod = macbro_dyn(vel, rspot, vhwhm)
+
+        #Rebin model to observed wavelength scale
+        smod = rebin_jv(wspot, nsmod ,w, False)
+
+        '''
+        plt.figure(figsize=(12,10))
+        plt.plot(wspot,rspot,color='red',alpha=0.5)
+        plt.plot(wspot1,rspot1,color='blue',alpha=0.5)
+        plt.plot(w,smod,color='black',alpha=0.5)
+        plt.show()
+        '''
+
+        sout = np.random.normal(smod,smod/s2n)
+
+        self.x  = x
+        self.wave  = w
+        self.flux  = sout
+        self.night = night
+        self.unc   = sout/s2n
+        self.flag  = 0
+
 
 
 # Get CC curve and clean and trim it
@@ -227,25 +345,38 @@ def bisector(rv,cc,rv_out,outpath,night,order,debug):
     return bi,bistd
 
 
-def BIinst(refspec,orders,jerp,nights_use,args,inpath,outpath,logger,i):
+def BIinst(orders,jerp,nights_use,outpath,logger,fakeargs,rvs1in,rvs2in,i):
 
     night = nights_use[i];    order = orders[jerp];
 
-    if night == refspec.night:
-        return night, np.nan, np.nan
+    rv1in = rvs1in[i]
+    rv2in = rvs2in[i]
+
+    newspec = FakeSpec(fakeargs[0],fakeargs[1],fakeargs[2],fakeargs[3],fakeargs[4],
+                        rv1in,rv2in,fakeargs[5],night,order,jerp,fakeargs[6],
+                        fakeargs[7],fakeargs[8],logger)
+
+    if night == '20170928':
+        refspec = FakeSpec(fakeargs[0],fakeargs[1],fakeargs[2],fakeargs[3],fakeargs[4],
+                        rvs1in[4],rvs2in[4], fakeargs[5], '20171122',order,jerp,fakeargs[6],
+                        fakeargs[7],fakeargs[8],logger)
+    else:
+        refspec = FakeSpec(fakeargs[0],fakeargs[1],fakeargs[2],fakeargs[3],fakeargs[4],
+                        rvs1in[3],rvs2in[3], fakeargs[5], '20170928',order,jerp,fakeargs[6],
+                        fakeargs[7],fakeargs[8],logger)
 
     if np.int(night[:8]) < 20180401 or np.int(night[:8]) > 20190531:
         T_L = 'T'
     else:
         T_L = 'L'
 
-    newspec = NightSpecs(inpath, night,    orders, jerp)
+
 
     if newspec.flag == 1:
         logger.warning('WARNING! {} order {} is flagged!'.format(newspec.filename,order))
         return night,np.nan,np.nan
 
-    if args.debug:
+    if True:
         plt.figure(figsize=(16,10))
         plt.plot(newspec.wave,newspec.flux,color='black',alpha=.5)
         plt.plot(refspec.wave,refspec.flux,color='red',alpha=.5)
@@ -296,9 +427,9 @@ def BIinst(refspec,orders,jerp,nights_use,args,inpath,outpath,logger,i):
     #rv1, cc1 = crosscorrRV(  newspec1.wave, newspec1.flux, refspec1.wave, refspec1.flux, rvguess-10, rvguess+10, 0.001, skipedge=0)
     rv2, cc2 = correlator(refspec2.flux,newspec2.flux,rv_sep)
 
-    #rv_out0,rv0,cc0 = peakfinderSpec(rv10,cc10,night,order,outpath,rv_sep,args.plotfigs,'pyAwide',args.debug)
-    #rv_out1,rv1,cc1 = peakfinderSpec(rv1,cc1,night,order,outpath,rv_sep,args.plotfigs,'pyA',args.debug)
-    rv_out2,rv2,cc2 = peakfinderSpec(rv2,cc2,night,order,outpath,rv_sep,args.plotfigs,'uni',args.debug)
+    #rv_out0,rv0,cc0 = peakfinderSpec(rv10,cc10,night,order,outpath,rv_sep,True,'pyAwide',True)
+    #rv_out1,rv1,cc1 = peakfinderSpec(rv1,cc1,night,order,outpath,rv_sep,True,'pyA',True)
+    rv_out2,rv2,cc2 = peakfinderSpec(rv2,cc2,night,order,outpath,rv_sep,True,'uni',True)
 
     #if abs(rv_out1-rv_out2) > 1:
     #    logger.info(f'WARNING! {night} order {order} shows CC RV disagreement of {round(abs(rv_out1-rv_out2),2)} km/s!')
@@ -307,6 +438,6 @@ def BIinst(refspec,orders,jerp,nights_use,args,inpath,outpath,logger,i):
     #rv_out = rv_out1
     #rv = rv1.copy(); cc = cc1.copy(); # ONLY USE PYA CC
 
-    bi,bistd = bisector(rv2,cc2,rv_out2,outpath,night,order,args.debug)
+    bi,bistd = bisector(rv2,cc2,rv_out2,outpath,night,order,True)
 
     return night,bi,bistd

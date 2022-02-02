@@ -4,7 +4,7 @@ from   Engine.rebin_jv import rebin_jv
 import matplotlib.pyplot as plt
 
 
-def h2o_masker(inparam, args, order, night, watm, satm, molnames, 
+def h2o_masker(inparam, args, order, night, watm, satm, molnames,
                 molwaves, molfluxes):
 
         go = True
@@ -19,7 +19,7 @@ def h2o_masker(inparam, args, order, night, watm, satm, molnames,
                 if go:
                     fluxbox = satmI.copy()
                     tempwave = watmI.copy()
-                    go = False    
+                    go = False
                 else:
                    fluxnew = rebin_jv(watmI, satmI, tempwave, False)
                    fluxnew[(watmI < tempwave[0]) | (watmI > tempwave[-1])] = np.nan
@@ -39,7 +39,7 @@ def h2o_masker(inparam, args, order, night, watm, satm, molnames,
             group = list(map(int, group))
             maskwaves.append(
                 [waveH2O[group[0]]-halfsep, waveH2O[group[-1]]+halfsep])
-           
+
         '''
         if len(maskwaves) > 3:
             maskwaves0 = maskwaves.copy(); maskwaves = [maskwaves0[0]];
@@ -49,18 +49,6 @@ def h2o_masker(inparam, args, order, night, watm, satm, molnames,
                 else:
                     maskwaves.append(maskwaves0[m])
         '''
-        
-        if args.debug:            
-            fig, ax = plt.subplots(1, 1, figsize=(12,10))
-            ax.plot(watm, satm, color='black')
-            for www in maskwaves:    
-                   ax.fill_between([www[0],www[1]], [1,1], color='red',
-                                        alpha=0.25, label=molnames[a])    
-            ax.set_title(f'Order {order}')
-            plt.savefig(
-                f'{inparam.outpath}/figs_{args.band}/MaskRegions_{order}_{night[:8]}.png',
-                bbox_inches='tight', format='png', overwrite=True) 
-            plt.clf()
-            plt.close()
+
 
         return maskwaves

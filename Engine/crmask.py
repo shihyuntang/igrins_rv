@@ -1,13 +1,13 @@
 
-from Engine.opt   import fmod,fmod_conti
+from Engine.opt   import fmod
 from Engine.importmodule import *
 from Engine.detect_peaks import detect_peaks
 from Engine.rebin_jv import rebin_jv
 
 
-def cr_masker(parfit, fitobj, tel=False):
+def cr_masker(parfit, fitobj, binary, tel=False):
     '''
-    Identify cosmic rays and hot pixels in spectrum, as well as places where 
+    Identify cosmic rays and hot pixels in spectrum, as well as places where
     the model does not have the ability to reflect the data.
 
     Inputs:
@@ -25,18 +25,16 @@ def cr_masker(parfit, fitobj, tel=False):
         clip_slope_tol = 300
         clip_pixel_tol = 6
 
-    fit,chi = fmod(parfit, fitobj)
-    w, smod, cont, c2 = fmod_conti(parfit, fitobj)
-    continuum = cont*c2
+    fit,chi,w,continuum = fmod(parfit, fitobj, binary)
 
-    # Everywhere where data protrudes high above model, check whether slope 
+    # Everywhere where data protrudes high above model, check whether slope
     # surrounding protrusion is /\ and mask if sufficiently steep
 
     initwave = fitobj.initwave.copy()
     xgrid = (initwave - np.median(initwave)) / (np.max(initwave) - np.min(initwave))
     dx = chebyshev.chebval(xgrid, parfit[6:10])
     w = initwave + dx
-    
+
     xdata = fitobj.x.copy()
     sdata = fitobj.s.copy()
 

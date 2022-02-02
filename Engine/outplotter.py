@@ -16,15 +16,9 @@ def outplotter_tel(parfit, fitobj, title, inparam, args, order):
     args       : Information as input by user from command line
     '''
 
-    fit, chi = fmod(parfit, fitobj)
+    fit,chi,w,cont = fmod(parfit, fitobj)
 
     #--- to match the wavelengh scale of fit from fmod ---
-
-    initwave = fitobj.initwave.copy()
-    xgrid = (initwave - np.median(initwave)) \
-                / (np.max(initwave) - np.min(initwave))
-    dx = chebyshev.chebval(xgrid, parfit[6:10])
-    w = initwave + dx
 
     xdata = fitobj.x.copy()
     sdata = fitobj.s.copy()
@@ -61,26 +55,12 @@ def outplotter_tel(parfit, fitobj, title, inparam, args, order):
     if fitobj.masterbeam == 'B':
         npars -= 5
 
-    # Subtract 6 from npars total: 2 for linear/quadratic IP, 1 for RV_telluric,
-    # 2 fot stellar template power and RV, 1 for vsini
-    npars -= 6
+    # Subtract 10 from npars total: 2 for linear/quadratic IP, 1 for RV_telluric,
+    # 2 fot stellar template power and RV, 1 for vsini, 4 for secondary star
+    npars -= 10
 
     # Correct reduce chisq
     chi_new = chi * (len(sdata[mask])-len(parfit)) / (len(sdata[mask])-npars)
-
-    cont = parfit[10] + parfit[11]*xdata + parfit[12]*(xdata**2) \
-            + parfit[20]*(xdata**3) + parfit[21]*(xdata**4) \
-            + parfit[22]*(xdata**5) + parfit[23]*(xdata**6)
-    if fitobj.masterbeam == 'A':
-        bucket = np.zeros_like(cont)
-        bucket[(xdata >= (parfit[15]-parfit[16]/2)) \
-                    & (xdata <= (parfit[15]+parfit[16]/2))] = parfit[17]
-        bucket[(xdata >= (parfit[15]+parfit[16]/2-parfit[18])) \
-                    & (xdata <= (parfit[15]+parfit[16]/2))] += parfit[19]
-        cont -= bucket
-
-    c2 = fitobj.continuum
-    cont *= c2
 
     mask = np.ones_like(xdata, dtype=bool)
 
@@ -135,12 +115,7 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3, order):
                     number; for conversion between the two, see Stahl et al. 2021)
     '''
 
-    fit,chi = fmod(parfit, fitobj)
-
-    initwave = fitobj.initwave.copy()
-    xgrid = (initwave - np.median(initwave)) / (np.max(initwave) - np.min(initwave))
-    dx = chebyshev.chebval(xgrid, parfit[6:10])
-    w = initwave + dx
+    fit,chi,w,cont = fmod(parfit, fitobj,args.binary)
 
     xdata = fitobj.x.copy(); sdata = fitobj.s.copy();
 
@@ -178,29 +153,17 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3, order):
         else:
             pass
 
+    if args.binary == False:
+        npars -= 4 # RV, power, vsini, flux ratio
+    else:
+        npars -= 1 # fluxratio (never being fit)
+
     if fitobj.masterbeam == 'B':
         npars -= 5
 
     npars -= 3 # subtract 3 from npars total, 2 for linear/quadratic IP and 1 for RV_telluric
 
     chi_new = chi*(len(sdata[mask]) - len(parfit))/(len(sdata[mask]) - npars)
-
-    # Apply continuum adjustment
-    cont = parfit[10] + parfit[11]*xdata + parfit[12]*(xdata**2) \
-                + parfit[20]*(xdata**3) + parfit[21]*(xdata**4) \
-                + parfit[22]*(xdata**5) + parfit[23]*(xdata**6)
-
-
-    if fitobj.masterbeam == 'A':
-        bucket = np.zeros_like(cont)
-        bucket[(xdata >= (parfit[15]-parfit[16]/2)) \
-                & (xdata <= (parfit[15]+parfit[16]/2))] = parfit[17]
-        bucket[(xdata >= (parfit[15]+parfit[16]/2-parfit[18])) \
-                & (xdata <= (parfit[15]+parfit[16]/2))] += parfit[19]
-        cont -= bucket
-
-    c2 = fitobj.continuum
-    cont *= c2
 
     fig, axes = plt.subplots(1, 1, figsize=(6,3), facecolor='white', dpi=250)
 

@@ -12,7 +12,7 @@ from Engine.opt        import optimizer, fmod, fmod_conti
 
 #-------------------------------------------------------------------------------
 
-matplotlib.use('Qt5Agg')
+#matplotlib.use('Qt5Agg')
 
 def templates_semibroadened(par,fitobj,broad="none"):
 
@@ -298,7 +298,10 @@ def modtool(args,jerp,nightsbox,tagbox,parfitbox,inparam,index):
             # Flattened, telluric-corrected data
             flux_corr = fitobj.s/tell_reg
 
-            wave_shift = wave_reg*(1 - parfit[0]/c)
+            flux_corrcomplete = fitobj.s/mod_out
+
+            #wave_shift = wave_reg*(1 - parfit[0]/c)
+            wave_shift = wave_reg*(1 +inparam.bvcs[night+tag]/c)
 
             pre_err = False;
 
@@ -308,8 +311,10 @@ def modtool(args,jerp,nightsbox,tagbox,parfitbox,inparam,index):
                                 )
             c1 = fits.Column(name='WAVE_RAW'+str(order),       array=wave_reg,                   format='D')
             c2 = fits.Column(name='WAVE_ADJ'+str(order),       array=wave_shift,                   format='D')
+            c20= fits.Column(name='X',                        array=fitobj.x,                   format='D')
             c3 = fits.Column(name='FLUX_RAW',       array=flux_reg,                  format='D')
             c4 = fits.Column(name='FLUX_CORR',       array=flux_corr,                  format='D')
+            c40 = fits.Column(name='FLUX_RESID',       array=flux_corrcomplete,                  format='D')
             c5 = fits.Column(name='CONT',       array=continuum_out,                  format='D')
             c50 = fits.Column(name='S2N',       array=s2n,                  format='D')
             c6 = fits.Column(name='STELL',       array=stell_reg,                  format='D')
@@ -321,7 +326,7 @@ def modtool(args,jerp,nightsbox,tagbox,parfitbox,inparam,index):
             c12 = fits.Column(name='A0FLUX',       array=a0flat,                  format='D')
             c13 = fits.Column(name='RV',                    array=np.array([parfit[0]]),     format='D')
             c14 = fits.Column(name='BVC',                    array=np.array([inparam.bvcs[night+tag]]),     format='D')
-            cols = fits.ColDefs([c0,c1,c2,c3,c4,c5,c50,c6,c7,c8,c9,c10,c11,c12,c13,c14])
+            cols = fits.ColDefs([c0,c1,c2,c20,c3,c4,c5,c50,c6,c7,c8,c9,c10,c11,c12,c13,c14,c40])
             hdu_1 = fits.BinTableHDU.from_columns(cols)
 
 
@@ -338,12 +343,16 @@ def modtool(args,jerp,nightsbox,tagbox,parfitbox,inparam,index):
             #plt.plot(wave_shift,flux_corr,alpha=0.4)
             if firsttag:
                 stellstack = flux_corr.copy(); masterwave = wave_shift.copy(); s2nstack = s2n.copy();
+                residstack = flux_corrcomplete.copy()
                 firsttag = False
             else:
                 stellnew = rebin_jv(wave_shift,flux_corr,masterwave,False)
+                residnew = rebin_jv(wave_shift,flux_corrcomplete,masterwave,False)
                 s2nnew = rebin_jv(wave_shift,s2n,masterwave,False)
+                residnew[(masterwave < wave_shift[0]) | (masterwave > wave_shift[-1])] = np.nan
                 stellnew[(masterwave < wave_shift[0]) | (masterwave > wave_shift[-1])] = np.nan
                 s2nnew[(masterwave < wave_shift[0]) | (masterwave > wave_shift[-1])] = np.nan
+                residstack = np.vstack((residstack,residnew))
                 stellstack = np.vstack((stellstack,stellnew))
                 s2nstack   = np.vstack((s2nstack,s2nnew))
 
@@ -370,9 +379,10 @@ def modtool(args,jerp,nightsbox,tagbox,parfitbox,inparam,index):
 
         try:
             Cstell = np.array([np.nanmean(stellstack[:,jj]) for jj in range(len(stellstack[0,:]))])
+            Cresid = np.array([np.nanmean(residstack[:,jj]) for jj in range(len(residstack[0,:]))])
             Cs2n   = np.array([np.sqrt(np.nansum(s2nstack[:,jj]**2)) for jj in range(len(s2nstack[0,:]))])
         except IndexError:
-            Cstell = stellstack.copy(); Cs2n = s2nstack.copy();
+            Cstell = stellstack.copy(); Cs2n = s2nstack.copy(); Cresid = residstack.copy();
 
         c0 = fits.Column(name = f'ERRORFLAG{order}',
                             array = np.array([0]),
@@ -380,8 +390,9 @@ def modtool(args,jerp,nightsbox,tagbox,parfitbox,inparam,index):
                             )
         c1 = fits.Column(name='WAVE'+str(order),       array=masterwave,                   format='D')
         c2 = fits.Column(name='FLUX',       array=Cstell,                  format='D')
+        c4 = fits.Column(name='RESID',       array=Cresid,                  format='D')
         c3 = fits.Column(name='UNC',        array=Cstell/Cs2n,                  format='D')
-        cols = fits.ColDefs([c0,c1,c2,c3])
+        cols = fits.ColDefs([c0,c1,c2,c3,c4])
         hdu_1 = fits.BinTableHDU.from_columns(cols)
 
         if jerp == 0:
