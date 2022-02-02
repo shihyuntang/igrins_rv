@@ -175,16 +175,15 @@ class InParams:
         self.ips_loosemount_pars = ips_loose
         self.bound_cut_dic = bound_cuts
 
-
         self.methodvariance_tight = {
         #                      6           14          16         21          22
             'H': np.array([0.0115497, 0.00834182, 0.00496473, 0.16538301, 0.00582415]),
         #                       4           5           6
-            'K': np.array([0.00433336, 0.00113205, 0.00115613])
+            'K': np.array([0.00302273, 0.00117974, 0.00111018])
             }
         self.methodvariance_loose = {
             'H': np.array([0.0115497, 0.00834182, 0.00496473, 0.16538301, 0.00582415]),
-            'K': np.array([0.0225548, 0.00215941, 0.00119834])
+            'K': np.array([0.01501824, 0.00198003, 0.00122701])
             }
 
         self.BImethodvariance_tight = {
