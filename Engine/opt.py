@@ -156,7 +156,7 @@ def fmodel_chi(par,grad):
             rspot /= (1+par[27])
 
         else:
-            rspot = rspot1; wspot = wspot1;
+            rspot = rspot1; wspot = wspot1
 
         if (wspot[0] < watm[0]) or (wspot[-1] > watm[-1]):
             #print('WAVE ERROR 5: wspot not subset of satm, wspot goes from '

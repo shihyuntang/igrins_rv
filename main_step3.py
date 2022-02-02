@@ -9,7 +9,8 @@ from Engine.classes    import FitObjs,InParams,_setup_bound_cut
 from Engine.rebin_jv   import rebin_jv
 from Engine.rotint     import rotint
 from Engine.opt        import optimizer, fmod
-from Engine.outplotter import outplotter_23
+from Engine.outplotter import (outplotter_23, outplotter_rv, 
+                                    outplotter_rv_combind)
 from Engine.detect_peaks import detect_peaks
 from Engine.crmask    import cr_masker
 from Engine.molmask    import h2o_masker
@@ -144,20 +145,6 @@ def base_dpars_dict(
                             numofpars, dpars_org
                             )
 
-#                   | 0    1    2    3 |  | -- 4 -- || 5 | | 6     7     8     9 | |10  11  12| |13 14||15   16   17   18    19 | |20   21   22   23 |  24  25  26  27
-# 'cont' : np.array([0.0, 0.0, 0.0, 0.0,  0.0,  0.0,  0.0, 0.0, 0.0, 0.0,  1e7, 1, 1,   0, 0,  10., 30., 0.2, 50.0, 0.2,  1.0, 1.0, 1.0, 1.0,  0.0, 0.0, 0.0, 0.0 ])
-# 'twave': np.array([0.0, 0.0, 0.0, 1.0,  0.0,      0.0,  1.0,  1.0,  1.0,  1.0,  0,   0, 0,   0, 0,   0.,  0., 0.0,  0.,  0.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ]),
-# 'ip'   : np.array([0.0, 0.0, 0.0, 0.0,  0.0,      0.5,  0.0,  0.0,  0.0,  0.0,  0,   0, 0,   0, 0,   0.,  0., 0.0,  0.,  0.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ]),
-# 's'    : np.array([5.0, 1.0, 0.0, 0.0,  0.0,      0.0,  0.0,  0.0,  0.0,  0.0,  0,   0, 0,   0, 0,   0.,  0., 0.0,  0.,  0.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ]),
-# 'v'    : np.array([0.0, 0.0, 0.0, 0.0,  vsini_v1, 0.0,  0.0,  0.0,  0.0,  0.0,  0,   0, 0,   0, 0,   0.,  0., 0.0,  0.,  0.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ]),
-# 'ts'   : np.array([5.0, 1.0, 0.0, 1.0,  0.0,      0.0,  0.0,  0.0,  0.0,  0.0,  0,   0, 0,   0, 0,   0.,  0., 0.0,  0.,  0.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ])
-# }
-#                              | 0    1    2    3 |  | -- 4 -- || 5 | | 6     7     8     9 | |10  11  12| |13 14| |15   16   17   18    19 | |20   21   22   23 |  24    25   26  27
-# dpars_org['s2']   = np.array([0.0, 0.0, 0.0, 0.0,  0.0,        0.0,  0.0,  0.0,  0.0,  0.0,  0,   0, 0,   0, 0,   0.,  0., 0.0,  0.,  0.0,  0.0, 0.0, 0.0, 0.0,  20.0, 1.0, 0.0, 0.0 ])
-# dpars_org['v2']   = np.array([0.0, 0.0, 0.0, 0.0,  0.0,        0.0,  0.0,  0.0,  0.0,  0.0,  0,   0, 0,   0, 0,   0.,  0., 0.0,  0.,  0.0,  0.0, 0.0, 0.0, 0.0,  0.0,  0.0, vsini_v2, 0.0 ])
-# dpars_org['s1s2'] = np.array([5.0, 1.0, 0.0, 0.0,  0.0,        0.0,  0.0,  0.0,  0.0,  0.0,  0,   0, 0,   0, 0,   0.,  0., 0.0,  0.,  0.0,  0.0, 0.0, 0.0, 0.0,  20.0, 1.0, 0.0, 0.0 ])
-
-
     if vsini_v2 != -1:
         dpars_org = _make_dpars('s2', 
                             [24, 25], 
@@ -201,7 +188,7 @@ def base_dpars_dict(
 
     return dpars_org
 
-def setup_tel(args, night, beam, order):
+def setup_tel(args, night, beam, order, tbdata):
     """Load synthetic telluric template generated during Step 1.
     Also loc molecule line loc that need to be masked
 
@@ -221,33 +208,10 @@ def setup_tel(args, night, beam, order):
         satmmols (array): molecule line flux in select wave region
     """
 
-    A0loc = f'./Output/{args.targname}_{args.band}/A0Fits/'\
-                f'{night[:8]}A0_{beam}treated_{args.band}.fits'
-
-    hdulist = fits.open(A0loc)
-    num_orders = 0
-    for i in range(25):
-        try:
-            hdulist[i].columns[0].name[9:]
-            num_orders += 1
-        except:
-            continue
-    fits_layer = [ i for i in np.arange(num_orders)+1 \
-                    if int(hdulist[i].columns[0].name[9:]) == order ][0]
-    tbdata = hdulist[ fits_layer ].data
-    flag = np.array(tbdata[f'ERRORFLAG{order}'])[0]
-
-    # Check whether Telfit hit critical error in Step 1 for the chosen
-    # order with this night. If so, skip.
-    if flag == 1:
-        logger.warning(f'  --> TELFIT ENCOUNTERED CRITICAL ERROR IN ORDER: '
-                            f'{order} NIGHT: {night}, skipping...')
-        return nightsout, rvsminibox, parfitminibox, vsiniminibox, tagsminibox, rvsminibox2, vsiniminibox2
-
-    watm = tbdata['WATM'+str(order)]
-    satm = tbdata['SATM'+str(order)]
-    a0contx    = tbdata['X'+str(order)]
-    continuum  = tbdata['BLAZE'+str(order)]
+    watm = tbdata[f'WATM{order}']
+    satm = tbdata[f'SATM{order}']
+    a0contx    = tbdata[f'X{order}']
+    continuum  = tbdata[f'BLAZE{order}']
     molnames   = tbdata['MOLNAMES']
 
     # Remove extra rows leftover from having columns of unequal length
@@ -320,7 +284,9 @@ def trim_tel_data(watm, satm, wave_piece, s_piece, u_piece, x_piece):
 
     return satm_in, watm_in, wave_piece, s_piece, u_piece, x_piece
                         
-def check_if_template_exist(args, syntemp, singleORdouble = 1):
+def check_if_template_exist(args, singleORdouble=1):
+
+    syntemp = os.listdir(f'./Engine/syn_template')
 
     if singleORdouble == 1:
         template_kind = args.template.lower()
@@ -350,13 +316,256 @@ def check_if_template_exist(args, syntemp, singleORdouble = 1):
         synlogg = [logg]
 
     if temperature not in synT:
-        sys.exit(f'ERROR: UNEXPECTED STELLAR TEMPERATURE FOR "-temp{ll}" INPUT! '
-                    f'{syntemp} AVALIABLE UNDER ./Engine/syn_template/')
+        sys.exit(
+            f'ERROR: UNEXPECTED STELLAR TEMPERATURE FOR "-temp{ll}" INPUT! '
+            f'{syntemp} AVALIABLE UNDER ./Engine/syn_template/'
+            )
 
     if logg not in synlogg:
-        sys.exit(f'ERROR: UNEXPECTED STELLAR LOGG FOR "-logg{ll}" INPUT! {syntemp} '
-                    'AVALIABLE UNDER ./Engine/syn_template/')
+        sys.exit(
+            f'ERROR: UNEXPECTED STELLAR LOGG FOR "-logg{ll}" INPUT! {syntemp} '
+            'AVALIABLE UNDER ./Engine/syn_template/'
+            )
 
+def check_user_input(args, singleORdouble=1):
+
+    if args.mode == '':
+        sys.exit(
+            'ERROR: YOU MUST CHOOSE A MODE, "STD" OR "TAR", for "-mode"'
+            )
+
+    if args.initvsini == '':
+        sys.exit(
+            'ERROR: YOU MUST PROVIDE AN INITIAL GUESS FOR VSINI VALUE, "-i"'
+            )
+
+    if (args.guesses == '') & (args.guessesX == ''):
+        sys.exit(
+            'ERROR: YOU MUST PROVIDE AN INITIAL GUESS FOR RV VALUE(S) BY '
+            'USING "-g" OR "-gX"'
+            )
+
+    if (args.temperature == '') & (args.logg == ''):
+        sys.exit(
+            'ERROR: YOU MUST PROVIDE THE TEMPERATURE AND LOGG VALUE FOR '
+            'STELLAR TEMPLATE. GO TO "./Engine/syn_template/" TO SEE '
+            'AVAILABLE TEMPLATES'
+            )
+    
+    if args.template.lower() not in ['synthetic', 'livingston', 'phoenix']:
+        sys.exit('ERROR: UNEXPECTED STELLAR TEMPLATE FOR "-t" INPUT!')
+
+
+    if singleORdouble == 2:
+
+        if args.fluxratio == '':
+            sys.exit('ERROR: YOU MUST PROVIDE A FLUX RATIO S2/S1, "-f"')
+
+        if args.initvsini2 == '':
+            sys.exit(
+                'ERROR: YOU MUST PROVIDE AN INITIAL GUESS FOR VSINI2 VALUE, "-i2"'
+                )
+
+        if (args.temperature2 == '') & (args.logg2 == ''):
+            sys.exit(
+                'ERROR: YOU MUST PROVIDE THE TEMPERATURE AND LOGG VALUE FOR '
+                'SECONDARY STELLAR TEMPLATE. GO TO "./Engine/syn_template/" TO SEE '
+                'AVAILABLE TEMPLATES'
+                )
+
+        if args.template2.lower() not in ['synthetic', 'livingston', 'phoenix']:
+            sys.exit(
+                'ERROR: UNEXPECTED SECONDARY STELLAR TEMPLATE FOR "-t" INPUT!'
+                )
+
+
+def setup_init_rv_guess(args):
+
+    if args.mode.lower() == 'std':
+        initguesses = float(args.guesses)
+        initguesses_show = initguesses
+        
+    else: # Load initial RV guesses from file
+        if args.guesses_source == 'init': # From Step 2 results
+            guesses = './Output/{}_{}/Initguesser_results_{}.csv'.format(
+                args.targname,
+                args.band,
+                int(args.guessesX)
+                )
+            guessdata  = Table.read(guesses, format='csv')
+            initnights = np.array(guessdata['night'])
+            initrvs    = np.array(guessdata['bestguess'])
+            initguesses = {}
+            initguesses_show = f'Initguesser_results_{args.guessesX}.csv'
+            for hrt in range(len(initnights)):
+                initguesses[str(initnights[hrt])] = float(initrvs[hrt])
+            if args.binary:
+                initrvs2    = np.array(guessdata['bestguess2'])
+                initguesses2 = {}
+                for hrt in range(len(initnights)):
+                    initguesses2[str(initnights[hrt])] = float(initrvs2[hrt])
+                
+                return initguesses, initguesses_show, initguesses2
+
+        elif args.guesses_source == 'rvre': # From Step 3 results
+            guesses = './Output/{}_{}/RVresultsSummary_{}.csv'.format(
+                args.targname,
+                args.band,
+                int(args.guessesX)
+                )
+            guessdata  = Table.read(guesses, format='csv')
+            initnights = np.array(guessdata['NIGHT'])
+            initrvs    = np.array(guessdata['RVfinal'])
+            initguesses = {}
+            initguesses_show = f'RVresultsSummary_{args.guessesX}.csv'
+            for hrt in range(len(initnights)):
+                initguesses[str(initnights[hrt])] = float(initrvs[hrt])
+            if args.binary:
+                initrvs2    = np.array(guessdata['RV2final'])
+                initguesses2 = {}
+                for hrt in range(len(initnights)):
+                    initguesses2[str(initnights[hrt])] = float(initrvs2[hrt])
+
+                return initguesses, initguesses_show, initguesses2
+    
+    return initguesses, initguesses_show
+
+def mkdir_output_dic(args):
+
+    if not os.path.isdir('./Output'):
+        os.mkdir('./Output')
+
+    if not os.path.isdir(f'./Output/{args.targname}_{args.band}'):
+        os.mkdir(f'./Output/{args.targname}_{args.band}')
+    filesndirs = os.listdir(f'./Output/{args.targname}_{args.band}')
+
+    trk = 1; go = True
+    while go == True:
+        name = f'RV_results_{trk}'
+        if name not in filesndirs:
+            break
+        trk += 1
+
+    os.mkdir(f'./Output/{args.targname}_{args.band}/{name}')
+
+    if not os.path.isdir(f'./Output/{args.targname}_{args.band}/figs'):
+        os.mkdir(f'./Output/{args.targname}_{args.band}/figs')
+
+    step2or3 = '3'
+    temp_dir = f'./Output/{args.targname}_{args.band}/figs/' \
+                    f'main_step{step2or3}_{args.band}_{trk}'
+    if not os.path.isdir(temp_dir):
+        os.mkdir(temp_dir)
+
+    outpath = f'./Output/{args.targname}_{args.band}'
+
+    return trk, outpath, step2or3, name
+
+def setup_logger(args, outpath, name):
+
+    logger = logging.getLogger(__name__)
+    if args.debug:
+        logger.setLevel(logging.DEBUG)
+    else:
+        logger.setLevel(logging.INFO)
+    formatter = logging.Formatter('%(asctime)s: %(module)s.py: %(levelname)s--> %(message)s')
+
+    file_hander  = logging.FileHandler(f'{outpath}/{args.targname}_{args.band}.log')
+    stream_hander= logging.StreamHandler()
+
+    # file_hander.setLevel()
+    file_hander.setFormatter(formatter)
+
+    logger.addHandler(file_hander)
+    logger.addHandler(stream_hander)
+    logger.propagate = False
+
+    logger.info(
+        f'Writing output to ./Output/{args.targname}_{args.band}/{name}')
+
+    return logger, stream_hander
+
+def save_raw_box(args, nights, inparam, name, order, 
+                    nightsbox, rvbox, parfitbox, vsinibox, tagbox,
+                    rvbox2=None, vsinibox2=None):
+    
+    c1 = fits.Column(name=f'NIGHT{order}',  array=nightsbox, format=f'{len(nights[0])}A' )
+    c2 = fits.Column(name=f'RV{order}',     array=rvbox,     format='D')
+    c3 = fits.Column(name=f'PARFIT{order}', array=parfitbox, format=f'{len(parfitbox[0,:])}D',
+                        dim=(1,len(parfitbox[0,:])))
+    c4 = fits.Column(name=f'VSINI{order}',  array=vsinibox,  format='D')
+    c5 = fits.Column(name=f'TAG{order}',    array=tagbox,    format='4A')
+    if args.binary:
+        c6    = fits.Column(name='RV2{order}',     array=rvbox2,     format='D')
+        c7    = fits.Column(name='VSINI2{order}',  array=vsinibox2,  format='D')
+        cols  = fits.ColDefs([c1,c2,c3,c4,c5, c6,c7])
+    else:
+        cols  = fits.ColDefs([c1,c2,c3,c4,c5])
+
+    hdu_1 = fits.BinTableHDU.from_columns(cols)
+
+    if jerp == 0: # If first time writing fits file, make up filler primary hdu
+        bleh = np.ones((3,3))
+        primary_hdu = fits.PrimaryHDU(bleh)
+        hdul = fits.HDUList([primary_hdu,hdu_1])
+        hdul.writeto('{}/{}/RVresultsRawBox.fits'.format(inparam.outpath, name))
+    else:
+        hh = fits.open('{}/{}/RVresultsRawBox.fits'.format(inparam.outpath, name))
+        hh.append(hdu_1)
+        hh.writeto('{}/{}/RVresultsRawBox.fits'.format(inparam.outpath, name),
+            overwrite=True)
+
+
+def combine_rvs_between_orders(
+        n, sigma_ON2, rvmasterbox, vsinibox, jds,
+        rvfinal, stdfinal, vsinifinal, orders, Nind,
+        nights_use=None, extra_err=False):
+
+    ind = np.where(
+        np.isfinite(sigma_ON2[n,:]) & np.isfinite(rvmasterbox[n,:]))[0]
+    weights = (1./sigma_ON2[n,ind]) / (np.nansum(1./sigma_ON2[n,ind])) # normalized
+    stdspre = (1./sigma_ON2[n,ind]) #unnormalized weights
+
+    rvfinal[n]  = np.nansum( weights*rvmasterbox[n,ind] )
+    stdfinal[n] = 1/np.sqrt(np.nansum(stdspre))
+
+    vsinifinal[n] = np.nansum(weights*vsinibox[n,ind])
+
+    if extra_err:
+        # Check scatter between orders within a given night and
+        # add extra uncertainty to represent order to order offset
+        # if merited.
+        try:
+            mnnights = [np.nanmean(rvmasterbox[Nind,ir]) for ir in ind]
+            sigma_N = np.nanstd(mnnights)/np.sqrt(len(ind))
+            if np.isfinite(sigma_N):
+                stdfinal[n] = np.sqrt( stdfinal[n]**2 + sigma_N**2 )
+        except ValueError:
+            pass
+
+    # if all the RVs going into the observation's final RV calculation
+    # were NaN due to any pevious errors, pass NaN
+    if np.nansum(weights) == 0:
+        rvfinal[n]    = np.nan
+        stdfinal[n]   = np.nan
+        vsinifinal[n] = np.nan
+
+    # if more than half of the orders going into the observation's final
+    # RV calculation were NaN due to any pevious errors, pass NaN
+    if np.sum( np.isnan(rvmasterbox[n,:]) ) > np.floor( len(orders) * 0.5 ):
+        rvfinal[n]    = np.nan
+        stdfinal[n]   = np.nan
+        vsinifinal[n] = np.nan
+    
+    if nights_use is None:
+        return rvfinal, stdfinal, vsinifinal, None
+    else:
+        jds_out[n]   = jds[nights_use[n]]
+        return rvfinal, stdfinal, vsinifinal, jds_out
+
+def _make_fits_ColDefs(col_name, save_data, save_format):
+
+    return fits.Column(name=col_name, array=save_data, format=save_format)
 
 
 def main(args, inparam, orders, order_use, trk, step2or3, i):
@@ -468,11 +677,38 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
         else:
             sys.exit(
                 f'EXIT, beam (nodding) can only be A or B, getting {beam}...')
+        
+        #-------------------------------------------------------------------------------
+        # Load synthetic telluric template generated during Step 1.
+        A0loc = f'./Output/{args.targname}_{args.band}/A0Fits/'\
+                    f'{night[:8]}A0_{beam}treated_{args.band}.fits'
 
+        hdulist = fits.open(A0loc)
+        num_orders = 0
+        for i in range(25):
+            try:
+                hdulist[i].columns[0].name[9:]
+                num_orders += 1
+            except:
+                continue
+        fits_layer = [ i for i in np.arange(num_orders)+1 \
+                        if int(hdulist[i].columns[0].name[9:]) == order ][0]
+        tbdata = hdulist[ fits_layer ].data
+        flag = np.array(tbdata[f'ERRORFLAG{order}'])[0]
+
+        # Check whether Telfit hit critical error in Step 1 for the chosen
+        # order with this night. If so, skip.
+        if flag == 1:
+            logger.warning(f'  --> TELFIT ENCOUNTERED CRITICAL ERROR IN ORDER: '
+                                f'{order} NIGHT: {night}, skipping...')
+
+            return (nightsout, rvsminibox, parfitminibox, vsiniminibox, 
+                        tagsminibox, rvsminibox2, vsiniminibox2)
 
         watm, satm, a0contx, continuum, molnames, watmmols, satmmols = setup_tel(
-            args, night, beam, order
+            args, night, beam, order, tbdata
             )
+
         maskwaves = h2o_masker(inparam, args, order, night, watm, satm,
                                 molnames, watmmols, satmmols)
         #-------------------------------------------------------------------------------
@@ -826,50 +1062,18 @@ if __name__ == '__main__':
     inpath   = './Input/{}/'.format(args.targname)
     cdbs_loc = '~/cdbs/'
 
-    #-------------------------------------------------------------------------------
-    # Check user input
+    check_user_input(args, singleORdouble=1)
+    check_if_template_exist(args, singleORdouble=1)
 
     initvsini = float(args.initvsini)
     vsinivary = float(args.vsinivary)
 
-    if args.mode == '':
-        sys.exit('ERROR: YOU MUST CHOOSE A MODE, "STD" OR "TAR", for "-mode"')
-
-    if args.initvsini == '':
-        sys.exit('ERROR: YOU MUST PROVIDE AN INITIAL GUESS FOR VSINI VALUE, "-i"')
-
-    if (args.guesses == '') & (args.guessesX == ''):
-        sys.exit('ERROR: YOU MUST PROVIDE AN INITIAL GUESS FOR RV VALUE(S) BY '
-                    'USING "-g" OR "-gX"')
-
-    if (args.temperature == '') & (args.logg == ''):
-        sys.exit('ERROR: YOU MUST PROVIDE THE TEMPERATURE AND LOGG VALUE FOR '
-                    'STELLAR TEMPLATE. GO TO "./Engine/syn_template/" TO SEE '
-                    'AVAILABLE TEMPLATES')
-    #------------------------------
-
-    if args.template.lower() not in ['synthetic', 'livingston', 'phoenix']:
-        sys.exit('ERROR: UNEXPECTED STELLAR TEMPLATE FOR "-t" INPUT!')
-
-    syntemp = os.listdir(f'./Engine/syn_template')
-    check_if_template_exist(args, syntemp, singleORdouble = 1)
-
     if args.binary:
-        if args.fluxratio == '':
-            sys.exit('ERROR: YOU MUST PROVIDE A FLUX RATIO S2/S1, "-f"')
-        if args.initvsini2 == '':
-            sys.exit('ERROR: YOU MUST PROVIDE AN INITIAL GUESS FOR VSINI2 VALUE, "-i2"')
-        if (args.temperature2 == '') & (args.logg2 == ''):
-            sys.exit('ERROR: YOU MUST PROVIDE THE TEMPERATURE AND LOGG VALUE FOR '
-                        'SECONDARY STELLAR TEMPLATE. GO TO "./Engine/syn_template/" TO SEE '
-                        'AVAILABLE TEMPLATES')
-        if args.template2.lower() not in ['synthetic', 'livingston', 'phoenix']:
-            sys.exit('ERROR: UNEXPECTED SECONDARY STELLAR TEMPLATE FOR "-t" INPUT!')
-
         initvsini2 = float(args.initvsini2)
         vsinivary2 = float(args.vsinivary2)
         
-        check_if_template_exist(args, syntemp, singleORdouble = 2)
+        check_user_input(args, singleORdouble=2)
+        check_if_template_exist(args, singleORdouble=2)
 
     #------------------------------
 
@@ -889,48 +1093,10 @@ if __name__ == '__main__':
 
     #------------------------------
 
-    # Specify initial RV guesses as a single value applied to all nights
-    if args.mode.lower() == 'std':
-        initguesses = float(args.guesses)
-        initguesses_show = initguesses
-    else: # Load initial RV guesses from file
-        if args.guesses_source == 'init': # From Step 2 results
-            guesses = './Output/{}_{}/Initguesser_results_{}.csv'.format(
-                args.targname,
-                args.band,
-                int(args.guessesX)
-                )
-            guessdata  = Table.read(guesses, format='csv')
-            initnights = np.array(guessdata['night'])
-            initrvs    = np.array(guessdata['bestguess'])
-            initguesses = {}
-            initguesses_show = f'Initguesser_results_{args.guessesX}.csv'
-            for hrt in range(len(initnights)):
-                initguesses[str(initnights[hrt])] = float(initrvs[hrt])
-            if args.binary:
-                initrvs2    = np.array(guessdata['bestguess2'])
-                initguesses2 = {}
-                for hrt in range(len(initnights)):
-                    initguesses2[str(initnights[hrt])] = float(initrvs2[hrt])
-
-        elif args.guesses_source == 'rvre': # From Step 3 results
-            guesses = './Output/{}_{}/RVresultsSummary_{}.csv'.format(
-                args.targname,
-                args.band,
-                int(args.guessesX)
-                )
-            guessdata  = Table.read(guesses, format='csv')
-            initnights = np.array(guessdata['NIGHT'])
-            initrvs    = np.array(guessdata['RVfinal'])
-            initguesses = {}
-            initguesses_show = f'RVresultsSummary_{args.guessesX}.csv'
-            for hrt in range(len(initnights)):
-                initguesses[str(initnights[hrt])] = float(initrvs[hrt])
-            if args.binary:
-                initrvs2    = np.array(guessdata['RV2final'])
-                initguesses2 = {}
-                for hrt in range(len(initnights)):
-                    initguesses2[str(initnights[hrt])] = float(initrvs2[hrt])
+    if args.binary: 
+        initguesses, initguesses_show, initguesses2 = setup_init_rv_guess(args)
+    else:
+        initguesses, initguesses_show = setup_init_rv_guess(args)
 
     #-------------------------------------------------------------------------------
 
@@ -944,7 +1110,7 @@ Input Parameters:
     Filter              = \33[37;1;41m {} band \033[0m
     WaveLength file     = \33[37;1;41m WaveRegions_{} \033[0m
     S/N cut             > \33[37;1;41m {} \033[0m
-    Minium # of AB sets = \33[37;1;41m {} \033[0m             <------- If TAR mode, this should be at least 3. If STD mode, at least 2.
+    Minium # of AB sets = \33[37;1;41m {} \033[0m  <------- If TAR mode, this should be at least 3. If STD mode, at least 2.
     Initial vsini       = \33[37;1;41m {} km/s \033[0m
     vsini vary range    \u00B1 \33[37;1;41m {} km/s \033[0m
     RV initial guess    = \33[37;1;41m {} \033[0m
@@ -982,63 +1148,13 @@ PLUS BINARY PARAMETERS:
     print('Running Step 3 for {}...'.format(args.targname))
     print('This will take a while..........')
 
-    #-------------------------------------------------------------------------------
-
-    # Make output directories as needed
-    if not os.path.isdir('./Output'):
-        os.mkdir('./Output')
-
-    if not os.path.isdir(f'./Output/{args.targname}_{args.band}'):
-        os.mkdir(f'./Output/{args.targname}_{args.band}')
-    filesndirs = os.listdir(f'./Output/{args.targname}_{args.band}')
-
-    trk = 1; go = True
-    while go == True:
-        name = f'RV_results_{trk}'
-        if name not in filesndirs:
-            break
-        trk += 1
-
-    os.mkdir(f'./Output/{args.targname}_{args.band}/{name}')
-
-    if not os.path.isdir(f'./Output/{args.targname}_{args.band}/figs'):
-        os.mkdir(f'./Output/{args.targname}_{args.band}/figs')
-
-    step2or3 = '3'
-    temp_dir = f'./Output/{args.targname}_{args.band}/figs/' \
-                    f'main_step{step2or3}_{args.band}_{trk}'
-    if not os.path.isdir(temp_dir):
-        os.mkdir(temp_dir)
-
-    outpath = f'./Output/{args.targname}_{args.band}'
-
-    #-------------------------------------------------------------------------------
-
-    # Set up logger
-    logger = logging.getLogger(__name__)
-    if args.debug:
-        logger.setLevel(logging.DEBUG)
-    else:
-        logger.setLevel(logging.INFO)
-    formatter = logging.Formatter('%(asctime)s: %(module)s.py: %(levelname)s--> %(message)s')
-
-    file_hander  = logging.FileHandler(f'{outpath}/{args.targname}_{args.band}.log')
-    stream_hander= logging.StreamHandler()
-
-    # file_hander.setLevel()
-    file_hander.setFormatter(formatter)
-
-    logger.addHandler(file_hander)
-    logger.addHandler(stream_hander)
-    logger.propagate = False
-
-    logger.info(
-        f'Writing output to ./Output/{args.targname}_{args.band}/{name}')
-
-    #-------------------------------------------------------------------------------
+    trk, outpath, step2or3, name = mkdir_output_dic(args)
+    logger, stream_hander = setup_logger(args, outpath, name)
 
     # Read in the Prepdata under ./Input/Prpedata/
-    xbounddict, maskdict, tagsA, tagsB, jds, bvcs, nightsFinal, orders, obs = read_prepdata(args)
+    xbounddict, maskdict, tagsA, tagsB, jds, bvcs, nightsFinal, orders, obs = read_prepdata(
+        args
+        )
 
     # Use subset of nights if specified
     if args.nights_use != '':
@@ -1064,9 +1180,11 @@ PLUS BINARY PARAMETERS:
         )
 
     # Save pars in class for future use
-    inparam = InParams(inpath, outpath, initvsini, vsinivary, args.plotfigs,
-                       initguesses, bvcs, tagsA, tagsB, nightsFinal, mwave0,
-                       mflux0, None, xbounddict, maskdict)
+    inparam = InParams(
+        inpath, outpath, initvsini, vsinivary, args.plotfigs, initguesses, 
+        bvcs, tagsA, tagsB, nightsFinal, mwave0, mflux0, None, xbounddict, 
+        maskdict
+        )
 
     if args.binary:
         print('\n Loading secondary stellar template... \n')
@@ -1074,14 +1192,15 @@ PLUS BINARY PARAMETERS:
             logger, args.template2, args.band, int(args.temperature2),
             float(args.logg2), float(args.B2)
             )
-        inparam.addsecondary(initvsini2,vsinivary2,mwave2,mflux2,initguesses2)
+        inparam.addsecondary(
+            initvsini2, vsinivary2, mwave2, mflux2, initguesses2
+            )
 
     #-------------------------------------------------------------------------------
 
     # Divide between nights where IGRINS mounting was loose (L) and when
-    # it was tight (T).
-    # All statistical analysis will be performed separately for these
-    # two datasets.
+    # it was tight (T). All statistical analysis will be performed separately 
+    # for these two datasets.
     nights    = inparam.nights
     intnights = np.array([int(i[:8]) for i in nights])
 
@@ -1169,35 +1288,19 @@ For H band RVs: We do not expect any systematic changes in the H band as the
         nightsbox = np.array(nightsbox)
         vsinitags = []
 
-        # Save results to fits file
-        c1 = fits.Column(name='NIGHT'+str(order),  array=nightsbox, format='{}A'.format(len(nights[0])) )
-        c2 = fits.Column(name='RV'+str(order),     array=rvbox,     format='D')
-        c3 = fits.Column(name='PARFIT'+str(order), array=parfitbox, format=str(len(parfitbox[0,:]))+'D',
-                            dim=(1,len(parfitbox[0,:])))
-        c4 = fits.Column(name='VSINI'+str(order),  array=vsinibox,  format='D')
-        c5 = fits.Column(name='TAG'+str(order),    array=tagbox,    format='4A')
         if args.binary:
-            c6    = fits.Column(name='RV2'+str(order),     array=rvbox2,     format='D')
-            c7    = fits.Column(name='VSINI2'+str(order),  array=vsinibox2,  format='D')
-            cols  = fits.ColDefs([c1,c2,c3,c4,c5, c6,c7])
+            save_raw_box(
+                args, nights, inparam, name, order, 
+                nightsbox, rvbox, parfitbox, vsinibox, tagbox,
+                rvbox2=rvbox2, vsinibox2=vsinibox2
+                )
         else:
-            cols  = fits.ColDefs([c1,c2,c3,c4,c5])
-
-        hdu_1 = fits.BinTableHDU.from_columns(cols)
-
-        if jerp == 0: # If first time writing fits file, make up filler primary hdu
-            bleh = np.ones((3,3))
-            primary_hdu = fits.PrimaryHDU(bleh)
-            hdul = fits.HDUList([primary_hdu,hdu_1])
-            hdul.writeto('{}/{}/RVresultsRawBox.fits'.format(inparam.outpath, name))
-        else:
-            hh = fits.open('{}/{}/RVresultsRawBox.fits'.format(inparam.outpath, name))
-            hh.append(hdu_1)
-            hh.writeto('{}/{}/RVresultsRawBox.fits'.format(inparam.outpath, name),
-                overwrite=True)
+            save_raw_box(
+                args, nights, inparam, name, order, 
+                nightsbox, rvbox, parfitbox, vsinibox, tagbox
+                )
 
         #-------------------------------------------------------------------------------
-
         # For each set of nights (tight, loose)...
         iT_L = 0
         for nights_use in nightscomblist:
@@ -1223,7 +1326,8 @@ For H band RVs: We do not expect any systematic changes in the H band as the
                         stdmasterboxT[i,jerp] = np.nan
                     else:
                         rvmasterboxT[i,jerp]  = np.nanmean(rvtags)
-                        stdmasterboxT[i,jerp] = np.nanstd(rvtags)/np.sqrt(len(rvtags[~np.isnan(rvtags)]))
+                        stdmasterboxT[i,jerp] = np.nanstd(rvtags)\
+                            /np.sqrt(len(rvtags[~np.isnan(rvtags)]))
 
                 else:
                     # Don't use vsini estimates from this order during loose epoch
@@ -1237,7 +1341,8 @@ For H band RVs: We do not expect any systematic changes in the H band as the
                         stdmasterboxL[i,jerp] = np.nan
                     else:
                         rvmasterboxL[i,jerp]  = np.nanmean(rvtags)
-                        stdmasterboxL[i,jerp] = np.nanstd(rvtags)/np.sqrt(len(rvtags[~np.isnan(rvtags)]))
+                        stdmasterboxL[i,jerp] = np.nanstd(rvtags)\
+                            /np.sqrt(len(rvtags[~np.isnan(rvtags)]))
 
                 if args.binary:
                     rvtags    = rvbox2[indnight]
@@ -1249,7 +1354,8 @@ For H band RVs: We do not expect any systematic changes in the H band as the
                             stdmasterboxT2[i,jerp] = np.nan
                         else:
                             rvmasterboxT2[i,jerp]  = np.nanmean(rvtags)
-                            stdmasterboxT2[i,jerp] = np.nanstd(rvtags)/np.sqrt(len(rvtags[~np.isnan(rvtags)]))
+                            stdmasterboxT2[i,jerp] = np.nanstd(rvtags)\
+                                /np.sqrt(len(rvtags[~np.isnan(rvtags)]))
                     else:
                         if order == 3 and args.band == 'K':
                             vsinisL2[i,jerp] = np.nan
@@ -1261,7 +1367,8 @@ For H band RVs: We do not expect any systematic changes in the H band as the
                             stdmasterboxL2[i,jerp] = np.nan
                         else:
                             rvmasterboxL2[i,jerp]  = np.nanmean(rvtags)
-                            stdmasterboxL2[i,jerp] = np.nanstd(rvtags)/np.sqrt(len(rvtags[~np.isnan(rvtags)]))
+                            stdmasterboxL2[i,jerp] = np.nanstd(rvtags)\
+                                /np.sqrt(len(rvtags[~np.isnan(rvtags)]))
 
             iT_L += 1
 
@@ -1374,93 +1481,37 @@ For H band RVs: We do not expect any systematic changes in the H band as the
                 sigma_ON2[night,ll] = sigma_method2[ll] + stdmasterbox[night,ll]**2
                 sigma_ON2bi[night,ll] = sigma_method2[ll] + stdmasterbox2[night,ll]**2
 
-        rvfinal    = np.ones(Nnights, dtype=float64)
-        stdfinal   = np.ones(Nnights, dtype=float64)
-        vsinifinal = np.ones(Nnights, dtype=float64)
-        rvfinal2    = np.ones(Nnights, dtype=float64)
-        stdfinal2   = np.ones(Nnights, dtype=float64)
-        vsinifinal2 = np.ones(Nnights, dtype=float64)
-        jds_out   = np.ones(Nnights, dtype=float64)
+        rvfinal    = np.ones(Nnights, dtype=float)
+        stdfinal   = np.ones(Nnights, dtype=float)
+        vsinifinal = np.ones(Nnights, dtype=float)
+        rvfinal2    = np.ones(Nnights, dtype=float)
+        stdfinal2   = np.ones(Nnights, dtype=float)
+        vsinifinal2 = np.ones(Nnights, dtype=float)
+        jds_out   = np.ones(Nnights, dtype=float)
 
         if T_Ls[boxind] == 'T':
-            nights_use = nightsT.copy(); kind = 'Focused'
+            nights_use = nightsT.copy()
+            kind = 'Focused'
         elif T_Ls[boxind] == 'L':
-            nights_use = nightsL.copy(); kind = 'Defocused'
+            nights_use = nightsL.copy()
+            kind = 'Defocused'
 
 
         # Combine RVs between orders using weights calculated from uncertainties
         for n in range(Nnights):
-            ind = np.where(
-                np.isfinite(sigma_ON2[n,:]) & np.isfinite(rvmasterbox[n,:]))[0]
-            weights = (1./sigma_ON2[n,ind]) / (np.nansum(1./sigma_ON2[n,ind])) # normalized
-            stdspre = (1./sigma_ON2[n,ind]) #unnormalized weights
 
-            rvfinal[n]  = np.nansum( weights*rvmasterbox[n,ind] )
-            stdfinal[n] = 1/np.sqrt(np.nansum(stdspre))
+            Nind = np.where(intnights == int(nightsFinal[n][:8]))[0]
 
-            vsinifinal[n] = np.nansum(weights*vsinibox[n,ind])
-            jds_out[n]   = jds[nights_use[n]]
-
-            '''
-            # Check scatter between orders within a given night and
-            # add extra uncertainty to represent order to order offset
-            # if merited.
-            try:
-                Nind = np.where(intnights == int(nightsFinal[n][:8]))[0]
-                mnnights = [np.nanmean(rvmasterbox[Nind,ir]) for ir in ind]
-                sigma_N = np.nanstd(mnnights)/np.sqrt(len(ind))
-                if np.isfinite(sigma_N):
-                    stdfinal[n] = np.sqrt( stdfinal[n]**2 + sigma_N**2 )
-            except ValueError:
-                pass
-            '''
-
-            # if all the RVs going into the observation's final RV calculation
-            # were NaN due to any pevious errors, pass NaN
-            if np.nansum(weights) == 0:
-                rvfinal[n]    = np.nan
-                stdfinal[n]   = np.nan
-                vsinifinal[n] = np.nan
-
-            # if more than half of the orders going into the observation's final
-            # RV calculation were NaN due to any pevious errors, pass NaN
-            if np.sum( np.isnan(rvmasterbox[n,:]) ) > np.floor( len(orders) * 0.5 ):
-                rvfinal[n]    = np.nan
-                stdfinal[n]   = np.nan
-                vsinifinal[n] = np.nan
+            rvfinal, stdfinal, vsinifinal, jds_out = combine_rvs_between_orders(
+                n, sigma_ON2, rvmasterbox, vsinibox, jds, rvfinal, 
+                stdfinal, vsinifinal, orders, Nind, nights_use
+                )
 
             if args.binary:
-                ind = np.where(
-                    np.isfinite(sigma_ON2bi[n,:]) & np.isfinite(rvmasterbox2[n,:]))[0]
-                weights2 = (1./sigma_ON2bi[n,ind]) / (np.nansum(1./sigma_ON2bi[n,ind])) # normalized
-                stdspre2 = (1./sigma_ON2bi[n,ind]) #unnormalized weights
-
-                rvfinal2[n]  = np.nansum( weights2*rvmasterbox2[n,ind] )
-                stdfinal2[n] = 1/np.sqrt(np.nansum(stdspre2))
-
-                vsinifinal2[n] = np.nansum(weights2*vsinibox2[n,ind])
-                try:
-                    Nind = np.where(intnights == int(nightsFinal[n][:8]))[0]
-                    mnnights = [np.nanmean(rvmasterbox2[Nind,ir]) for ir in ind]
-                    sigma_N = np.nanstd(mnnights)/np.sqrt(len(ind))
-                    if np.isfinite(sigma_N):
-                        stdfinal2[n] = np.sqrt( stdfinal2[n]**2 + sigma_N**2 )
-                except ValueError:
-                    pass
-
-                # if all the RVs going into the observation's final RV calculation
-                # were NaN due to any pevious errors, pass NaN
-                if np.nansum(weights2) == 0:
-                    rvfinal2[n]    = np.nan
-                    stdfinal2[n]   = np.nan
-                    vsinifinal2[n] = np.nan
-
-                # if more than half of the orders going into the observation's final
-                # RV calculation were NaN due to any pevious errors, pass NaN
-                if np.sum( np.isnan(rvmasterbox2[n,:]) ) > np.floor( len(orders) * 0.5 ):
-                    rvfinal2[n]    = np.nan
-                    stdfinal2[n]   = np.nan
-                    vsinifinal2[n] = np.nan
+                rvfinal2, stdfinal2, vsinifinal2, _ = combine_rvs_between_orders(
+                    n, sigma_ON2bi, rvmasterbox2, vsinibox2, jds, rvfinal2, 
+                    stdfinal2, vsinifinal2, orders, Nind, extra_err=True
+                    )
 
         #-------------------------------------------------------------------------------
 
@@ -1472,54 +1523,52 @@ For H band RVs: We do not expect any systematic changes in the H band as the
             stdps = [stdfinal]
 
         for ara in range(len(rvps)):
-            rvp = rvps[ara]; stdp = stdps[ara];
+            rvp = rvps[ara]
+            stdp = stdps[ara]
             # Plot results
-            f, axes = plt.subplots(1, 1, figsize=(5,3), facecolor='white', dpi=300)
-            axes.plot(    np.arange(len(rvp))+1, rvp, '.k', ms=5)
-            axes.errorbar(np.arange(len(rvp))+1, rvp, yerr=stdp,
-                ls='none', lw=.5, ecolor='black')
-            axes.text(0.05, 0.93, r'RV mean= ${:1.5f}$ $\pm$ {:1.5f} km/s'.format(
-                np.nanmean(rvp), np.nanstd(rvp)),
-                transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
-            axes.set_ylim(np.nanmin(rvp)-.08, np.nanmax(rvp)+.08)
-            axes.set_ylabel('RV [km/s]', size=6, style='normal', family='sans-serif' )
-            axes.set_xlabel('Night (#)', size=6, style='normal', family='sans-serif' )
-            axes.xaxis.set_minor_locator(AutoMinorLocator(5))
-            axes.yaxis.set_minor_locator(AutoMinorLocator(5))
-            axes.tick_params(axis='both', which='both', labelsize=5, right=True,
-                top=True, direction='in', width=.6)
-            if args.binary:
-                f.savefig('{}/{}/FinalRVs{}_{}.png'.format(inparam.outpath, name,ara+1, kind), format='png',
-                bbox_inches='tight')
-            else:
-                f.savefig('{}/{}/FinalRVs_{}.png'.format(inparam.outpath, name, kind), format='png',
-                bbox_inches='tight')
 
+            outplotter_rv(rvp, stdp, args, inparam, name, ara, kind)
+
+        #-------------------------------------------------------------------------------
         # Save results to fits file separately for each tight/loose dataset
-        c1 = fits.Column( name='NIGHT',         array=nights_use,    format='8A')
-        c2 = fits.Column( name='JD',            array=jds_out,       format='D')
-        c3 = fits.Column( name='RVBOX',         array=rvmasterbox,   format='{}D'.format(len(orders)))
-        c4 = fits.Column( name='STDBOX',        array=stdmasterbox,  format='{}D'.format(len(orders)))
-        c7 = fits.Column( name='Sigma_method2', array=sigma_method2, format='D')
-        c8 = fits.Column( name='Sigma_ON2',     array=sigma_ON2,     format='{}D'.format(len(orders)))
-        c9 = fits.Column( name='RVfinal',       array=rvfinal,       format='D')
-        c10 = fits.Column(name='STDfinal',      array=stdfinal,      format='D')
-        c11 = fits.Column(name='VSINI',         array=vsinifinal,    format='D')
-
+        name_list = [
+            'NIGHT', 'JD', 'RVBOX', 'STDBOX', 'Sigma_method2', 'Sigma_ON2', 
+            'RVfinal', 'STDfinal', 'VSINI'
+            ]
+        data_list = [
+            nights_use, jds_out, rvmasterbox, stdmasterbox, sigma_method2,
+            sigma_ON2, rvfinal, stdfinal, vsinifinal
+            ]
+        format_list = [
+            '8A', 'D', f'{len(orders)}D', f'{len(orders)}D', 'D', 
+            f'{len(orders)}D', 'D', 'D', 'D'
+            ]
+        
         if args.mode=='STD':
-            c5 = fits.Column( name='Sigma_O2',      array=sigma_O2,      format='D')
-            c6 = fits.Column( name='Sigma_ABbar2',  array=sigma_ABbar2,  format='D')
-            cols  = fits.ColDefs([c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11])
+            name_list.extend(['Sigma_O2', 'Sigma_ABbar2'])
+            data_list.extend([sigma_O2, sigma_ABbar2])
+            format_list.extend(['D', 'D'])
+        
         elif args.binary:
-            c12 = fits.Column( name='RVBOX2',         array=rvmasterbox2,   format='{}D'.format(len(orders)))
-            c13 = fits.Column( name='STDBOX2',        array=stdmasterbox2,  format='{}D'.format(len(orders)))
-            c14 = fits.Column( name='Sigma_ON2bi',     array=sigma_ON2bi,     format='{}D'.format(len(orders)))
-            c15 = fits.Column( name='RV2final',       array=rvfinal2,       format='D')
-            c16 = fits.Column(name='STD2final',      array=stdfinal2,      format='D')
-            c17 = fits.Column(name='VSINI2',         array=vsinifinal2,    format='D')
-            cols  = fits.ColDefs([c1,c2,c3,c4,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17])
-        else:
-            cols  = fits.ColDefs([c1,c2,c3,c4,c7,c8,c9,c10,c11])
+            name_list.extend(
+                ['RVBOX2', 'STDBOX2', 'Sigma_ON2bi', 'RV2final', 'STD2final', 
+                'VSINI2']
+                )
+            data_list.extend(
+                [rvmasterbox2, stdmasterbox2, sigma_ON2bi, rvfinal2, 
+                stdfinal2, vsinifinal2]
+                )
+            format_list.extend(
+                [f'{len(orders)}D', f'{len(orders)}D', f'{len(orders)}D', 
+                'D', 'D', 'D']
+                )      
+
+        cc = []
+        for nn, dd, ff in zip(name_list, data_list, format_list):
+            cc.append(
+                _make_fits_ColDefs(nn, dd, ff) 
+                )
+        cols  = fits.ColDefs(cc)
 
         hdu_1 = fits.BinTableHDU.from_columns(cols)
         bleh = np.ones((3,3))
@@ -1535,107 +1584,91 @@ For H band RVs: We do not expect any systematic changes in the H band as the
                 '{}/{}/RVresultsAdvanced.fits'.format(
                     inparam.outpath, name),
                 overwrite=True)
-
+        
+        #-------------------------------------------------------------------------------
         # Combine final RVs from both tight and loose mounting data sets
-        nightsCombined     = np.concatenate((nightsCombined,     nights_use))
-        jdsCombined        = np.concatenate((jdsCombined,        jds_out))
-        rvfinalCombined    = np.concatenate((rvfinalCombined,    rvfinal))
-        stdfinalCombined   = np.concatenate((stdfinalCombined,   stdfinal))
+        nightsCombined     = np.concatenate((nightsCombined, nights_use))
+        jdsCombined        = np.concatenate((jdsCombined, jds_out))
+        rvfinalCombined    = np.concatenate((rvfinalCombined, rvfinal))
+        stdfinalCombined   = np.concatenate((stdfinalCombined, stdfinal))
         vsinifinalCombined = np.concatenate((vsinifinalCombined, vsinifinal))
-        rvfinalCombined2    = np.concatenate((rvfinalCombined2,    rvfinal2))
-        stdfinalCombined2   = np.concatenate((stdfinalCombined2,   stdfinal2))
-        vsinifinalCombined2 = np.concatenate((vsinifinalCombined2, vsinifinal2))
+        rvfinalCombined2   = np.concatenate((rvfinalCombined2, rvfinal2))
+        stdfinalCombined2  = np.concatenate((stdfinalCombined2, stdfinal2))
+        vsinifinalCombined2= np.concatenate((vsinifinalCombined2,vsinifinal2))
 
         if args.mode=='STD': # If uncertainty in method was calculated, save it
             sigma_method2 = [np.around(float(i), 8) for i in sigma_method2]
-            logger.info('sigma_method2 during the {} epoch is {}'.format(kind, sigma_method2))
+            logger.info(
+                'sigma_method2 during the {} epoch is {}'.format(
+                    kind, sigma_method2)
+                    )
         if len(T_Ls) == 2:
-            logger.info('During the {} epoch: RV mean = {:1.4f} km/s, std = {:1.4f} km/s'.format(
+            logger.info(
+                'During the {} epoch: RV mean = {:1.4f} km/s, std = {:1.4f} km/s'.format(
                 kind,
                 np.nanmean(rvfinal),
-                np.nanstd(rvfinal) ))
-            logger.info('During the {} epoch: vsini mean = {:1.4f} km/s, std = {:1.4f} km/s'.format(
+                np.nanstd(rvfinal) )
+                )
+            logger.info(
+                'During the {} epoch: vsini mean = {:1.4f} km/s, std = {:1.4f} km/s'.format(
                 kind,
                 np.nanmean(vsinifinal),
-                np.nanstd(vsinifinal) ))
+                np.nanstd(vsinifinal) )
+                )
         else:
-            logger.info('RV mean = {:1.4f} km/s, std = {:1.4f} km/s'.format(
+            logger.info(
+                'RV mean = {:1.4f} km/s, std = {:1.4f} km/s'.format(
                 np.nanmean(rvfinal),
-                np.nanstd(rvfinal) ))
-            logger.info('vsini mean = {:1.4f} km/s, std = {:1.4f} km/s'.format(
+                np.nanstd(rvfinal) )
+                )
+            logger.info(
+                'vsini mean = {:1.4f} km/s, std = {:1.4f} km/s'.format(
                 np.nanmean(vsinifinal),
-                np.nanstd(vsinifinal) ))
+                np.nanstd(vsinifinal) )
+                )
 
     #-------------------------------------------------------------------------------
 
     # Plot combined results
     if args.binary:
-        rvps = [rvfinalCombined,rvfinalCombined2]
-        stdps = [stdfinalCombined,stdfinalCombined2]
+        rvps = [rvfinalCombined, rvfinalCombined2]
+        stdps = [stdfinalCombined, stdfinalCombined2]
     else:
         rvps = [rvfinalCombined]
         stdps = [stdfinalCombined]
 
     for ara in range(len(rvps)):
-        rvp = rvps[ara]; stdp = stdps[ara];
+        rvp = rvps[ara]
+        stdp = stdps[ara]
 
         xscale = np.arange(len(rvp))+1
 
-        f, axes = plt.subplots(1, 1, figsize=(5,3), facecolor='white', dpi=300)
-        axes.plot(xscale,rvp, '.k', ms=5)
-        axes.errorbar(xscale,rvp, yerr=stdp,
-            ls='none', lw=.5, ecolor='black')
-        axes.text(0.05, 0.93, r'RV mean= ${:1.5f}$ $\pm$ {:1.5f} km/s'.format(
-            np.nanmean(rvp), np.nanstd(rvp)),
-            transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
-
-        if (len(nightsT) != 0) & (len(nightsL) == 0):
-            axes.text(0.05, 0.1, 'Focused', transform=axes.transAxes, size=6,
-                style='normal', family='sans-serif' )
-        elif (len(nightsT) == 0) & (len(nightsL) != 0):
-            axes.text(0.05, 0.1, 'Defocus', transform=axes.transAxes, size=6,
-                style='normal', family='sans-serif' )
-        else:
-            if nightsT[-1] < nightsL[0]: # if tight epoch precedes loose epoch #sy
-                axes.axvline(xscale[len(nightsT)] - 0.5, linewidth=.7, color='black')
-                axes.text(0.05, 0.1, 'Focused', transform=axes.transAxes, size=6,
-                    style='normal', family='sans-serif' )
-                axes.text(0.9,  0.1, 'Defocus', transform=axes.transAxes, size=6,
-                    style='normal', family='sans-serif' )
-            else:
-                axes.axvline(xscale[len(nightsL)] - 0.5, linewidth=.7, color='black')
-                axes.text(0.05, 0.1, 'Focused', transform=axes.transAxes, size=6,
-                    style='normal', family='sans-serif' )
-                axes.text(0.9,  0.1, 'Defocused', transform=axes.transAxes, size=6,
-                    style='normal', family='sans-serif' )
-        axes.set_ylim(np.nanmin(rvp)-.08,np.nanmax(rvp)+.08)
-        axes.set_ylabel('RV (km/s)', size=6, style='normal', family='sans-serif' )
-        axes.set_xlabel('Night (#)', size=6, style='normal', family='sans-serif' )
-        axes.xaxis.set_minor_locator(AutoMinorLocator(5))
-        axes.yaxis.set_minor_locator(AutoMinorLocator(5))
-        axes.tick_params(axis='both', which='both', labelsize=6, right=True, top=True,
-            direction='in', width=.6)
-        if args.binary:
-            f.savefig('{}/{}/FinalRVs{}.png'.format(inparam.outpath, name,ara+1), format='png',
-            bbox_inches='tight')
-        else:
-            f.savefig('{}/{}/FinalRVs.png'.format(inparam.outpath, name), format='png',
-            bbox_inches='tight')
-
+        outplotter_rv_combind(
+            xscale, rvp, stdp, args, inparam, name, ara, kind, nightsT, nightsL)
+    
+    #-------------------------------------------------------------------------------
     # Output combined final results to fits file
-    c1 = fits.Column(name='NIGHT',    array=nightsCombined,     format='{}A'.format(len(nights[0])) )
-    c2 = fits.Column(name='JD',       array=jdsCombined,        format='D')
-    c3 = fits.Column(name='RVfinal',  array=rvfinalCombined,    format='D')
-    c4 = fits.Column(name='STDfinal', array=stdfinalCombined,   format='D')
-    c5 = fits.Column(name='VSINI',    array=vsinifinalCombined, format='D')
+    name_list = ['NIGHT', 'JD', 'RVfinal', 'STDfinal', 'VSINI']
+    data_list = [
+        nightsCombined, jdsCombined, rvfinalCombined, stdfinalCombined, 
+        vsinifinalCombined
+        ]
+    format_list = [f'{len(nights[0])}A', 'D', 'D', 'D', 'D']
 
     if args.binary:
-        c6 = fits.Column(name='RV2final',  array=rvfinalCombined2,    format='D')
-        c7 = fits.Column(name='STD2final', array=stdfinalCombined2,   format='D')
-        c8 = fits.Column(name='VSINI2',    array=vsinifinalCombined2, format='D')
-        cols = fits.ColDefs([c1,c2,c3,c4,c5, c6, c7, c8])
-    else:
-        cols = fits.ColDefs([c1,c2,c3,c4,c5])
+        name_list.extend(['RV2final', 'STD2final', 'VSINI2'])
+        data_list.extend(
+            [rvfinalCombined2, stdfinalCombined2, vsinifinalCombined2]
+            )
+        format_list.extend(['D', 'D', 'D'])
+
+    cc = []
+    for nn, dd, ff in zip(name_list, data_list, format_list):
+        cc.append(
+            _make_fits_ColDefs(nn, dd, ff) 
+            )
+    cols  = fits.ColDefs(cc)
+
     hdu_1 = fits.BinTableHDU.from_columns(cols)
 
     bleh = np.ones((3,3))
@@ -1651,24 +1684,35 @@ For H band RVs: We do not expect any systematic changes in the H band as the
     tempin.write(
         '{}/RVresultsSummary_{}.csv'.format(inparam.outpath, trk),
         format='csv', overwrite=True)
+#-------------------------------------------------------------------------------
 
     if len(T_Ls) == 2:
-        logger.info('Combined RV results: mean={:1.4f} km/s, std={:1.4f} km/s'.format(
+        logger.info(
+            'Combined RV results: mean={:1.4f} km/s, std={:1.4f} km/s'.format(
             np.nanmean(rvfinalCombined),
-            np.nanstd(rvfinalCombined)))
-        logger.info('vsini results:       mean={:1.4f} km/s, std={:1.4f} km/s'.format(
+            np.nanstd(rvfinalCombined))
+            )
+        logger.info(
+            'vsini results:       mean={:1.4f} km/s, std={:1.4f} km/s'.format(
             np.nanmean(vsinifinalCombined),
-            np.nanstd(vsinifinalCombined)))
+            np.nanstd(vsinifinalCombined))
+            )
 
         if args.binary:
-            logger.info('Combined RV 2 results: mean={:1.4f} km/s, std={:1.4f} km/s'.format(
+            logger.info(
+                'Combined RV 2 results: mean={:1.4f} km/s, std={:1.4f} km/s'.format(
                 np.nanmean(rvfinalCombined2),
-                np.nanstd(rvfinalCombined2)))
-            logger.info('vsini 2 results:       mean={:1.4f} km/s, std={:1.4f} km/s'.format(
+                np.nanstd(rvfinalCombined2))
+                )
+            logger.info(
+                'vsini 2 results:       mean={:1.4f} km/s, std={:1.4f} km/s'.format(
                 np.nanmean(vsinifinalCombined2),
-                np.nanstd(vsinifinalCombined2)))
+                np.nanstd(vsinifinalCombined2))
+                )
 
-    warning_r = log_warning_id(f'{outpath}/{args.targname}_{args.band}.log', start_time)
+    warning_r = log_warning_id(
+        f'{outpath}/{args.targname}_{args.band}.log', start_time
+        )
     if warning_r:
         print(f'''
 **********************************************************************************
@@ -1676,7 +1720,6 @@ WARNING!! you got warning message during this run. Please check the log file und
           {outpath}/{args.targname}_{args.band}_A0Fits.log
 **********************************************************************************
 ''')
-    print('\n')
     end_time = datetime.now()
     logger.info('Whole process DONE!!!!!!, Duration: {}'.format(end_time - start_time))
     logger.info('Output saved under {}/{}'.format(inparam.outpath, name) )

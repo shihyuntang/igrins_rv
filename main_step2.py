@@ -72,7 +72,6 @@ def setup_fitting_init_pars(band, initvsini, order, initvsini2=0, fluxratio=0):
 
     return pars0
 
-    dpars_org[key_name] = init_dpars
 def _make_dpars(key_name, locs, dpar, numofpars, dpars_org):
     """Conventional func for make new dpar array.
     Not meant to call by the user.
@@ -139,15 +138,7 @@ def base_dpars_dict(vsini_v1, band, order, numofpars, run_num=1, vsini_v2=-1):
                             [20, 1, 1], 
                             numofpars, dpars_org
                             )
-    #                     | 0    1    2    3 |  | -- 4 -- || 5 | | 6     7     8     9 | |10  11  12| |13 14| |15   16   17   18    19 | |20   21   22   23 | 24   25   26   27 |
-    # dpars_org = {
-    #     'cont' : np.array([0.0, 0.0, 0.0, 0.0,  0.0,      0.0,  0.0,  0.0,  0.0,  0.0,  1e7, 1, 1,   0, 0,  10., 30., 0.2, 50.0, 0.2,  1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0 ]),
-    #     'twave': np.array([0.0, 0.0, 0.0, 1.0,  0.0,      0.0,  1.0,  1.0,  1.0,  1.0,  0,   0, 0,   0, 0,   0.,  0., 0.0,  0.,  0.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ]),
-    #     'ip'   : np.array([0.0, 0.0, 0.0, 0.0,  0.0,      0.5,  0.0,  0.0,  0.0,  0.0,  0,   0, 0,   0, 0,   0.,  0., 0.0,  0.,  0.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ]),
-    #     's'    : np.array([20.0, 1.0, 0.0, 0.0,  0.0,     0.0,  0.0,  0.0,  0.0,  0.0,  0,   0, 0,   0, 0,   0.,  0., 0.0,  0.,  0.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ]),
-    #     'v'    : np.array([0.0, 0.0, 0.0, 0.0,  vsini_v1, 0.0,  0.0,  0.0,  0.0,  0.0,  0,   0, 0,   0, 0,   0.,  0., 0.0,  0.,  0.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ]),
-    #     'ts'   : np.array([20.0, 1.0, 0.0, 1.0,  0.0,     0.0,  0.0,  0.0,  0.0,  0.0,  0,   0, 0,   0, 0,   0.,  0., 0.0,  0.,  0.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ])
-    #     }
+
     
     if vsini_v2 != -1:
         dpars_org = _make_dpars('s2', 
@@ -165,12 +156,6 @@ def base_dpars_dict(vsini_v1, band, order, numofpars, run_num=1, vsini_v2=-1):
                             [5, 1, 20, 1], 
                             dpars_org
                             )
-
-    # if vsini_v2 != -1:
-    #     dpars_org['s2']   = np.array([0.0, 0.0, 0.0, 0.0,  0.0,        0.0,  0.0,  0.0,  0.0,  0.0,  0,   0, 0,   0, 0,   0.,  0., 0.0,  0.,  0.0,  0.0, 0.0, 0.0, 0.0, 20.0, 1.0, 0.0, 0.0 ])
-    #     dpars_org['v2']   = np.array([0.0, 0.0, 0.0, 0.0,  0.0,         0.0,  0.0,  0.0,  0.0,  0.0,  0,   0, 0,   0, 0,   0.,  0., 0.0,  0.,  0.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, vsini_v2, 0.0 ])
-    #     dpars_org['s1s2'] = np.array([5.0, 1.0, 0.0, 0.0,  0.0,        0.0,  0.0,  0.0,  0.0,  0.0,  0,   0, 0,   0, 0,   0.,  0., 0.0,  0.,  0.0,  0.0, 0.0, 0.0, 0.0, 20.0, 1.0, 0.0, 0.0 ])
-
 
     # blaze fitting order setting
     if band == 'H':
@@ -243,6 +228,191 @@ def trim_tel_data(watm, satm, wave_piece, s_piece, u_piece, x_piece):
     return satm_in, watm_in, wave_piece, s_piece, u_piece, x_piece
 
 
+def check_if_template_exist(args, singleORdouble=1):
+
+    syntemp = os.listdir(f'./Engine/syn_template')
+
+    if singleORdouble == 1:
+        template_kind = args.template.lower()
+        temperature = args.temperature
+        logg = args.logg
+        ll = ''
+    elif singleORdouble == 2:
+        template_kind = args.template2.lower()
+        temperature = args.temperature2
+        logg = args.logg2
+        ll = '2'
+    else:
+        sys.exit(f'singleORdouble gives {singleORdouble}, can onlu be 1 or 2.')
+
+    if template_kind == 'synthetic':
+        #list of all syntheticstellar
+        syntemp = [i for i in syntemp if i[:3] == 'syn']
+        synT    = [ i.split('_')[2][1:]  for i in syntemp ]
+        synlogg = [ i.split('_')[3][4:7] for i in syntemp ]
+    elif template_kind == 'phoenix':
+        #list of all phoenix
+        syntemp = [i for i in syntemp if i[:3] == 'PHO']
+        synT    = [ i.split('-')[1][4:]  for i in syntemp ]
+        synlogg = [ i.split('-')[2][:3] for i in syntemp ]
+    else:
+        synT = [temperature]
+        synlogg = [logg]
+
+    if temperature not in synT:
+        sys.exit(
+            f'ERROR: UNEXPECTED STELLAR TEMPERATURE FOR "-temp{ll}" INPUT! '
+            f'{syntemp} AVALIABLE UNDER ./Engine/syn_template/'
+            )
+
+    if logg not in synlogg:
+        sys.exit(
+            f'ERROR: UNEXPECTED STELLAR LOGG FOR "-logg{ll}" INPUT! {syntemp} '
+            'AVALIABLE UNDER ./Engine/syn_template/'
+            )
+
+def check_user_input(args, singleORdouble=1):
+
+    if args.initvsini == '':
+        sys.exit(
+            'ERROR: YOU MUST PROVIDE AN INITIAL GUESS FOR VSINI VALUE, "-i"'
+            )
+
+    if (args.guesses == '') & (args.guessesX == ''):
+        sys.exit(
+            'ERROR: YOU MUST PROVIDE AN INITIAL GUESS FOR RV VALUE(S) BY '
+            'USING "-g" OR "-gX"'
+            )
+
+    if (args.temperature == '') & (args.logg == ''):
+        sys.exit(
+            'ERROR: YOU MUST PROVIDE THE TEMPERATURE AND LOGG VALUE FOR '
+            'STELLAR TEMPLATE. GO TO "./Engine/syn_template/" TO SEE '
+            'AVAILABLE TEMPLATES'
+            )
+    
+    if args.template.lower() not in ['synthetic', 'livingston', 'phoenix']:
+        sys.exit('ERROR: UNEXPECTED STELLAR TEMPLATE FOR "-t" INPUT!')
+
+
+    if singleORdouble == 2:
+
+        if args.fluxratio == '':
+            sys.exit('ERROR: YOU MUST PROVIDE A FLUX RATIO S2/S1, "-f"')
+
+        if args.initvsini2 == '':
+            sys.exit(
+                'ERROR: YOU MUST PROVIDE AN INITIAL GUESS FOR VSINI2 VALUE, "-i2"'
+                )
+
+        if (args.temperature2 == '') & (args.logg2 == ''):
+            sys.exit(
+                'ERROR: YOU MUST PROVIDE THE TEMPERATURE AND LOGG VALUE FOR '
+                'SECONDARY STELLAR TEMPLATE. GO TO "./Engine/syn_template/" TO SEE '
+                'AVAILABLE TEMPLATES'
+                )
+
+        if args.template2.lower() not in ['synthetic', 'livingston', 'phoenix']:
+            sys.exit(
+                'ERROR: UNEXPECTED SECONDARY STELLAR TEMPLATE FOR "-t" INPUT!'
+                )
+
+
+def setup_init_rv_guess(args):
+
+    if args.guesses != '':
+        try:
+            initguesses = float(args.guesses)
+            initguesses_show = initguesses
+        except:
+            sys.exit('ERROR: -g ONLY TAKES A NUMBER AS INPUT!')
+
+    # Load initial RV guesses from file
+    if args.guessesX != '':
+        try:
+            guessdata = Table.read(
+                f'./Output/{args.targname}_{args.band}/'
+                    f'Initguesser_results_{args.guessesX}.csv',
+                format='csv')
+        except:
+            sys.exit(
+                f'ERROR: "./Output/{args.targname}_{args.band}/'
+                    f'Initguesser_results_{args.guessesX}.csv" NOT FOUND!')
+
+        initnights = np.array(guessdata['night'])
+        initrvs    = np.array(guessdata['bestguess'])
+        initguesses = {}
+        initguesses_show = f'Initguesser_results_{args.guessesX}.csv'
+        for hrt in range(len(initnights)):
+            initguesses[str(initnights[hrt])] = float(initrvs[hrt])
+
+        if args.binary:
+            initrvs2    = np.array(guessdata['bestguess2'])
+            initguesses2 = {}
+            for hrt in range(len(initnights)):
+                initguesses2[str(initnights[hrt])] = float(initrvs2[hrt])
+
+            return initguesses, initguesses_show, initguesses2
+    
+    return initguesses, initguesses_show
+
+def mkdir_output_dic(args):
+
+    if not os.path.isdir('./Output'):
+        os.mkdir('./Output')
+
+    if not os.path.isdir(f'./Output/{args.targname}_{args.band}'):
+        os.mkdir(f'./Output/{args.targname}_{args.band}')
+    filesndirs = os.listdir(f'./Output/{args.targname}_{args.band}')
+
+    trk = 1; go = True
+    while go == True:
+        iniguess_dir = 'Initguesser_results_{}.csv'.format(trk)
+        if iniguess_dir not in filesndirs:
+            break
+        trk += 1
+
+    if not os.path.isdir(f'./Output/{args.targname}_{args.band}/figs'):
+        os.mkdir(f'./Output/{args.targname}_{args.band}/figs')
+
+    step2or3 = 2
+    temp_f_dir = f'./Output/{args.targname}_{args.band}/figs/'\
+                        f'main_step{step2or3}_{args.band}_{trk}'
+    if not os.path.isdir(temp_f_dir):
+        os.mkdir(temp_f_dir)
+
+    outpath = f'./Output/{args.targname}_{args.band}'
+
+    return trk, outpath, step2or3, iniguess_dir
+
+
+def setup_logger(args, outpath):
+
+    logger = logging.getLogger(__name__)
+    if args.debug:
+        logger.setLevel(logging.DEBUG)
+    else:
+        logger.setLevel(logging.INFO)
+
+    formatter = logging.Formatter(
+        '%(asctime)s: %(module)s.py: %(levelname)s--> %(message)s'
+        )
+
+    file_hander  = logging.FileHandler(
+        f'{outpath}/{args.targname}_{args.band}.log'
+        )
+    stream_hander= logging.StreamHandler()
+
+    # file_hander.setLevel()
+    file_hander.setFormatter(formatter)
+
+    logger.addHandler(file_hander)
+    logger.addHandler(stream_hander)
+    logger.propagate = False
+
+    return logger, stream_hander
+
+
 def main(args, inparam, orders, order_use, trk, step2or3, i):
     """Main function for RV fitting that will be threaded over
     by multiprocessing
@@ -278,7 +448,7 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
         logger.warning(
             f'  --> Previous run of {night} found it inadequate, skipping...'
             )
-        return night, np.nan, np.nan
+        return night, np.nan, np.nan, np.nan, np.nan
 
     if args.binary:
         if type(inparam.initguesses2) == dict:
@@ -301,7 +471,7 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
         tag  = tagsnight[0]
     except IndexError:
         logger.warning(f'  --> No B nodding(frame) for night {night}, skipping...')
-        return night, np.nan, np.nan
+        return night, np.nan, np.nan, np.nan, np.nan
 
     if args.binary:
         pars0 = setup_fitting_init_pars(
@@ -320,7 +490,7 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
         logger.warning(
             f'  --> No A0-fitted template for night {night}, skipping...'
             )
-        return night, np.nan, np.nan
+        return night, np.nan, np.nan, np.nan, np.nan
 
     # Find corresponding table in fits file, given the tables do not go
     # sequentially by order number due to multiprocessing in Step 1
@@ -366,7 +536,7 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
         if nexto == len(orders):
             logger.warning(f'  --> TELFIT ENCOUNTERED CRITICAL ERROR IN ALL '
                                 f'ORDERS FOR NIGHT: {night}, skipping...')
-            return night, np.nan, np.nan
+            return night, np.nan, np.nan, np.nan, np.nan
 
 
     # Use instrumental profile dictionary corresponding to whether IGRINS
@@ -617,16 +787,17 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
     if args.binary and parfit[25] < 0.05:
         logger.warning(f'  --> Secondary stellar template power is low for {night}! '
                             'Data likely being misfit! Throwing out result...')
-        return night, np.nan, np.nan
+        return night, np.nan, np.nan, np.nan, np.nan
 
     # if best fit stellar or telluric template powers are exactly equal
     # to their starting values, fit failed, throw out result
-    if parfit[1] == par_in[1] or parfit[3] == par_in[3] or (args.binary and (parfit[25] == par_in[25])):
+    if parfit[1] == par_in[1] or parfit[3] == par_in[3] \
+        or (args.binary and (parfit[25] == par_in[25])):
         logger.warning(f'  --> Stellar or telluric template powers have not '
                             f'budged from starting values for {night}! Fit is '
                             'broken! Optimizer bounds may be unfeasible, or '
                             'chi-squared may be NaN? Throwing out result...')
-        return night, np.nan, np.nan
+        return night, np.nan, np.nan, np.nan, np.nan
 
     # if best fit model dips below zero at any point, we're to close to edge of
     # blaze, fit may be compromised, throw out result
@@ -635,7 +806,7 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
         logger.warning(f'  --> Best fit model dips below 0 for {night}! '
                             'May be too close to edge of blaze, throwing '
                             'out result...')
-        return night, np.nan, np.nan
+        return night, np.nan, np.nan, np.nan, np.nan
 
 
     #-------------------------------------------------------------------------------
@@ -663,8 +834,8 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
 
     rv0 = parfit[0]
     # Barycentric correction
-    rvsmini    = rv0 + inparam.bvcs[night+tag] \
-                    + rv0*inparam.bvcs[night+tag]/(2.99792458e5**2)
+    rvsmini = rv0 + inparam.bvcs[night+tag] \
+        + rv0*inparam.bvcs[night+tag]/(2.99792458e5**2)
     vsinismini = parfit[4]
 
     bestguess = np.round(rvsmini,5)
@@ -673,10 +844,11 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
     if args.binary:
         rv2 = parfit[24]
         bestguess2 = rv2  + inparam.bvcs[night+tag] \
-                    + rv2*inparam.bvcs[night+tag]/(2.99792458e5**2)
+            + rv2*inparam.bvcs[night+tag]/(2.99792458e5**2)
         vsinimini2 = parfit[26]
     else:
-        bestguess2 = np.nan; vsinimini2 = np.nan;
+        bestguess2 = np.nan
+        vsinimini2 = np.nan
 
     return night, bestguess, vsinimini, bestguess2, vsinimini2
 
@@ -689,124 +861,26 @@ if __name__ == '__main__':
     inpath   = './Input/{}'.format(args.targname)
     cdbs_loc = '~/cdbs/'
 
-    #-------------------------------------------------------------------------------
-
-    #### Check user inputs
+    check_user_input(args, singleORdouble=1)
+    check_if_template_exist(args, singleORdouble=1)
 
     initvsini = float(args.initvsini)
     vsinivary = float(args.vsinivary)
 
-    if args.initvsini == '':
-        sys.exit('ERROR: YOU MUST PROVIDE AN INITIAL GUESS FOR VSINI VALUE, "-i"')
-
-    if (args.guesses == '') & (args.guessesX == ''):
-        sys.exit('ERROR: YOU MUST PROVIDE AN INITIAL GUESS FOR RV VALUE(S) '
-                    'BY USING "-g" OR "-gX"')
-
-    if (args.temperature == '') & (args.logg == ''):
-        sys.exit('ERROR: YOU MUST PROVIDE THE TEMPERATURE AND LOGG VALUE FOR '
-                    'STELLAR TEMPLATE. GO TO "./Engine/syn_template/" TO '
-                    'SEE AVAILABLE TEMPLATES')
-    #------------------------------
-
-    if args.template.lower() not in ['synthetic', 'livingston', 'phoenix']:
-        sys.exit('ERROR: UNEXPECTED STELLAR TEMPLATE FOR "-t" INPUT!')
-
-    #------------------------------
-
-    syntemp = os.listdir(f'./Engine/syn_template')
-
     if args.binary:
-        if args.fluxratio == '':
-            sys.exit('ERROR: YOU MUST PROVIDE A FLUX RATIO S2/S1, "-f"')
-        if args.initvsini2 == '':
-            sys.exit('ERROR: YOU MUST PROVIDE AN INITIAL GUESS FOR VSINI2 VALUE, "-i2"')
-        if (args.temperature2 == '') & (args.logg2 == ''):
-            sys.exit('ERROR: YOU MUST PROVIDE THE TEMPERATURE AND LOGG VALUE FOR '
-                        'SECONDARY STELLAR TEMPLATE. GO TO "./Engine/syn_template/" TO SEE '
-                        'AVAILABLE TEMPLATES')
-        if args.template2.lower() not in ['synthetic', 'livingston', 'phoenix']:
-            sys.exit('ERROR: UNEXPECTED SECONDARY STELLAR TEMPLATE FOR "-t" INPUT!')
-
         initvsini2 = float(args.initvsini2)
         vsinivary2 = float(args.vsinivary2)
+        
+        check_user_input(args, singleORdouble=2)
+        check_if_template_exist(args, singleORdouble=2)
 
-        if args.template2.lower() == 'synthetic':
-            #list of all syntheticstellar
-            syntemp = [i for i in syntemp if i[:3] == 'syn']
-            synT    = [ i.split('_')[2][1:]  for i in syntemp ]
-            synlogg = [ i.split('_')[3][4:7] for i in syntemp ]
-        elif args.template2.lower() == 'phoenix':
-            #list of all phoenix
-            syntemp = [i for i in syntemp if i[:3] == 'PHO']
-            synT    = [ i.split('-')[1][4:]  for i in syntemp ]
-            synlogg = [ i.split('-')[2][:3] for i in syntemp ]
-        else:
-            synT = [args.temperature2]; synlogg = [args.logg2]
-
-        if args.temperature2 not in synT:
-            sys.exit(f'ERROR: UNEXPECTED STELLAR TEMPERATURE FOR "-temp2" INPUT! '
-                        f'{syntemp} AVALIABLE UNDER ./Engine/syn_template/')
-
-        if args.logg2 not in synlogg:
-            sys.exit(f'ERROR: UNEXPECTED STELLAR LOGG FOR "-logg2" INPUT! {syntemp} '
-                        'AVALIABLE UNDER ./Engine/syn_template/')
-
-    syntemp = os.listdir(f'./Engine/syn_template')
-    syntemp = [i for i in syntemp if i[:3] == 'syn'] #list of all syntheticstellar
-
-    synT    = [ i.split('_')[2][1:]  for i in syntemp ]
-    synlogg = [ i.split('_')[3][4:7] for i in syntemp ]
-
-    if args.temperature not in synT:
-        sys.exit(f'ERROR: UNEXPECTED STELLAR TEMPERATURE FOR "-temp" INPUT! '
-                    f'{syntemp} AVALIABLE UNDER ./Engine/syn_template/')
-
-    if args.logg not in synlogg:
-        sys.exit(f'ERROR: UNEXPECTED STELLAR LOGG FOR "-logg" INPUT! {syntemp} '
-                    'AVALIABLE UNDER ./Engine/syn_template/')
-
-    #------------------------------
-
-    if (args.guesses != '') & (args.guessesX != ''):
-        sys.exit('ERROR: YOU CAN ONLY CHOOSE EITHER -g OR -gX')
-
-    #------------------------------
+    #-------------------------------------------------------------------------------
     # Specify initial RV guesses as a single value applied to all nights
 
-    if args.guesses != '':
-        try:
-            initguesses = float(args.guesses)
-            initguesses_show = initguesses
-        except:
-            sys.exit('ERROR: -g ONLY TAKES A NUMBER AS INPUT!')
-
-    #------------------------------
-
-    # Load initial RV guesses from file
-    if args.guessesX != '':
-        try:
-            guessdata = Table.read(
-                f'./Output/{args.targname}_{args.band}/'
-                    f'Initguesser_results_{args.guessesX}.csv',
-                format='csv')
-
-        except:
-            sys.exit(
-                f'ERROR: "./Output/{args.targname}_{args.band}/'
-                    f'Initguesser_results_{args.guessesX}.csv" NOT FOUND!')
-
-        initnights = np.array(guessdata['night'])
-        initrvs    = np.array(guessdata['bestguess'])
-        initguesses = {}
-        initguesses_show = f'Initguesser_results_{args.guessesX}.csv'
-        for hrt in range(len(initnights)):
-            initguesses[str(initnights[hrt])] = float(initrvs[hrt])
-        if args.binary:
-            initrvs2    = np.array(guessdata['bestguess2'])
-        initguesses2 = {}
-        for hrt in range(len(initnights)):
-            initguesses2[str(initnights[hrt])] = float(initrvs2[hrt])
+    if args.binary: 
+        initguesses, initguesses_show, initguesses2 = setup_init_rv_guess(args)
+    else:
+        initguesses, initguesses_show = setup_init_rv_guess(args)
 
     #------------------------------
     # Read in the Prepdata under ./Input/Prpedata/
@@ -838,9 +912,9 @@ Input Parameters:
     Threads use         =  {}
     '''.format(args.targname, args.band, args.WRegion, args.SN_cut,
                 args.label_use, initvsini, vsinivary, initguesses_show,
-                args.template, args.temperature, args.logg, args.Nthreads))
+                args.template, args.temperature, args.logg, args.Nthreads)
+        )
 
-# Target Spectral Type= \33[41m {} \033[0m             <-------  [late K, M] recommended 'synthetic', [F, G, early K] SpTy recommended 'livingston'
     if not args.skip:
         while True:
             inpp = input("Press [Y]es to continue, [N]o to quit...\n --> ")
@@ -854,15 +928,16 @@ Input Parameters:
 
     if args.binary:
         print(u'''
-        PLUS BINARY PARAMETERS:
-        Initial vsini #2      = \33[37;1;41m {} km/s \033[0m
-        vsini #2 vary range    \u00B1 \33[37;1;41m {} km/s \033[0m
-        Stellar template #2 use= \33[37;1;41m {} \033[0m
-        syn template temp #2  = \33[37;1;41m {} \033[0m
-        syn template logg #2   = \33[37;1;41m {} \033[0m
-        syn template B #2   = \33[37;1;41m {} \033[0m
+PLUS BINARY PARAMETERS:
+    Initial vsini #2        = \33[37;1;41m {} km/s \033[0m
+    vsini #2 vary range     \u00B1 \33[37;1;41m {} km/s \033[0m
+    Stellar template #2 use = \33[37;1;41m {} \033[0m
+    syn template temp #2    = \33[37;1;41m {} \033[0m
+    syn template logg #2    = \33[37;1;41m {} \033[0m
+    syn template B #2       = \33[37;1;41m {} \033[0m
         '''.format(initvsini2, vsinivary2, args.template2,
-           args.temperature2, args.logg2, args.B2))
+                    args.temperature2, args.logg2, args.B2)
+        )
         if not args.skip:
             while True:
                 inpp = input("Press [Y]es to continue, [N]o to quite...\n --> ")
@@ -880,67 +955,22 @@ Input Parameters:
 
     #-------------------------------------------------------------------------------
 
-    # Make output directories as needed
-    if not os.path.isdir('./Output'):
-        os.mkdir('./Output')
-
-    if not os.path.isdir(f'./Output/{args.targname}_{args.band}'):
-        os.mkdir(f'./Output/{args.targname}_{args.band}')
-    filesndirs = os.listdir(f'./Output/{args.targname}_{args.band}')
-
-    trk = 1; go = True
-    while go == True:
-        iniguess_dir = 'Initguesser_results_{}.csv'.format(trk)
-        if iniguess_dir not in filesndirs:
-            break
-        trk += 1
-
-    if not os.path.isdir(f'./Output/{args.targname}_{args.band}/figs'):
-        os.mkdir(f'./Output/{args.targname}_{args.band}/figs')
-
-    step2or3 = 2
-    temp_f_dir = f'./Output/{args.targname}_{args.band}/figs/'\
-                        f'main_step{step2or3}_{args.band}_{trk}'
-    if not os.path.isdir(temp_f_dir):
-        os.mkdir(temp_f_dir)
-
-    outpath = f'./Output/{args.targname}_{args.band}'
-
-
-    #-------------------------------------------------------------------------------
-
-    # Set up logger
-    logger = logging.getLogger(__name__)
-    if args.debug:
-        logger.setLevel(logging.DEBUG)
-    else:
-        logger.setLevel(logging.INFO)
-    formatter = logging.Formatter(
-        '%(asctime)s: %(module)s.py: %(levelname)s--> %(message)s')
-
-    file_hander  = logging.FileHandler(
-        f'{outpath}/{args.targname}_{args.band}.log')
-    stream_hander= logging.StreamHandler()
-
-    # file_hander.setLevel()
-    file_hander.setFormatter(formatter)
-
-    logger.addHandler(file_hander)
-    logger.addHandler(stream_hander)
-    logger.propagate = False
+    trk, outpath, step2or3, iniguess_dir = mkdir_output_dic(args)
+    logger, stream_hander = setup_logger(args, outpath)
 
     #-------------------------------------------------------------------------------
     # Create output file to write to
     logger.info(
-        f'Writing output to ./Output/{args.targname}_{args.band}/{iniguess_dir}')
+        f'Writing output to ./Output/{args.targname}_{args.band}/{iniguess_dir}'
+        )
 
     filew = open(
         f'./Output/{args.targname}_{args.band}/{iniguess_dir}','w')
-    filew.write('night, bestguess, vsini')
-    filew.write('\n')
-
-    #-------------------------------------------------------------------------------
-
+    
+    if args.binary:
+        filew.write('night, bestguess, vsini, bestguess2, vsini2\n')
+    else:
+        filew.write('night, bestguess, vsini\n')
 
     # Use subset of nights if specified
     if args.nights_use != '':
@@ -979,9 +1009,11 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
         )
 
     # Save pars in class for future use
-    inparam = InParams(inpath, outpath, initvsini, vsinivary, args.plotfigs,
-                       initguesses, bvcs, tagsA, tagsB, nightsFinal, mwave0,
-                       mflux0, None, xbounddict, maskdict)
+    inparam = InParams(
+        inpath, outpath, initvsini, vsinivary, args.plotfigs, initguesses, 
+        bvcs, tagsA, tagsB, nightsFinal, mwave0, mflux0, None, xbounddict, 
+        maskdict
+        )
 
     if args.binary:
         print('\n Loading secondary stellar template... \n')
@@ -989,7 +1021,9 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
             logger, args.template2, args.band, int(args.temperature2),
             float(args.logg2), float(args.B2)
             )
-        inparam.addsecondary(initvsini2,vsinivary2,mwave2,mflux2,initguesses2)
+        inparam.addsecondary(
+            initvsini2, vsinivary2, mwave2, mflux2, initguesses2
+            )
 
     #-------------------------------------------------------------------------------
     # if not in debug mode than enter quite mode, i.e., all message saved in log file
@@ -997,18 +1031,26 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
     print('\n')
 
     # Run order by order, multiprocessing over nights within an order
-    func = partial(main, args, inparam, orders,
-                        int(args.label_use), trk, step2or3 )
+    func = partial(
+        main, args, inparam, orders, int(args.label_use), trk, step2or3 
+        )
     outs = pqdm(np.arange(len(nightsFinal)), func, n_jobs=args.Nthreads)
 
     # Write outputs to file
-    vsinis = []; finalrvs = []; vsinis2 = []; finalrvs2 = [];
+    vsinis = []; finalrvs = []; vsinis2 = []; finalrvs2 = []
     for n in range(len(nightsFinal)):
         nightout = outs[n]
         if args.binary:
-            filew.write('{}, {}, {}'.format(nightout[0], nightout[1], nightout[2], nightout[3], nightout[4]))
+            filew.write(
+                '{}, {}, {}, {}, {}'.format(
+                    nightout[0], nightout[1], nightout[2], 
+                    nightout[3], nightout[4])
+                    )
         else:
-            filew.write('{}, {}, {}'.format(nightout[0], nightout[1], nightout[2]))
+            filew.write(
+                '{}, {}, {}'.format(
+                    nightout[0], nightout[1], nightout[2])
+                    )
         filew.write('\n')
         vsinis2.append(nightout[4])
         finalrvs2.append(nightout[3])
@@ -1017,7 +1059,9 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
 
     filew.close()
 
-    warning_r = log_warning_id(f'{outpath}/{args.targname}_{args.band}.log', start_time)
+    warning_r = log_warning_id(
+        f'{outpath}/{args.targname}_{args.band}.log', start_time
+        )
     if warning_r:
         print(f'''
 **********************************************************************************
@@ -1025,25 +1069,33 @@ WARNING!! you got warning message during this run. Please check the log file und
           {outpath}/{args.targname}_{args.band}.log
 **********************************************************************************
 ''')
-    print('\n')
     if not args.debug: logger.addHandler(stream_hander)
     print('--------!Initial Guess!--------')
-    logger.info('RV results:    mean= {:1.4f} km/s, median= {:1.4f} km/s, std= {:1.4f} km/s'.format(np.nanmean(finalrvs),
-                                                                                                    np.nanmedian(finalrvs),
-                                                                                                    np.nanstd(finalrvs)      ))
-    logger.info('vsini results: mean= {:1.4f} km/s, median= {:1.4f} km/s, std= {:1.4f} km/s'.format(np.nanmean(vsinis),
-                                                                                                    np.nanmedian(vsinis),
-                                                                                                    np.nanstd(vsinis)      ))
+    logger.info(
+        'RV results:    mean= {:1.4f} km/s, median= {:1.4f} km/s, std= {:1.4f} km/s'.format(
+            np.nanmean(finalrvs), np.nanmedian(finalrvs), np.nanstd(finalrvs) )
+            )
+    logger.info(
+        'vsini results: mean= {:1.4f} km/s, median= {:1.4f} km/s, std= {:1.4f} km/s'.format(
+            np.nanmean(vsinis), np.nanmedian(vsinis), np.nanstd(vsinis) )
+            )
     end_time = datetime.now()
-    logger.info('RV 2 results:    mean= {:1.4f} km/s, median= {:1.4f} km/s, std= {:1.4f} km/s'.format(np.nanmean(finalrvs2),
-                                                                                                    np.nanmedian(finalrvs2),
-                                                                                                    np.nanstd(finalrvs2)      ))
-    logger.info('vsini 2 results: mean= {:1.4f} km/s, median= {:1.4f} km/s, std= {:1.4f} km/s'.format(np.nanmean(vsinis2),
-                                                                                                    np.nanmedian(vsinis2),
-                                                                                                    np.nanstd(vsinis2)    ))
-    logger.info('RV Initial Guess DONE... Duration: {}'.format(end_time - start_time))
-    logger.info(f'Output saved under ./Output/{args.targname}_{args.band}/{iniguess_dir}')
-    print('---------------------------------------------------------------')
-    print('You can now try to get a better RV initial guess with by rerunning Step 2 with -gX set to the run number you just completed.')
+    logger.info(
+        'RV 2 results:    mean= {:1.4f} km/s, median= {:1.4f} km/s, std= {:1.4f} km/s'.format(
+            np.nanmean(finalrvs2), np.nanmedian(finalrvs2), np.nanstd(finalrvs2) )
+            )
+    logger.info(
+        'vsini 2 results: mean= {:1.4f} km/s, median= {:1.4f} km/s, std= {:1.4f} km/s'.format(
+            np.nanmean(vsinis2), np.nanmedian(vsinis2), np.nanstd(vsinis2) )
+            )
+    logger.info(
+        'RV Initial Guess DONE... Duration: {}'.format(end_time - start_time)
+        )
+    logger.info(
+        f'Output saved under ./Output/{args.targname}_{args.band}/{iniguess_dir}'
+        )
+    print('---------------------------------------------------------------\n')
+    print('You can now try to get a better RV initial guess with by')
+    print('rerunning Step 2 with -gX set to the run number you just completed.')
     print('OR, you can go on to the full RV analysis in Step 3.')
     print('####################################################################################')
