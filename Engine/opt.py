@@ -243,9 +243,6 @@ def fmodel_chi(par,grad):
     else:
         return smod,chisq
 
-
-matplotlib.use('Qt5Agg')
-
 def fmod(par,fitobj,binary=False):
     '''
     Same as fmodel_chi(), but meant to provide best fit model, not for
