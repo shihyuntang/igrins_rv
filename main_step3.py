@@ -667,9 +667,6 @@ if __name__ == '__main__':
     initvsini = float(args.initvsini)
     vsinivary = float(args.vsinivary)
 
-    initvsini2 = float(args.initvsini2)
-    vsinivary2 = float(args.vsinivary2)
-
     if args.mode == '':
         sys.exit('ERROR: YOU MUST CHOOSE A MODE, "STD" OR "TAR", for "-mode"')
 
@@ -703,6 +700,9 @@ if __name__ == '__main__':
         if args.template2.lower() not in ['synthetic', 'livingston', 'phoenix']:
             sys.exit('ERROR: UNEXPECTED SECONDARY STELLAR TEMPLATE FOR "-t" INPUT!')
 
+        initvsini2 = float(args.initvsini2)
+        vsinivary2 = float(args.vsinivary2)
+        
         if args.template2.lower() == 'synthetic':
             #list of all syntheticstellar
             syntemp = [i for i in syntemp if i[:3] == 'syn']
