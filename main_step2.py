@@ -144,17 +144,17 @@ def base_dpars_dict(vsini_v1, band, order, numofpars, run_num=1, vsini_v2=-1):
         dpars_org = _make_dpars('s2', 
                             [24, 25], 
                             [20, 1], 
-                            dpars_org
+                            numofpars, dpars_org
                             )
         dpars_org = _make_dpars('v2', 
                             [26], 
                             [vsini_v2], 
-                            dpars_org
+                            numofpars, dpars_org
                             )
         dpars_org = _make_dpars('s1s2', 
                             [0, 1, 24, 25], 
                             [5, 1, 20, 1], 
-                            dpars_org
+                            numofpars, dpars_org
                             )
 
     # blaze fitting order setting
