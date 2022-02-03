@@ -146,20 +146,20 @@ def base_dpars_dict(
                             )
 
     if vsini_v2 != -1:
-        dpars_org = _make_dpars('s2', 
-                            [24, 25], 
-                            [20, 1], 
-                            dpars_org
+        dpars_org = _make_dpars('s2',
+                            [24, 25],
+                            [20, 1],
+                            numofpars, dpars_org
                             )
-        dpars_org = _make_dpars('v2', 
-                            [26], 
-                            [vsini_v2], 
-                            dpars_org
+        dpars_org = _make_dpars('v2',
+                            [26],
+                            [vsini_v2],
+                            numofpars, dpars_org
                             )
-        dpars_org = _make_dpars('s1s2', 
-                            [0, 1, 24, 25], 
-                            [5, 1, 20, 1], 
-                            dpars_org
+        dpars_org = _make_dpars('s1s2',
+                            [0, 1, 24, 25],
+                            [5, 1, 20, 1],
+                            numofpars, dpars_org
                             )
 
     if masterbeam == 'B':
