@@ -719,8 +719,8 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
         hardbounds[2] = 1
 
     if args.binary:
-        hardbounds.append(par_in[26] - dpars['v2'][26])
-        hardbounds.append(par_in[26] + dpars['v2'][26])
+        hardbounds.append(par_in[26] - dpars2['v2'][26])
+        hardbounds.append(par_in[26] + dpars2['v2'][26])
         if hardbounds[-2] < 0.5:
             hardbounds[-2] = 0.5
     # Begin optimization. Fit the blaze, the wavelength solution, the telluric
