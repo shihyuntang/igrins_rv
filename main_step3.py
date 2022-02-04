@@ -496,8 +496,8 @@ def save_raw_box(args, nights, inparam, name, order,
     c4 = fits.Column(name=f'VSINI{order}',  array=vsinibox,  format='D')
     c5 = fits.Column(name=f'TAG{order}',    array=tagbox,    format='4A')
     if args.binary:
-        c6    = fits.Column(name='RV2{order}',     array=rvbox2,     format='D')
-        c7    = fits.Column(name='VSINI2{order}',  array=vsinibox2,  format='D')
+        c6    = fits.Column(name=f'RV2{order}',     array=rvbox2,     format='D')
+        c7    = fits.Column(name=f'VSINI2{order}',  array=vsinibox2,  format='D')
         cols  = fits.ColDefs([c1,c2,c3,c4,c5, c6,c7])
     else:
         cols  = fits.ColDefs([c1,c2,c3,c4,c5])
