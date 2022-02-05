@@ -425,7 +425,7 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
     xbounds = inparam.xbounddict[order]
 
     if args.debug:
-        print('Working on order {:02d}, night {:03d}/{:03d} ',
+        print('Working on order {:02d}, night {:03d}/{:03d} '
                 '({}) PID:{}...'.format(int(order),
                                         i+1,
                                         len(inparam.nights),
