@@ -760,7 +760,7 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
             dpars = dpars2
 
         for optkind in optgroup:
-            parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize)
+            parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize,binary=args.binary)
             parstart = parfit_1.copy()
             if args.debug == True:
                 outplotter_23(
