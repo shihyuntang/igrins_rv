@@ -744,8 +744,8 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
     optgroup2 = ['cont', 'twave', 'cont', 's1s2',
             'cont', 'twave', 's','s2', 'cont',
             'twave',
-            'ip', 'v',
-            'ip', 'v',
+            'ip', 'v','v2',
+            'ip', 'v','v2',
             'twave',  's','s2',
             'twave',  's','s1s2']
 
