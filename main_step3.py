@@ -9,7 +9,7 @@ from Engine.classes    import FitObjs,InParams,_setup_bound_cut
 from Engine.rebin_jv   import rebin_jv
 from Engine.rotint     import rotint
 from Engine.opt        import optimizer, fmod
-from Engine.outplotter import (outplotter_23, outplotter_rv, 
+from Engine.outplotter import (outplotter_23, outplotter_rv,
                                     outplotter_rv_combind)
 from Engine.detect_peaks import detect_peaks
 from Engine.crmask    import cr_masker
@@ -89,7 +89,7 @@ def _make_dpars(key_name, locs, dpar, numofpars, dpars_org):
     Returns:
         [dict]: dpars_org
     """
-    
+
     init_dpars = np.zeros(numofpars)
     init_dpars[locs] = dpar
 
@@ -104,7 +104,7 @@ def base_dpars_dict(
 
     Args:
         vsini_v1 (float): initial vsini value
-        masterbeam (str): A or B beam (nodding) that is running 
+        masterbeam (str): A or B beam (nodding) that is running
         band (str): H or K band
         order (int): Current run order
         vsini_v2 (float): initial vsini value for the secondary
@@ -114,34 +114,34 @@ def base_dpars_dict(
     """
 
     dpars_org = {}
-    dpars_org = _make_dpars('cont', 
-                            [10, 11, 12, 15, 16, 17,  18,  19, 20, 21, 22, 23], 
-                            [1e7, 1,  1, 10, 30, 0.2, 50, 0.2,  1,  1,  1,  1], 
+    dpars_org = _make_dpars('cont',
+                            [10, 11, 12, 15, 16, 17,  18,  19, 20, 21, 22, 23],
+                            [1e7, 1,  1, 10, 30, 0.2, 50, 0.2,  1,  1,  1,  1],
                             numofpars, dpars_org
                             )
-    dpars_org = _make_dpars('twave', 
-                            [3, 6, 7, 8, 9], 
-                            [1, 1, 1, 1, 1], 
+    dpars_org = _make_dpars('twave',
+                            [3, 6, 7, 8, 9],
+                            [1, 1, 1, 1, 1],
                             numofpars, dpars_org
                             )
-    dpars_org = _make_dpars('ip', 
-                            [5], 
-                            [0.5], 
+    dpars_org = _make_dpars('ip',
+                            [5],
+                            [0.5],
                             numofpars, dpars_org
                             )
-    dpars_org = _make_dpars('s', 
-                            [0, 1], 
-                            [5, 1], 
+    dpars_org = _make_dpars('s',
+                            [0, 1],
+                            [5, 1],
                             numofpars, dpars_org
                             )
-    dpars_org = _make_dpars('v', 
-                            [4], 
-                            [vsini_v1], 
+    dpars_org = _make_dpars('v',
+                            [4],
+                            [vsini_v1],
                             numofpars, dpars_org
                             )
-    dpars_org = _make_dpars('ts', 
-                            [0, 1, 3], 
-                            [5, 1, 1], 
+    dpars_org = _make_dpars('ts',
+                            [0, 1, 3],
+                            [5, 1, 1],
                             numofpars, dpars_org
                             )
 
@@ -232,7 +232,7 @@ def setup_tel(args, night, beam, order, tbdata):
             satm1mol = satm1mol[(watm1mol != 0)]
             watm1mol = watm1mol[(watm1mol != 0)]
             watmmols[mol] = watm1mol; satmmols[mol] = satm1mol
-    
+
     return watm, satm, a0contx, continuum, molnames, watmmols, satmmols
 
 def trim_obs_data(x, wave, s, u, xbounds, maskwaves):
@@ -259,7 +259,7 @@ def trim_obs_data(x, wave, s, u, xbounds, maskwaves):
         for maskbounds in maskwaves:
             testmask[(wave_piece*1e4 > maskbounds[0]) \
                         & (wave_piece*1e4 < maskbounds[1]) ] = False
-    
+
     return s_piece, u_piece, wave_piece, x_piece, testmask
 
 def trim_tel_data(watm, satm, wave_piece, s_piece, u_piece, x_piece):
@@ -283,7 +283,7 @@ def trim_tel_data(watm, satm, wave_piece, s_piece, u_piece, x_piece):
                         & (wave_piece*1e4 < np.max(watm_in)-10)]
 
     return satm_in, watm_in, wave_piece, s_piece, u_piece, x_piece
-                        
+
 def check_if_template_exist(args, singleORdouble=1):
 
     syntemp = os.listdir(f'./Engine/syn_template')
@@ -351,7 +351,7 @@ def check_user_input(args, singleORdouble=1):
             'STELLAR TEMPLATE. GO TO "./Engine/syn_template/" TO SEE '
             'AVAILABLE TEMPLATES'
             )
-    
+
     if args.template.lower() not in ['synthetic', 'livingston', 'phoenix']:
         sys.exit('ERROR: UNEXPECTED STELLAR TEMPLATE FOR "-t" INPUT!')
 
@@ -384,7 +384,7 @@ def setup_init_rv_guess(args):
     if args.mode.lower() == 'std':
         initguesses = float(args.guesses)
         initguesses_show = initguesses
-        
+
     else: # Load initial RV guesses from file
         if args.guesses_source == 'init': # From Step 2 results
             guesses = './Output/{}_{}/Initguesser_results_{}.csv'.format(
@@ -404,7 +404,7 @@ def setup_init_rv_guess(args):
                 initguesses2 = {}
                 for hrt in range(len(initnights)):
                     initguesses2[str(initnights[hrt])] = float(initrvs2[hrt])
-                
+
                 return initguesses, initguesses_show, initguesses2
 
         elif args.guesses_source == 'rvre': # From Step 3 results
@@ -427,7 +427,7 @@ def setup_init_rv_guess(args):
                     initguesses2[str(initnights[hrt])] = float(initrvs2[hrt])
 
                 return initguesses, initguesses_show, initguesses2
-    
+
     return initguesses, initguesses_show
 
 def mkdir_output_dic(args):
@@ -485,10 +485,10 @@ def setup_logger(args, outpath, name):
 
     return logger, stream_hander
 
-def save_raw_box(args, nights, inparam, name, order, 
+def save_raw_box(args, nights, inparam, name, order,
                     nightsbox, rvbox, parfitbox, vsinibox, tagbox,
                     rvbox2=None, vsinibox2=None):
-    
+
     c1 = fits.Column(name=f'NIGHT{order}',  array=nightsbox, format=f'{len(nights[0])}A' )
     c2 = fits.Column(name=f'RV{order}',     array=rvbox,     format='D')
     c3 = fits.Column(name=f'PARFIT{order}', array=parfitbox, format=f'{len(parfitbox[0,:])}D',
@@ -556,7 +556,7 @@ def combine_rvs_between_orders(
         rvfinal[n]    = np.nan
         stdfinal[n]   = np.nan
         vsinifinal[n] = np.nan
-    
+
     if nights_use is None:
         return rvfinal, stdfinal, vsinifinal, None
     else:
@@ -587,12 +587,12 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
                                                     i+1,
                                                     len(inparam.nights),
                                                     night,
-                                                    mp.current_process().pid) 
+                                                    mp.current_process().pid)
                                                     )
 
     if args.binary:
         pars0 = setup_fitting_init_pars(
-            args.band, inparam.initvsini, order, 
+            args.band, inparam.initvsini, order,
             inparam.initvsini2, float(args.fluxratio)
             )
     else:
@@ -646,7 +646,7 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
     if np.isnan(initguesses) == True:
         logger.warning(f'  --> Previous run of {night} found it '
                                 'inadequate (nan), skipping...')
-        return (nightsout, rvsminibox, parfitminibox, vsiniminibox, 
+        return (nightsout, rvsminibox, parfitminibox, vsiniminibox,
                     tagsminibox, rvsminibox2, vsiniminibox2)
 
 
@@ -677,7 +677,7 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
         else:
             sys.exit(
                 f'EXIT, beam (nodding) can only be A or B, getting {beam}...')
-        
+
         #-------------------------------------------------------------------------------
         # Load synthetic telluric template generated during Step 1.
         A0loc = f'./Output/{args.targname}_{args.band}/A0Fits/'\
@@ -702,7 +702,7 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
             logger.warning(f'  --> TELFIT ENCOUNTERED CRITICAL ERROR IN ORDER: '
                                 f'{order} NIGHT: {night}, skipping...')
 
-            return (nightsout, rvsminibox, parfitminibox, vsiniminibox, 
+            return (nightsout, rvsminibox, parfitminibox, vsiniminibox,
                         tagsminibox, rvsminibox2, vsiniminibox2)
 
         watm, satm, a0contx, continuum, molnames, watmmols, satmmols = setup_tel(
@@ -749,7 +749,7 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
                 'Only {} unmasked pixels for {} order {}, SKIP'.format(
                     len(s_piece[testmask]), night, order
                     ))
-            return (nightsout, rvsminibox, parfitminibox, vsiniminibox, 
+            return (nightsout, rvsminibox, parfitminibox, vsiniminibox,
                         tagsminibox, rvsminibox2, vsiniminibox2)
 
         # Save data for second template cutting after optimization cycle 1 done
@@ -918,7 +918,9 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
                     'twave',  's', 's2',
                     'twave',  'ts', 's1s2']
 
-        optgroup = optgroup1.copy()
+        optgroup = optgroup1.copy();
+        initstellpow2 = par_in[25]
+        par_in[25] = 0.
 
         nk = 1
 
@@ -946,7 +948,7 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
                 parfit = parfit_1.copy()
                 CRmaskF = cr_masker(parfit, fitobj, args.binary)
 
-                smod,chi,w,cont = fmod(parfit, fitobj)
+                smod,chi,w,cont = fmod(parfit, fitobj,binary=args.binary)
                 molmask = []
                 for www in maskwaves:
                     ind1 = fitobj.x[(abs(w-www[0]) == np.min(abs(w-www[0])))][0]
@@ -962,7 +964,8 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
                     masterbeam, CRmaskF, initwave, molmask)
 
                 if args.binary:
-                    optgroup = optgroup2.copy()
+                    optgroup = optgroup2.copy();
+                    par_in[25] = initstellpow2
                     fitobj.addsecondary(mwave_in2, mflux_in2, rebin2to1)
 
         parfit = parfit_1.copy()
@@ -1051,7 +1054,7 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
                 rvsminibox[t]   = np.nan
                 vsiniminibox[t] = np.nan
 
-    return (nightsout, rvsminibox, parfitminibox, vsiniminibox, 
+    return (nightsout, rvsminibox, parfitminibox, vsiniminibox,
                 tagsminibox, rvsminibox2, vsiniminibox2)
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
@@ -1071,7 +1074,7 @@ if __name__ == '__main__':
     if args.binary:
         initvsini2 = float(args.initvsini2)
         vsinivary2 = float(args.vsinivary2)
-        
+
         check_user_input(args, singleORdouble=2)
         check_if_template_exist(args, singleORdouble=2)
 
@@ -1093,7 +1096,7 @@ if __name__ == '__main__':
 
     #------------------------------
 
-    if args.binary: 
+    if args.binary:
         initguesses, initguesses_show, initguesses2 = setup_init_rv_guess(args)
     else:
         initguesses, initguesses_show = setup_init_rv_guess(args)
@@ -1181,8 +1184,8 @@ PLUS BINARY PARAMETERS:
 
     # Save pars in class for future use
     inparam = InParams(
-        inpath, outpath, initvsini, vsinivary, args.plotfigs, initguesses, 
-        bvcs, tagsA, tagsB, nightsFinal, mwave0, mflux0, None, xbounddict, 
+        inpath, outpath, initvsini, vsinivary, args.plotfigs, initguesses,
+        bvcs, tagsA, tagsB, nightsFinal, mwave0, mflux0, None, xbounddict,
         maskdict
         )
 
@@ -1199,7 +1202,7 @@ PLUS BINARY PARAMETERS:
     #-------------------------------------------------------------------------------
 
     # Divide between nights where IGRINS mounting was loose (L) and when
-    # it was tight (T). All statistical analysis will be performed separately 
+    # it was tight (T). All statistical analysis will be performed separately
     # for these two datasets.
     nights    = inparam.nights
     intnights = np.array([int(i[:8]) for i in nights])
@@ -1290,13 +1293,13 @@ For H band RVs: We do not expect any systematic changes in the H band as the
 
         if args.binary:
             save_raw_box(
-                args, nights, inparam, name, order, 
+                args, nights, inparam, name, order,
                 nightsbox, rvbox, parfitbox, vsinibox, tagbox,
                 rvbox2=rvbox2, vsinibox2=vsinibox2
                 )
         else:
             save_raw_box(
-                args, nights, inparam, name, order, 
+                args, nights, inparam, name, order,
                 nightsbox, rvbox, parfitbox, vsinibox, tagbox
                 )
 
@@ -1503,13 +1506,13 @@ For H band RVs: We do not expect any systematic changes in the H band as the
             Nind = np.where(intnights == int(nightsFinal[n][:8]))[0]
 
             rvfinal, stdfinal, vsinifinal, jds_out = combine_rvs_between_orders(
-                n, sigma_ON2, rvmasterbox, vsinibox, jds, rvfinal, 
+                n, sigma_ON2, rvmasterbox, vsinibox, jds, rvfinal,
                 stdfinal, vsinifinal, orders, Nind, nights_use
                 )
 
             if args.binary:
                 rvfinal2, stdfinal2, vsinifinal2, _ = combine_rvs_between_orders(
-                    n, sigma_ON2bi, rvmasterbox2, vsinibox2, jds, rvfinal2, 
+                    n, sigma_ON2bi, rvmasterbox2, vsinibox2, jds, rvfinal2,
                     stdfinal2, vsinifinal2, orders, Nind, extra_err=True
                     )
 
@@ -1532,7 +1535,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the
         #-------------------------------------------------------------------------------
         # Save results to fits file separately for each tight/loose dataset
         name_list = [
-            'NIGHT', 'JD', 'RVBOX', 'STDBOX', 'Sigma_method2', 'Sigma_ON2', 
+            'NIGHT', 'JD', 'RVBOX', 'STDBOX', 'Sigma_method2', 'Sigma_ON2',
             'RVfinal', 'STDfinal', 'VSINI'
             ]
         data_list = [
@@ -1540,33 +1543,33 @@ For H band RVs: We do not expect any systematic changes in the H band as the
             sigma_ON2, rvfinal, stdfinal, vsinifinal
             ]
         format_list = [
-            '8A', 'D', f'{len(orders)}D', f'{len(orders)}D', 'D', 
+            '8A', 'D', f'{len(orders)}D', f'{len(orders)}D', 'D',
             f'{len(orders)}D', 'D', 'D', 'D'
             ]
-        
+
         if args.mode=='STD':
             name_list.extend(['Sigma_O2', 'Sigma_ABbar2'])
             data_list.extend([sigma_O2, sigma_ABbar2])
             format_list.extend(['D', 'D'])
-        
+
         elif args.binary:
             name_list.extend(
-                ['RVBOX2', 'STDBOX2', 'Sigma_ON2bi', 'RV2final', 'STD2final', 
+                ['RVBOX2', 'STDBOX2', 'Sigma_ON2bi', 'RV2final', 'STD2final',
                 'VSINI2']
                 )
             data_list.extend(
-                [rvmasterbox2, stdmasterbox2, sigma_ON2bi, rvfinal2, 
+                [rvmasterbox2, stdmasterbox2, sigma_ON2bi, rvfinal2,
                 stdfinal2, vsinifinal2]
                 )
             format_list.extend(
-                [f'{len(orders)}D', f'{len(orders)}D', f'{len(orders)}D', 
+                [f'{len(orders)}D', f'{len(orders)}D', f'{len(orders)}D',
                 'D', 'D', 'D']
-                )      
+                )
 
         cc = []
         for nn, dd, ff in zip(name_list, data_list, format_list):
             cc.append(
-                _make_fits_ColDefs(nn, dd, ff) 
+                _make_fits_ColDefs(nn, dd, ff)
                 )
         cols  = fits.ColDefs(cc)
 
@@ -1584,7 +1587,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the
                 '{}/{}/RVresultsAdvanced.fits'.format(
                     inparam.outpath, name),
                 overwrite=True)
-        
+
         #-------------------------------------------------------------------------------
         # Combine final RVs from both tight and loose mounting data sets
         nightsCombined     = np.concatenate((nightsCombined, nights_use))
@@ -1626,6 +1629,17 @@ For H band RVs: We do not expect any systematic changes in the H band as the
                 np.nanmean(vsinifinal),
                 np.nanstd(vsinifinal) )
                 )
+            if args.binary:
+                logger.info(
+                    'Secondary RV mean = {:1.4f} km/s, std = {:1.4f} km/s'.format(
+                    np.nanmean(rvfinal2),
+                    np.nanstd(rvfinal2) )
+                    )
+                logger.info(
+                    'Secondary vsini mean = {:1.4f} km/s, std = {:1.4f} km/s'.format(
+                    np.nanmean(vsinifinal2),
+                    np.nanstd(vsinifinal2) )
+                    )
 
     #-------------------------------------------------------------------------------
 
@@ -1645,12 +1659,12 @@ For H band RVs: We do not expect any systematic changes in the H band as the
 
         outplotter_rv_combind(
             xscale, rvp, stdp, args, inparam, name, ara, kind, nightsT, nightsL)
-    
+
     #-------------------------------------------------------------------------------
     # Output combined final results to fits file
     name_list = ['NIGHT', 'JD', 'RVfinal', 'STDfinal', 'VSINI']
     data_list = [
-        nightsCombined, jdsCombined, rvfinalCombined, stdfinalCombined, 
+        nightsCombined, jdsCombined, rvfinalCombined, stdfinalCombined,
         vsinifinalCombined
         ]
     format_list = [f'{len(nights[0])}A', 'D', 'D', 'D', 'D']
@@ -1665,7 +1679,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the
     cc = []
     for nn, dd, ff in zip(name_list, data_list, format_list):
         cc.append(
-            _make_fits_ColDefs(nn, dd, ff) 
+            _make_fits_ColDefs(nn, dd, ff)
             )
     cols  = fits.ColDefs(cc)
 
