@@ -4,7 +4,7 @@ from Engine.set_argparse import _argparse_step1
 from Engine.IO_AB import setup_templates_tel, init_fitsread, setup_outdir
 from Engine.clips import basicclip_above
 from Engine.contfit import a0cont
-from Engine.classes import (FitObjs, InParamsA0, 
+from Engine.classes import (FitObjs, InParamsA0,
                             OrderDictCla, _setup_bound_cut)
 from Engine.rebin_jv import rebin_jv
 from Engine.rotint import rotint
@@ -16,7 +16,7 @@ from Engine.crmask import cr_masker
 from Engine.molmask import h2o_masker
 #-------------------------------------------------------------------------------
 
-def a0_fits_write(hdu_0, firstorder, order, outpath, night, masterbeam, 
+def a0_fits_write(hdu_0, firstorder, order, outpath, night, masterbeam,
                     band):
     """Output telfit generated synthetic telluric template
 
@@ -31,8 +31,8 @@ def a0_fits_write(hdu_0, firstorder, order, outpath, night, masterbeam,
     """
 
     if hdu_0 is None:
-        # write a error flag = 1 
-        c0 = fits.Column(name = f'ERRORFLAG{order}', 
+        # write a error flag = 1
+        c0 = fits.Column(name = f'ERRORFLAG{order}',
                             array = np.array([1]),
                             format='K'
                             )
@@ -40,27 +40,27 @@ def a0_fits_write(hdu_0, firstorder, order, outpath, night, masterbeam,
         hdu_1 = fits.BinTableHDU.from_columns(cols)
     else:
         hdu_1 = hdu_0
-    
-    if order == firstorder: 
+
+    if order == firstorder:
         # If first time writing fits file, make up filler primary hdu
         bleh = np.ones((3,3))
         primary_hdu = fits.PrimaryHDU(bleh)
         hdul = fits.HDUList([primary_hdu, hdu_1])
-        hdul.writeto('{}/{}A0_{}treated_{}.fits'.format(outpath, night, 
+        hdul.writeto('{}/{}A0_{}treated_{}.fits'.format(outpath, night,
                                                         masterbeam, band
-                                                        ), 
+                                                        ),
                                                         overwrite=True)
-    
+
     else:
         hh = fits.open('{}/{}A0_{}treated_{}.fits'.format(outpath, night,
-                                                          masterbeam, 
+                                                          masterbeam,
                                                           band)
                                                           )
         hh.append(hdu_1)
-        hh.writeto('{}/{}A0_{}treated_{}.fits'.format(outpath, night, 
-                                                      masterbeam, band), 
+        hh.writeto('{}/{}A0_{}treated_{}.fits'.format(outpath, night,
+                                                      masterbeam, band),
                                                       overwrite=True)
-    
+
 
 def setup_fitting_init_pars(inparam, night, band, masterbeam, order):
     """Setup the initial values for the parameters to be optimized (fitted)
@@ -73,10 +73,10 @@ def setup_fitting_init_pars(inparam, night, band, masterbeam, order):
         order (int): Current run order
 
     Returns:
-        np.array: Initial values for the parameters to be optimized 
+        np.array: Initial values for the parameters to be optimized
     """
-    
-    # Determine whether IGRINS mounting was loose or 
+
+    # Determine whether IGRINS mounting was loose or
     # the night of interest is in question
     if (int(night) < 20180401) or (int(night) > 20190531):
         IPpars = inparam.ips_tightmount_pars[band][masterbeam][order]
@@ -86,10 +86,10 @@ def setup_fitting_init_pars(inparam, night, band, masterbeam, order):
     # start at bucket loc = 1250 +- 100, width = 250 +- 100,
     #  depth = 100 +- 5000 but floor at 0
     centerloc = 1250 if band == 'H' else 1180
-    
-    # Initialize parameter array for optimization as well as half-range values 
+
+    # Initialize parameter array for optimization as well as half-range values
     # for each parameter during the various steps of the optimization.
-    # Many of the parameters initialized here will be changed throughout the 
+    # Many of the parameters initialized here will be changed throughout the
     # code before optimization and in between optimization steps.
 
     parA0 = np.array([
@@ -117,8 +117,12 @@ def setup_fitting_init_pars(inparam, night, band, masterbeam, order):
         0.0,       #21: Continuum quartic component
         0.0,       #22: Continuum quintic component
         0.0,       #23: Continuum hexic component
+        0.0,       #24: secondary par
+        0.0,       #25: secondary par
+        0.0,       #26: secondary par
+        0.0        #27: secondary par
     ])
-    
+
     return parA0
 
 
@@ -127,7 +131,7 @@ def setup_fitting_init_pars(inparam, night, band, masterbeam, order):
     Parameters
     ----------
     use_sets : list with str
-        
+
 
     Returns
     -------
@@ -147,15 +151,15 @@ def base_dpars_dict(use_sets, band, order):
         dpars (dict): Optimize parameters' variable ranges
         c_order (int): Continuum fitted orders
     """
-    
+
     #                     | 0    1    2    3 | | 4 | | 5 | | 6    7    8    9 | |10  11 12| |13 14| |15   16   17   18   19|  |20   21   22    23|
     dpars_org = {
-        'cont' : np.array([0.0, 0.0, 0.0, 0.0,  0.0,  0.0,  0.0, 0.0, 0.0, 0.0,  1e7, 1, 1,  0, 0,   0.0, 0.0, 0.0, 0.0, 0.0,  1.0, 1.0, 1.0, 1.0]),
-        'twave': np.array([0.0, 0.0, 0.0, 1.0,  0.0,  0.0,  1.0, 1.0, 1.0, 1.0,  0.0, 0, 0,  0, 0,   0.0, 0.0, 0.0, 0.0, 0.0,  0.0, 0.0, 0.0, 0.0]),
-        'ip'   : np.array([0.0, 0.0, 0.0, 0.0,  0.0,  0.5,  0.0, 0.0, 0.0, 0.0,  0.0, 0, 0,  0, 0,   0.0, 0.0, 0.0, 0.0, 0.0,  0.0, 0.0, 0.0, 0.0]),
-        't'    : np.array([0.0, 0.0, 0.0, 1.0,  0.0,  0.0,  0.0, 0.0, 0.0, 0.0,  0.0, 0, 0,  0, 0,   0.0, 0.0, 0.0, 0.0, 0.0,  0.0, 0.0, 0.0, 0.0]),
+        'cont' : np.array([0.0, 0.0, 0.0, 0.0,  0.0,  0.0,  0.0, 0.0, 0.0, 0.0,  1e7, 1, 1,  0, 0,   0.0, 0.0, 0.0, 0.0, 0.0,  1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0]),
+        'twave': np.array([0.0, 0.0, 0.0, 1.0,  0.0,  0.0,  1.0, 1.0, 1.0, 1.0,  0.0, 0, 0,  0, 0,   0.0, 0.0, 0.0, 0.0, 0.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+        'ip'   : np.array([0.0, 0.0, 0.0, 0.0,  0.0,  0.5,  0.0, 0.0, 0.0, 0.0,  0.0, 0, 0,  0, 0,   0.0, 0.0, 0.0, 0.0, 0.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
+        't'    : np.array([0.0, 0.0, 0.0, 1.0,  0.0,  0.0,  0.0, 0.0, 0.0, 0.0,  0.0, 0, 0,  0, 0,   0.0, 0.0, 0.0, 0.0, 0.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]),
         }
-    
+
     # blaze fitting order setting
     if band == 'H':
         if order in [13]:
@@ -179,20 +183,20 @@ def base_dpars_dict(use_sets, band, order):
             # fit a hexic (6) continuum (default)
             c_order = 6
             pass
-        
+
     dpars = {k: v for k, v in dpars_org.items() if k in use_sets}
-    
+
     return dpars, c_order
 
 
 def main(args, inparam, jerp, orders, masterbeam, i):
-    """Main function for A0 fitting that will be threaded over 
+    """Main function for A0 fitting that will be threaded over
     by multiprocessing
     """
 
     order = orders[jerp]            # current looped order
     night = str(inparam.nights[i])  # multiprocess assigned night
-    firstorder = orders[0]          # First order that will be analyzed, 
+    firstorder = orders[0]          # First order that will be analyzed,
                                     # related to file writing
 
     if args.debug:
@@ -206,7 +210,7 @@ def main(args, inparam, jerp, orders, masterbeam, i):
                                                     mp.current_process().pid
                                                     ))
     #-------------------------------------------------------------------------------
-           
+
     bound_cut = _setup_bound_cut(inparam.bound_cut_dic, args.band, order)
 
     ### Load relevant A0 spectrum
@@ -224,7 +228,7 @@ def main(args, inparam, jerp, orders, masterbeam, i):
     try:
         s2n = a0fluxlist/u
         if np.nanmedian(s2n) < float(args.SN_cut):
-            logger.warning('  --> Bad S/N {:1.3f} < {} for {}{}, SKIP'.format( 
+            logger.warning('  --> Bad S/N {:1.3f} < {} for {}{}, SKIP'.format(
                 np.nanmedian(s2n), args.SN_cut, night, masterbeam)
                 )
             pre_err = True
@@ -242,7 +246,7 @@ def main(args, inparam, jerp, orders, masterbeam, i):
         pre_err = True
         logger.warning(f'  --> NIGHT {night}, ORDER {order} '
                             'HIT ERROR (flux error = 0) DURING PRE_OPT')
-        a0_fits_write(None, firstorder, order, inparam.outpath, night, 
+        a0_fits_write(None, firstorder, order, inparam.outpath, night,
                         masterbeam, args.band)
         return
 
@@ -260,12 +264,12 @@ def main(args, inparam, jerp, orders, masterbeam, i):
     a0fluxlist = basicclip_above(a0fluxlist, a0fluxlist, nzones)
 
     if masterbeam == 'B':
-        # Compute rough blaze function estimate. 
+        # Compute rough blaze function estimate.
         # Better fit will be provided by Telfit later.
         continuum = a0cont(a0wavelist, a0fluxlist, night, order, args.band)
         a0masterwave = a0wavelist.copy()
         a0masterwave *= 1e4 # um --> AA
-        
+
         # Normalize continuum level of telluric atlas in the given band
         if args.band == 'H':
             contlevel = np.max(
@@ -278,7 +282,7 @@ def main(args, inparam, jerp, orders, masterbeam, i):
 
         # Trim telluric template to relevant wavelength range
         satm_in = inparam.satm[
-            (inparam.watm > np.min(a0wavelist)*1e4 - 11) & 
+            (inparam.watm > np.min(a0wavelist)*1e4 - 11) &
             (inparam.watm < np.max(a0wavelist)*1e4 + 11)
             ]
         watm_in = inparam.watm[
@@ -286,18 +290,18 @@ def main(args, inparam, jerp, orders, masterbeam, i):
             (inparam.watm < np.max(a0wavelist)*1e4 + 11)
             ]
         satm_in /= contlevel
-        
-        a0x = a0x[ (a0wavelist*1e4 > np.min(watm_in)+5) & 
+
+        a0x = a0x[ (a0wavelist*1e4 > np.min(watm_in)+5) &
                    (a0wavelist*1e4 < np.max(watm_in)-5)
                 ]
-        continuum = continuum[ (a0wavelist*1e4 > np.min(watm_in)+5) & 
+        continuum = continuum[ (a0wavelist*1e4 > np.min(watm_in)+5) &
                                 (a0wavelist*1e4 < np.max(watm_in)-5)
                             ]
-    
+
     elif masterbeam == 'A':
-    
+
         A0loc = f'./Output/{args.targname}_{args.band}/A0Fits/{night[:8]}A0_Btreated_{args.band}.fits'
-        
+
         try:
             hdulist = fits.open(A0loc)
             # Find corresponding table in fits file, given the tables do not go
@@ -309,27 +313,27 @@ def main(args, inparam, jerp, orders, masterbeam, i):
                     num_orders += 1
                 except:
                     continue
-            fits_layer = [ i for i in np.arange(num_orders)+1 if 
+            fits_layer = [ i for i in np.arange(num_orders)+1 if
                             int(hdulist[i].columns[0].name[9:]) == order ][0]
             tbdata = hdulist[ fits_layer ].data
             flag = np.array(tbdata[f'ERRORFLAG{order}'])[0]
-            
-            # Check whether Telfit hit critical error in Step 1 for the chosen 
+
+            # Check whether Telfit hit critical error in Step 1 for the chosen
             # order with this night. If so, skip.
             if flag == 1:
                 logger.warning(f'  --> TELFIT ENCOUNTERED CRITICAL ERROR '
                                 f'IN ORDER: {order} NIGHT: {night}, skipping...')
-                a0_fits_write(None, firstorder, order, inparam.outpath, 
+                a0_fits_write(None, firstorder, order, inparam.outpath,
                                 night, masterbeam, args.band)
                 return
-            
+
         except IOError:
             logger.warning(f'  --> No A0-fitted template for night {night}, '
                                 'skipping...')
-            a0_fits_write(None, firstorder, order, inparam.outpath, night, 
+            a0_fits_write(None, firstorder, order, inparam.outpath, night,
                             masterbeam, args.band)
             return
-        
+
         watm = tbdata['WATM'+str(order)]
         satm = tbdata['SATM'+str(order)]
         a0contx    = tbdata['X'+str(order)]
@@ -338,80 +342,80 @@ def main(args, inparam, jerp, orders, masterbeam, i):
         # Remove extra rows leftover from having columns of unequal length
         satm = satm[(watm != 0)]
         watm = watm[(watm != 0)]
-        # Set very low points to zero so that they don't go to NaN when taken 
+        # Set very low points to zero so that they don't go to NaN when taken
         # to an exponent by template power in fmodel_chi
-        satm[(satm < 1e-4)] = 0. 
+        satm[(satm < 1e-4)] = 0.
         a0contx = a0contx[(continuum != 0)]
         continuum = continuum[(continuum != 0)]
-        
+
         satm_in_fine = satm[(watm > np.min(a0wavelist)*1e4 - 11) &
                        (watm < np.max(a0wavelist)*1e4 + 11)
                        ]
-        watm_in_fine = watm[(watm > np.min(a0wavelist)*1e4 - 11) & 
+        watm_in_fine = watm[(watm > np.min(a0wavelist)*1e4 - 11) &
                        (watm < np.max(a0wavelist)*1e4 + 11)
                        ]
-        
+
         coarse_wavesep = 0.10 #AA
         coarse_nstep   = int((watm_in_fine[-1]-watm_in_fine[0])/coarse_wavesep)
 
         watm_in = np.linspace(watm_in_fine[0],watm_in_fine[-1],coarse_nstep)
         satm_in = rebin_jv(watm_in_fine,satm_in_fine,watm_in,False)
-        satm_in[(satm_in < 1e-4)] = 0. 
-        
-        a0x = a0x[ (a0wavelist*1e4 > np.min(watm_in)+5) & 
+        satm_in[(satm_in < 1e-4)] = 0.
+
+        a0x = a0x[ (a0wavelist*1e4 > np.min(watm_in)+5) &
                    (a0wavelist*1e4 < np.max(watm_in)-5)
                    ]
         continuum = rebin_jv(a0contx, continuum, a0x, False)
-        
-        
-    a0fluxlist = a0fluxlist[ (a0wavelist*1e4 > np.min(watm_in)+5) & 
+
+
+    a0fluxlist = a0fluxlist[ (a0wavelist*1e4 > np.min(watm_in)+5) &
                              (a0wavelist*1e4 < np.max(watm_in)-5)
                             ]
-    a0u = a0u[ (a0wavelist*1e4 > np.min(watm_in)+5) & 
+    a0u = a0u[ (a0wavelist*1e4 > np.min(watm_in)+5) &
                (a0wavelist*1e4 < np.max(watm_in)-5)
                ]
-    a0wavelist = a0wavelist[ (a0wavelist*1e4 > np.min(watm_in)+5) & 
+    a0wavelist = a0wavelist[ (a0wavelist*1e4 > np.min(watm_in)+5) &
                              (a0wavelist*1e4 < np.max(watm_in)-5)
                              ]
-   
+
     # Initialize parameter array for optimization
-    parA0 = setup_fitting_init_pars(inparam, night, args.band, 
+    parA0 = setup_fitting_init_pars(inparam, night, args.band,
                                         masterbeam, order)
 
     # Define main spectrum
     s = a0fluxlist.copy()
     x = a0x.copy()
     u = a0u.copy()
-    
+
     # Check if we're including part of blaze where dip occurs
     fitdip = False
     if masterbeam == 'A':
         if ( (x[0] < parA0[15]-parA0[16]) and (x[-1] > parA0[15]-parA0[16]) ) \
-            or ( (x[0] < parA0[15]+parA0[16]) and (x[-1] > parA0[15]+parA0[16]) ): 
+            or ( (x[0] < parA0[15]+parA0[16]) and (x[-1] > parA0[15]+parA0[16]) ):
             fitdip = True
-            
+
     # Get initial guess for cubic wavelength solution from reduction pipeline
     f = np.polyfit(a0x, a0wavelist, 3)
     q = np.poly1d(f)
     initwave = q(a0x)*1e4
-    
+
     # Collect all fit variables into one class
-    fitobj = FitObjs(s, x, u, continuum, watm_in, satm_in, None, None, [], 
-                        masterbeam, 
-                        [np.array([], dtype=int), np.array([], dtype=int)], 
+    fitobj = FitObjs(s, x, u, continuum, watm_in, satm_in, None, None, [],
+                        masterbeam,
+                        [np.array([], dtype=int), np.array([], dtype=int)],
                         initwave, [])
 
-    # Initialize an array that puts hard bounds on vsini and the instrumental 
+    # Initialize an array that puts hard bounds on vsini and the instrumental
     #  resolution to make sure they do not diverge to unphysical values
     optimize = True
     par_in = parA0.copy()
-    
+
     # setup fitting boundary
-    dpars, c_order = base_dpars_dict(['cont', 'twave', 'ip'], 
+    dpars, c_order = base_dpars_dict(['cont', 'twave', 'ip'],
                                         args.band, order)
     if fitdip:
         # setting for the Blaze dip
-        dpars['cont'][15:20] = np.array([10.0, 30.0, 0.2, 50.0, 0.2]) 
+        dpars['cont'][15:20] = np.array([10.0, 30.0, 0.2, 50.0, 0.2])
 
         hardbounds = [
             par_in[4]  - 0,                 par_in[4]  + 0,
@@ -432,30 +436,30 @@ def main(args, inparam, jerp, orders, masterbeam, i):
     if hardbounds[2] < 1:   hardbounds[2] = 1
 
     # Begin optimization.
-    # For every pre-Telfit spectral fit, first fit just template 
-    # strength/rv/continuum, then just wavelength solution, then template/continuum 
-    # again, then ip, then finally wavelength. Normally would fit for all but 
-    # wavelength at the end, but there's no need for the pre-Telfit fit, since 
+    # For every pre-Telfit spectral fit, first fit just template
+    # strength/rv/continuum, then just wavelength solution, then template/continuum
+    # again, then ip, then finally wavelength. Normally would fit for all but
+    # wavelength at the end, but there's no need for the pre-Telfit fit, since
     # all we want is a nice wavelength solution to feed into Telfit.
 
-    optgroup = ['twave', 'cont', 
+    optgroup = ['twave', 'cont',
                 'twave', 'cont',
                 'twave', 'cont']
-    
-    # Try 3 different levels of telluric template power to start with. Save 
-    # the chisqs and best fit pars from each, compare, and then resume 
+
+    # Try 3 different levels of telluric template power to start with. Save
+    # the chisqs and best fit pars from each, compare, and then resume
     # optimization from the best pars.
     chisqs = []
     parfitsaves = []
-    
+
     for telval in [0.5, 1.0, 1.5]:
-        
+
         parstart = par_in.copy()
         parstart[3] = telval
 
         nk = 1
         for optkind in optgroup:
-            parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, 
+            parfit_1 = optimizer(parstart, dpars[optkind], hardbounds,
                                     fitobj, optimize)
             if args.debug == True:
                 outplotter_tel(parfit_1, fitobj,
@@ -469,20 +473,20 @@ def main(args, inparam, jerp, orders, masterbeam, i):
         parfitsaves.append(parfit_1)
 
     parfit = parfitsaves[np.argmin(chisqs)]
-    
+
     # If telluric lines too shallow, intentionally cause exception to trigger except
-    if parfit[3] < 0.2 or np.min(chisqs) > 1e9: 
+    if parfit[3] < 0.2 or np.min(chisqs) > 1e9:
         logger.warning(f'  --> NIGHT {night}, ORDER {order} HAD TOO LITTLE '
                             'ABSORPTION OR DEVIATED FROM LIVINGSTON TOO MUCH')
-        a0_fits_write(None, firstorder, order, inparam.outpath, night, 
+        a0_fits_write(None, firstorder, order, inparam.outpath, night,
                         masterbeam, args.band)
         return
-    
+
      # If A beam and fitting cont dip, do one more cycle of optimization
     if fitdip:
         parstart = parfit.copy()
         for optkind in optgroup:
-            parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, 
+            parfit_1 = optimizer(parstart, dpars[optkind], hardbounds,
                                     fitobj, optimize)
             if args.debug == True:
                 outplotter_tel(parfit_1, fitobj,
@@ -493,7 +497,7 @@ def main(args, inparam, jerp, orders, masterbeam, i):
             nk += 1
         parfit = parfit_1.copy()
 
-        # If dip present, correct it out of data before running Telfit 
+        # If dip present, correct it out of data before running Telfit
         # to enable better fit
         cont = parfit[10] + parfit[11]*fitobj.x+ parfit[12]*(fitobj.x**2) \
                 + parfit[20]*(fitobj.x**3) + parfit[21]*(fitobj.x**4) \
@@ -505,7 +509,7 @@ def main(args, inparam, jerp, orders, masterbeam, i):
 
         bucket[(fitobj.x >= (parfit[15]+parfit[16]/2-parfit[18])) \
             & (fitobj.x <= (parfit[15]+parfit[16]/2))] += parfit[19]
-        
+
         cont -= bucket
 
         cont *= continuum
@@ -514,30 +518,30 @@ def main(args, inparam, jerp, orders, masterbeam, i):
         a0fluxlistforTelfit = a0fluxlist / justdip
     else:
         a0fluxlistforTelfit = a0fluxlist.copy()
-    
+
     # Plot results
-    if inparam.plotfigs: 
-        outplotter_tel(parfit, fitobj, 
-                        f'BeforeTelFit_Order{order}_{night}_{masterbeam}', 
+    if inparam.plotfigs:
+        outplotter_tel(parfit, fitobj,
+                        f'BeforeTelFit_Order{order}_{night}_{masterbeam}',
                         inparam, args, order)
 
     # Get best fit wavelength solution
     xgrid = (initwave - np.median(initwave)) / (np.max(initwave) - np.min(initwave))
     dx = chebyshev.chebval(xgrid, parfit[6:10])
     a0w_out_fit = initwave + dx
-        
+
     fwhmraw = parfit[5] + parfit[13]*(x) + parfit[14]*(x**2)
     resolution_max = np.max(
         a0w_out_fit)/(np.min(fwhmraw)*np.min(np.diff(a0w_out_fit)) )
     # not max because pixels get skipped
     resolution_min = np.min(
-        a0w_out_fit)/(np.max(fwhmraw)*np.median(np.diff(a0w_out_fit)) ) 
+        a0w_out_fit)/(np.max(fwhmraw)*np.median(np.diff(a0w_out_fit)) )
     resolution_med = np.median(
-        a0w_out_fit)/(np.median(fwhmraw)*np.median(np.diff(a0w_out_fit)) ) 
+        a0w_out_fit)/(np.median(fwhmraw)*np.median(np.diff(a0w_out_fit)) )
 
     resolutions = [resolution_min, resolution_med, resolution_max]
-        
-    # Feed this new wavelength solution into Telfit. Returns high-res synthetic 
+
+    # Feed this new wavelength solution into Telfit. Returns high-res synthetic
     # telluric template, parameters of that best fit, and blaze function best fit
     watm1, satm1, telfitparnames, telfitpars, a0contwave, continuum, molnames, molwaves, molfluxes = telfitter(
         a0w_out_fit, a0fluxlistforTelfit, a0u, inparam, night, order, args, masterbeam, c_order, resolutions, logger
@@ -548,10 +552,10 @@ def main(args, inparam, jerp, orders, masterbeam, i):
         logger.warning(
             f'  --> TELFIT ENCOUNTERED CRITICAL ERROR IN ORDER: {order} '
                 f'NIGHT: {night}')
-        a0_fits_write(None, firstorder, order, inparam.outpath, night, 
+        a0_fits_write(None, firstorder, order, inparam.outpath, night,
                         masterbeam, args.band)
         return
-        
+
     else: # If Telfit exited normally, proceed.
         #  Save best blaze function fit
         continuum = rebin_jv(a0contwave, continuum, a0w_out_fit, False)
@@ -576,10 +580,10 @@ def main(args, inparam, jerp, orders, masterbeam, i):
         cols = fits.ColDefs(collist)
         hdu_1 = fits.BinTableHDU.from_columns(cols)
 
-        a0_fits_write(hdu_1, firstorder, order, inparam.outpath, 
+        a0_fits_write(hdu_1, firstorder, order, inparam.outpath,
                         night, masterbeam, args.band)
 
- 
+
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 
@@ -588,7 +592,7 @@ def use_w(args):
     """
     try:
         bounddata = Table.read(
-            f'./Input/UseWv/WaveRegions_{args.WRegion}_{args.band}.csv', 
+            f'./Input/UseWv/WaveRegions_{args.WRegion}_{args.band}.csv',
             format='csv')
     except IOError:
         sys.exit(
@@ -612,11 +616,12 @@ def use_w(args):
 
         m_orders_unique = np.unique(m_order)
 
-        # For each order specified, find what pixel numbers correspond to the 
+        # For each order specified, find what pixel numbers correspond to the
         # wavelength bounds presented.
-        # If multiple wavelength bounds given for a single order, output a 
+        # If multiple wavelength bounds given for a single order, output a
         # pixel mask between the two, as well.
         for o in range(len(m_orders_unique)):
+
             pixs = []
             mini = np.where(m_order == m_orders_unique[o])[0]
             for j in range(len(mini)):
@@ -641,10 +646,10 @@ def use_w(args):
                     ))
 
 #-------------------------------------------------------------------------------
-#-------------------------------------------------------------------------------
+#-------------------------------------------------  ------------------------------
 #-------------------------------------------------------------------------------
 if __name__ == '__main__':
-    
+
     args = _argparse_step1()
     inpath   = './Input/{}/'.format(args.targname)
     cdbs_loc = '~/cdbs/'
@@ -705,9 +710,9 @@ if __name__ == '__main__':
     print('This will take a while..........')
 
     # Read in newly created pixel regions file to get list of orders to analyze.
-    # Note that only target star observations will have their fits limited to 
+    # Note that only target star observations will have their fits limited to
     # the wavelength regions specified.
-    # For A0 observations, only the orders specified will be analyzed, but each 
+    # For A0 observations, only the orders specified will be analyzed, but each
     # order will be fit as far as there is significant telluric absoprtion.
     bounddata = Table.read(
         f'./Input/UseWv/XRegions_{args.WRegion}_{args.band}.csv', format='csv')
@@ -717,7 +722,7 @@ if __name__ == '__main__':
     xbounddict = {orders[i]:np.array([starts[i],ends[i]]) for i in range(len(starts))}
 
     ## Collect relevant file information from Predata files
-    A0data = Table.read(f'./Input/Prepdata/Prepdata_A0_{args.targname}.txt', 
+    A0data = Table.read(f'./Input/Prepdata/Prepdata_A0_{args.targname}.txt',
     format='ascii')
 
     ind    = [i != 'NA' for i in A0data['humid']]
@@ -746,12 +751,12 @@ if __name__ == '__main__':
         logger.info('''
 WARNING: Some of these nights were when the IGRINS K band was defocused!
 For K band RVs: IGRINS RV will take this into account and process these nights
-                slightly differently. When you run Step 3, RVs will be output 
-                in two formats: one with the defocus nights separated, and the 
+                slightly differently. When you run Step 3, RVs will be output
+                in two formats: one with the defocus nights separated, and the
                 other with all nights together.
-For H band RVs: We do not expect any systematic changes in the H band as the 
-                result of the defocus. IGRINS RV will process defocus nights 
-                the same way as the others, but when you run Step 3, will still 
+For H band RVs: We do not expect any systematic changes in the H band as the
+                result of the defocus. IGRINS RV will process defocus nights
+                the same way as the others, but when you run Step 3, will still
                 output the results in two formats like it does with the K band.
 ''')
 
@@ -762,7 +767,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the
     watm, satm, mwave0, mflux0 = setup_templates_tel()
 
     inparam = InParamsA0(inpath, outpath, args.plotfigs, tags, nightsFinal,
-                            humids, temps, zds, press, obs, watm, satm, 
+                            humids, temps, zds, press, obs, watm, satm,
                             mwave0, mflux0, cdbs_loc, xbounddict, None)
 
     #--------------------------------------------------------------------------
@@ -773,15 +778,16 @@ For H band RVs: We do not expect any systematic changes in the H band as the
     # Run order by order, multiprocessing over nights within an order
     print('Processing the B nods first...')
     for jerp in range(len(orders)):
-        if not args.debug: 
+        if not args.debug:
             print('Working on order {} ({:02d}/{:02d})'.format(
                                 orders[jerp], int(jerp+1), len(orders)))
+        main( args, inparam, jerp, orders, 'B',0)
         func = partial(main, args, inparam, jerp, orders, 'B')
         outs = pqdm(np.arange(len(nightsFinal)), func, n_jobs=args.Nthreads)
 
     print('B nods done! Halfway there! \n Now processing the A nods...')
     for jerp in range(len(orders)):
-        if not args.debug: 
+        if not args.debug:
             print('Working on order {} ({:02d}/{:02d})'.format(
                                 orders[jerp], int(jerp+1), len(orders)))
         func = partial(main, args, inparam, jerp, orders, 'A')
