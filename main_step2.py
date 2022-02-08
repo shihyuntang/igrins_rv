@@ -425,7 +425,7 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
     xbounds = inparam.xbounddict[order]
 
     if args.debug:
-        print('Working on order {:02d}, night {:03d}/{:03d} ',
+        print('Working on order {:02d}, night {:03d}/{:03d} '
                 '({}) PID:{}...'.format(int(order),
                                         i+1,
                                         len(inparam.nights),
@@ -724,7 +724,7 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
         if hardbounds[-2] < 0.5:
             hardbounds[-2] = 0.5
 
-    print(hardbounds)
+    
     # Begin optimization. Fit the blaze, the wavelength solution, the telluric
     # template power and RV, the stellar template power and RV, the
     # zero point for the instrumental resolution, and the vsini of the star
