@@ -86,7 +86,7 @@ def _make_dpars(key_name, locs, dpar, numofpars, dpars_org):
     Returns:
         [dict]: dpars_org
     """
-    
+
     init_dpars = np.zeros(numofpars)
     init_dpars[locs] = dpar
 
@@ -108,52 +108,52 @@ def base_dpars_dict(vsini_v1, band, order, numofpars, run_num=1, vsini_v2=-1):
         dpars_org (dict): Sets of optimize parameters' variable ranges
     """
     dpars_org = {}
-    dpars_org = _make_dpars('cont', 
-                            [10, 11, 12, 15, 16, 17,  18,  19, 20, 21, 22, 23], 
-                            [1e7, 1,  1, 10, 30, 0.2, 50, 0.2,  1,  1,  1,  1], 
+    dpars_org = _make_dpars('cont',
+                            [10, 11, 12, 15, 16, 17,  18,  19, 20, 21, 22, 23],
+                            [1e7, 1,  1, 10, 30, 0.2, 50, 0.2,  1,  1,  1,  1],
                             numofpars, dpars_org
                             )
-    dpars_org = _make_dpars('twave', 
-                            [3, 6, 7, 8, 9], 
-                            [1, 1, 1, 1, 1], 
+    dpars_org = _make_dpars('twave',
+                            [3, 6, 7, 8, 9],
+                            [1, 1, 1, 1, 1],
                             numofpars, dpars_org
                             )
-    dpars_org = _make_dpars('ip', 
-                            [5], 
-                            [0.5], 
+    dpars_org = _make_dpars('ip',
+                            [5],
+                            [0.5],
                             numofpars, dpars_org
                             )
-    dpars_org = _make_dpars('s', 
-                            [0, 1], 
-                            [20, 1], 
+    dpars_org = _make_dpars('s',
+                            [0, 1],
+                            [20, 1],
                             numofpars, dpars_org
                             )
-    dpars_org = _make_dpars('v', 
-                            [4], 
-                            [vsini_v1], 
+    dpars_org = _make_dpars('v',
+                            [4],
+                            [vsini_v1],
                             numofpars, dpars_org
                             )
-    dpars_org = _make_dpars('ts', 
-                            [0, 1, 3], 
-                            [20, 1, 1], 
+    dpars_org = _make_dpars('ts',
+                            [0, 1, 3],
+                            [20, 1, 1],
                             numofpars, dpars_org
                             )
 
-    
+
     if vsini_v2 != -1:
-        dpars_org = _make_dpars('s2', 
-                            [24, 25], 
-                            [20, 1], 
+        dpars_org = _make_dpars('s2',
+                            [24, 25],
+                            [20, 1],
                             numofpars, dpars_org
                             )
-        dpars_org = _make_dpars('v2', 
-                            [26], 
-                            [vsini_v2], 
+        dpars_org = _make_dpars('v2',
+                            [26],
+                            [vsini_v2],
                             numofpars, dpars_org
                             )
-        dpars_org = _make_dpars('s1s2', 
-                            [0, 1, 24, 25], 
-                            [5, 1, 20, 1], 
+        dpars_org = _make_dpars('s1s2',
+                            [0, 1, 24, 25],
+                            [5, 1, 20, 1],
                             numofpars, dpars_org
                             )
 
@@ -202,7 +202,7 @@ def trim_obs_data(x, wave, s, u, xbounds):
     u_piece    = u[    (x > xbounds[0]) & (x < xbounds[-1]) ]
     wave_piece = wave[ (x > xbounds[0]) & (x < xbounds[-1]) ]
     x_piece    = x[    (x > xbounds[0]) & (x < xbounds[-1]) ]
-    
+
     return s_piece, u_piece, wave_piece, x_piece
 
 def trim_tel_data(watm, satm, wave_piece, s_piece, u_piece, x_piece):
@@ -290,7 +290,7 @@ def check_user_input(args, singleORdouble=1):
             'STELLAR TEMPLATE. GO TO "./Engine/syn_template/" TO SEE '
             'AVAILABLE TEMPLATES'
             )
-    
+
     if args.template.lower() not in ['synthetic', 'livingston', 'phoenix']:
         sys.exit('ERROR: UNEXPECTED STELLAR TEMPLATE FOR "-t" INPUT!')
 
@@ -353,7 +353,7 @@ def setup_init_rv_guess(args):
                 initguesses2[str(initnights[hrt])] = float(initrvs2[hrt])
 
             return initguesses, initguesses_show, initguesses2
-    
+
     return initguesses, initguesses_show
 
 def mkdir_output_dic(args):
@@ -425,7 +425,7 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
     xbounds = inparam.xbounddict[order]
 
     if args.debug:
-        print('Working on order {:02d}, night {:03d}/{:03d} '
+        print('Working on order {:02d}, night {:03d}/{:03d} ',
                 '({}) PID:{}...'.format(int(order),
                                         i+1,
                                         len(inparam.nights),
@@ -475,7 +475,7 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
 
     if args.binary:
         pars0 = setup_fitting_init_pars(
-            args.band, inparam.initvsini, order, inparam.initvsini2, 
+            args.band, inparam.initvsini, order, inparam.initvsini2,
             float(args.fluxratio)
             )
     else:
@@ -678,19 +678,19 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
         par[24] = initguesses2-inparam.bvcs[night+tag]
     # setup fitting boundary
     if args.binary:
-        dpars1 = base_dpars_dict(inparam.vsinivary, args.band, 
-                                    int(order), len(pars0), 
+        dpars1 = base_dpars_dict(inparam.vsinivary, args.band,
+                                    int(order), len(pars0),
                                     run_num=1,
                                     vsini_v2=inparam.vsinivary2
                                     )
-        dpars2 = base_dpars_dict(inparam.vsinivary, args.band, 
+        dpars2 = base_dpars_dict(inparam.vsinivary, args.band,
                                     int(order), len(pars0),
-                                    run_num=2, 
+                                    run_num=2,
                                     vsini_v2=inparam.vsinivary2)
     else:
-        dpars1 = base_dpars_dict(inparam.vsinivary, args.band, 
+        dpars1 = base_dpars_dict(inparam.vsinivary, args.band,
                                     int(order), len(pars0), run_num=1)
-        dpars2 = base_dpars_dict(inparam.vsinivary, args.band, 
+        dpars2 = base_dpars_dict(inparam.vsinivary, args.band,
                                     int(order), len(pars0), run_num=2)
 
 
@@ -723,6 +723,8 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
         hardbounds.append(par_in[26] + dpars2['v2'][26])
         if hardbounds[-2] < 0.5:
             hardbounds[-2] = 0.5
+
+    print(hardbounds)
     # Begin optimization. Fit the blaze, the wavelength solution, the telluric
     # template power and RV, the stellar template power and RV, the
     # zero point for the instrumental resolution, and the vsini of the star
@@ -749,7 +751,8 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
             'twave',  's','s2',
             'twave',  's','s1s2']
 
-    optgroup = optgroup1.copy()
+    optgroup = optgroup1.copy(); initstellpow2 = par_in[25];
+    par_in[25] = 0.
 
     nk = 1
     for nc, cycle in enumerate(np.arange(cycles), start=1):
@@ -772,6 +775,7 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
 
         if nc == 2:
             optgroup = optgroup2.copy()
+            parstart[25] = initstellpow2
 
     parfit = parfit_1.copy()
 
@@ -870,14 +874,14 @@ if __name__ == '__main__':
     if args.binary:
         initvsini2 = float(args.initvsini2)
         vsinivary2 = float(args.vsinivary2)
-        
+
         check_user_input(args, singleORdouble=2)
         check_if_template_exist(args, singleORdouble=2)
 
     #-------------------------------------------------------------------------------
     # Specify initial RV guesses as a single value applied to all nights
 
-    if args.binary: 
+    if args.binary:
         initguesses, initguesses_show, initguesses2 = setup_init_rv_guess(args)
     else:
         initguesses, initguesses_show = setup_init_rv_guess(args)
@@ -966,7 +970,7 @@ PLUS BINARY PARAMETERS:
 
     filew = open(
         f'./Output/{args.targname}_{args.band}/{iniguess_dir}','w')
-    
+
     if args.binary:
         filew.write('night, bestguess, vsini, bestguess2, vsini2\n')
     else:
@@ -1010,8 +1014,8 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
 
     # Save pars in class for future use
     inparam = InParams(
-        inpath, outpath, initvsini, vsinivary, args.plotfigs, initguesses, 
-        bvcs, tagsA, tagsB, nightsFinal, mwave0, mflux0, None, xbounddict, 
+        inpath, outpath, initvsini, vsinivary, args.plotfigs, initguesses,
+        bvcs, tagsA, tagsB, nightsFinal, mwave0, mflux0, None, xbounddict,
         maskdict
         )
 
@@ -1032,7 +1036,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
 
     # Run order by order, multiprocessing over nights within an order
     func = partial(
-        main, args, inparam, orders, int(args.label_use), trk, step2or3 
+        main, args, inparam, orders, int(args.label_use), trk, step2or3
         )
     outs = pqdm(np.arange(len(nightsFinal)), func, n_jobs=args.Nthreads)
 
@@ -1043,7 +1047,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
         if args.binary:
             filew.write(
                 '{}, {}, {}, {}, {}'.format(
-                    nightout[0], nightout[1], nightout[2], 
+                    nightout[0], nightout[1], nightout[2],
                     nightout[3], nightout[4])
                     )
         else:
