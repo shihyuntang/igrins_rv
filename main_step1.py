@@ -468,7 +468,8 @@ def main(args, inparam, jerp, orders, masterbeam, i):
                                     ), inparam, args, order)
             parstart = parfit_1.copy()
             nk += 1
-        trash, chisq = fmod(parfit_1, fitobj)
+
+        smod,chisq,trash,trash2 = fmod(parfit_1,fitobj,False)
         chisqs.append(chisq)
         parfitsaves.append(parfit_1)
 
@@ -621,6 +622,10 @@ def use_w(args):
         # If multiple wavelength bounds given for a single order, output a
         # pixel mask between the two, as well.
         for o in range(len(m_orders_unique)):
+
+            if m_orders_unique == 9:
+                filew.write('9, 150, 1950, []\n')
+                continue
 
             pixs = []
             mini = np.where(m_order == m_orders_unique[o])[0]
