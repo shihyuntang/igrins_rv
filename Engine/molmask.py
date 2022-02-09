@@ -3,6 +3,16 @@ from Engine.importmodule import *
 from   Engine.rebin_jv import rebin_jv
 import matplotlib.pyplot as plt
 
+def _group_consecutive_numbers_and_get_mask_ranges(ind, waveH2O, halfsep):
+    
+    maskwave_ranges = []
+    for k, g in groupby(enumerate(ind), lambda x:x[0]-x[1]):
+        group = (map(itemgetter(1), g))
+        group = list(map(int, group))
+        maskwave_ranges.append(
+            [waveH2O[group[0]]-halfsep, waveH2O[group[-1]]+halfsep]
+            )
+    return maskwave_ranges
 
 def h2o_masker(
     inparam, args, order, night, watm, satm, molnames, molwaves, 
@@ -34,12 +44,11 @@ def h2o_masker(
 
     ind = np.where(fluxother > fluxH2O)[0]
     halfsep = 0.5*np.median(np.diff(waveH2O))
-    maskwaves = []
-    for k, g in groupby(enumerate(ind), lambda x:x[0]-x[1]):
-        group = (map(itemgetter(1), g))
-        group = list(map(int, group))
-        maskwaves.append(
-            [waveH2O[group[0]]-halfsep, waveH2O[group[-1]]+halfsep])
+    
+    maskwaves = _group_consecutive_numbers_and_get_mask_ranges(
+        ind, waveH2O, halfsep
+        )
+
 
     '''
     if len(maskwaves) > 3:
