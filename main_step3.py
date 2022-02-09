@@ -227,11 +227,11 @@ def setup_tel(args, night, beam, order, tbdata):
 
     watmmols = {}; satmmols = {}
     for mol in molnames:
-            watm1mol = tbdata['WATM'+mol+str(order)]
-            satm1mol = tbdata['SATM'+mol+str(order)]
-            satm1mol = satm1mol[(watm1mol != 0)]
-            watm1mol = watm1mol[(watm1mol != 0)]
-            watmmols[mol] = watm1mol; satmmols[mol] = satm1mol
+        watm1mol = tbdata['WATM'+mol+str(order)]
+        satm1mol = tbdata['SATM'+mol+str(order)]
+        satm1mol = satm1mol[(watm1mol != 0)]
+        watm1mol = watm1mol[(watm1mol != 0)]
+        watmmols[mol] = watm1mol; satmmols[mol] = satm1mol
 
     return watm, satm, a0contx, continuum, molnames, watmmols, satmmols
 
@@ -709,12 +709,14 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
             args, night, beam, order, tbdata
             )
 
-        maskwaves = h2o_masker(inparam, args, order, night, watm, satm,
-                                molnames, watmmols, satmmols)
+        maskwaves = h2o_masker(
+            inparam, args, order, night, watm, satm, molnames, watmmols, 
+            satmmols
+            )
         #-------------------------------------------------------------------------------
 
-        bound_cut = _setup_bound_cut(inparam.bound_cut_dic,
-            args.band, order
+        bound_cut = _setup_bound_cut(
+            inparam.bound_cut_dic, args.band, order
             )
 
         # Load target spectrum
