@@ -23,7 +23,7 @@ import numpy as np
 import pandas as pd
 import time
 
-from itertools import groupby
+from itertools import groupby, chain
 from operator  import itemgetter
 from functools import partial, wraps
 from datetime  import datetime

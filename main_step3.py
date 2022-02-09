@@ -13,7 +13,8 @@ from Engine.outplotter import (outplotter_23, outplotter_rv,
                                     outplotter_rv_combind)
 from Engine.detect_peaks import detect_peaks
 from Engine.crmask    import cr_masker
-from Engine.molmask    import h2o_masker
+from Engine.molmask    import (h2o_masker, mask_wave2pixel_range,
+                                    merge_pixel_masks, nonCO_masker)
 
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
@@ -920,7 +921,7 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
                     'twave',  's', 's2',
                     'twave',  'ts', 's1s2']
 
-        optgroup = optgroup1.copy();
+        optgroup = optgroup1.copy()
         initstellpow2 = par_in[25]
         par_in[25] = 0.
 
@@ -950,25 +951,49 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
                 parfit = parfit_1.copy()
                 CRmaskF = cr_masker(parfit, fitobj, args.binary)
 
-                smod,chi,w,cont = fmod(parfit, fitobj,binary=args.binary)
-                molmask = []
-                for www in maskwaves:
-                    ind1 = fitobj.x[(abs(w-www[0]) == np.min(abs(w-www[0])))][0]
-                    ind2 = fitobj.x[(abs(w-www[1]) == np.min(abs(w-www[1])))][0]
-                    if ind2 == fitobj.x[0] or ind1 == fitobj.x[-1]:
-                        continue
-                    molmask = molmask + [[ind1,ind2]]
+                _, _, w, _ = fmod(parfit, fitobj, binary=args.binary)
+                
+                molmask = mask_wave2pixel_range(maskwaves, fitobj, w)
+                
+                # get st template
+                parfit[3] = 0; parfit[24] = 0
+                smod, _, w, cont = fmod(parfit, fitobj, binary=args.binary)
+    
+                nonCO_mask_box = nonCO_masker(
+                    smod, w, cont, int(order), parfit[0], 
+                    fitobj, flux_cut=0.96
+                    )
+
+                template_mask = merge_pixel_masks(molmask, nonCO_mask_box)
+
 
                 fitobj = FitObjs(
                     s_piece, x_piece, u_piece, continuum_in, watm_in,
                     satm_in, mflux_in, mwave_in,
                     ast.literal_eval(inparam.maskdict[order]),
-                    masterbeam, CRmaskF, initwave, molmask)
+                    masterbeam, CRmaskF, initwave, template_mask)
 
                 if args.binary:
-                    optgroup = optgroup2.copy();
+                    optgroup = optgroup2.copy()
                     par_in[25] = initstellpow2
                     fitobj.addsecondary(mwave_in2, mflux_in2, rebin2to1)
+                
+            if nc > 1:
+                parfit = parfit_1.copy()
+                # update the st nonCO mask region based on new rv0
+                parfit[3] = 0; parfit[24] = 0
+                smod, _, w, cont = fmod(parfit, fitobj, binary=args.binary)
+                
+                nonCO_mask_box = nonCO_masker(
+                    smod, w, cont, int(order), parfit[0], 
+                    fitobj, flux_cut=0.96
+                    )
+                
+                
+                template_mask = merge_pixel_masks(molmask, nonCO_mask_box)
+
+                fitobj.molmask = template_mask
+
 
         parfit = parfit_1.copy()
 
