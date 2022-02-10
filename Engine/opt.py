@@ -324,7 +324,7 @@ def fmod(par,fitobj,binary=False):
 
             rspot2   *=  par[27]
 
-            if fitobj_cp.rebin2to1:
+            if fitobj.rebin2to1:
                 # Verify that new wavelength scale is a subset of stellar wavelength scale.
                 if (wspot2[0] > wspot1[0]) or (wspot2[-1] < wspot1[-1]):
                     sys.exit('WAVE ERROR 4: wspot1 not subset of wspot2, wspot2 goes from '
