@@ -157,17 +157,17 @@ def nonCO_masker(smod, w, cont, order, rv0, fitobj, flux_cut=0.95):
         else:
             fl_r_bound = len(w)-1
 
-        # slope cut, check where sign changes
-        slopes = np.diff(flat_smod)
+        # # slope cut, check where sign changes
+        # slopes = np.diff(flat_smod)
         
-        left_part = slopes[:cen_x]
-        right_part = slopes[cen_x+1:]
+        # left_part = slopes[:cen_x]
+        # right_part = slopes[cen_x+1:]
 
-        _loc = _look_sign_changes(left_part[::-1])
-        sl_l_bound = cen_x - _loc
+        # _loc = _look_sign_changes(left_part[::-1])
+        # sl_l_bound = cen_x - _loc
 
-        _loc = _look_sign_changes(right_part)
-        sl_r_bound = cen_x + _loc
+        # _loc = _look_sign_changes(right_part)
+        # sl_r_bound = cen_x + _loc
 
         # print('cen_x: ', cen_x)
         # print('fl_l_bound: ', fl_l_bound)
@@ -176,8 +176,10 @@ def nonCO_masker(smod, w, cont, order, rv0, fitobj, flux_cut=0.95):
         # print('sl_f_bound: ', sl_r_bound)
 
         # use the bound closest to the center
-        l_bound = fl_l_bound if fl_l_bound>sl_l_bound[0] else sl_l_bound[0]
-        r_bound = fl_r_bound if fl_r_bound<sl_r_bound[0] else sl_r_bound[0]
+        # l_bound = fl_l_bound if fl_l_bound>sl_l_bound[0] else sl_l_bound[0]
+        # r_bound = fl_r_bound if fl_r_bound<sl_r_bound[0] else sl_r_bound[0]
+        l_bound = fl_l_bound
+        r_bound = fl_r_bound
 
         z_zero_point = fitobj.x[0]
         # print('zero point: ', z_zero_point)
