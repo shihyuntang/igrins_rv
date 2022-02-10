@@ -116,9 +116,11 @@ kband_nonCO_line_centers = {
 def _look_sign_changes(a):
 
     sign_change_locs = (np.diff(np.sign(a)) != 0)*1
-    first_sign_change_loc = np.where(sign_change_locs==1)[0][:1]
-
-    return first_sign_change_loc
+    if np.sum(sign_change_locs) == 0:
+        return len(a)
+    else:
+        first_sign_change_loc = np.where(sign_change_locs==1)[0][:1]
+        return first_sign_change_loc
 
 def _apply_rv0_shift(line, rv0):
     c = 2.99792458e5
@@ -137,18 +139,23 @@ def nonCO_masker(smod, w, cont, order, rv0, fitobj, flux_cut=0.95):
         line_c = _apply_rv0_shift(line_c, rv0)
         
         cen_x = np.nanargmin(np.abs(line_c-w) )
-        x = np.arange(len(w))
 
         # check if this line is in the template
         if flat_smod[cen_x] > flux_cut:
             continue
 
         # flux cut
-        cont_temp = np.where(flat_smod > flux_cut)[0]
-        cont_temp-=cen_x
+        flux_over_cut_x = np.where(flat_smod > flux_cut)[0]
+        flux_over_cut_x-=cen_x
 
-        fl_l_bound = cont_temp[cont_temp<0][-1] + cen_x
-        fl_r_bound = cont_temp[cont_temp>0][0] + cen_x
+        if sum(flux_over_cut_x<0) != 0:
+            fl_l_bound = flux_over_cut_x[flux_over_cut_x<0][-1] + cen_x
+        else: 
+            fl_l_bound = 0
+        if sum(flux_over_cut_x>0) != 0:
+            fl_r_bound = flux_over_cut_x[flux_over_cut_x>0][0] + cen_x
+        else:
+            fl_r_bound = len(w)-1
 
         # slope cut, check where sign changes
         slopes = np.diff(flat_smod)
