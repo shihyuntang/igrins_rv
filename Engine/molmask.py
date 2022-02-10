@@ -127,7 +127,7 @@ def _apply_rv0_shift(line, rv0):
     return line*(1.+rv0/c)
 
 
-def nonCO_masker(smod, w, cont, order, rv0, fitobj, flux_cut=0.95):
+def nonCO_masker(smod, w, cont, order, rv0, fitobj, flux_cut=0.99):
 
     flat_smod = smod / cont
     nonCO_line_centers = list(kband_nonCO_line_centers[order].values())
