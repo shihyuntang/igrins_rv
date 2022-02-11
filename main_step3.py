@@ -956,16 +956,16 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
                 molmask = mask_wave2pixel_range(maskwaves, fitobj, w)
                 
                 # get st template
-                parfit[3] = 0; parfit[24] = 0
-                smod, _, w, cont = fmod(parfit, fitobj, binary=args.binary)
+                # parfit[3] = 0; parfit[24] = 0
+                # smod, _, w, cont = fmod(parfit, fitobj, binary=args.binary)
     
-                nonCO_mask_box = nonCO_masker(
-                    smod, w, cont, int(order), parfit[0], 
-                    fitobj, flux_cut=0.96
-                    )
+                # nonCO_mask_box = nonCO_masker(
+                #     smod, w, cont, int(order), parfit[0], 
+                #     fitobj, flux_cut=0.96
+                #     )
 
-                template_mask = merge_pixel_masks(molmask, nonCO_mask_box)
-
+                # template_mask = merge_pixel_masks(molmask, nonCO_mask_box)
+                template_mask = molmask
 
                 fitobj = FitObjs(
                     s_piece, x_piece, u_piece, continuum_in, watm_in,
@@ -978,21 +978,20 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
                     par_in[25] = initstellpow2
                     fitobj.addsecondary(mwave_in2, mflux_in2, rebin2to1)
                 
-            if nc > 1:
-                parfit = parfit_1.copy()
-                # update the st nonCO mask region based on new rv0
-                parfit[3] = 0; parfit[24] = 0
-                smod, _, w, cont = fmod(parfit, fitobj, binary=args.binary)
+            # if nc > 1:
+            #     parfit = parfit_1.copy()
+            #     # update the st nonCO mask region based on new rv0
+            #     parfit[3] = 0; parfit[24] = 0
+            #     smod, _, w, cont = fmod(parfit, fitobj, binary=args.binary)
                 
-                nonCO_mask_box = nonCO_masker(
-                    smod, w, cont, int(order), parfit[0], 
-                    fitobj, flux_cut=0.96
-                    )
+            #     nonCO_mask_box = nonCO_masker(
+            #         smod, w, cont, int(order), parfit[0], 
+            #         fitobj, flux_cut=0.96
+            #         )
                 
-                
-                template_mask = merge_pixel_masks(molmask, nonCO_mask_box)
+            #     template_mask = merge_pixel_masks(molmask, nonCO_mask_box)
 
-                fitobj.molmask = template_mask
+            #     fitobj.molmask = template_mask
 
 
         parfit = parfit_1.copy()
