@@ -786,7 +786,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the
         if not args.debug:
             print('Working on order {} ({:02d}/{:02d})'.format(
                                 orders[jerp], int(jerp+1), len(orders)))
-        main( args, inparam, jerp, orders, 'B',0)
+        # main( args, inparam, jerp, orders, 'B',0)
         func = partial(main, args, inparam, jerp, orders, 'B')
         outs = pqdm(np.arange(len(nightsFinal)), func, n_jobs=args.Nthreads)
 
