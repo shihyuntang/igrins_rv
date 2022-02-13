@@ -152,7 +152,7 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args,
         fitter2.SetObservatory(McD_props)
     elif inparam.obses[night] == 'GeminiS':
         fitter.SetObservatory(GeminiS_props)
-        fitter2.SetObservatory(GaminiS_props)
+        fitter2.SetObservatory(GeminiS_props)
     else:
         sys.exit('TELFIT OBSERVATORY ERROR, ONLY SUPPORT DCT, McD & GeminiS '
                     'IN THIS VERSION!')
