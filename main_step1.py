@@ -623,7 +623,7 @@ def use_w(args):
         # pixel mask between the two, as well.
         for o in range(len(m_orders_unique)):
 
-            if m_orders_unique == 9:
+            if len(m_orders_unique) == 9:
                 filew.write('9, 150, 1950, []\n')
                 continue
 
