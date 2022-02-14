@@ -284,11 +284,11 @@ def setup_templates(logger, kind='synthetic', band='K',
 
         if 'igrins' in os.getcwd().split('/')[-1]:
             stelldata = Table.read(
-                f'./Engine/syn_template/PHOENIX-lte0{temperature}-{logg}0-0.0_contadj{band}.txt',
+                f'./Engine/syn_template/PHOENIX-lte0{temperature}-{logg}0-0.0_contadj.txt',
                 format='ascii')
         else:
             stelldata = Table.read(
-                f'../Engine/syn_template/PHOENIX-lte0{temperature}-{logg}0-0.0_contadj{band}.txt',
+                f'../Engine/syn_template/PHOENIX-lte0{temperature}-{logg}0-0.0_contadj.txt',
                 format='ascii')
 
         mwave0 = np.array(stelldata['wave'])
