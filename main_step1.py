@@ -200,7 +200,7 @@ def main(args, inparam, jerp, orders, masterbeam, i):
                                     # related to file writing
 
     if args.debug:
-        print('Working on order {:02d}/{:02d} ({}), ',
+        print('Working on order {:02d}/{:02d} ({}), '
                 'night {}/{} ({}) PID:{}...'.format(int(jerp+1),
                                                     len(orders),
                                                     order,
