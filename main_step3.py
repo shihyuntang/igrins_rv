@@ -926,11 +926,11 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
         initstellpow2 = par_in[25]
         par_in[25] = 0.
 
-        parmask = np.ones_like(parfit,dtype=bool)
+        parmask = np.ones_like(par_in,dtype=bool)
         parmask[:] = False
         for optkind in optgroup:
             parmask[(dpars[optkind] != 0)] = True
-        fitobj.npar = len(parfit[parmask])
+        fitobj.npar = len(par_in[parmask])
         
         nk = 1
 
