@@ -236,7 +236,7 @@ def fmodel_chi(par,grad):
 
     # Compute chisq
     chisq = np.sum((fitobj_cp.s[mask] - smod[mask])**2. / fitobj_cp.u[mask]**2.)
-    chisq = chisq / (len(smod[mask]) - len(par))
+    chisq = chisq / (len(smod[mask]) - fitobj_cp.npar)
 
     if optimize_cp == True:
         return chisq
@@ -442,7 +442,7 @@ def fmod(par,fitobj,binary=False):
 
     # Compute chisq
     chisq = np.sum((fitobj.s[mask] - smod[mask])**2. / fitobj.u[mask]**2.)
-    chisq = chisq / (len(smod[mask]) - len(par))
+    chisq = chisq / (len(smod[mask]) - fitobj.npar)
 
     return smod,chisq, w, cont*c2
 
