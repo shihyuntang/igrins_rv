@@ -92,7 +92,7 @@ def outplotter_tel(parfit, fitobj, title, inparam, args, order, chi_new):
         )
 
 
-def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3, order, chi_new):
+def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3, order, chi_new=0):
     '''
     Plots model fit to science target observation.
 
@@ -234,10 +234,11 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3, order, ch
         fig.text(
             -0.04, 0.5, 'Flux', va='center', rotation='vertical', size=6
             )
-        fig.text(
-            0.65, 0.2, r'$\rm \chi^{{2}}_{{\nu}}$ = {:1.2f}'.format(
-                chi_new), size=6
-                )
+        if chi_new != 0:
+            fig.text(
+                0.65, 0.2, r'$\rm \chi^{{2}}_{{\nu}}$ = {:1.2f}'.format(
+                    chi_new), size=6
+                    )
         ax0.legend(fontsize=5, edgecolor='white', markerscale=2.5)
 
     else:
@@ -270,10 +271,11 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3, order, ch
         axes.set_title(title, size=6)
         axes.set_ylabel('Flux', size=6)
         axes.set_xlabel(r'Wavelength [$\rm\AA$]',  size=6)
-        fig.text(
-            0.65, 0.2, r'$\rm \chi^{{2}}_{{\nu}}$ = {:1.2f}'.format(
-                chi_new), size=6
-                )
+        if chi_new != 0:
+            fig.text(
+                0.65, 0.2, r'$\rm \chi^{{2}}_{{\nu}}$ = {:1.2f}'.format(
+                    chi_new), size=6
+                    )
 
         axes.tick_params(
             axis='both', labelsize=6, right=True, top=True, direction='in'
