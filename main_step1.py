@@ -446,6 +446,12 @@ def main(args, inparam, jerp, orders, masterbeam, i):
                 'twave', 'cont',
                 'twave', 'cont']
 
+    parmask = np.ones_like(par_in,dtype=bool)
+    parmask[:] = False
+    for optkind in optgroup:
+        parmask[(dpars[optkind] != 0)] = True
+    fitobj.npar = len(par_in[parmask])
+    
     # Try 3 different levels of telluric template power to start with. Save
     # the chisqs and best fit pars from each, compare, and then resume
     # optimization from the best pars.
