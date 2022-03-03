@@ -488,7 +488,7 @@ def setup_logger(args, outpath, name):
 
 def save_raw_box(args, nights, inparam, name, order,
                     nightsbox, rvbox, parfitbox, vsinibox, tagbox,
-                    rvbox2=None, vsinibox2=None):
+                    chibox, rvbox2=None, vsinibox2=None):
 
     c1 = fits.Column(name=f'NIGHT{order}',  array=nightsbox, format=f'{len(nights[0])}A' )
     c2 = fits.Column(name=f'RV{order}',     array=rvbox,     format='D')
@@ -496,12 +496,13 @@ def save_raw_box(args, nights, inparam, name, order,
                         dim=(1,len(parfitbox[0,:])))
     c4 = fits.Column(name=f'VSINI{order}',  array=vsinibox,  format='D')
     c5 = fits.Column(name=f'TAG{order}',    array=tagbox,    format='4A')
+    c6 = fits.Column(name=f'CHI{order}',    array=chibox,    format='D')
     if args.binary:
-        c6    = fits.Column(name=f'RV2{order}',     array=rvbox2,     format='D')
-        c7    = fits.Column(name=f'VSINI2{order}',  array=vsinibox2,  format='D')
-        cols  = fits.ColDefs([c1,c2,c3,c4,c5, c6,c7])
+        c7    = fits.Column(name=f'RV2{order}',     array=rvbox2,     format='D')
+        c8    = fits.Column(name=f'VSINI2{order}',  array=vsinibox2,  format='D')
+        cols  = fits.ColDefs([c1,c2,c3,c4,c5, c6,c7,c8])
     else:
-        cols  = fits.ColDefs([c1,c2,c3,c4,c5])
+        cols  = fits.ColDefs([c1,c2,c3,c4,c5,c6])
 
     hdu_1 = fits.BinTableHDU.from_columns(cols)
 
@@ -648,7 +649,7 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
         logger.warning(f'  --> Previous run of {night} found it '
                                 'inadequate (nan), skipping...')
         return (nightsout, rvsminibox, parfitminibox, vsiniminibox,
-                    tagsminibox, rvsminibox2, vsiniminibox2)
+                    tagsminibox, rvsminibox2, vsiniminibox2, chisminibox)
 
 
     # Iterate over all A/B exposures
@@ -753,7 +754,7 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
                     len(s_piece[testmask]), night, order
                     ))
             return (nightsout, rvsminibox, parfitminibox, vsiniminibox,
-                        tagsminibox, rvsminibox2, vsiniminibox2)
+                        tagsminibox, rvsminibox2, vsiniminibox2, chisminibox)
 
         # Save data for second template cutting after optimization cycle 1 done
         s_save = s_piece.copy()
@@ -925,6 +926,12 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
         initstellpow2 = par_in[25]
         par_in[25] = 0.
 
+        parmask = np.ones_like(parfit,dtype=bool)
+        parmask[:] = False
+        for optkind in optgroup:
+            parmask[(dpars[optkind] != 0)] = True
+        fitobj.npar = len(parfit[parmask])
+        
         nk = 1
 
         for nc, cycle in enumerate(np.arange(cycles), start=1):
@@ -977,6 +984,12 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
                     optgroup = optgroup2.copy()
                     par_in[25] = initstellpow2
                     fitobj.addsecondary(mwave_in2, mflux_in2, rebin2to1)
+
+                    parmask = np.ones_like(parfit,dtype=bool)
+                    parmask[:] = False
+                    for optkind in optgroup:
+                        parmask[(dpars[optkind] != 0)] = True
+                    fitobj.npar = len(parfit[parmask])
                 
             # if nc > 1:
             #     parfit = parfit_1.copy()
@@ -1028,7 +1041,7 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
                                 'out result...')
             continue
 
-
+           
         #-------------------------------------------------------------------------------
 
         if args.plotfigs == True:
@@ -1051,7 +1064,7 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
                 trk, inparam, args, step2or3,order)
             outplotter_23(
                 parfit, fitobj,  'parfit_{}_{}_{}'.format(order,night,tag),
-                trk, inparam, args, step2or3,order)
+                trk, inparam, args, step2or3,order,chi_new=chisq)
 
         rv0 = parfit[0]
 
@@ -1081,7 +1094,7 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
                 vsiniminibox[t] = np.nan
 
     return (nightsout, rvsminibox, parfitminibox, vsiniminibox,
-                tagsminibox, rvsminibox2, vsiniminibox2)
+                tagsminibox, rvsminibox2, vsiniminibox2, chisminibox)
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
@@ -1304,6 +1317,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the
                 tagbox    = outsbox[4]
                 rvbox2    = outsbox[5]
                 vsinibox2 = outsbox[6]
+                chibox    = outsbox[7]
             else:
                 nightsbox = nightsbox + outsbox[0]
                 rvbox     = np.concatenate((rvbox,outsbox[1]))
@@ -1312,6 +1326,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the
                 tagbox    = np.concatenate((tagbox,outsbox[4]))
                 rvbox2    = np.concatenate((rvbox2,outsbox[5]))
                 vsinibox2 = np.concatenate((vsinibox2,outsbox[6]))
+                chibox    = np.concatenate((chibox,outsbox[7]))
 
         order = orders[jerp]
         nightsbox = np.array(nightsbox)
@@ -1321,12 +1336,12 @@ For H band RVs: We do not expect any systematic changes in the H band as the
             save_raw_box(
                 args, nights, inparam, name, order,
                 nightsbox, rvbox, parfitbox, vsinibox, tagbox,
-                rvbox2=rvbox2, vsinibox2=vsinibox2
+                chibox, rvbox2=rvbox2, vsinibox2=vsinibox2
                 )
         else:
             save_raw_box(
                 args, nights, inparam, name, order,
-                nightsbox, rvbox, parfitbox, vsinibox, tagbox
+                chibox, nightsbox, rvbox, parfitbox, vsinibox, tagbox
                 )
 
         #-------------------------------------------------------------------------------
