@@ -754,6 +754,12 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
     optgroup = optgroup1.copy(); initstellpow2 = par_in[25];
     par_in[25] = 0.
 
+    parmask = np.ones_like(par_in,dtype=bool)
+    parmask[:] = False
+    for optkind in optgroup:
+        parmask[(dpars[optkind] != 0)] = True
+    fitobj.npar = len(par_in[parmask])
+    
     nk = 1
     for nc, cycle in enumerate(np.arange(cycles), start=1):
         if cycle == 0:
@@ -777,6 +783,12 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
             optgroup = optgroup2.copy()
             parstart[25] = initstellpow2
 
+            parmask = np.ones_like(par_in,dtype=bool)
+            parmask[:] = False
+            for optkind in optgroup:
+                parmask[(dpars[optkind] != 0)] = True
+            fitobj.npar = len(par_in[parmask])
+            
     parfit = parfit_1.copy()
 
     #-------------------------------------------------------------------------------
@@ -834,7 +846,7 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
             trk, inparam, args, step2or3,order)
         outplotter_23(
             parfit, fitobj,  'parfit_{}_{}_{}'.format(order,night,tag),
-            trk, inparam, args, step2or3,order)
+            trk, inparam, args, step2or3,order,chi_new=chisq)
 
     rv0 = parfit[0]
     # Barycentric correction
