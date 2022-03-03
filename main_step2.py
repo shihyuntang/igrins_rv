@@ -412,6 +412,21 @@ def setup_logger(args, outpath):
 
     return logger, stream_hander
 
+def _add_npar(par_in, optgroup, dpars, fitobj):
+    """add npar (number if var pars) in fitobj
+    Returns:
+        class: fitobj
+    """
+
+    parmask = np.ones_like(par_in, dtype=bool)
+    parmask[:] = False
+    for optkind in optgroup:
+        parmask[(dpars[optkind] != 0)] = True
+    fitobj.npar = len(par_in[parmask])
+
+    return fitobj
+
+
 
 def main(args, inparam, orders, order_use, trk, step2or3, i):
     """Main function for RV fitting that will be threaded over
@@ -730,10 +745,7 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
     # zero point for the instrumental resolution, and the vsini of the star
     # separately, iterating and cycling between each set of parameter fits.
 
-    if args.binary:
-        cycles = 4
-    else:
-        cycles = 2
+    cycles = 4 if args.binary else 2
 
     optgroup1 = ['cont', 'twave', 'cont', 's',
                 'cont', 'twave', 's', 'cont',
@@ -751,14 +763,9 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
             'twave',  's','s2',
             'twave',  's','s1s2']
 
-    optgroup = optgroup1.copy(); initstellpow2 = par_in[25];
+    optgroup = optgroup1.copy(); initstellpow2 = par_in[25]
     par_in[25] = 0.
 
-    parmask = np.ones_like(par_in,dtype=bool)
-    parmask[:] = False
-    for optkind in optgroup:
-        parmask[(dpars[optkind] != 0)] = True
-    fitobj.npar = len(par_in[parmask])
     
     nk = 1
     for nc, cycle in enumerate(np.arange(cycles), start=1):
@@ -768,9 +775,16 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
         else:
             dpars = dpars2
 
+        fitobj = _add_npar(par_in, optgroup, dpars, fitobj)
+
         for optkind in optgroup:
-            parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize,binary=args.binary)
+            parfit_1 = optimizer(
+                parstart, dpars[optkind], hardbounds, fitobj, optimize,
+                binary=args.binary
+                )
+
             parstart = parfit_1.copy()
+
             if args.debug == True:
                 outplotter_23(
                     parfit_1,fitobj,'{}_{}_{}_parfit_{}{}'.format(
@@ -779,15 +793,12 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
                 logger.debug(f'{order}_{tag}_{nk}_{optkind}:\n {parfit_1}')
             nk += 1
 
-        if nc == 2:
+        # if nc == 2:
+        if args.binary:
             optgroup = optgroup2.copy()
             parstart[25] = initstellpow2
 
-            parmask = np.ones_like(par_in,dtype=bool)
-            parmask[:] = False
-            for optkind in optgroup:
-                parmask[(dpars[optkind] != 0)] = True
-            fitobj.npar = len(par_in[parmask])
+            fitobj = _add_npar(par_in, optgroup, dpars, fitobj)
             
     parfit = parfit_1.copy()
 
@@ -833,20 +844,20 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
         if args.binary:
             outplotter_23(
                 parfitS1, fitobj, 'parfitS1_{}_{}_{}'.format(order,night,tag),
-                trk, inparam, args, step2or3,order)
+                trk, inparam, args, step2or3, order)
             outplotter_23(
                 parfitS2, fitobj, 'parfitS2_{}_{}_{}'.format(order,night,tag),
-                trk, inparam, args, step2or3,order)
+                trk, inparam, args, step2or3, order)
         else:
             outplotter_23(
                 parfitS1, fitobj, 'parfitS_{}_{}_{}'.format(order,night,tag),
-                trk, inparam, args, step2or3,order)
+                trk, inparam, args, step2or3, order)
         outplotter_23(
             parfitT, fitobj, 'parfitT_{}_{}_{}'.format(order,night,tag),
             trk, inparam, args, step2or3,order)
         outplotter_23(
             parfit, fitobj,  'parfit_{}_{}_{}'.format(order,night,tag),
-            trk, inparam, args, step2or3,order,chi_new=chisq)
+            trk, inparam, args, step2or3, order, chi_new=chisq)
 
     rv0 = parfit[0]
     # Barycentric correction
@@ -900,7 +911,8 @@ if __name__ == '__main__':
 
     #------------------------------
     # Read in the Prepdata under ./Input/Prpedata/
-    xbounddict, maskdict, tagsA, tagsB, mjds, bvcs, nightsFinal, orders, obs = read_prepdata(args)
+    xbounddict, maskdict, tagsA, tagsB, mjds, \
+        bvcs, nightsFinal, orders, obs = read_prepdata(args)
 
     if int(args.label_use) not in orders:
         sys.exit(
@@ -1051,6 +1063,9 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
         main, args, inparam, orders, int(args.label_use), trk, step2or3
         )
     outs = pqdm(np.arange(len(nightsFinal)), func, n_jobs=args.Nthreads)
+
+    # for ii in np.arange(len(nightsFinal)):
+    #     main(args, inparam, orders, int(args.label_use), trk, step2or3, ii)
 
     # Write outputs to file
     vsinis = []; finalrvs = []; vsinis2 = []; finalrvs2 = []

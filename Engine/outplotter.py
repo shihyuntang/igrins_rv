@@ -92,7 +92,10 @@ def outplotter_tel(parfit, fitobj, title, inparam, args, order, chi_new):
         )
 
 
-def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3, order, chi_new=0):
+def outplotter_23(
+    parfit, fitobj, title, trk, inparam, args, step2or3, order, 
+    chi_new=0
+    ):
     '''
     Plots model fit to science target observation.
 
@@ -355,8 +358,10 @@ def outplotter_rv_combind(
     axes.set_xlabel('Night (#)', size=6 )
     axes.xaxis.set_minor_locator(AutoMinorLocator(5))
     axes.yaxis.set_minor_locator(AutoMinorLocator(5))
-    axes.tick_params(axis='both', which='both', labelsize=6, right=True, top=True,
-        direction='in', width=.6)
+    axes.tick_params(
+        axis='both', which='both', labelsize=6, right=True, top=True,
+        direction='in', width=.6
+        )
     if args.binary:
         f.savefig(
             '{}/{}/FinalRVs{}.png'.format(

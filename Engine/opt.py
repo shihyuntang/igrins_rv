@@ -352,7 +352,7 @@ def fmod(par,fitobj,binary=False):
             rspot /= (1+par[27])
 
         else:
-            rspot = rspot1; wspot = wspot1;
+            rspot = rspot1; wspot = wspot1
 
         #Verify that stellar wavelength scale is a subset of telluric wavelength scale.
         if (wspot[0] < watm[0]) or (wspot[-1] > watm[-1]):

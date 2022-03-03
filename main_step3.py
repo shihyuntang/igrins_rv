@@ -569,6 +569,19 @@ def _make_fits_ColDefs(col_name, save_data, save_format):
 
     return fits.Column(name=col_name, array=save_data, format=save_format)
 
+def _add_npar(par, optgroup, dpars, fitobj):
+    """add npar (number if var pars) in fitobj
+    Returns:
+        class: fitobj
+    """
+
+    parmask = np.ones_like(par, dtype=bool)
+    parmask[:] = False
+    for optkind in optgroup:
+        parmask[(dpars[optkind] != 0)] = True
+    fitobj.npar = len(par[parmask])
+
+    return fitobj
 
 def main(args, inparam, orders, order_use, trk, step2or3, i):
     """Main function for RV fitting that will be threaded over
@@ -925,12 +938,6 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
         optgroup = optgroup1.copy()
         initstellpow2 = par_in[25]
         par_in[25] = 0.
-
-        parmask = np.ones_like(par_in,dtype=bool)
-        parmask[:] = False
-        for optkind in optgroup:
-            parmask[(dpars[optkind] != 0)] = True
-        fitobj.npar = len(par_in[parmask])
         
         nk = 1
 
@@ -940,6 +947,9 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
 
             if nc == cycles:
                 optgroup = optgroup[:-1] # if is the last run, skip the 'ts'
+            
+            fitobj = _add_npar(parstart, optgroup, dpars, fitobj)
+
             for optkind in optgroup:
                 parfit_1 = optimizer(parstart, dpars[optkind], hardbounds,
                                         fitobj, optimize, binary=args.binary)
@@ -985,11 +995,7 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
                     par_in[25] = initstellpow2
                     fitobj.addsecondary(mwave_in2, mflux_in2, rebin2to1)
 
-                    parmask = np.ones_like(parfit,dtype=bool)
-                    parmask[:] = False
-                    for optkind in optgroup:
-                        parmask[(dpars[optkind] != 0)] = True
-                    fitobj.npar = len(parfit[parmask])
+                    fitobj = _add_npar(parfit, optgroup, dpars, fitobj)
                 
             # if nc > 1:
             #     parfit = parfit_1.copy()
@@ -1034,7 +1040,7 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
 
         # if best fit model dips below zero at any point, we're to
         # close to edge of blaze, fit may be comrpomised, throw out result
-        smod,chisq,trash,trash2 = fmod(parfit,fitobj,args.binary)
+        smod,chisq,trash,trash2 = fmod(parfit, fitobj, args.binary)
         if len(smod[(smod < 0)]) > 0:
             logger.warning(f'  --> Best fit model dips below 0 for {night}! '
                                 'May be too close to edge of blaze, throwing '
@@ -1064,7 +1070,7 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
                 trk, inparam, args, step2or3,order)
             outplotter_23(
                 parfit, fitobj,  'parfit_{}_{}_{}'.format(order,night,tag),
-                trk, inparam, args, step2or3,order,chi_new=chisq)
+                trk, inparam, args, step2or3,order, chi_new=chisq)
 
         rv0 = parfit[0]
 
@@ -1304,6 +1310,9 @@ For H band RVs: We do not expect any systematic changes in the H band as the
         func = partial(main, args, inparam, orders, jerp, trk, step2or3 )
         outs = pqdm(np.arange(len(nightsFinal)), func, n_jobs=args.Nthreads)
 
+        # for ii in np.arange(len(nightsFinal)):
+        #     main(args, inparam, orders, jerp, trk, step2or3, ii)
+
         #-------------------------------------------------------------------------------
 
         # Collect outputs: the reference night, the best fit RV, vsini, and other parameters
@@ -1341,7 +1350,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the
         else:
             save_raw_box(
                 args, nights, inparam, name, order,
-                chibox, nightsbox, rvbox, parfitbox, vsinibox, tagbox
+                nightsbox, rvbox, parfitbox, vsinibox, tagbox, chibox
                 )
 
         #-------------------------------------------------------------------------------
