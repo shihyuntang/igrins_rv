@@ -143,6 +143,7 @@ class FitObjs:
         self.CRmask = CRmask
         self.initwave = initwave
         self.molmask = molmask
+        self.npar = None
 
     def addsecondary(self,mwave2,mflux2,rebin2to1):
 
