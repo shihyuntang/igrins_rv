@@ -8,7 +8,7 @@ mpl.rcParams['figure.facecolor'] = 'white'
 mpl.rcParams['font.style'] = 'normal'
 mpl.rcParams['font.family'] = 'sans-serif'
 
-def outplotter_tel(parfit, fitobj, title, inparam, args, order):
+def outplotter_tel(parfit, fitobj, title, inparam, args, order, chi_new):
     '''
     Plots model fit to telluric standard observation.
 
@@ -43,30 +43,6 @@ def outplotter_tel(parfit, fitobj, title, inparam, args, order):
         for mb in fitobj.CRmask[1]:
             mask[(xdata >= fitobj.CRmask[0][mb]-1) \
                     & (xdata <= fitobj.CRmask[0][mb]+1)] = False
-
-
-    if args.band == 'H':
-        if int(order) in [13]:
-            npars -= 4
-        elif int(order) in [6,14,21]:
-            npars -= 3
-        else:
-            pass
-    else:
-        if int(order) in [3,4,5]:
-            npars -= 3
-        else:
-            pass
-
-    if fitobj.masterbeam == 'B':
-        npars -= 5
-
-    # Subtract 10 from npars total: 2 for linear/quadratic IP, 1 for RV_telluric,
-    # 2 fot stellar template power and RV, 1 for vsini, 4 for secondary star
-    npars -= 10
-
-    # Correct reduce chisq
-    chi_new = chi * (len(sdata[mask])-len(parfit)) / (len(sdata[mask])-npars)
 
     mask = np.ones_like(xdata, dtype=bool)
 
@@ -116,7 +92,7 @@ def outplotter_tel(parfit, fitobj, title, inparam, args, order):
         )
 
 
-def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3, order):
+def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3, order, chi_new):
     '''
     Plots model fit to science target observation.
 
@@ -137,7 +113,6 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3, order):
     xdata = fitobj.x.copy()
     sdata = fitobj.s.copy()
 
-    npars = len(parfit)
 
     mask = np.ones_like(sdata, dtype=bool)
     mask[(sdata < .0)] = False
@@ -155,33 +130,6 @@ def outplotter_23(parfit, fitobj, title, trk, inparam, args, step2or3, order):
         for mb in fitobj.molmask:
             mask[(xdata >= mb[0]) & (xdata <= mb[1])] = False
 
-    if args.band == 'H':
-        if int(order) in [13]:
-            npars -= 4
-        elif int(order) in [6,14,21]:
-            npars -= 3
-        else:
-            pass
-    else:
-        # print("We haven't determined what polynomial orders for K band yet and hardcoded this!")
-        # if int(order) in [3]:
-        #     npars -= 4
-        if int(order) in [3,4,5]:
-            npars -= 3
-        else:
-            pass
-
-    if args.binary == False:
-        npars -= 4 # RV, power, vsini, flux ratio
-    else:
-        npars -= 1 # fluxratio (never being fit)
-
-    if fitobj.masterbeam == 'B':
-        npars -= 5
-
-    npars -= 3 # subtract 3 from npars total, 2 for linear/quadratic IP and 1 for RV_telluric
-
-    chi_new = chi*(len(sdata[mask]) - len(parfit))/(len(sdata[mask]) - npars)
 
     fig, axes = plt.subplots(1, 1, figsize=(6,3), dpi=250)
 
