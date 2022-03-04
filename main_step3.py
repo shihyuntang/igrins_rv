@@ -718,7 +718,7 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
                                 f'{order} NIGHT: {night}, skipping...')
 
             return (nightsout, rvsminibox, parfitminibox, vsiniminibox,
-                        tagsminibox, rvsminibox2, vsiniminibox2)
+                        tagsminibox, rvsminibox2, vsiniminibox2, chisminibox)
 
         watm, satm, a0contx, continuum, molnames, watmmols, satmmols = setup_tel(
             args, night, beam, order, tbdata
