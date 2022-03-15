@@ -544,7 +544,11 @@ def optimizer(par0, dpar0, hardbounds_v_ip, fitobj, optimize, binary=False):
                 par0[26] = par0[26] - 1e-4
             if par0[26] -lows[26] < 1e-4:
                 par0[26] = par0[26] + 1e-4
-
+        if dpar0[27] != 0 and lows[27] < 0:
+            lows[27] = 0
+        if dpar0[27] != 0 and highs[27] > 1:
+            highs[27] = 1
+            
     opt.set_lower_bounds(lows)
     opt.set_upper_bounds(highs)
 
