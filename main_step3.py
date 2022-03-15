@@ -148,8 +148,8 @@ def base_dpars_dict(
 
     if vsini_v2 != -1:
         dpars_org = _make_dpars('s2',
-                            [24, 25],
-                            [20, 1],
+                            [24, 25, 27],
+                            [20, 1,  1 ],
                             numofpars, dpars_org
                             )
         dpars_org = _make_dpars('v2',
@@ -158,8 +158,8 @@ def base_dpars_dict(
                             numofpars, dpars_org
                             )
         dpars_org = _make_dpars('s1s2',
-                            [0, 1, 24, 25],
-                            [5, 1, 20, 1],
+                            [0, 1, 24, 25, 27],
+                            [5, 1, 20, 1,  1 ],
                             numofpars, dpars_org
                             )
 
@@ -360,7 +360,7 @@ def check_user_input(args, singleORdouble=1):
     if singleORdouble == 2:
 
         if args.fluxratio == '':
-            sys.exit('ERROR: YOU MUST PROVIDE A FLUX RATIO S2/S1, "-f"')
+            sys.exit('ERROR: YOU MUST PROVIDE AN INITIAL GUESS FOR FLUX RATIO S2/S1, "-f"')
 
         if args.initvsini2 == '':
             sys.exit(
@@ -1179,8 +1179,9 @@ PLUS BINARY PARAMETERS:
     syn template temp #2   = \33[37;1;41m {} \033[0m
     syn template logg #2   = \33[37;1;41m {} \033[0m
     syn template B #2      = \33[37;1;41m {} \033[0m
+    syn template#2 flux ratio      = \33[37;1;41m {} \033[0m
        '''.format(initvsini2, vsinivary2, args.template2,
-                  args.temperature2, args.logg2, args.B2))
+                  args.temperature2, args.logg2, args.B2,args.fluxratio))
     if not args.skip:
         while True:
             inpp = input("Press [Y]es to continue, [N]o to quite...\n --> ")
