@@ -11,22 +11,28 @@ def DataPrep(args):
     # If your target is not listed, you must construct your own PrepData files. 
     # See ReadMe for more details.
 
+    # check if + and - is in the target_n string
+    if '+' in  args.targname:
+        target_n_query = args.targname.replace('+', '\+')
+    elif '-' in args.targname:
+        target_n_query = args.targname.replace('-', '\-')
+
     # Find all nights of observations of target in master log
     master_log = pd.read_csv('./Engine/IGRINS_MASTERLOG.csv')
     star_files = master_log[
-        (master_log['OBJNAME'].str.contains(args.targname, regex=True, na=False)) 
+        (master_log['OBJNAME'].str.contains(target_n_query, regex=True, na=False)) 
             & (master_log['OBJTYPE'].str.contains('TAR', regex=True, na=False)) ]
     allnights  = np.array(master_log['CIVIL'],dtype='str')
 
     # If star input not found in Masterlog, try putting a space in its name somewhere
     n = 1
     while len(star_files['CIVIL']) == 0:
-        starnew = args.targname[:n]+' '+args.targname[n:]
+        starnew = target_n_query[:n]+' '+target_n_query[n:]
         star_files = master_log[
             (master_log['OBJNAME'].str.contains(starnew, regex=True, na=False)) 
             & (master_log['OBJTYPE'].str.contains('TAR',   regex=True, na=False)) ]
         n += 1
-        if n == len(args.targname):
+        if n == len(target_n_query):
             sys.exit('TARGET NAME NOT FOUND IN CATALOG - CHECK INPUT!')
 
 
