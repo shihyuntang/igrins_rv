@@ -468,14 +468,18 @@ def main(args, inparam, jerp, orders, masterbeam, i):
             parfit_1 = optimizer(parstart, dpars[optkind], hardbounds,
                                     fitobj, optimize)
             if args.debug == True:
-                outplotter_tel(parfit_1, fitobj,
-                                '{}_{}_{}_beforeTelfit_telvalstart_{}_{}{}'.format(
-                                    order, night, masterbeam, telval, nk, optkind
-                                    ), inparam, args, order)
+                smod, chisq, _, _ = fmod(parfit_1,fitobj,False)
+
+                outplotter_tel(
+                    parfit_1, fitobj, 
+                    '{}_{}_{}_beforeTelfit_telvalstart_{}_{}{}'.format(
+                        order, night, masterbeam, telval, nk, optkind), 
+                    inparam, args, order, chisq
+                    )
             parstart = parfit_1.copy()
             nk += 1
 
-        smod,chisq,trash,trash2 = fmod(parfit_1,fitobj,False)
+        smod, chisq, _, _ = fmod(parfit_1,fitobj,False)
         chisqs.append(chisq)
         parfitsaves.append(parfit_1)
 
@@ -496,10 +500,12 @@ def main(args, inparam, jerp, orders, masterbeam, i):
             parfit_1 = optimizer(parstart, dpars[optkind], hardbounds,
                                     fitobj, optimize)
             if args.debug == True:
+                _, chisq, _, _ = fmod(parfit_1,fitobj,False)
+
                 outplotter_tel(parfit_1, fitobj,
                                 '{}_{}_{}_beforeTelfit_{}{}'.format(
                                     order, night, masterbeam, nk, optkind
-                                    ), inparam, args, order)
+                                    ), inparam, args, order, chisq)
             parstart = parfit_1.copy()
             nk += 1
         parfit = parfit_1.copy()
@@ -528,9 +534,11 @@ def main(args, inparam, jerp, orders, masterbeam, i):
 
     # Plot results
     if inparam.plotfigs:
+        _, chisq, _, _ = fmod(parfit,fitobj,False)
+
         outplotter_tel(parfit, fitobj,
                         f'BeforeTelFit_Order{order}_{night}_{masterbeam}',
-                        inparam, args, order)
+                        inparam, args, order, chisq)
 
     # Get best fit wavelength solution
     xgrid = (initwave - np.median(initwave)) / (np.max(initwave) - np.min(initwave))
