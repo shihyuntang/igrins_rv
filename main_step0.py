@@ -16,6 +16,8 @@ def DataPrep(args):
         target_n_query = args.targname.replace('+', '\+')
     elif '-' in args.targname:
         target_n_query = args.targname.replace('-', '\-')
+    else:
+        target_n_query = args.targname
 
     # Find all nights of observations of target in master log
     master_log = pd.read_csv('./Engine/IGRINS_MASTERLOG.csv')
