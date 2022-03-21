@@ -992,7 +992,7 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
 
                 if args.binary:
                     optgroup = optgroup2.copy()
-                    par_in[25] = initstellpow2
+                    parstart[25] = initstellpow2
                     fitobj.addsecondary(mwave_in2, mflux_in2, rebin2to1)
 
                     fitobj = _add_npar(parfit, optgroup, dpars, fitobj)
