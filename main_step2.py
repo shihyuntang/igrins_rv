@@ -838,9 +838,9 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
 
     #-------------------------------------------------------------------------------
     if args.plotfigs == True:
-        parfitS1 = parfit.copy(); parfitS1[3] = 0; parfitS1[24] = 0
+        parfitS1 = parfit.copy(); parfitS1[3] = 0; parfitS1[25] = 0
         parfitS2 = parfit.copy(); parfitS2[3] = 0; parfitS2[1] = 0
-        parfitT = parfit.copy(); parfitT[1] = 0; parfitT[24] = 0
+        parfitT = parfit.copy(); parfitT[1] = 0; parfitT[25] = 0
         if args.binary:
             outplotter_23(
                 parfitS1, fitobj, 'parfitS1_{}_{}_{}'.format(order,night,tag),
