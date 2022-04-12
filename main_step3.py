@@ -661,6 +661,9 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
         return (nightsout, rvsminibox, parfitminibox, vsiniminibox,
                     tagsminibox, rvsminibox2, vsiniminibox2, chisminibox)
 
+    if order == 4 and args.band == 'K' and (20180401 < int(night[:8]) < 20190531):
+        return (nightsout, rvsminibox, parfitminibox, vsiniminibox,
+                    tagsminibox, rvsminibox2, vsiniminibox2, chisminibox)
 
     # Iterate over all A/B exposures
     for t in range(len(tagsnight)):
