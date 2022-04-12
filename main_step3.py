@@ -521,29 +521,26 @@ def save_raw_box(args, nights, inparam, name, order,
 def combine_rvs_between_orders(
         n, sigma_ON2, rvmasterbox, vsinibox, jds,
         rvfinal, stdfinal, vsinifinal, orders, Nind,
-        nights_use=None, extra_err=False):
-
+        offsets, 
+        std1=None,nights_use=None):
+            
     ind = np.where(
         np.isfinite(sigma_ON2[n,:]) & np.isfinite(rvmasterbox[n,:]))[0]
     weights = (1./sigma_ON2[n,ind]) / (np.nansum(1./sigma_ON2[n,ind])) # normalized
     stdspre = (1./sigma_ON2[n,ind]) #unnormalized weights
 
+    stdbtworders   = np.nanstd(rvmasterbox[n,ind])/np.sqrt(len(rvmasterbox[n,ind]))
+    stdofallorders = np.sqrt(np.nansum(sigma_ON2[n,ind]))
+    std2 = np.sqrt(stdbtworders**2 - stdofallorders**2)
+
     rvfinal[n]  = np.nansum( weights*rvmasterbox[n,ind] )
-    stdfinal[n] = 1/np.sqrt(np.nansum(stdspre))
+    std0        = 1/np.sqrt(np.nansum(stdspre))
+    if offsets:
+      stdfinal[n] = np.sqrt(std0**2 + std1**2 + std2**2)
+    else:
+      stdfinal[n] = std0
 
     vsinifinal[n] = np.nansum(weights*vsinibox[n,ind])
-
-    if extra_err:
-        # Check scatter between orders within a given night and
-        # add extra uncertainty to represent order to order offset
-        # if merited.
-        try:
-            mnnights = [np.nanmean(rvmasterbox[Nind,ir]) for ir in ind]
-            sigma_N = np.nanstd(mnnights)/np.sqrt(len(ind))
-            if np.isfinite(sigma_N):
-                stdfinal[n] = np.sqrt( stdfinal[n]**2 + sigma_N**2 )
-        except ValueError:
-            pass
 
     # if all the RVs going into the observation's final RV calculation
     # were NaN due to any pevious errors, pass NaN
@@ -1531,7 +1528,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the
             # Calculate the uncertainty in each night/order RV as the sum of the
             # uncertainty in method and the uncertainty in that night's As and Bs RVs
             for night in range(Nnights):
-                sigma_ON2[night,ll] = sigma_method2[ll] + stdmasterbox[night,ll]**2
+                sigma_ON2[night,ll]   = sigma_method2[ll] + stdmasterbox[night,ll]**2
                 sigma_ON2bi[night,ll] = sigma_method2[ll] + stdmasterbox2[night,ll]**2
 
         rvfinal    = np.ones(Nnights, dtype=float)
@@ -1549,7 +1546,51 @@ For H band RVs: We do not expect any systematic changes in the H band as the
             nights_use = nightsL.copy()
             kind = 'Defocused'
 
+        Nord = len(orders)
+        ordermeans = np.ones(Nord)*np.nan
+        orderstds  = np.ones(Nord)*np.nan
 
+        for jerp in range(Nord):
+            ind = np.where(
+                np.isfinite(sigma_ON2[:,jerp]) & np.isfinite(rvmasterbox[:,jerp]))[0]
+            weights = (1./sigma_ON2[ind,jerp]) / (np.nansum(1./sigma_ON2[ind,jerp])) # normalized
+            stdspre = (1./sigma_ON2[ind,jerp]) #unnormalized weights
+            ordermeans[jerp] = np.nansum( weights*rvmasterbox[ind,jerp] )
+            orderstds[jerp]  = 1/np.sqrt(np.nansum(stdspre))
+
+        std1 = np.sqrt(np.nansum([orderstds[jerp]**2 for jerp in range(Nord)]))
+
+        offsets = False
+        for jerp1 in range(Nord):
+            for jerp2 in range(Nord):
+                if jerp1 != jerp2 and np.isfinite(ordermeans[jerp1]) and np.isfinite(ordermeans[jerp2]):
+                    if abs(ordermeans[jerp1]-ordermeans[jerp2]) > np.sqrt(orderstds[jerp1]**2 + orderstds[jerp2]**2):
+                        offsets = True
+
+        masterorder = 6
+        masterjerp  = np.arange(Nord)[orders == masterorder]
+        if offsets == True:
+            for jerp in range(Nord):
+                rvmasterbox[:,jerp] = rvmasterbox[:,jerp] + ordermeans[masterjerp] - ordermeans[jerp]
+
+        if args.binary and offsets:
+            ordermeans2 = np.ones(Nord)*np.nan
+            orderstds2  = np.ones(Nord)*np.nan
+            
+            for jerp in range(Nord):
+                ind = np.where(
+                    np.isfinite(sigma_ON2bi[:,jerp]) & np.isfinite(rvmasterbox2[:,jerp]))[0]
+                weights = (1./sigma_ON2bi[ind,jerp]) / (np.nansum(1./sigma_ON2bi[ind,jerp])) # normalized
+                stdspre = (1./sigma_ON2bi[ind,jerp]) #unnormalized weights
+                ordermeans2[jerp] = np.nansum( weights*rvmasterbox2[ind,jerp] )
+                orderstds2[jerp]  = 1/np.sqrt(np.nansum(stdspre))
+
+            std1_2 = np.sqrt(np.nansum([orderstds2[jerp]**2 for jerp in range(Nord)]))
+
+            for jerp in range(Nord):
+                rvmasterbox2[:,jerp] = rvmasterbox2[:,jerp] + ordermeans2[masterjerp] - ordermeans2[jerp]
+
+            
         # Combine RVs between orders using weights calculated from uncertainties
         for n in range(Nnights):
 
@@ -1557,13 +1598,13 @@ For H band RVs: We do not expect any systematic changes in the H band as the
 
             rvfinal, stdfinal, vsinifinal, jds_out = combine_rvs_between_orders(
                 n, sigma_ON2, rvmasterbox, vsinibox, jds, rvfinal,
-                stdfinal, vsinifinal, orders, Nind, nights_use
+                stdfinal, vsinifinal, orders, Nind, offsets, std1=std1, nights_use
                 )
 
             if args.binary:
                 rvfinal2, stdfinal2, vsinifinal2, _ = combine_rvs_between_orders(
                     n, sigma_ON2bi, rvmasterbox2, vsinibox2, jds, rvfinal2,
-                    stdfinal2, vsinifinal2, orders, Nind, extra_err=True
+                    stdfinal2, vsinifinal2, orders, Nind, offsets, std1=std1_2
                     )
 
         #-------------------------------------------------------------------------------
