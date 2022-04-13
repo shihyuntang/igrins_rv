@@ -189,11 +189,12 @@ class InParams:
 
         self.BImethodvariance_tight = {
         #                       4           5           6
-            'K': np.array([0.00084845, 0.001273, 0.0005419])
+            'K': np.array([0.00116357, 0.00088457, 0.00049633])
             }
         self.BImethodvariance_loose = {
-            'K': np.array([0.0254526, 0.02148516, 0.00906467])
+            'K': np.array([0.00739551, 0.02068026, 0.00921714])
             }
+
 
     def addsecondary(self,initvsini2,vsinivary2,mwave2,mflux2,initguesses2):
         self.initvsini2   = initvsini2
