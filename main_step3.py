@@ -519,7 +519,7 @@ def save_raw_box(args, nights, inparam, name, order,
 
 
 def combine_rvs_between_orders(
-        n, sigma_ON2, rvmasterbox, vsinibox, jds,
+        n, sigma_ON2, rvmasterbox_orig, rvmasterbox, vsinibox, jds,
         rvfinal, stdfinal, vsinifinal, orders, Nind,
         offsets, 
         std1=None,nights_use=None):
@@ -529,7 +529,7 @@ def combine_rvs_between_orders(
     weights = (1./sigma_ON2[n,ind]) / (np.nansum(1./sigma_ON2[n,ind])) # normalized
     stdspre = (1./sigma_ON2[n,ind]) #unnormalized weights
 
-    stdbtworders   = np.nanstd(rvmasterbox[n,ind])/np.sqrt(len(rvmasterbox[n,ind]))
+    stdbtworders   = np.nanstd(rvmasterbox_orig[n,ind])/np.sqrt(len(rvmasterbox_orig[n,ind]))
     stdofallorders = np.sqrt(np.nansum(sigma_ON2[n,ind]))
     std2 = np.sqrt(stdbtworders**2 - stdofallorders**2)
 
@@ -1572,6 +1572,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the
 
         masterorder = 6
         masterjerp  = np.arange(Nord)[orders == masterorder]
+        rvmasterbox_orig = rvmasterbox.copy()
         if offsets == True:
             for jerp in range(Nord):
                 rvmasterbox[:,jerp] = rvmasterbox[:,jerp] + ordermeans[masterjerp] - ordermeans[jerp]
@@ -1590,6 +1591,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the
 
             std1_2 = np.sqrt(np.nansum([orderstds2[jerp]**2 for jerp in range(Nord)]))
 
+            rvmasterbox2_orig = rvmasterbox.copy()
             for jerp in range(Nord):
                 rvmasterbox2[:,jerp] = rvmasterbox2[:,jerp] + ordermeans2[masterjerp] - ordermeans2[jerp]
 
@@ -1600,13 +1602,13 @@ For H band RVs: We do not expect any systematic changes in the H band as the
             Nind = np.where(intnights == int(nightsFinal[n][:8]))[0]
 
             rvfinal, stdfinal, vsinifinal, jds_out = combine_rvs_between_orders(
-                n, sigma_ON2, rvmasterbox, vsinibox, jds, rvfinal,
+                n, sigma_ON2, rvmasterbox_orig, rvmasterbox, vsinibox, jds, rvfinal,
                 stdfinal, vsinifinal, orders, Nind, offsets, std1=std1, nights_use
                 )
 
             if args.binary:
                 rvfinal2, stdfinal2, vsinifinal2, _ = combine_rvs_between_orders(
-                    n, sigma_ON2bi, rvmasterbox2, vsinibox2, jds, rvfinal2,
+                    n, sigma_ON2bi, rvmasterbox2_orig, rvmasterbox2, vsinibox2, jds, rvfinal2,
                     stdfinal2, vsinifinal2, orders, Nind, offsets, std1=std1_2
                     )
 
