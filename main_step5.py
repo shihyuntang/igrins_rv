@@ -9,15 +9,16 @@ from Engine.rebin_jv   import rebin_jv
 from Engine.outplotter import outplotter_23
 from Engine.detect_peaks import detect_peaks
 from Engine.bisectorcalc    import NightSpecs,BIinst
-from Engine.LS         import LSandfold
 from Engine.plot_tool import modtool
 from scipy.stats import pearsonr
 
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 
-
-
+def legend_without_duplicate_labels(ax):
+    handles, labels = ax.get_legend_handles_labels()
+    unique = [(h, l) for i, (h, l) in enumerate(zip(handles, labels)) if l not in labels[:i]]
+    ax.legend(*zip(*unique))
 
 
 #-------------------------------------------------------------------------------
@@ -78,7 +79,9 @@ Input Parameters:
     Stellar template use= \33[37;1;41m {} \033[0m
     syn template temp   = \33[37;1;41m {} \033[0m
     syn template logg   = \33[37;1;41m {} \033[0m
-    '''.format(args.targname, args.band, args.WRegion, args.run, args.template, args.temperature, args.logg))
+    P_rot               = \33[37;1;41m {} \033[0m
+    P_orb               = \33[37;1;41m {} \033[0m
+    '''.format(args.targname, args.band, args.WRegion, args.run, args.template, args.temperature, args.logg,args.Prot,args.Porb))
     if not args.skip:
         while True:
             inpp = input("Press [Y]es to continue, [N]o to quite...\n --> ")
@@ -98,7 +101,7 @@ Input Parameters:
 
     name = f'Cutouts'
 
-    outpath = f'./Output/{args.targname}_{args.band}/RV_results_{args.run}/{name}'
+    outpath = f'./Output/{args.targname}/RV_results_{args.run}/{name}'
 
     if not os.path.isdir(f'{outpath}'):
         os.mkdir(f'{outpath}')
@@ -114,7 +117,7 @@ Input Parameters:
         logger.setLevel(logging.INFO)
     formatter = logging.Formatter('%(asctime)s: %(module)s.py: %(levelname)s--> %(message)s')
 
-    file_hander  = logging.FileHandler(f'{outpath}/{args.targname}_{args.band}.log')
+    file_hander  = logging.FileHandler(f'{outpath}/{args.targname}.log')
     stream_hander= logging.StreamHandler()
 
     # file_hander.setLevel()
@@ -198,7 +201,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
         pass
     else:
         print('\n \n Constructing residuals...\n \n ')
-        rawbox = fits.open(f'./Output/{args.targname}_{args.band}/RV_results_{args.run}/RVresultsRawBox.fits')
+        rawbox = fits.open(f'./Output/{args.targname}/RV_results_{args.run}/RVresultsRawBox.fits')
         for jerp in range(len(orders)):
             boxdata = rawbox[jerp+1].data
             order = orders[jerp]
@@ -220,13 +223,17 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
 
     name = f'Bisectors'
 
-    outpath = f'./Output/{args.targname}_{args.band}/RV_results_{args.run}/'
-    figpath = f'./Output/{args.targname}_{args.band}/figs/main_step5_{args.band}_{args.run}'
+    outpath = f'./Output/{args.targname}/RV_results_{args.run}/'
+    figpath0 = f'./Output/{args.targname}/figs/'
+    figpath = f'./Output/{args.targname}/figs/main_step5_{args.run}'
+
+    if not os.path.isdir(f'{figpath0}'):
+        os.mkdir(f'{figpath0}')
 
     if not os.path.isdir(f'{figpath}'):
         os.mkdir(f'{figpath}')
 
-    inpath = f'./Output/{args.targname}_{args.band}/RV_results_{args.run}/Cutouts'
+    inpath = f'./Output/{args.targname}/RV_results_{args.run}/Cutouts'
 
     s2ns = np.ones((len(nightsFinal)),dtype=float)
     for i in range(len(nightsFinal)):
@@ -236,7 +243,8 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
     refnight = nightsFinal[np.argmax(s2ns)]
     #refnight = nightsFinal[0]
     #refnight = nightsFinal[3]
-
+    if args.targname == 'DITau':
+        refnight == nightsFinal[3]
 
     bimasterboxT  = np.ones((len(nightsT),len(orders)))*np.nan
     stdmasterboxT = np.ones((len(nightsT),len(orders)))*np.nan
@@ -267,6 +275,9 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
 
         refspec = NightSpecs(inpath, refnight, orders, jerp)
         order = orders[jerp]
+
+        if order == 4: # skip order 4 because it gives crap
+            continue
 
         if refspec.flag == 1: #whole order absent
             nightsbox = nightsFinal.copy()
@@ -354,12 +365,16 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
         rvboxcomblist  = [bimasterboxT]
         stdboxcomblist = [stdmasterboxT]
 
-    hduRV = fits.open(f'./Output/{args.targname}_{args.band}/RV_results_{args.run}/RVresultsSummary.fits')
+    hduRV = fits.open(f'./Output/{args.targname}/RV_results_{args.run}/RVresultsSummary.fits')
     tbdataRV = hduRV[1].data
     nightsRV = np.array(tbdataRV['NIGHT'],dtype=str)
     jd0      = np.array(tbdataRV['JD'],dtype=str)
     rvfinal0      = np.array(tbdataRV['RVfinal'],dtype=str)
     rvstdfinal0   = np.array(tbdataRV['STDfinal'],dtype=str)
+
+    colors = ['tab:orange','tab:green','tab:red']
+    f0, axes0 = plt.subplots(1, 1, figsize=(5,3), facecolor='white', dpi=300)
+    f1, axes1 = plt.subplots(1, 1, figsize=(5,3), facecolor='white', dpi=300)
 
     # Iterate over tight and loose mounting data sets...
     for boxind in range(len(rvboxcomblist)):
@@ -387,16 +402,16 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
         # RV STD star runs
         else:
             if T_Ls[boxind] == 'T':
-                nights_use = nightsT.copy()
-                kind = 'Focused'
                 sigma_method2 = inparam.BImethodvariance_tight[args.band]
             elif T_Ls[boxind] == 'L':
-                nights_use = nightsL.copy()
-                kind = 'Defocus'
                 sigma_method2 = inparam.BImethodvariance_loose[args.band]
 
         sigma_ON2    = np.ones_like(bimasterbox)
 
+        if T_Ls[boxind] == 'T':
+            nights_use = nightsT.copy(); kind = 'Focused'
+        elif T_Ls[boxind] == 'L':
+            nights_use = nightsL.copy(); kind = 'Defocused'
         #-------------------------------------------------------------------------------
 
         # Note bimasterbox indexed as [nights,orders]
@@ -408,13 +423,63 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
             for night in range(Nnights):
                 sigma_ON2[night,ll] = sigma_method2[ll] + stdmasterbox[night,ll]**2
 
+        if boxind == 0:
+            nadd = 0
+        else:
+            nadd = len(rvboxcomblist[0][:,0])
+
+        for jerp in range(len(orders)):
+            ind = np.where(abs(bimasterbox[:,0]) > 0.5)[0]
+
+            axes0.scatter(    np.arange(Nnights)+1+nadd, bimasterbox[:,jerp], color=colors[jerp], s=5,label=f'Order {orders[jerp]}')
+            axes0.errorbar(np.arange(Nnights)+1+nadd, bimasterbox[:,jerp], yerr=stdmasterbox[:,jerp],
+                ls='none', lw=.5, ecolor=colors[jerp])
+
+        ordermeans = np.ones_like(sigma_ON2[0,:])*np.nan
+        orderstds  = np.ones_like(sigma_ON2[0,:])*np.nan
+
+        for jerp in range(len(ordermeans)):
+            ind = np.where(
+                np.isfinite(sigma_ON2[:,jerp]) & np.isfinite(bimasterbox[:,jerp]))[0]
+            weights = (1./sigma_ON2[ind,jerp]) / (np.nansum(1./sigma_ON2[ind,jerp])) # normalized
+            stdspre = (1./sigma_ON2[ind,jerp]) #unnormalized weights
+            ordermeans[jerp] = np.nansum( weights*bimasterbox[ind,jerp] )
+            orderstds[jerp]  = 1/np.sqrt(np.nansum(stdspre))
+
+        ordermeans[orders == 4] = np.nan
+        orderstds[orders == 4]  = np.nan
+
+        print(ordermeans,orderstds)
+        checkpassed = True
+        for jerp1 in range(len(ordermeans)):
+            for jerp2 in range(len(ordermeans)):
+                if np.isnan(ordermeans[jerp1]) or np.isnan(ordermeans[jerp2]):
+                    continue
+                if jerp1 != jerp2 and np.isfinite(ordermeans[jerp1]) and np.isfinite(ordermeans[jerp2]):
+                    if abs(ordermeans[jerp1]-ordermeans[jerp2]) > np.sqrt(orderstds[jerp1]**2 + orderstds[jerp2]**2):
+                        checkpassed = False
+
+        bimasterbox_orig = bimasterbox.copy()
+        if checkpassed == False:
+            masterind = np.where(orders==6)[0]
+            for jerp in range(len(ordermeans)):
+                bimasterbox[:,jerp] = bimasterbox[:,jerp] + ordermeans[masterind] - ordermeans[jerp]
+            print(f'DOES show significant order offsets')
+        else:
+            print(f'DOES NOT show significant order offsets')
+
+        for jerp in range(len(orders)):
+            ind = np.where(abs(bimasterbox[:,0]) > 0.5)[0]
+
+            axes1.scatter(    np.arange(Nnights)+1+nadd, bimasterbox[:,jerp], color=colors[jerp], s=5,label=f'Order {orders[jerp]}')
+            axes1.errorbar(np.arange(Nnights)+1+nadd, bimasterbox[:,jerp], yerr=stdmasterbox[:,jerp],
+                ls='none', lw=.5, ecolor=colors[jerp])
+
+        std1 = np.sqrt(np.nansum([orderstds[jerp]**2 for jerp in range(len(ordermeans))]))
+
         bifinal    = np.ones(Nnights, dtype=np.float64)
         stdfinal   = np.ones(Nnights, dtype=np.float64)
 
-        if T_Ls[boxind] == 'T':
-            nights_use = nightsT.copy(); kind = 'Focused'
-        elif T_Ls[boxind] == 'L':
-            nights_use = nightsL.copy(); kind = 'Defocused'
 
         # Combine RVs between orders using weights calculated from uncertainties
         for n in range(Nnights):
@@ -422,9 +487,19 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
                 np.isfinite(sigma_ON2[n,:]) & np.isfinite(bimasterbox[n,:]))[0]
             weights = (1./sigma_ON2[n,ind]) / (np.nansum(1./sigma_ON2[n,ind])) # normalized
             stdspre = (1./sigma_ON2[n,ind]) #unnormalized weights
+            std0 = 1/np.sqrt(np.nansum(stdspre))
+
+            stdbtworders   = np.nanstd(bimasterbox_orig[n,ind])/np.sqrt(len(bimasterbox_orig[n,ind]))
+            stdofallorders = np.sqrt(np.nansum(sigma_ON2[n,ind]))
+            std2 = np.sqrt(stdbtworders**2 - stdofallorders**2)
+            if np.isnan(std2):
+                std2 = 0.
 
             bifinal[n]  = np.nansum( weights*bimasterbox[n,ind] )
-            stdfinal[n] = 1/np.sqrt(np.nansum(stdspre))
+            if checkpassed:
+                stdfinal[n] = std0
+            else:
+                stdfinal[n] = np.sqrt(std0**2 + std1**2 + std2**2)
 
             # if all the RVs going into the observation's final RV calculation
             # were NaN due to any pevious errors, pass NaN
@@ -471,7 +546,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
             jdfinal[aa] = jd0[ind[0]]
 
 
-        f, axes = plt.subplots(1, 1, figsize=(8,6), facecolor='white', dpi=300)
+        f, axes = plt.subplots(1, 1, figsize=(4,3), facecolor='white', dpi=300)
 
         mask = np.ones_like(bifinal,dtype=bool)
         mask[np.isnan(bifinal) | np.isnan(rvfinal)] = False
@@ -546,6 +621,27 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
                 np.nanmean(bifinal),
                 np.nanstd(bifinal) ))
 
+    #axes0.set_ylim(np.nanmin(bifinal)-.08, np.nanmax(bifinal)+.08)
+    #axes.set_ylim(-0.3,0.3)
+    legend_without_duplicate_labels(axes0)
+    axes0.set_ylabel('Bisector Span [km/s]', size=6, style='normal', family='sans-serif' )
+    axes0.set_xlabel('Night (#)', size=6, style='normal', family='sans-serif' )
+    axes0.xaxis.set_minor_locator(AutoMinorLocator(5))
+    axes0.yaxis.set_minor_locator(AutoMinorLocator(5))
+    axes0.tick_params(axis='both', which='both', labelsize=5, right=True,
+        top=True, direction='in', width=.6)
+    f0.savefig('{}/OrderBIs.png'.format(outpath),
+        format='png', bbox_inches='tight')
+
+    legend_without_duplicate_labels(axes1)
+    axes1.set_ylabel('Bisector Span [km/s]', size=6, style='normal', family='sans-serif' )
+    axes1.set_xlabel('Night (#)', size=6, style='normal', family='sans-serif' )
+    axes1.xaxis.set_minor_locator(AutoMinorLocator(5))
+    axes1.yaxis.set_minor_locator(AutoMinorLocator(5))
+    axes1.tick_params(axis='both', which='both', labelsize=5, right=True,
+        top=True, direction='in', width=.6)
+    f1.savefig('{}/OrderBIs_corrected.png'.format(outpath),
+        format='png', bbox_inches='tight')
     #-------------------------------------------------------------------------------
 
     # Plot combined results
@@ -590,7 +686,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
         bbox_inches='tight')
 
 
-    f, axes = plt.subplots(1, 1, figsize=(8,6), facecolor='white', dpi=300)
+    f, axes = plt.subplots(1, 1, figsize=(4,3), facecolor='white', dpi=300)
 
     mask = np.ones_like(bifinalCombined,dtype=bool)
     mask[np.isnan(bifinalCombined) | np.isnan(rvfinalCombined)] = False
@@ -640,12 +736,13 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
             np.nanmean(bifinalCombined),
             np.nanstd(bifinalCombined)))
 
-    warning_r = log_warning_id(f'{outpath}/Cutouts/{args.targname}_{args.band}.log', start_time)
+
+    warning_r = log_warning_id(f'{outpath}/Cutouts/{args.targname}.log', start_time)
     if warning_r:
         print(f'''
     **********************************************************************************
     WARNING!! you got warning message during this run. Please check the log file under:
-          {outpath}/Cutouts/{args.targname}_{args.band}_A0Fits.log
+          {outpath}/Cutouts/{args.targname}_A0Fits.log
     **********************************************************************************
     ''')
     print('\n')
