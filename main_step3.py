@@ -521,8 +521,7 @@ def save_raw_box(args, nights, inparam, name, order,
 def combine_rvs_between_orders(
         n, sigma_ON2, rvmasterbox_orig, rvmasterbox, vsinibox, jds,
         rvfinal, stdfinal, vsinifinal, orders, Nind,
-        offsets, 
-        std1=None,nights_use=None):
+        offsets, std1=None, nights_use=None):
             
     ind = np.where(
         np.isfinite(sigma_ON2[n,:]) & np.isfinite(rvmasterbox[n,:]))[0]
@@ -1603,7 +1602,8 @@ For H band RVs: We do not expect any systematic changes in the H band as the
 
             rvfinal, stdfinal, vsinifinal, jds_out = combine_rvs_between_orders(
                 n, sigma_ON2, rvmasterbox_orig, rvmasterbox, vsinibox, jds, rvfinal,
-                stdfinal, vsinifinal, orders, Nind, offsets, std1=std1, nights_use
+                stdfinal, vsinifinal, orders, Nind, offsets, std1=std1, 
+                nights_use = nights_use
                 )
 
             if args.binary:
