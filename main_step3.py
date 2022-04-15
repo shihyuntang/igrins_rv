@@ -532,6 +532,9 @@ def combine_rvs_between_orders(
     stdofallorders = np.sqrt(np.nansum(sigma_ON2[n,ind]))
     std2 = np.sqrt(stdbtworders**2 - stdofallorders**2)
 
+    if np.isnan(std2):
+        std2 = 0.
+        
     rvfinal[n]  = np.nansum( weights*rvmasterbox[n,ind] )
     std0        = 1/np.sqrt(np.nansum(stdspre))
     if offsets:
