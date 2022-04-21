@@ -79,9 +79,7 @@ Input Parameters:
     Stellar template use= \33[37;1;41m {} \033[0m
     syn template temp   = \33[37;1;41m {} \033[0m
     syn template logg   = \33[37;1;41m {} \033[0m
-    P_rot               = \33[37;1;41m {} \033[0m
-    P_orb               = \33[37;1;41m {} \033[0m
-    '''.format(args.targname, args.band, args.WRegion, args.run, args.template, args.temperature, args.logg,args.Prot,args.Porb))
+    '''.format(args.targname, args.band, args.WRegion, args.run, args.template, args.temperature, args.logg))
     if not args.skip:
         while True:
             inpp = input("Press [Y]es to continue, [N]o to quite...\n --> ")
@@ -101,7 +99,7 @@ Input Parameters:
 
     name = f'Cutouts'
 
-    outpath = f'./Output/{args.targname}/RV_results_{args.run}/{name}'
+    outpath = f'./Output/{args.targname}_{args.band}/RV_results_{args.run}/{name}'
 
     if not os.path.isdir(f'{outpath}'):
         os.mkdir(f'{outpath}')
@@ -117,7 +115,7 @@ Input Parameters:
         logger.setLevel(logging.INFO)
     formatter = logging.Formatter('%(asctime)s: %(module)s.py: %(levelname)s--> %(message)s')
 
-    file_hander  = logging.FileHandler(f'{outpath}/{args.targname}.log')
+    file_hander  = logging.FileHandler(f'{outpath}/{args.targname}_{args.band}.log')
     stream_hander= logging.StreamHandler()
 
     # file_hander.setLevel()
@@ -201,7 +199,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
         pass
     else:
         print('\n \n Constructing residuals...\n \n ')
-        rawbox = fits.open(f'./Output/{args.targname}/RV_results_{args.run}/RVresultsRawBox.fits')
+        rawbox = fits.open(f'./Output/{args.targname}_{args.band}/RV_results_{args.run}/RVresultsRawBox.fits')
         for jerp in range(len(orders)):
             boxdata = rawbox[jerp+1].data
             order = orders[jerp]
@@ -215,7 +213,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
                     ))
 
             #for i in range(len(nightsFinal)):
-            #    modtool(args,jerp,nightsbox,tagbox,parfitbox,inparam,i)
+                #modtool(args,jerp,nightsbox,tagbox,parfitbox,inparam,0)
             func = partial(modtool,args,jerp,nightsbox,tagbox,parfitbox,inparam)
             outs = pqdm(np.arange(len(nightsFinal)), func, n_jobs=args.Nthreads)
 
@@ -223,9 +221,9 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
 
     name = f'Bisectors'
 
-    outpath = f'./Output/{args.targname}/RV_results_{args.run}/'
-    figpath0 = f'./Output/{args.targname}/figs/'
-    figpath = f'./Output/{args.targname}/figs/main_step5_{args.run}'
+    outpath = f'./Output/{args.targname}_{args.band}/RV_results_{args.run}/'
+    figpath0 = f'./Output/{args.targname}_{args.band}/figs/'
+    figpath = f'./Output/{args.targname}_{args.band}/figs/main_step5_{args.run}'
 
     if not os.path.isdir(f'{figpath0}'):
         os.mkdir(f'{figpath0}')
@@ -233,7 +231,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
     if not os.path.isdir(f'{figpath}'):
         os.mkdir(f'{figpath}')
 
-    inpath = f'./Output/{args.targname}/RV_results_{args.run}/Cutouts'
+    inpath = f'./Output/{args.targname}_{args.band}/RV_results_{args.run}/Cutouts'
 
     s2ns = np.ones((len(nightsFinal)),dtype=float)
     for i in range(len(nightsFinal)):
@@ -302,7 +300,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
         cols  = fits.ColDefs([c1,c2,c3])
         hdu_1 = fits.BinTableHDU.from_columns(cols)
 
-        if jerp == 0: # If first time writing fits file, make up filler primary hdu
+        if jerp == 0 or (jerp == 1 and orders[0] == 4): # If first time writing fits file, make up filler primary hdu
             bleh = np.ones((3,3))
             primary_hdu = fits.PrimaryHDU(bleh)
             hdul = fits.HDUList([primary_hdu,hdu_1])
@@ -365,7 +363,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
         rvboxcomblist  = [bimasterboxT]
         stdboxcomblist = [stdmasterboxT]
 
-    hduRV = fits.open(f'./Output/{args.targname}/RV_results_{args.run}/RVresultsSummary.fits')
+    hduRV = fits.open(f'./Output/{args.targname}_{args.band}/RV_results_{args.run}/RVresultsSummary.fits')
     tbdataRV = hduRV[1].data
     nightsRV = np.array(tbdataRV['NIGHT'],dtype=str)
     jd0      = np.array(tbdataRV['JD'],dtype=str)
@@ -737,12 +735,12 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
             np.nanstd(bifinalCombined)))
 
 
-    warning_r = log_warning_id(f'{outpath}/Cutouts/{args.targname}.log', start_time)
+    warning_r = log_warning_id(f'{outpath}/Cutouts/{args.targname}_{args.band}.log', start_time)
     if warning_r:
         print(f'''
     **********************************************************************************
     WARNING!! you got warning message during this run. Please check the log file under:
-          {outpath}/Cutouts/{args.targname}_A0Fits.log
+          {outpath}/Cutouts/{args.targname}_{args.band}.log
     **********************************************************************************
     ''')
     print('\n')
