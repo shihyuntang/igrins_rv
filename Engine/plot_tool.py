@@ -270,6 +270,8 @@ def modtool(args,jerp,nightsbox,tagbox,parfitbox,inparam,index):
                         np.array([], dtype=int)],
                         initwave, [])
 
+            fitobj.npar = len(parfit)
+
             parfitS = parfit.copy(); parfitS[3] = 0;
             parfitT = parfit.copy(); parfitT[1] = 0;
 
