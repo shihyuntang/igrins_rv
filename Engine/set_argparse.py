@@ -7,7 +7,139 @@ import multiprocessing as mp
 
 _epilog = "Contact authors: Asa Stahl (asa.stahl@rice.edu);\
                 Shih-Yun Tang (sytang@lowell.edu)"
-_igrins_version = '1.5.0 alpha'
+_igrins_version = '1.5.0 beta'
+
+def _add_common_arguments_1(parser):
+    parser.add_argument(
+        "targname", action="store", help="Enter your target name, no space",
+        type=str
+        )
+    parser.add_argument(
+        "-HorK", dest="band", action="store", 
+        help="Which band to process? H or K?. Default = K",
+        type=str, default='K'
+        )
+    parser.add_argument(
+        '--version', action='version',
+        version='%(prog)s {}'.format(_igrins_version)
+        )
+    return parser
+
+
+def _add_common_arguments_2(parser):
+    parser.add_argument(
+        "-Wr", dest="WRegion", action="store",
+        help="Which list of wavelength regions file (./Input/UseWv/WaveRegions_X) \
+                to use? Defaults to those chosen by IGRINS RV team, -Wr 1",
+        type=int,  default=int(1)
+        )
+    parser.add_argument(
+        "-SN", dest="SN_cut", action="store",
+        help="Spectrum S/N quality cut. Spectra with median S/N below this \
+                will not be analyzed. Default = 50",
+        type=str, default='50'
+        )
+    parser.add_argument(
+        '-c', dest="Nthreads", action="store",
+        help="Number of cpu (threads) to use, default is 1/2 of avalible \
+                ones (you have %i cpus (threads) avaliable)"%(mp.cpu_count()),
+        type=int, default=int(mp.cpu_count()//2) 
+        )
+    parser.add_argument(
+        '-plot', dest="plotfigs", action="store_true",
+        help="If set, will generate and save plots from the program."
+        )
+    parser.add_argument(
+        '-n_use', dest="nights_use", action="store",
+        help="If you don't want to process all nights under the \
+                ./Input/*target/ folder, specify an array of night you wish \
+                to process here. e.g., [20181111,20181112]",
+        type=str, default=''
+        )
+    parser.add_argument(
+        '-DeBug', dest="debug", action="store_true",
+        help="If set, DeBug logging will be output, as well as (lots of) \
+                extra plots."
+        )
+    return parser
+
+def _add_common_arguments_3(parser):
+    parser.add_argument(
+        '-t', dest="template", action="store",
+        help="Stellar template. Pick from 'synthetic', 'PHOENIX', or \
+            'livingston'. Default = 'synthetic'",
+        type=str, default='synthetic'
+        )
+    parser.add_argument(
+        '-temp', dest="temperature", action="store",
+        help="The synthetic template temperature used, e.g., 5000",
+        type=str, default=''
+        )
+    parser.add_argument(
+        '-logg', dest="logg", action="store",
+        help="The synthetic template logg used, e.g., 4.5",
+        type=str, default=''
+        )
+    parser.add_argument(
+        '-B', dest="B", action="store",
+        help="The synthetic template B used in kG, e.g., 2.5",
+        type=str, default='0'
+        )
+    
+    ### Below arguments are still under testing, DO NOT USE IT!!!
+    parser.add_argument(
+        '-binary', dest="binary", action="store_true",
+        help="[NOT READY in 1.5.0 alpha! DO NOT USE!] \
+                If set, will fit two stellar components to spectra"
+        )
+    parser.add_argument(
+        '-i2', dest="initvsini2", action="store",
+        help="Initial vsini of secondary (float, km/s). If no literature \
+                value known, use the value given by Step 2",
+        type=str, default=''
+        )
+    parser.add_argument(
+        '-v2', dest="vsinivary2", action="store",
+        help="Range of allowed vsini #2 variation during optimization, \
+                default = 5.0 km/s. Should be set to 0 for final run.",
+        type=str, default='5.0'
+        )
+    parser.add_argument(
+        '-t2', dest="template2", action="store",
+        help="Secondary stellar template. Pick from 'synthetic', 'PHOENIX', or \
+                'livingston'. Default = 'synthetic'",
+            type=str, default='synthetic'
+            )
+    parser.add_argument(
+        '-temp2', dest="temperature2", action="store",
+        help="The Secondary synthetic template temperature used, e.g., 5000",
+        type=str, default=''
+        )
+    parser.add_argument(
+        '-logg2', dest="logg2", action="store",
+        help="The Secondary synthetic template logg used, e.g., 4.5",
+        type=str, default=''
+        )
+    parser.add_argument(
+        '-B2', dest="B2", action="store",
+        help="The Secondary synthetic template B used in kG, e.g., 2.5",
+        type=str, default='0'
+        )
+    parser.add_argument(
+        '-f', dest="fluxratio", action="store",
+        help="Flux ratio between primary and secondary. If primary is 8 times\
+                brighter than secondary, this would be 0.125 (float).",
+        type=str, default=''
+        )
+
+    parser.add_argument(
+        '-sk_check', dest="skip", action="store_true",
+        help="If set, will skip the input parameters check. Handy when running \
+                multiple targets line by line"
+                )
+    return parser
+
+# ----------------------------------------------------------------------------- #
 
 def _argparse_step0_s():
     """Take care of all the argparse stuff."""
@@ -20,35 +152,28 @@ def _argparse_step0_s():
         https://github.com/shihyuntang/igrins_rv/wiki/Setup:-PrepData-Files#muti-rvs-per-night-version-of-step0py-night_splitstep0_spy
         This step collects and organizes all relevant information on target \n
         observations and associated telluric standard observations, for ease \n
-        of use in later steps. It requires that your observations be listed \n
-        in IGRINS_RV_MASTERLOG.csv, which comes with this package in the \n
-        /Engine folder. If your target is not listed, you must construct \n
-        your own PrepData files. See ReadMe for more details. \n
-        ''',
-        epilog = _epilog)
-    parser.add_argument("targname", action="store",
-        help="Enter your *target name",
-        type=str)
-    parser.add_argument("-HorK", dest="band", action="store",
-        help="Which band to process? H or K?",
-        type=str, default='K')
-
-    parser.add_argument("-coord", dest="coord", action="store",
-        help="Optional [-XX.xx,-XX.xx] deg, GaiaDR2 coordinates at J2015.5. \
-                If give, will calculate BVC base on this info.",
-        type=str, default='')
-    parser.add_argument("-pm", dest="pm", action="store",
-        help="Optional [-XX.xx,-XX.xx] [mas/yr], GaiaDR2 proper motion. \
-                If give, will calculate BVC base on this info.",
-        type=str, default='')
+        of use in later steps (i.e., generate the PrepData files). If you do \n
+        not have the IGRINS Observation MASTERLOG (IGRINS_RV_MASTERLOG.csv, \n
+        only for observation done from 2014 to 2019) or that your target is \n
+        not in the MASTERLOG, you must construct your own PrepData files. \n
+        See ReadMe for more details. \n
+        ''', epilog = _epilog
+        )
+    parser = _add_common_arguments_1(parser)
 
     parser.add_argument(
-        '--version', action='version',
-        version='%(prog)s {}'.format(_igrins_version))
-
+        "-coord", dest="coord", action="store",
+        help="Optional [-XX.xx,-XX.xx] deg, GaiaDR2 coordinates at J2015.5. \
+                If give, will calculate BVC base on this info.",
+        type=str, default=''
+        )
+    parser.add_argument(
+        "-pm", dest="pm", action="store",
+        help="Optional [-XX.xx,-XX.xx] [mas/yr], GaiaDR2 proper motion. \
+                If give, will calculate BVC base on this info.",
+        type=str, default=''
+        )
     return parser.parse_args()
-
-
 
 def _argparse_step0():
     """Take care of all the argparse stuff."""
@@ -57,38 +182,34 @@ def _argparse_step0():
         description = '''
         This step collects and organizes all relevant information on target \n
         observations and associated telluric standard observations, for ease \n
-        of use in later steps. It requires that your observations be listed \n
-        in IGRINS_RV_MASTERLOG.csv, which comes with this package in the \n
-        /Engine folder. If your target is not listed, you must construct \n
-        your own PrepData files. See ReadMe for more details. \n
-        ''',
-        epilog = _epilog)
-    parser.add_argument("targname", action="store",
-        help="Enter your target name, no space",
-        type=str)
-    parser.add_argument("-HorK", dest="band", action="store",
-        help="Which band to process? H or K?. Default = K",
-        type=str, default='K')
-    parser.add_argument("-AM", dest="AM_cut", action="store",
-        help="AirMass difference allowed between TAR and STD (A0) stars. \
-                Default X = 0.3 ",
-        type=str, default='0.3')
-
-    parser.add_argument("-coord", dest="coord", action="store",
-        help="Optional [-XX.xx,-XX.xx] deg, GaiaDR2 coordinates at J2015.5. \
-                If give, will calculate BVC base on this info.",
-        type=str, default='')
-    parser.add_argument("-pm", dest="pm", action="store",
-        help="Optional [-XX.xx,-XX.xx] [mas/yr], GaiaDR2 proper motion. \
-                If give, will calculate BVC base on this info.",
-        type=str, default='')
+        of use in later steps (i.e., generate the PrepData files). If you do \n
+        not have the IGRINS Observation MASTERLOG (IGRINS_RV_MASTERLOG.csv, \n
+        only for observation done from 2014 to 2019) or that your target is \n
+        not in the MASTERLOG, you must construct your own PrepData files. \n
+        See ReadMe for more details. \n
+        ''', epilog = _epilog
+        )
+    parser = _add_common_arguments_1(parser)
 
     parser.add_argument(
-        '--version', action='version',
-        version='%(prog)s {}'.format(_igrins_version))
-
+        "-AM", dest="AM_cut", action="store",
+        help="AirMass difference allowed between TAR and STD (A0) stars. \
+                Default X = 0.3 ",
+        type=str, default='0.3'
+        )
+    parser.add_argument(
+        "-coord", dest="coord", action="store",
+        help="Optional [-XX.xx,-XX.xx] deg, GaiaDR2 coordinates at J2015.5. \
+                If give, will calculate BVC base on this info.",
+        type=str, default=''
+        )
+    parser.add_argument(
+        "-pm", dest="pm", action="store",
+        help="Optional [-XX.xx,-XX.xx] [mas/yr], GaiaDR2 proper motion. \
+                If give, will calculate BVC base on this info.",
+        type=str, default=''
+        )
     return parser.parse_args()
-
 
 def _argparse_step1():
     """Take care of all the argparse stuff."""
@@ -102,47 +223,11 @@ def _argparse_step1():
         to the wavelength regions specified. \n
         For A0 observations, only the orders specified will be analyzed, \n
         but each order will be fit as far as there is significant telluric absorption.
-        ''',
-        epilog = _epilog)
-    parser.add_argument("targname", action="store",
-        help="Enter your target name, no space",
-        type=str)
-    parser.add_argument("-HorK", dest="band", action="store",
-        help="Which band to process? H or K?. Default = K",
-        type=str,   default='K')
-    parser.add_argument("-Wr", dest="WRegion", action="store",
-        help="Which list of wavelength regions file (./Input/UseWv/WaveRegions_X) \
-                to use? Defaults to those chosen by IGRINS RV team, -Wr 1",
-        type=int,   default=int(1))
-
-    parser.add_argument("-SN", dest="SN_cut", action="store",
-        help="Spectrum S/N quality cut. Spectra with median S/N below this \
-                will not be analyzed. Default = 50 ",
-        type=str,   default='50')
-
-    parser.add_argument('-c', dest="Nthreads", action="store",
-        help="Number of cpu (threads) to use, default is 1/2 of avalible \
-                ones (you have %i cpus (threads) avaliable)"%(mp.cpu_count()),
-        type=int,   default=int(mp.cpu_count()//2) )
-    parser.add_argument('-plot', dest="plotfigs", action="store_true",
-        help="If set, will generate plots of A0 fitting results under \
-                ./Output/A0Fits/*target/fig/")
-
-    parser.add_argument('-n_use', dest="nights_use", action="store",
-        help="If you don't want to process all nights under the \
-                ./Input/*target/ folder, specify an array of night you wish \
-                to process here. e.g., [20181111,20181112]",
-        type=str,   default='')
-    parser.add_argument('-DeBug', dest="debug", action="store_true",
-        help="If set, DeBug logging will be output, as well as (lots of) \
-                extra plots.")
-
-    parser.add_argument(
-        '--version', action='version',
-        version='%(prog)s {}'.format(_igrins_version))
-
+        ''', epilog = _epilog
+        )
+    parser = _add_common_arguments_1(parser)
+    parser = _add_common_arguments_2(parser)
     return parser.parse_args()
-
 
 def _argparse_step2():
     """Take care of all the argparse stuff."""
@@ -157,114 +242,44 @@ def _argparse_step2():
         Only the single most precise wavelength region is used, and all \n
         separate observations for a given exposure are combined into one \n
         higher S/N spectrum before being fit.
-        ''',
-        epilog = _epilog)
-    parser.add_argument("targname", action="store",
-        help="Enter your *target name, no space", type=str)
-    parser.add_argument("-HorK", dest="band", action="store",
-        help="Which band to process? H or K?. Default = K",
-        type=str, default='K')
-    parser.add_argument("-Wr", dest="WRegion", action="store",
-        help="Which list of wavelength regions file (./Input/UseWv/WaveRegions_X) \
-                to use? Defaults to those chosen by IGRINS RV team, -Wr 1",
-        type=int, default=int(1))
-    parser.add_argument("-l_use", dest="label_use", action="store",
-        help="Specify ORDER used. Default is the first in WRegion list",
-        type=int, default=int(0))
+        ''', epilog = _epilog
+        )
+    parser = _add_common_arguments_1(parser)
+    parser = _add_common_arguments_2(parser)
+    parser = _add_common_arguments_3(parser)
 
-    parser.add_argument("-SN", dest="SN_cut", action="store",
-        help="Spectrum S/N quality cut. Spectra with median S/N below this \
-                will not be analyzed. Default = 50 ",
-        type=str, default='50')
-    parser.add_argument('-i', dest="initvsini", action="store",
-        help="Initial vsini (float, km/s)",
-        type=str,   default='' )
-    parser.add_argument('-v', dest="vsinivary", action="store",
+    parser.add_argument(
+        '-i', dest="initvsini", action="store", help="Initial vsini (float, km/s)",
+        type=str, default=''
+        )
+    parser.add_argument(
+        '-v', dest="vsinivary", action="store",
         help="Range of allowed vsini variation during optimization (float, \
                 if set to zero vsini will be held constant), \
                 default = 5.0 km/s",
-        type=str, default='5' )
-    parser.add_argument('-g', dest="guesses", action="store",
+        type=str, default='5'
+        )
+    parser.add_argument(
+        '-g', dest="guesses", action="store",
         help="Initial guess for RV (int or float, km/s) for all nights. \
                 Use -gX instead if you want to reference an Initguesser_results \
                 file from a previous run of this step, which will have a \
                 different initial guess for each night",
-        type=str, default='')
-    parser.add_argument('-gX', dest="guessesX", action="store",
+        type=str, default=''
+        )
+    parser.add_argument(
+        '-gX', dest="guessesX", action="store",
         help="The number, X, that refers to the ./*targname/Initguesser_results_X \
                 file you wish to use for initial RV guesses",
-        type=str, default='')
-
-    parser.add_argument('-t', dest="template", action="store",
-        help="Stellar template. Pick from 'synthetic', 'PHOENIX', or \
-                'livingston'. Default = 'synthetic'",
-        type=str, default='synthetic' )
-    parser.add_argument('-temp', dest="temperature", action="store",
-        help="The synthetic template temperature used, e.g., 5000",
-        type=str,   default='' )
-    parser.add_argument('-logg', dest="logg", action="store",
-        help="The synthetic template logg used, e.g., 4.5",
-        type=str, default='' )
-
-    parser.add_argument('-B',      dest="B",           action="store",
-                        help="The synthetic template B used in kG, e.g., 2.5",
-                        type=str,   default='0' )
-
-
-    parser.add_argument('-binary', dest="binary", action="store_true",
-        help="If set, will fit two stellar components to spectra")
-
-    parser.add_argument('-i2', dest="initvsini2", action="store",
-        help="Initial vsini of secondary (float, km/s). If no literature value known, use \
-                the value given by Step 2",
-        type=str, default='' )
-    parser.add_argument('-v2', dest="vsinivary2", action="store",
-        help="Range of allowed vsini #2 variation during optimization, \
-                default = 5.0 km/s. Should be set to 0 for final run.",
-        type=str, default='5.0' )
-    parser.add_argument('-t2', dest="template2", action="store",
-        help="Secondary stellar template. Pick from 'synthetic', 'PHOENIX', or \
-                'livingston'. Default = 'synthetic'",
-        type=str, default='synthetic' )
-    parser.add_argument('-temp2', dest="temperature2", action="store",
-        help="The Secondary synthetic template temperature used, e.g., 5000",
-        type=str, default='' )
-    parser.add_argument('-logg2', dest="logg2", action="store",
-        help="The Secondary synthetic template logg used, e.g., 4.5",
-        type=str, default='' )
-    parser.add_argument('-B2',      dest="B2",           action="store",
-                    help="The Secondary synthetic template B used in kG, e.g., 2.5",
-                    type=str,   default='0' )
-    parser.add_argument('-f', dest="fluxratio", action="store",
-        help="Flux ratio between primary and secondary. If primary is 8 times\
-        brighter than secondary, this would be 0.125 (float).",
-        type=str, default='' )
-
-    parser.add_argument('-c', dest="Nthreads", action="store",
-        help="Number of cpu (threads) to use, default is 1/2 of available \
-                ones (you have %i cpus (threads) avaliable)"%(mp.cpu_count()),
-        type=int,   default=int(mp.cpu_count()//2) )
-    parser.add_argument('-plot', dest="plotfigs", action="store_true",
-        help="If set, will generate plots of the basic fitting results under \
-                ./Output/*targname_*band/figs/main_step2_*band_*runnumber")
-    parser.add_argument('-n_use', dest="nights_use", action="store",
-        help="If you don't want to process all nights under the ./Input/*target/ \
-                folder, specify an array of night you wish to process here. \
-                e.g., [20181111,20181112]",
-        type=str,   default='')
-    parser.add_argument('-DeBug', dest="debug", action="store_true",
-        help="If set, DeBug logging will be output, as well as (lots of) \
-                extra plots.")
-    parser.add_argument('-sk_check', dest="skip", action="store_true",
-        help="If set, will skip the input parameters check. Handy when running \
-                multiple targets line by line")
+        type=str, default=''
+        )
 
     parser.add_argument(
-        '--version', action='version',
-        version='%(prog)s {}'.format(_igrins_version))
-
+        "-l_use", dest="label_use", action="store",
+        help="Specify ORDER used. Default is the first in WRegion list",
+        type=int, default=int(0)
+        )
     return parser.parse_args()
-
 
 def _argparse_step3():
     """Take care of all the argparse stuff."""
@@ -288,122 +303,57 @@ def _argparse_step3():
         If \vsini is already well-known, it is not necessary to run Step 3 more \n
         than once, as the code fully converges to the final RVs (within uncertainty) \n
         through just one run.
-        ''',
-        epilog = _epilog)
-    parser.add_argument("targname", action="store",
-        help="Enter your *target name", type=str)
-    parser.add_argument("-mode", dest="mode", action="store",
-        help="RV standard star (STD) or a normal target (TAR)?",
-        type=str, default='')
-    parser.add_argument("-HorK", dest="band", action="store",
-        help="Which band to process? H or K?. Default = K",
-        type=str, default='K')
-    parser.add_argument("-Wr", dest="WRegion", action="store",
-        help="Which list of wavelength regions file (./Input/UseWv/WaveRegions_X) \
-                to use? Defaults to those chosen by IGRINS RV team, -Wr 1",
-        type=int, default=int(1))
+        ''', epilog = _epilog
+        )
+    parser = _add_common_arguments_1(parser)
+    parser = _add_common_arguments_2(parser)
+    parser = _add_common_arguments_3(parser)
 
-    parser.add_argument("-SN", dest="SN_cut", action="store",
-        help="Spectrum S/N quality cut. Spectra with median S/N below this \
-                will not be analyzed. Default = 50 ",
-        type=str, default='50')
-    parser.add_argument("-nAB", dest="nAB", action="store",
+    parser.add_argument(
+        "-mode", dest="mode", action="store",
+        help="RV standard star (STD) or a normal target (TAR)?",
+        type=str, default=''
+        )
+    parser.add_argument(
+        "-nAB", dest="nAB", action="store",
         help="Minium number of separate A/B exposures within a set for a \
                 given observation (ensures accuracy of uncertainly estimates). \
                 Default = 2 for STD, 3 for TAR",
-        type=str, default='')
-
-    parser.add_argument('-i', dest="initvsini", action="store",
+        type=str, default=''
+        )
+    parser.add_argument(
+        '-i', dest="initvsini", action="store",
         help="Initial vsini (float, km/s). If no literature value known, use \
                 the value given by Step 2",
-        type=str, default='' )
-    parser.add_argument('-v', dest="vsinivary", action="store",
+        type=str, default='' 
+        )
+    parser.add_argument(
+        '-v', dest="vsinivary", action="store",
         help="Range of allowed vsini variation during optimization, \
                 default = 5.0 km/s. Should be set to 0 for final run.",
-        type=str, default='5.0' )
-    parser.add_argument('-g', dest="guesses", action="store",
+        type=str, default='5.0'
+        )
+    parser.add_argument(
+        '-g', dest="guesses", action="store",
         help="For STD star. Initial RV guess for all nights. Given by \
                 Step 2 results (float, km/s)",
-        type=str, default='' )
-    parser.add_argument('-gS', dest="guesses_source", action="store",
+        type=str, default='' 
+        )
+    parser.add_argument(
+        '-gS', dest="guesses_source", action="store",
         help="For TAR star. Source for list of initial RV guesses. \
                 'init' = Initguesser_results_X = past Step 2 result OR \
                 'rvre' = RV_results_X = past Step 3 result",
-        type=str, default='')
-    parser.add_argument('-gX', dest="guessesX", action="store",
+        type=str, default=''
+        )
+    parser.add_argument(
+        '-gX', dest="guessesX", action="store",
         help="For TAR star. The number, X, under ./*targname/Initguesser_results_X \
                 or ./*targname/RV_results_X, that you wish to use. \
                 Prefix determined by -gS",
-        type=str, default='')
-
-    parser.add_argument('-t', dest="template", action="store",
-        help="Stellar template. Pick from 'synthetic', 'PHOENIX', or \
-                'livingston'. Default = 'synthetic'",
-        type=str, default='synthetic' )
-    parser.add_argument('-temp', dest="temperature", action="store",
-        help="The synthetic template temperature used, e.g., 5000",
-        type=str, default='' )
-    parser.add_argument('-logg', dest="logg", action="store",
-        help="The synthetic template logg used, e.g., 4.5",
-        type=str, default='' )
-
-    parser.add_argument('-B',      dest="B",           action="store",
-                        help="The synthetic template B used in kG, e.g., 2.5",
-                        type=str,   default='0' )
-
-    parser.add_argument('-binary', dest="binary", action="store_true",
-        help="If set, will fit two stellar components to spectra")
-
-    parser.add_argument('-i2', dest="initvsini2", action="store",
-        help="Initial vsini of secondary (float, km/s). If no literature value known, use \
-                the value given by Step 2",
-        type=str, default='' )
-    parser.add_argument('-v2', dest="vsinivary2", action="store",
-        help="Range of allowed vsini #2 variation during optimization, \
-                default = 5.0 km/s. Should be set to 0 for final run.",
-        type=str, default='5.0' )
-    parser.add_argument('-t2', dest="template2", action="store",
-        help="Secondary stellar template. Pick from 'synthetic', 'PHOENIX', or \
-                'livingston'. Default = 'synthetic'",
-        type=str, default='synthetic' )
-    parser.add_argument('-temp2', dest="temperature2", action="store",
-        help="The Secondary synthetic template temperature used, e.g., 5000",
-        type=str, default='' )
-    parser.add_argument('-logg2', dest="logg2", action="store",
-        help="The Secondary synthetic template logg used, e.g., 4.5",
-        type=str, default='' )
-    parser.add_argument('-B2',      dest="B2",           action="store",
-                    help="The Secondary synthetic template B used in kG, e.g., 2.5",
-                    type=str,   default='0' )
-    parser.add_argument('-f', dest="fluxratio", action="store",
-        help="Flux ratio between primary and secondary. If primary is 8 times\
-        brighter than secondary, this would be 0.125 (float).",
-        type=str, default='' )
-
-    parser.add_argument('-c', dest="Nthreads", action="store",
-        help="Number of cpu (threads) to use, default is 1/2 of available \
-                ones (you have %i cpus (threads) avaliable)"%(mp.cpu_count()),
-        type=int,   default=int(mp.cpu_count()//2) )
-    parser.add_argument('-plot', dest="plotfigs", action="store_true",
-        help="If set, will generate plots of the fitting results under \
-                ./Output/*targname_*band/figs/main_step3_*band_*runnumber")
-    parser.add_argument('-n_use', dest="nights_use", action="store",
-        help="If you don't want to process all nights under the ./Input/*target/ \
-                folder, specify an array of night you wish to process here. \
-                e.g., [20181111,20181112]",
-        type=str, default='')
-    parser.add_argument('-DeBug', dest="debug", action="store_true",
-        help="If set, DeBug logging will be output, as well as (lots of) extra plots.")
-    parser.add_argument('-sk_check', dest="skip", action="store_true",
-        help="If set, will skip the input parameters check. Handy when running \
-                multiple targets line by line")
-
-    parser.add_argument(
-        '--version', action='version',
-        version='%(prog)s {}'.format(_igrins_version))
-
+        type=str, default=''
+        )
     return parser.parse_args()
-
 
 def _argparse_step3_interpteff():
     """Take care of all the argparse stuff."""
@@ -427,124 +377,63 @@ def _argparse_step3_interpteff():
         If \vsini is already well-known, it is not necessary to run Step 3 more \n
         than once, as the code fully converges to the final RVs (within uncertainty) \n
         through just one run.
-        ''',
-        epilog = _epilog)
-    parser.add_argument("targname", action="store",
-        help="Enter your *target name", type=str)
-    parser.add_argument("-mode", dest="mode", action="store",
-        help="RV standard star (STD) or a normal target (TAR)?",
-        type=str, default='')
-    parser.add_argument("-HorK", dest="band", action="store",
-        help="Which band to process? H or K?. Default = K",
-        type=str, default='K')
-    parser.add_argument("-Wr", dest="WRegion", action="store",
-        help="Which list of wavelength regions file (./Input/UseWv/WaveRegions_X) \
-                to use? Defaults to those chosen by IGRINS RV team, -Wr 1",
-        type=int, default=int(1))
+        ''', epilog = _epilog
+        )
+    parser = _add_common_arguments_1(parser)
+    parser = _add_common_arguments_2(parser)
+    parser = _add_common_arguments_3(parser)
 
-    parser.add_argument("-SN", dest="SN_cut", action="store",
-        help="Spectrum S/N quality cut. Spectra with median S/N below this \
-                will not be analyzed. Default = 50 ",
-        type=str, default='50')
-    parser.add_argument("-nAB", dest="nAB", action="store",
+    parser.add_argument(
+        "-mode", dest="mode", action="store",
+        help="RV standard star (STD) or a normal target (TAR)?",
+        type=str, default=''
+        )
+    parser.add_argument(
+        "-nAB", dest="nAB", action="store",
         help="Minium number of separate A/B exposures within a set for a \
                 given observation (ensures accuracy of uncertainly estimates). \
                 Default = 2 for STD, 3 for TAR",
-        type=str, default='')
+        type=str, default=''
+        )
 
-    parser.add_argument('-i', dest="initvsini", action="store",
+    parser.add_argument(
+        '-i', dest="initvsini", action="store",
         help="Initial vsini (float, km/s). If no literature value known, use \
                 the value given by Step 2",
-        type=str, default='' )
-    parser.add_argument('-v', dest="vsinivary", action="store",
+        type=str, default='' 
+        )
+    parser.add_argument(
+        '-v', dest="vsinivary", action="store",
         help="Range of allowed vsini variation during optimization, \
                 default = 5.0 km/s. Should be set to 0 for final run.",
-        type=str, default='5.0' )
-    parser.add_argument('-dteff', dest="dteff", action="store",
-        help="Range of allowed Teff variation during optimization, \
-                default = 0 K.",
-        type=str, default='0' )
-    parser.add_argument('-g', dest="guesses", action="store",
+        type=str, default='5.0'
+        )
+    parser.add_argument(
+        '-g', dest="guesses", action="store",
         help="For STD star. Initial RV guess for all nights. Given by \
                 Step 2 results (float, km/s)",
-        type=str, default='' )
-    parser.add_argument('-gS', dest="guesses_source", action="store",
+        type=str, default='' 
+        )
+    parser.add_argument(
+        '-gS', dest="guesses_source", action="store",
         help="For TAR star. Source for list of initial RV guesses. \
                 'init' = Initguesser_results_X = past Step 2 result OR \
                 'rvre' = RV_results_X = past Step 3 result",
-        type=str, default='')
-    parser.add_argument('-gX', dest="guessesX", action="store",
+        type=str, default=''
+        )
+    parser.add_argument(
+        '-gX', dest="guessesX", action="store",
         help="For TAR star. The number, X, under ./*targname/Initguesser_results_X \
                 or ./*targname/RV_results_X, that you wish to use. \
                 Prefix determined by -gS",
-        type=str, default='')
-
-    parser.add_argument('-t', dest="template", action="store",
-        help="Stellar template. Pick from 'synthetic', 'PHOENIX', or \
-                'livingston'. Default = 'synthetic'",
-        type=str, default='synthetic' )
-    parser.add_argument('-temp', dest="temperature", action="store",
-        help="The synthetic template temperature used, e.g., 5000",
-        type=str, default='' )
-    parser.add_argument('-logg', dest="logg", action="store",
-        help="The synthetic template logg used, e.g., 4.5",
-        type=str, default='' )
-
-    parser.add_argument('-B',      dest="B",           action="store",
-                        help="The synthetic template B used in kG, e.g., 2.5",
-                        type=str,   default='0' )
-
-    parser.add_argument('-binary', dest="binary", action="store_true",
-        help="If set, will fit two stellar components to spectra")
-
-    parser.add_argument('-i2', dest="initvsini2", action="store",
-        help="Initial vsini of secondary (float, km/s). If no literature value known, use \
-                the value given by Step 2",
-        type=str, default='' )
-    parser.add_argument('-v2', dest="vsinivary2", action="store",
-        help="Range of allowed vsini #2 variation during optimization, \
-                default = 5.0 km/s. Should be set to 0 for final run.",
-        type=str, default='5.0' )
-    parser.add_argument('-t2', dest="template2", action="store",
-        help="Secondary stellar template. Pick from 'synthetic', 'PHOENIX', or \
-                'livingston'. Default = 'synthetic'",
-        type=str, default='synthetic' )
-    parser.add_argument('-temp2', dest="temperature2", action="store",
-        help="The Secondary synthetic template temperature used, e.g., 5000",
-        type=str, default='' )
-    parser.add_argument('-logg2', dest="logg2", action="store",
-        help="The Secondary synthetic template logg used, e.g., 4.5",
-        type=str, default='' )
-    parser.add_argument('-B2',      dest="B2",           action="store",
-                    help="The Secondary synthetic template B used in kG, e.g., 2.5",
-                    type=str,   default='0' )
-    parser.add_argument('-f', dest="fluxratio", action="store",
-        help="Flux ratio between primary and secondary. If primary is 8 times\
-        brighter than secondary, this would be 0.125 (float).",
-        type=str, default='' )
-
-    parser.add_argument('-c', dest="Nthreads", action="store",
-        help="Number of cpu (threads) to use, default is 1/2 of available \
-                ones (you have %i cpus (threads) avaliable)"%(mp.cpu_count()),
-        type=int,   default=int(mp.cpu_count()//2) )
-    parser.add_argument('-plot', dest="plotfigs", action="store_true",
-        help="If set, will generate plots of the fitting results under \
-                ./Output/*targname_*band/figs/main_step3_*band_*runnumber")
-    parser.add_argument('-n_use', dest="nights_use", action="store",
-        help="If you don't want to process all nights under the ./Input/*target/ \
-                folder, specify an array of night you wish to process here. \
-                e.g., [20181111,20181112]",
-        type=str, default='')
-    parser.add_argument('-DeBug', dest="debug", action="store_true",
-        help="If set, DeBug logging will be output, as well as (lots of) extra plots.")
-    parser.add_argument('-sk_check', dest="skip", action="store_true",
-        help="If set, will skip the input parameters check. Handy when running \
-                multiple targets line by line")
-
+        type=str, default=''
+        )
     parser.add_argument(
-        '--version', action='version',
-        version='%(prog)s {}'.format(_igrins_version))
-
+        '-dteff', dest="dteff", action="store",
+        help="Range of allowed Teff variation during optimization, \
+                default = 0 K.",
+        type=str, default='0'
+        )
     return parser.parse_args()
 
 def _argparse_step4():
@@ -560,36 +449,31 @@ def _argparse_step4():
 
         For the most part, the uncertainties should change little (~1 m/s), \n
         but for high vsini (>~ 15 km/s) objects, it may increase by ~5-7 m/s or so.
-        ''',
-        epilog = _epilog)
-    parser.add_argument("targname",                          action="store",
-        help="Enter your *target name",            type=str)
+        ''', epilog = _epilog
+        )
+    
+    parser = _add_common_arguments_1(parser)
 
-    parser.add_argument("-run1",    dest="run1",             action="store",
+    parser.add_argument(
+        "-run1", dest="run1", action="store",
         help="First step3 run that will be used, the one with vsini held fixed \
                 AT THE BEST GUESS. Takes the string that suffixes \
                 'RV_results_', e.g. for 'RV_results_1', you would set this to '1'.",
-        type=str,   default='')
-    parser.add_argument("-run2",    dest="run2",             action="store",
+        type=str, default=''
+        )
+    parser.add_argument(
+        "-run2", dest="run2", action="store",
         help="Second step3 run that will be used, the one with vsini held fixed \
                 at the best guess PLUS OR MINUS SIGMA.",
-        type=str,   default='')
-
-    parser.add_argument("-HorK",    dest="band",             action="store",
-        help="Which band to process? H or K?. Default = K",
-        type=str,   default='K')
-
-    parser.add_argument('-sk_check', dest="skip",           action="store_true",
-        help="If set, will skip the input parameters check. Handy when running \
-                multiple targets line by line")
-
+        type=str, default=''
+        )
     parser.add_argument(
-        '--version', action='version',
-        version='%(prog)s {}'.format(_igrins_version))
-
+        '-sk_check', dest="skip", action="store_true",
+        help="If set, will skip the input parameters check. Handy when running \
+                multiple targets line by line"
+                )
     return parser.parse_args()
 
-  
 def _argparse_step5():
     """Take care of all the argparse stuff."""
     parser = argparse.ArgumentParser(
@@ -601,71 +485,91 @@ def _argparse_step5():
         to compute bisectors if the corresponding flag is set. If you've \n
         already produced the stellar residuals, you can set a flag to skip \n
         the first part of Step 5 and go straight to calculating bisectors.
-        ''',
-        epilog = _epilog)
-    parser.add_argument("targname", action="store",
-        help="Enter your *target name", type=str)
-    parser.add_argument("-HorK", dest="band", action="store",
-        help="Which band to process? H or K?. Default = K",
-        type=str, default='K')
-    parser.add_argument("-Wr", dest="WRegion", action="store",
-        help="Which list of wavelength regions file (./Input/UseWv/WaveRegions_X) \
-                to use? Defaults to those chosen by IGRINS RV team, -Wr 1",
-        type=int, default=int(1))
-
-    parser.add_argument("-mode", dest="mode", action="store",
-        help="RV standard star (STD) or a normal target (TAR)?",
-        type=str, default='')
-    parser.add_argument("-run",    dest="run",             action="store",
-        help="Takes the string that suffixes \
-                'RV_results_', e.g. for 'RV_results_1', you would set this to '1'.",
-        type=str,   default='')
-
-    parser.add_argument('-t', dest="template", action="store",
-        help="Stellar template. Pick from 'synthetic', 'PHOENIX', or \
-                'livingston'. Default = 'synthetic'",
-        type=str, default='synthetic' )
-    parser.add_argument('-temp', dest="temperature", action="store",
-        help="The synthetic template temperature used, e.g., 5000",
-        type=str, default='' )
-    parser.add_argument('-logg', dest="logg", action="store",
-        help="The synthetic template logg used, e.g., 4.5",
-        type=str, default='' )
-
-    parser.add_argument('-B',      dest="B",           action="store",
-                        help="The synthetic template B used in kG, e.g., 2.5",
-                        type=str,   default='0' )
-
-    parser.add_argument('-comp', dest="component", action="store",
-                        help="Crosscorrelate 'primary' stellar residuals or (potentially present) 'secondary' stellar residuals?",
-                        type=str, default='' )
-    parser.add_argument('-ABkind', dest="ABkind", action="store",
-                        help="Use individual As and Bs ('separate') or combine them ('combined')?",
-                        type=str, default='' )
-
-    parser.add_argument('-c', dest="Nthreads", action="store",
-        help="Number of cpu (threads) to use, default is 1/2 of available \
-                ones (you have %i cpus (threads) avaliable)"%(mp.cpu_count()),
-        type=int,   default=int(mp.cpu_count()//2) )
-    parser.add_argument('-plot', dest="plotfigs", action="store_true",
-        help="If set, will generate plots of the fitting results under \
-                ./Output/*targname_*band/figs/main_step3_*band_*runnumber")
-    parser.add_argument('-n_use', dest="nights_use", action="store",
-        help="If you don't want to process all nights under the ./Input/*target/ \
-                folder, specify an array of night you wish to process here. \
-                e.g., [20181111,20181112]",
-        type=str, default='')
-
-    parser.add_argument('-skipmod',    dest="skipmod",          action="store_true",
-        help="If set, will skip computing residuals if you have done so already")
-    parser.add_argument('-DeBug', dest="debug", action="store_true",
-        help="If set, DeBug logging will be output, as well as (lots of) extra plots.")
-    parser.add_argument('-sk_check', dest="skip", action="store_true",
-        help="If set, will skip the input parameters check. Handy when running \
-                multiple targets line by line")
+        ''', epilog=_epilog
+        )
+    parser = _add_common_arguments_1(parser)
 
     parser.add_argument(
-        '--version', action='version',
-        version='%(prog)s {}'.format(_igrins_version))
+        "-Wr", dest="WRegion", action="store",
+        help="Which list of wavelength regions file (./Input/UseWv/WaveRegions_X) \
+                to use? Defaults to those chosen by IGRINS RV team, -Wr 1",
+        type=int, default=int(1)
+        )
+    parser.add_argument(
+        "-mode", dest="mode", action="store",
+        help="RV standard star (STD) or a normal target (TAR)?",
+        type=str, default=''
+        )
+    parser.add_argument(
+        "-run", dest="run", action="store",
+        help="Takes the string that suffixes \
+                'RV_results_', e.g. for 'RV_results_1', you would set this to '1'.",
+        type=str, default=''
+        )
+    parser.add_argument(
+        '-t', dest="template", action="store",
+        help="Stellar template. Pick from 'synthetic', 'PHOENIX', or \
+                'livingston'. Default = 'synthetic'",
+        type=str, default='synthetic'
+        )
+    parser.add_argument(
+        '-temp', dest="temperature", action="store",
+        help="The synthetic template temperature used, e.g., 5000",
+        type=str, default=''
+        )
+    parser.add_argument(
+        '-logg', dest="logg", action="store",
+        help="The synthetic template logg used, e.g., 4.5",
+        type=str, default=''
+        )
+    parser.add_argument(
+        '-B', dest="B", action="store",
+        help="The synthetic template B used in kG, e.g., 2.5",
+        type=str, default='0'
+        )
 
+    parser.add_argument(
+        '-comp', dest="component", action="store",
+        help="Crosscorrelate 'primary' stellar residuals or \
+                (potentially present) 'secondary' stellar residuals?",
+        type=str, default=''
+        )
+    parser.add_argument(
+        '-ABkind', dest="ABkind", action="store",
+        help="Use individual As and Bs ('separate') or combine them ('combined')?",
+        type=str, default=''
+        )
+
+    parser.add_argument(
+        '-c', dest="Nthreads", action="store",
+        help="Number of cpu (threads) to use, default is 1/2 of avalible \
+                ones (you have %i cpus (threads) avaliable)"%(mp.cpu_count()),
+        type=int, default=int(mp.cpu_count()//2) 
+        )
+    parser.add_argument(
+        '-plot', dest="plotfigs", action="store_true",
+        help="If set, will generate and save plots from the program."
+        )
+    parser.add_argument(
+        '-n_use', dest="nights_use", action="store",
+        help="If you don't want to process all nights under the \
+                ./Input/*target/ folder, specify an array of night you wish \
+                to process here. e.g., [20181111,20181112]",
+        type=str, default=''
+        )
+    parser.add_argument(
+        '-DeBug', dest="debug", action="store_true",
+        help="If set, DeBug logging will be output, as well as (lots of) \
+                extra plots."
+        )
+
+    parser.add_argument(
+        '-skipmod', dest="skipmod", action="store_true",
+        help="If set, will skip computing residuals if you have done so already"
+        )
+    parser.add_argument(
+        '-sk_check', dest="skip", action="store_true",
+        help="If set, will skip the input parameters check. Handy when running \
+                multiple targets line by line"
+        )
     return parser.parse_args()

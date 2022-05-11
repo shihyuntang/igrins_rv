@@ -15,89 +15,42 @@ from Engine.detect_peaks import detect_peaks
 from Engine.crmask    import cr_masker
 from Engine.molmask    import (h2o_masker, mask_wave2pixel_range,
                                     merge_pixel_masks, nonCO_masker)
+from Engine.step2and3common_func import (setup_fitting_init_pars, 
+    _make_dpars, trim_obs_data, trim_tel_data, check_if_template_exist,
+    check_user_input, setup_logger, _add_npar)
 
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
-def setup_fitting_init_pars(band, initvsini, order, initvsini2=0, fluxratio=0):
-    """Setup the initial values for the parameters to be optimized (fitted)
-
-    Args:
-        band (str): H or K band
-        initvsini (float): initial vsini value
-        order (int): Current run order
-        initvsini2 (float): initial vsini value for the secondary
-        fluxratio (float): flux ration between the secondary and the promary
-
-    Returns:
-        np.array: initial values for the parameters to be optimized
-    """
-
-    # start at bucket loc = 1250 +- 100, width = 250 +- 100,
-    # depth = 100 +- 5000 but floor at 0
-    centerloc = 1250 if band == 'H' else 1180
-
-    # Initialize parameter array for optimization as well as half-range values
-    # for each parameter during the various steps of the optimization.
-    # Many of the parameters initialized here will be changed throughout the
-    # code before optimization and in between optimization steps.
-
-    pars0 = np.array([
-        np.nan,    # 0: The shift of the stellar template (km/s) [assigned later]
-        0.3,       # 1: The scale factor for the stellar template
-        0.0,       # 2: The shift of the telluric template (km/s)
-        0.6,       # 3: The scale factor for the telluric template
-        initvsini, # 4: vsini (km/s)
-        np.nan,    # 5: The instrumental resolution (FWHM) in pixels
-        0.0,       # 6: Wavelength 0-pt
-        0.0,       # 7: Wavelength linear component
-        0.0,       # 8: Wavelength quadratic component
-        0.0,       # 9: Wavelength cubic component
-        1.0,       #10: Continuum zero point
-        0.0,       #11: Continuum linear component
-        0.0,       #12: Continuum quadratic component
-        np.nan,    #13: Instrumental resolution linear component
-        np.nan,    #14: Instrumental resolution quadratic component
-        centerloc, #15: Blaze dip center location
-        330,       #16: Blaze dip full width
-        0.05,      #17: Blaze dip depth
-        90,        #18: Secondary blaze dip full width
-        0.05,      #19: Blaze dip depth
-        0.0,       #20: Continuum cubic component
-        0.0,       #21: Continuum quartic component
-        0.0,       #22: Continuum pentic component
-        0.0,       #23: Continuum hexic component
-        np.nan,    #24: The shift of the second stellar template (km/s) [assigned later]
-        0.3,       #25: The scale factor for the second stellar template
-        initvsini2,#26: Secondary vsini (km/s)
-        fluxratio  #27: Secondary to primary flux ratio S2/S1 (km/s)
-    ])
-
-    if int(order) == 13: pars0[1] = 0.8
-
-    return pars0
-
-def _make_dpars(key_name, locs, dpar, numofpars, dpars_org):
-    """Conventional func for make new dpar array.
-    Not meant to call by the user.
-
-    Args:
-        key_name (srt): dict key name
-        locs (list): location where dpar needs to change
-        dpar (list): dpar values for the locs
-        numofpars (int): number of parameters
-        dpars_org (dict): dict for the dpars_org
-
-    Returns:
-        [dict]: dpars_org
-    """
-
-    init_dpars = np.zeros(numofpars)
-    init_dpars[locs] = dpar
-
-    dpars_org[key_name] = init_dpars
-
-    return dpars_org
-
+# idx and description of optimizing parameters in pars0
+#   0: The shift of the stellar template (km/s) [assigned later]
+#   1: The scale factor for the stellar template
+#   2: The shift of the telluric template (km/s)
+#   3: The scale factor for the telluric template
+#   4: vsini (km/s)
+#   5: The instrumental resolution (FWHM) in pixels
+#   6: Wavelength 0-pt
+#   7: Wavelength linear component
+#   8: Wavelength quadratic component
+#   9: Wavelength cubic component
+#   10: Continuum zero point
+#   11: Continuum linear component
+#   12: Continuum quadratic component
+#   13: Instrumental resolution linear component
+#   14: Instrumental resolution quadratic component
+#   15: Blaze dip center location
+#   16: Blaze dip full width
+#   17: Blaze dip depth
+#   18: Secondary blaze dip full width
+#   19: Blaze dip depth
+#   20: Continuum cubic component
+#   21: Continuum quartic component
+#   22: Continuum pentic component
+#   23: Continuum hexic component
+#   24: The shift of the second stellar template (km/s) [assigned later]
+#   25: The scale factor for the second stellar template
+#   26: Secondary vsini (km/s)
+#   27: Secondary to primary flux ratio S2/S1 (km/s)
+  #-------------------------------------------------------------------------------
 
 def base_dpars_dict(
     vsini_v1, masterbeam, band, order, numofpars, vsini_v2=-1):
@@ -236,152 +189,7 @@ def setup_tel(args, night, beam, order, tbdata):
 
     return watm, satm, a0contx, continuum, molnames, watmmols, satmmols
 
-def trim_obs_data(x, wave, s, u, xbounds, maskwaves):
-    """ Trim obvious outliers above the blaze (i.e. cosmic rays)
-    """
-    nzones = 5
-    x = basicclip_above(x,s,nzones)
-    wave = basicclip_above(wave,s,nzones)
-    u = basicclip_above(u,s,nzones)
-    s = basicclip_above(s,s,nzones)
-    x = basicclip_above(x,s,nzones)
-    wave = basicclip_above(wave,s,nzones)
-    u = basicclip_above(u,s,nzones)
-    s = basicclip_above(s,s,nzones)
-
-    # Cut spectrum to within wavelength regions defined in input list
-    s_piece    = s[    (x > xbounds[0]) & (x < xbounds[-1]) ]
-    u_piece    = u[    (x > xbounds[0]) & (x < xbounds[-1]) ]
-    wave_piece = wave[ (x > xbounds[0]) & (x < xbounds[-1]) ]
-    x_piece    = x[    (x > xbounds[0]) & (x < xbounds[-1]) ]
-
-    testmask = np.ones_like(s_piece, dtype=bool)
-    if len(maskwaves) != 0:
-        for maskbounds in maskwaves:
-            testmask[(wave_piece*1e4 > maskbounds[0]) \
-                        & (wave_piece*1e4 < maskbounds[1]) ] = False
-
-    return s_piece, u_piece, wave_piece, x_piece, testmask
-
-def trim_tel_data(watm, satm, wave_piece, s_piece, u_piece, x_piece):
-    """Trim telluric template to data range +- 15 AA. If telluric
-    template buffer is cut short because A0 lines didn't extend
-    far past data range, cut data range accordingly.
-    """
-
-    satm_in = satm[(watm > np.min(wave_piece)*1e4 - 10) \
-                        & (watm < np.max(wave_piece)*1e4 + 10)]
-    watm_in = watm[(watm > np.min(wave_piece)*1e4 - 10) \
-                        & (watm < np.max(wave_piece)*1e4 + 10)]
-
-    s_piece	= s_piece[ (wave_piece*1e4 > np.min(watm_in)+10) \
-                        & (wave_piece*1e4 < np.max(watm_in)-10)]
-    u_piece	= u_piece[ (wave_piece*1e4 > np.min(watm_in)+10) \
-                        & (wave_piece*1e4 < np.max(watm_in)-10)]
-    x_piece	= x_piece[ (wave_piece*1e4 > np.min(watm_in)+10) \
-                        & (wave_piece*1e4 < np.max(watm_in)-10)]
-    wave_piece = wave_piece[(wave_piece*1e4 > np.min(watm_in)+10) \
-                        & (wave_piece*1e4 < np.max(watm_in)-10)]
-
-    return satm_in, watm_in, wave_piece, s_piece, u_piece, x_piece
-
-def check_if_template_exist(args, singleORdouble=1):
-
-    syntemp = os.listdir(f'./Engine/syn_template')
-
-    if singleORdouble == 1:
-        template_kind = args.template.lower()
-        temperature = args.temperature
-        logg = args.logg
-        ll = ''
-    elif singleORdouble == 2:
-        template_kind = args.template2.lower()
-        temperature = args.temperature2
-        logg = args.logg2
-        ll = '2'
-    else:
-        sys.exit(f'singleORdouble gives {singleORdouble}, can onlu be 1 or 2.')
-
-    if template_kind == 'synthetic':
-        #list of all syntheticstellar
-        syntemp = [i for i in syntemp if i[:3] == 'syn']
-        synT    = [ i.split('_')[2][1:]  for i in syntemp ]
-        synlogg = [ i.split('_')[3][4:7] for i in syntemp ]
-    elif template_kind == 'phoenix':
-        #list of all phoenix
-        syntemp = [i for i in syntemp if i[:3] == 'PHO']
-        synT    = [ i.split('-')[1][4:]  for i in syntemp ]
-        synlogg = [ i.split('-')[2][:3] for i in syntemp ]
-    else:
-        synT = [temperature]
-        synlogg = [logg]
-
-    if temperature not in synT:
-        sys.exit(
-            f'ERROR: UNEXPECTED STELLAR TEMPERATURE FOR "-temp{ll}" INPUT! '
-            f'{syntemp} AVALIABLE UNDER ./Engine/syn_template/'
-            )
-
-    if logg not in synlogg:
-        sys.exit(
-            f'ERROR: UNEXPECTED STELLAR LOGG FOR "-logg{ll}" INPUT! {syntemp} '
-            'AVALIABLE UNDER ./Engine/syn_template/'
-            )
-
-def check_user_input(args, singleORdouble=1):
-
-    if args.mode == '':
-        sys.exit(
-            'ERROR: YOU MUST CHOOSE A MODE, "STD" OR "TAR", for "-mode"'
-            )
-
-    if args.initvsini == '':
-        sys.exit(
-            'ERROR: YOU MUST PROVIDE AN INITIAL GUESS FOR VSINI VALUE, "-i"'
-            )
-
-    if (args.guesses == '') & (args.guessesX == ''):
-        sys.exit(
-            'ERROR: YOU MUST PROVIDE AN INITIAL GUESS FOR RV VALUE(S) BY '
-            'USING "-g" OR "-gX"'
-            )
-
-    if (args.temperature == '') & (args.logg == ''):
-        sys.exit(
-            'ERROR: YOU MUST PROVIDE THE TEMPERATURE AND LOGG VALUE FOR '
-            'STELLAR TEMPLATE. GO TO "./Engine/syn_template/" TO SEE '
-            'AVAILABLE TEMPLATES'
-            )
-
-    if args.template.lower() not in ['synthetic', 'livingston', 'phoenix']:
-        sys.exit('ERROR: UNEXPECTED STELLAR TEMPLATE FOR "-t" INPUT!')
-
-
-    if singleORdouble == 2:
-
-        if args.fluxratio == '':
-            sys.exit('ERROR: YOU MUST PROVIDE A FLUX RATIO S2/S1, "-f"')
-
-        if args.initvsini2 == '':
-            sys.exit(
-                'ERROR: YOU MUST PROVIDE AN INITIAL GUESS FOR VSINI2 VALUE, "-i2"'
-                )
-
-        if (args.temperature2 == '') & (args.logg2 == ''):
-            sys.exit(
-                'ERROR: YOU MUST PROVIDE THE TEMPERATURE AND LOGG VALUE FOR '
-                'SECONDARY STELLAR TEMPLATE. GO TO "./Engine/syn_template/" TO SEE '
-                'AVAILABLE TEMPLATES'
-                )
-
-        if args.template2.lower() not in ['synthetic', 'livingston', 'phoenix']:
-            sys.exit(
-                'ERROR: UNEXPECTED SECONDARY STELLAR TEMPLATE FOR "-t" INPUT!'
-                )
-
-
 def setup_init_rv_guess(args):
-
     if args.mode.lower() == 'std':
         initguesses = float(args.guesses)
         initguesses_show = initguesses
@@ -432,7 +240,6 @@ def setup_init_rv_guess(args):
     return initguesses, initguesses_show
 
 def mkdir_output_dic(args):
-
     if not os.path.isdir('./Output'):
         os.mkdir('./Output')
 
@@ -462,29 +269,6 @@ def mkdir_output_dic(args):
 
     return trk, outpath, step2or3, name
 
-def setup_logger(args, outpath, name):
-
-    logger = logging.getLogger(__name__)
-    if args.debug:
-        logger.setLevel(logging.DEBUG)
-    else:
-        logger.setLevel(logging.INFO)
-    formatter = logging.Formatter('%(asctime)s: %(module)s.py: %(levelname)s--> %(message)s')
-
-    file_hander  = logging.FileHandler(f'{outpath}/{args.targname}_{args.band}.log')
-    stream_hander= logging.StreamHandler()
-
-    # file_hander.setLevel()
-    file_hander.setFormatter(formatter)
-
-    logger.addHandler(file_hander)
-    logger.addHandler(stream_hander)
-    logger.propagate = False
-
-    logger.info(
-        f'Writing output to ./Output/{args.targname}_{args.band}/{name}')
-
-    return logger, stream_hander
 
 def save_raw_box(args, nights, inparam, name, order,
                     nightsbox, rvbox, parfitbox, vsinibox, tagbox,
@@ -516,7 +300,6 @@ def save_raw_box(args, nights, inparam, name, order,
         hh.append(hdu_1)
         hh.writeto('{}/{}/RVresultsRawBox.fits'.format(inparam.outpath, name),
             overwrite=True)
-
 
 def combine_rvs_between_orders(
         n, sigma_ON2, rvmasterbox_orig, rvmasterbox, vsinibox, jds,
@@ -565,23 +348,10 @@ def combine_rvs_between_orders(
         return rvfinal, stdfinal, vsinifinal, jds_out
 
 def _make_fits_ColDefs(col_name, save_data, save_format):
-
     return fits.Column(name=col_name, array=save_data, format=save_format)
 
-def _add_npar(par, optgroup, dpars, fitobj):
-    """add npar (number if var pars) in fitobj
-    Returns:
-        class: fitobj
-    """
 
-    parmask = np.ones_like(par, dtype=bool)
-    parmask[:] = False
-    for optkind in optgroup:
-        parmask[(dpars[optkind] != 0)] = True
-    fitobj.npar = len(par[parmask])
-
-    return fitobj
-
+#-------------------------------------------------------------------------------
 def main(args, inparam, orders, order_use, trk, step2or3, i):
     """Main function for RV fitting that will be threaded over
     by multiprocessing
@@ -638,7 +408,7 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
     for _ in tagsnight:
         nightsout.append(night)
 
-#-------------------------------------------------------------------------------
+    #-------------------------------------------------------------------------------
     # Collect initial RV guesses
     if type(inparam.initguesses) == dict:
         initguesses = inparam.initguesses[night]
@@ -677,7 +447,6 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
             and args.targname == 'GJ281' \
             and float(tag) == 63:
             continue
-
 
         # Use instrumental profile dictionary corresponding to whether
         # IGRINS mounting was loose or not
@@ -759,7 +528,7 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
             continue
 
         s_piece, u_piece, wave_piece, x_piece, testmask = trim_obs_data(
-            x, wave, s, u, xbounds, maskwaves
+            x, wave, s, u, xbounds, maskwaves, 3
             )
 
         if (len(s_piece[testmask]) / len(s_piece) < 0.3) \
@@ -1016,7 +785,6 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
 
 
         parfit = parfit_1.copy()
-
         #-------------------------------------------------------------------------------
 
         # if best fit stellar template power is very low, throw out result
@@ -1048,8 +816,7 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
                                 'May be too close to edge of blaze, throwing '
                                 'out result...')
             continue
-
-           
+     
         #-------------------------------------------------------------------------------
 
         if args.plotfigs == True:
@@ -1103,7 +870,7 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
 
     return (nightsout, rvsminibox, parfitminibox, vsiniminibox,
                 tagsminibox, rvsminibox2, vsiniminibox2, chisminibox)
-#-------------------------------------------------------------------------------
+
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 if __name__ == '__main__':
@@ -1112,7 +879,7 @@ if __name__ == '__main__':
     inpath   = './Input/{}/'.format(args.targname)
     cdbs_loc = '~/cdbs/'
 
-    check_user_input(args, singleORdouble=1)
+    check_user_input(args, singleORdouble=1, step2or3=3)
     check_if_template_exist(args, singleORdouble=1)
 
     initvsini = float(args.initvsini)
@@ -1122,7 +889,7 @@ if __name__ == '__main__':
         initvsini2 = float(args.initvsini2)
         vsinivary2 = float(args.vsinivary2)
 
-        check_user_input(args, singleORdouble=2)
+        check_user_input(args, singleORdouble=2, step2or3=3)
         check_if_template_exist(args, singleORdouble=2)
 
     #------------------------------
@@ -1199,7 +966,7 @@ PLUS BINARY PARAMETERS:
     print('This will take a while..........')
 
     trk, outpath, step2or3, name = mkdir_output_dic(args)
-    logger, stream_hander = setup_logger(args, outpath, name)
+    logger, stream_hander = setup_logger(args, outpath, name, 3)
 
     # Read in the Prepdata under ./Input/Prpedata/
     xbounddict, maskdict, tagsA, tagsB, jds, bvcs, nightsFinal, orders, obs = read_prepdata(
@@ -1427,7 +1194,6 @@ For H band RVs: We do not expect any systematic changes in the H band as the
 
             iT_L += 1
 
-
     #-------------------------------------------------------------------------------
     if not args.debug: logger.addHandler(stream_hander)
     print('\n')
@@ -1525,7 +1291,6 @@ For H band RVs: We do not expect any systematic changes in the H band as the
         sigma_ON2bi    = np.ones_like(rvmasterbox)
 
         #-------------------------------------------------------------------------------
-
         # Note rvmasterbox indexed as [nights,orders]
         Nnights = len(rvmasterbox[:,0])
 
@@ -1563,13 +1328,15 @@ For H band RVs: We do not expect any systematic changes in the H band as the
             ordermeans[jerp] = np.nansum( weights*rvmasterbox[ind,jerp] )
             orderstds[jerp]  = 1/np.sqrt(np.nansum(stdspre))
 
-        std1 = np.sqrt(np.nansum([orderstds[jerp]**2 for jerp in range(Nord)]))
+        std1 = np.sqrt(
+            np.nansum([orderstds[jerp]**2 for jerp in range(Nord)])
+            )
 
         offsets = False
         for jerp1 in range(Nord):
             for jerp2 in range(Nord):
                 if jerp1 != jerp2 and np.isfinite(ordermeans[jerp1]) and np.isfinite(ordermeans[jerp2]):
-                    if abs(ordermeans[jerp1]-ordermeans[jerp2]) > np.sqrt(orderstds[jerp1]**2 + orderstds[jerp2]**2):
+                    if np.abs(ordermeans[jerp1]-ordermeans[jerp2]) > np.sqrt(orderstds[jerp1]**2 + orderstds[jerp2]**2):
                         offsets = True
 
         masterorder = 6
@@ -1627,8 +1394,8 @@ For H band RVs: We do not expect any systematic changes in the H band as the
         for ara in range(len(rvps)):
             rvp = rvps[ara]
             stdp = stdps[ara]
-            # Plot results
 
+            # Plot results
             outplotter_rv(rvp, stdp, args, inparam, name, ara, kind)
 
         #-------------------------------------------------------------------------------

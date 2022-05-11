@@ -11,6 +11,7 @@ from Engine.detect_peaks import detect_peaks
 from Engine.bisectorcalc    import NightSpecs,BIinst
 from Engine.plot_tool import modtool
 from scipy.stats import pearsonr
+from Engine.step2and3common_func import (setup_logger)
 
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
@@ -20,8 +21,6 @@ def legend_without_duplicate_labels(ax):
     unique = [(h, l) for i, (h, l) in enumerate(zip(handles, labels)) if l not in labels[:i]]
     ax.legend(*zip(*unique))
 
-
-#-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 if __name__ == '__main__':
@@ -98,7 +97,6 @@ Input Parameters:
     #-------------------------------------------------------------------------------
 
     name = f'Cutouts'
-
     outpath = f'./Output/{args.targname}_{args.band}/RV_results_{args.run}/{name}'
 
     if not os.path.isdir(f'{outpath}'):
@@ -108,24 +106,7 @@ Input Parameters:
     #-------------------------------------------------------------------------------
 
     # Set up logger
-    logger = logging.getLogger(__name__)
-    if args.debug:
-        logger.setLevel(logging.DEBUG)
-    else:
-        logger.setLevel(logging.INFO)
-    formatter = logging.Formatter('%(asctime)s: %(module)s.py: %(levelname)s--> %(message)s')
-
-    file_hander  = logging.FileHandler(f'{outpath}/{args.targname}_{args.band}.log')
-    stream_hander= logging.StreamHandler()
-
-    # file_hander.setLevel()
-    file_hander.setFormatter(formatter)
-
-    logger.addHandler(file_hander)
-    logger.addHandler(stream_hander)
-    logger.propagate = False
-
-    logger.info(f'Writing output to {outpath}')
+    logger, stream_hander = setup_logger(args, outpath, name, 3)
 
     #-------------------------------------------------------------------------------
 
@@ -150,15 +131,16 @@ Input Parameters:
     #-------------------------------------------------------------------------------
 
     # Retrieve stellar and telluric templates
-    watm,satm, mwave0, mflux0 = setup_templates(
-        logger, args.template, args.band, np.int(args.temperature),
-        np.float(args.logg), np.float(args.B)
+    watm, satm, mwave0, mflux0 = setup_templates(
+        logger, args.template, args.band, int(args.temperature),
+        float(args.logg), float(args.B)
         )
 
     # Save pars in class for future use
-    inparam = InParams(inpath, outpath, None, None, args.plotfigs,
-                       None, bvcs, tagsA, tagsB, nightsFinal, mwave0,
-                       mflux0, None, xbounddict, maskdict)
+    inparam = InParams(
+        inpath, outpath, None, None, args.plotfigs, None, bvcs, 
+        tagsA, tagsB, nightsFinal, mwave0, mflux0, None, xbounddict, maskdict
+        )
 
     #-------------------------------------------------------------------------------
 
@@ -477,7 +459,6 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
 
         bifinal    = np.ones(Nnights, dtype=np.float64)
         stdfinal   = np.ones(Nnights, dtype=np.float64)
-
 
         # Combine RVs between orders using weights calculated from uncertainties
         for n in range(Nnights):

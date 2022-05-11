@@ -126,19 +126,6 @@ def setup_fitting_init_pars(inparam, night, band, masterbeam, order):
     return parA0
 
 
-    """
-
-    Parameters
-    ----------
-    use_sets : list with str
-
-
-    Returns
-    -------
-    Dict
-        dpars
-    """
-
 def base_dpars_dict(use_sets, band, order):
     """Setup basic sets of paramaeter variable ranges
 
