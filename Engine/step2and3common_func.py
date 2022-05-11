@@ -1,8 +1,12 @@
 """
 collection of functions that used in both step2 and 3
 """
+import sys, argparse, os, ast, re, logging, nlopt
+import logging.handlers
 
 import numpy as np
+
+from Engine.clips import basicclip_above
 
 def setup_fitting_init_pars(band, initvsini, order, initvsini2=0, fluxratio=0):
     """Setup the initial values for the parameters to be optimized (fitted)
