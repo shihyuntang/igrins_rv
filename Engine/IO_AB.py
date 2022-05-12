@@ -10,7 +10,7 @@ from astropy.io import fits
 
 from Engine.rebin_jv import rebin_jv
 
-def partial_loader(inpath0,order):
+def partial_loader(inpath0, order):
     '''
     Access data arrays from reduced IGRINS fits files.
 
@@ -25,11 +25,22 @@ def partial_loader(inpath0,order):
     s2nlist  : Corresponding signal to noise ratio
     '''
 
-    hdulist = fits.open(inpath0+'.spec.fits')
+    if os.path.exists(inpath0+'.spec.fits'):
+        hdulist = fits.open(inpath0+'.spec.fits')
+    elif os.path.exists(inpath0+'.spec.fits.gz'):
+        hdulist = fits.open(inpath0+'.spec.fits.gz')
+    else:
+        sys.exit(f'ERROR: data not found: {inpath0}.spec.fits')
     tbdata_w = hdulist[1].data
     tbdata_f = hdulist[0].data
 
-    hdulist_sn = fits.open(inpath0+'.sn.fits')
+    if os.path.exists(inpath0+'.sn.fits'):
+        hdulist_sn = fits.open(inpath0+'.sn.fits')
+    elif os.path.exists(inpath0+'.sn.fits.gz'):
+        hdulist_sn = fits.open(inpath0+'.sn.fits.gz')
+    else:
+        sys.exit(f'ERROR: data not found: {inpath0}.sn.fits')
+
     tbdata_sn = hdulist_sn[0].data
 
     wavelist = np.array(tbdata_w[order],dtype=np.float64)
@@ -260,19 +271,17 @@ def setup_templates(logger, kind='synthetic', band='K',
             f'synthetic stellar template with T{temperature} logg{logg}!!!!!')
 
         if str(B) == '0':
-            temploc = f'syntheticstellar_{band.lower()}band_T{temperature}_logg{logg}.txt'
+            temploc = f'syntheticstellar_{band.lower()}band_T{temperature}_logg{logg}_0.0kG.csv.gz'
         else:
-            temploc = f'syntheticstellar_{band.lower()}band_T{temperature}_logg{logg}_{B}kG.txt'
+            temploc = f'syntheticstellar_{band.lower()}band_T{temperature}_logg{logg}_{B}kG.csv.gz'
         if 'igrins' in os.getcwd().split('/')[-1]:
-            stelldata = Table.read(
-                f'./Engine/syn_template/{temploc}',
-                format='ascii')
+            df = pd.read_csv(f'./Engine/syn_template/{temploc}')
+            stelldata = Table.from_pandas(df)
         else:
-            stelldata = Table.read(
-                f'../Engine/syn_template/{temploc}',
-                format='ascii')
+            df = pd.read_csv(f'../Engine/syn_template/{temploc}')
+            stelldata = Table.from_pandas(df)
 
-        mwave0 = np.array(stelldata['wave'])#*10000.0
+        mwave0 = np.array(stelldata['wave'])
         mflux0 = np.array(stelldata['flux'])
         mwave0 = mwave0[(np.isfinite(mflux0))]
         mflux0 = mflux0[(np.isfinite(mflux0))]
@@ -283,13 +292,13 @@ def setup_templates(logger, kind='synthetic', band='K',
         logger.info(f'PHOENIX stellar template with T{temperature} logg{logg}!!!!!')
 
         if 'igrins' in os.getcwd().split('/')[-1]:
-            stelldata = Table.read(
-                f'./Engine/syn_template/PHOENIX-lte0{temperature}-{logg}0-0.0_contadj.txt',
-                format='ascii')
+            df = pd.read_csv(
+                f'./Engine/syn_template/PHOENIX-lte0{temperature}-{logg}0-0.0_contadj.csv.gz')
+            stelldata = Table.from_pandas(df)
         else:
-            stelldata = Table.read(
-                f'../Engine/syn_template/PHOENIX-lte0{temperature}-{logg}0-0.0_contadj.txt',
-                format='ascii')
+            df = pd.read_csv(
+                f'../Engine/syn_template/PHOENIX-lte0{temperature}-{logg}0-0.0_contadj.csv.gz')
+            stelldata = Table.from_pandas(df)
 
         mwave0 = np.array(stelldata['wave'])
         mflux0 = np.array(stelldata['flux'])
@@ -318,7 +327,7 @@ def setup_templates(logger, kind='synthetic', band='K',
                 f'../Engine/user_templates/user_T{temperature}_logg{logg}_{band}band.txt',
                 format='ascii')
 
-        mwave0 = np.array(stelldata['wave'])#*10000.0
+        mwave0 = np.array(stelldata['wave'])
         mflux0 = np.array(stelldata['flux'])
         mwave0 = mwave0[(np.isfinite(mflux0))]
         mflux0 = mflux0[(np.isfinite(mflux0))]
@@ -329,11 +338,12 @@ def setup_templates(logger, kind='synthetic', band='K',
                         '"phoenix" (for IGRINS RV team usage only), or "user"!')
 
     if 'igrins' in os.getcwd().split('/')[-1]:
-        telluricdata = Table.read(
-            './Engine/PhotoAtl Organized.txt',format='ascii')
+        df = pd.read_csv('./Engine/PhotoAtl_Organized.csv.gz')  
+        telluricdata = Table.from_pandas(df)
     else:
-        telluricdata = Table.read(
-            '../Engine/PhotoAtl Organized.txt',format='ascii')
+        df = pd.read_csv('../Engine/PhotoAtl_Organized.csv.gz')
+        telluricdata = Table.from_pandas(df)
+
     watm = np.array(telluricdata['wave'])*10000.0
     satm = np.array(telluricdata['flux'])
     watm = watm[(np.isfinite(satm))]
@@ -391,12 +401,13 @@ def setup_templates_tel():
     mwave0  : Wavelength scale of stellar template
     mflux0  : Corresponding flux of stellar template
     '''
+
     if 'igrins' in os.getcwd().split('/')[-1]:
-        spotdata = Table.read(
-            './Engine/SpotAtl Organized.txt',format='ascii')
+        df = pd.read_csv('./Engine/SpotAtl_Organized.csv.gz')
+        spotdata = Table.from_pandas(df)
     else:
-        spotdata = Table.read(
-            '../Engine/SpotAtl Organized.txt',format='ascii')
+        df = pd.read_csv('../Engine/SpotAtl_Organized.csv.gz')
+        spotdata = Table.from_pandas(df)
 
     mwave0 = np.array(spotdata['wave'])*10000.0
     mflux0 = np.array(spotdata['flux'])
@@ -405,11 +416,11 @@ def setup_templates_tel():
     mflux0[(mflux0 < 0)] = 0
 
     if 'igrins' in os.getcwd().split('/')[-1]:
-        telluricdata = Table.read(
-            './Engine/PhotoAtl Organized.txt',format='ascii')
+        df = pd.read_csv('./Engine/PhotoAtl_Organized.csv.gz')  
+        telluricdata = Table.from_pandas(df)
     else:
-        telluricdata = Table.read(
-            '../Engine/PhotoAtl Organized.txt',format='ascii')
+        df = pd.read_csv('../Engine/PhotoAtl_Organized.csv.gz')
+        telluricdata = Table.from_pandas(df)
 
     watm = np.array(telluricdata['wave'])*10000.0
     satm = np.array(telluricdata['flux'])
