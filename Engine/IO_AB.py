@@ -344,6 +344,7 @@ def setup_templates(logger, kind='synthetic', band='K',
         telluricdata = Table.read(
             '../Engine/PhotoAtl_Organized.csv', format='csv') 
 
+
     watm = np.array(telluricdata['wave'])*10000.0
     satm = np.array(telluricdata['flux'])
     watm = watm[(np.isfinite(satm))]
