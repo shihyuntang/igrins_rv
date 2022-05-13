@@ -893,7 +893,7 @@ WARNING!! you got warning message during this run. Please check the log file und
                 )
     end_time = datetime.now()
     logger.info(
-        'RV Initial Guess DONE... Duration: {}'.format(end_time - start_time)
+        '\nRV Initial Guess DONE... Duration: {}'.format(end_time - start_time)
         )
     logger.info(
         f'Output saved under ./Output/{args.targname}_{args.band}/{iniguess_dir}'
