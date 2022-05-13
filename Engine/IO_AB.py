@@ -338,11 +338,11 @@ def setup_templates(logger, kind='synthetic', band='K',
                         '"phoenix" (for IGRINS RV team usage only), or "user"!')
 
     if 'igrins' in os.getcwd().split('/')[-1]:
-        df = pd.read_csv('./Engine/PhotoAtl_Organized.csv.gz')  
-        telluricdata = Table.from_pandas(df)
+        telluricdata = Table.read(
+            './Engine/PhotoAtl_Organized.csv', format='csv')  
     else:
-        df = pd.read_csv('../Engine/PhotoAtl_Organized.csv.gz')
-        telluricdata = Table.from_pandas(df)
+        telluricdata = Table.read(
+            '../Engine/PhotoAtl_Organized.csv', format='csv') 
 
     watm = np.array(telluricdata['wave'])*10000.0
     satm = np.array(telluricdata['flux'])
@@ -403,11 +403,11 @@ def setup_templates_tel():
     '''
 
     if 'igrins' in os.getcwd().split('/')[-1]:
-        df = pd.read_csv('./Engine/SpotAtl_Organized.csv.gz')
-        spotdata = Table.from_pandas(df)
+        spotdata = Table.read(
+            './Engine/SpotAtl_Organized.csv', format='csv')
     else:
-        df = pd.read_csv('../Engine/SpotAtl_Organized.csv.gz')
-        spotdata = Table.from_pandas(df)
+        spotdata = Table.read(
+            '../Engine/SpotAtl_Organized.csv', format='csv')
 
     mwave0 = np.array(spotdata['wave'])*10000.0
     mflux0 = np.array(spotdata['flux'])
@@ -416,11 +416,11 @@ def setup_templates_tel():
     mflux0[(mflux0 < 0)] = 0
 
     if 'igrins' in os.getcwd().split('/')[-1]:
-        df = pd.read_csv('./Engine/PhotoAtl_Organized.csv.gz')  
-        telluricdata = Table.from_pandas(df)
+        telluricdata = Table.read(
+            './Engine/PhotoAtl_Organized.csv', format='csv')  
     else:
-        df = pd.read_csv('../Engine/PhotoAtl_Organized.csv.gz')
-        telluricdata = Table.from_pandas(df)
+        telluricdata = Table.read(
+            '../Engine/PhotoAtl_Organized.csv', format='csv') 
 
     watm = np.array(telluricdata['wave'])*10000.0
     satm = np.array(telluricdata['flux'])
