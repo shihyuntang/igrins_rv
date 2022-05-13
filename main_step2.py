@@ -831,13 +831,13 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
     print('\n')
 
     # Run order by order, multiprocessing over nights within an order
-    # func = partial(
-    #     main, args, inparam, orders, int(args.label_use), trk, step2or3
-    #     )
-    # outs = pqdm(np.arange(len(nightsFinal)), func, n_jobs=args.Nthreads)
+    func = partial(
+        main, args, inparam, orders, int(args.label_use), trk, step2or3
+        )
+    outs = pqdm(np.arange(len(nightsFinal)), func, n_jobs=args.Nthreads)
 
-    for ii in np.arange(len(nightsFinal)):
-        main(args, inparam, orders, int(args.label_use), trk, step2or3, ii)
+    # for ii in np.arange(len(nightsFinal)):
+    #     main(args, inparam, orders, int(args.label_use), trk, step2or3, ii)
 
     # Write outputs to file
     vsinis = []; finalrvs = []; vsinis2 = []; finalrvs2 = []
