@@ -244,6 +244,14 @@ def air2vac(wave):
     newwave = wave*fact
     return newwave
 
+def _pdread2astrotable(csvgzdir):
+    """As pandas can read .csv.gz direactally, use pd read then trans to 
+    astropy table.
+    """
+    df = pd.read_csv(csvgzdir)
+    tb = Table.from_pandas(df)
+    return tb
+
 def setup_templates(logger, kind='synthetic', band='K', 
         temperature=5000, logg=4.5, B=0):
     '''
@@ -275,11 +283,15 @@ def setup_templates(logger, kind='synthetic', band='K',
         else:
             temploc = f'syntheticstellar_{band.lower()}band_T{temperature}_logg{logg}_{B}kG.csv.gz'
         if 'igrins' in os.getcwd().split('/')[-1]:
-            df = pd.read_csv(f'./Engine/syn_template/{temploc}')
-            stelldata = Table.from_pandas(df)
+            if os.path.exists(f'./Engine/syn_template/{temploc}'):
+                stelldata = _pdread2astrotable(f'./Engine/syn_template/{temploc}')
+            else:
+                stelldata = _pdread2astrotable(f'./Engine/syn_template/{temploc[:-1]}')
         else:
-            df = pd.read_csv(f'../Engine/syn_template/{temploc}')
-            stelldata = Table.from_pandas(df)
+            if os.path.exists(f'../Engine/syn_template/{temploc}'):
+                stelldata = _pdread2astrotable(f'../Engine/syn_template/{temploc}')
+            else:
+                stelldata = _pdread2astrotable(f'../Engine/syn_template/{temploc[:-1]}')
 
         mwave0 = np.array(stelldata['wave'])
         mflux0 = np.array(stelldata['flux'])
@@ -291,14 +303,17 @@ def setup_templates(logger, kind='synthetic', band='K',
         logger.info(f'Using {band}-band PHOENIX stellar template...')
         logger.info(f'PHOENIX stellar template with T{temperature} logg{logg}!!!!!')
 
+        temploc = f'PHOENIX-lte0{temperature}-{logg}0-0.0_contadj.csv.gz'
         if 'igrins' in os.getcwd().split('/')[-1]:
-            df = pd.read_csv(
-                f'./Engine/syn_template/PHOENIX-lte0{temperature}-{logg}0-0.0_contadj.csv.gz')
-            stelldata = Table.from_pandas(df)
+            if os.path.exists(f'./Engine/syn_template/{temploc}'):
+                stelldata = _pdread2astrotable(f'./Engine/syn_template/{temploc}')
+            else:
+                stelldata = _pdread2astrotable(f'./Engine/syn_template/{temploc[:-1]}')
         else:
-            df = pd.read_csv(
-                f'../Engine/syn_template/PHOENIX-lte0{temperature}-{logg}0-0.0_contadj.csv.gz')
-            stelldata = Table.from_pandas(df)
+            if os.path.exists(f'../Engine/syn_template/{temploc}'):
+                stelldata = _pdread2astrotable(f'../Engine/syn_template/{temploc}')
+            else:
+                stelldata = _pdread2astrotable(f'../Engine/syn_template/{temploc[:-1]}')
 
         mwave0 = np.array(stelldata['wave'])
         mflux0 = np.array(stelldata['flux'])
