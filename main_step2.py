@@ -882,15 +882,16 @@ WARNING!! you got warning message during this run. Please check the log file und
         'vsini results: mean= {:1.4f} km/s, median= {:1.4f} km/s, std= {:1.4f} km/s'.format(
             np.nanmean(vsinis), np.nanmedian(vsinis), np.nanstd(vsinis) )
             )
+    if args.binary:
+        logger.info(
+            'RV 2 results:    mean= {:1.4f} km/s, median= {:1.4f} km/s, std= {:1.4f} km/s'.format(
+                np.nanmean(finalrvs2), np.nanmedian(finalrvs2), np.nanstd(finalrvs2) )
+                )
+        logger.info(
+            'vsini 2 results: mean= {:1.4f} km/s, median= {:1.4f} km/s, std= {:1.4f} km/s'.format(
+                np.nanmean(vsinis2), np.nanmedian(vsinis2), np.nanstd(vsinis2) )
+                )
     end_time = datetime.now()
-    logger.info(
-        'RV 2 results:    mean= {:1.4f} km/s, median= {:1.4f} km/s, std= {:1.4f} km/s'.format(
-            np.nanmean(finalrvs2), np.nanmedian(finalrvs2), np.nanstd(finalrvs2) )
-            )
-    logger.info(
-        'vsini 2 results: mean= {:1.4f} km/s, median= {:1.4f} km/s, std= {:1.4f} km/s'.format(
-            np.nanmean(vsinis2), np.nanmedian(vsinis2), np.nanstd(vsinis2) )
-            )
     logger.info(
         'RV Initial Guess DONE... Duration: {}'.format(end_time - start_time)
         )
