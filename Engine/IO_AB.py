@@ -342,7 +342,7 @@ def setup_templates(logger, kind='synthetic', band='K',
             stelldata = Table.read(
                 f'../Engine/user_templates/user_T{temperature}_logg{logg}_{band}band.txt',
                 format='ascii')
-
+        print(stelldata)
         mwave0 = np.array(stelldata['wave'])
         mflux0 = np.array(stelldata['flux'])
         mwave0 = mwave0[(np.isfinite(mflux0))]
