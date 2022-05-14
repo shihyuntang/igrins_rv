@@ -830,7 +830,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
     if not args.debug: logger.removeHandler(stream_hander)
     print('\n')
 
-    Run order by order, multiprocessing over nights within an order
+    # Run order by order, multiprocessing over nights within an order
     func = partial(
         main, args, inparam, orders, int(args.label_use), trk, step2or3
         )
