@@ -1328,6 +1328,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the
             ordermeans[jerp] = np.nansum( weights*rvmasterbox[ind,jerp] )
             orderstds[jerp]  = 1/np.sqrt(np.nansum(stdspre))
 
+        orderstds[~np.isfinite(orderstds)] = np.nan
         std1 = np.sqrt(
             np.nansum([orderstds[jerp]**2 for jerp in range(Nord)])
             )
