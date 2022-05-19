@@ -1,0 +1,437 @@
+<!doctype html>
+<html class="no-js">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="prev" title="Step4: vsini Uncertainty Calculation" href="Step%204%20vsini%20Uncertainty%20Calculation.html" />
+
+    <meta name="generator" content="sphinx-4.4.0, furo 2022.04.07"/>
+        <title>FAQ - igrins_rv 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=68f4518137b9aefe99b631505a2064c3c42c9852" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="index.html"><div class="brand">igrins_rv 1.0.0 documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
+  
+  
+  <span class="sidebar-brand-text">igrins_rv 1.0.0 documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="search.html" role="search">
+  <input class="sidebar-search" placeholder=Search name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Overview%20and%20Workflow.html">Overview and Workflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Demo%20with%20Example%20Data%20%28GJ281%29.html">Demo with Example Data (GJ281)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Setup</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Setup%20Input%201D%20spectra%20%28plp%29.html">Setup: Input 1D spectra (plp)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Setup%20PrepData%20Files.html">PrepData Files (Step 0)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Setup%20Stellar%20Templates.html">Setup: Stellar Templates</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Main RV program</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Step%201%20Telluric%20Modelling.html">Step1: Telluric Modelling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Step%202%20Initial%20Convergence.html">Step2: Initial Convergence</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Step%203%20Full%20Analysis.html">Step3: Full Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Step%204%20vsini%20Uncertainty%20Calculation.html">Step4: vsini Uncertainty Calculation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Other</span></p>
+<ul class="current">
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">FAQ</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container"><div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main">
+          <section id="faq">
+<h1>FAQ<a class="headerlink" href="#faq" title="Permalink to this headline">#</a></h1>
+<p><strong>Still under construction…</strong></p>
+<!-- ## Installation 
+* [How do I install `gfortran` for `Telfit`?](https://github.com/shihyuntang/igrins_rv/wiki/FAQ#q-how-do-i-install-gfortran-for-telfit)
+* [Why do I see error message with `ifort` while installing `Telfit`?](https://github.com/shihyuntang/igrins_rv/wiki/FAQ#q-why-do-i-see-an-error-message-with-ifort-while-installing-telfit)
+
+## Running **IGRINS RV** 
+* [What is the typical run time of **IGRINS RV**?](https://github.com/shihyuntang/igrins_rv/wiki/FAQ#q-what-is-the-typical-run-time-of-igrins-rv)
+* [How much RAM do I need to run **IGRINS RV**?](https://github.com/shihyuntang/igrins_rv/wiki/FAQ#q-how-much-ram-do-i-need-to-run-igrins-rv)
+* [Can **IGRINS RV** do any better in RV precision?](https://github.com/shihyuntang/igrins_rv/wiki/FAQ#q-can-igrins-rv-do-any-better-in-rv-precision)
+
+## Other
+* [How do I report bugs?](https://github.com/shihyuntang/igrins_rv/wiki/FAQ/_edit#q-how-do-i-report-bugs) 
+* [How do I help make **IGRINS RV** better?](https://github.com/shihyuntang/igrins_rv/wiki/FAQ/_edit#q-how-do-i-help-make-igrins-rv-better) 
+* [How do I properly cite **IGRINS RV**?](https://github.com/shihyuntang/igrins_rv/wiki/FAQ#q-how-do-i-properly-cite-igrins-rv)
+
+*** -->
+<section id="q-how-do-i-install-gfortran-for-telfit">
+<h2>Q: How do I install <code class="docutils literal notranslate"><span class="pre">gfortran</span></code> for <code class="docutils literal notranslate"><span class="pre">Telfit</span></code>?<a class="headerlink" href="#q-how-do-i-install-gfortran-for-telfit" title="Permalink to this headline">#</a></h2>
+<p><strong>Answer:</strong></p>
+<ul class="simple">
+<li><p>On Mac: Use <a class="reference external" href="https://brew.sh/index_ja">Homebrew</a> with <code class="docutils literal notranslate"><span class="pre">brew</span> <span class="pre">install</span> <span class="pre">gcc</span></code></p></li>
+<li><p>On Linux: With <code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">apt</span> <span class="pre">install</span> <span class="pre">gfortran</span></code></p></li>
+</ul>
+<p>If successful, try <code class="docutils literal notranslate"><span class="pre">gfortran</span> <span class="pre">--version</span></code> to see if you can see the versions number.
+If so, you are good!</p>
+<p>–</p>
+</section>
+<section id="q-why-do-i-see-an-error-message-with-ifort-while-installing-telfit">
+<h2>Q: Why do I see an error message with <code class="docutils literal notranslate"><span class="pre">ifort</span></code> while installing <code class="docutils literal notranslate"><span class="pre">Telfit</span></code>?<a class="headerlink" href="#q-why-do-i-see-an-error-message-with-ifort-while-installing-telfit" title="Permalink to this headline">#</a></h2>
+<p><strong>Answer:</strong> Well…lucky you. Looks like you have the <code class="docutils literal notranslate"><span class="pre">ifort</span></code> fortran complier installed already. Quickest way to resolve this is to tell <code class="docutils literal notranslate"><span class="pre">Telfit</span></code> <code class="docutils literal notranslate"><span class="pre">setup.py</span></code> not to look for <code class="docutils literal notranslate"><span class="pre">ifort</span></code>.</p>
+<ol class="arabic simple">
+<li><p>Open <code class="docutils literal notranslate"><span class="pre">setup.py</span></code> under the <code class="docutils literal notranslate"><span class="pre">igrins_rv(-master)/Telfit</span></code> folder (it may be called something like <code class="docutils literal notranslate"><span class="pre">Telluric-Fitter-master</span></code>). You will find two lists, <code class="docutils literal notranslate"><span class="pre">compilers</span></code> and <code class="docutils literal notranslate"><span class="pre">comp_strs</span></code>, around lines 188.</p></li>
+<li><p>Delete <code class="docutils literal notranslate"><span class="pre">ifort</span></code> and <code class="docutils literal notranslate"><span class="pre">INTEL</span></code> in each list.</p></li>
+</ol>
+<p>You should be fine now~</p>
+<p>–</p>
+</section>
+<section id="q-what-is-the-typical-run-time-of-igrins-rv">
+<h2>Q: What is the typical run time of <strong>IGRINS RV</strong>?<a class="headerlink" href="#q-what-is-the-typical-run-time-of-igrins-rv" title="Permalink to this headline">#</a></h2>
+<p><strong>Answer:</strong> This really depends on the setup of your machine. With an Intel Core i9-9980XE CPU (18 cores/36 threads) running GJ281 K band on 64 nights and 4 orders, it took about 6.6 hours for Step 1 (Telluric Modelling) and about 1.2 hours for Step 3 (Analysis) to finish. The runtime will be about 1.5 times longer in the H band because there are more orders to process.</p>
+<p>–</p>
+</section>
+<section id="q-how-many-memory-ram-do-i-need-to-run-igrins-rv">
+<h2>Q: How many memory (RAM) do I need to run <strong>IGRINS RV</strong>?<a class="headerlink" href="#q-how-many-memory-ram-do-i-need-to-run-igrins-rv" title="Permalink to this headline">#</a></h2>
+<p><strong>Answer:</strong> The most RAM consuming task is in step 3, and it also depends on how many threads you use. The more threads you use, the more RAM you need. Running GJ281 K band on 64 nights with 36 threads, the maximum RAM used are about 8 GB.</p>
+<p>–</p>
+</section>
+<section id="q-can-igrins-rv-do-any-better-in-rv-precision">
+<h2>Q: Can <strong>IGRINS RV</strong> do any better in RV precision?<a class="headerlink" href="#q-can-igrins-rv-do-any-better-in-rv-precision" title="Permalink to this headline">#</a></h2>
+<p><strong>Answer:</strong> <strong>IGRINS RV</strong> uses telluric (atmospheric) absorption lines as a common-path wavelength calibrator, so its precision is limited by the internal RV stability of Earth’s atmosphere. This has been estimated to be ~10-20 m/s, so it is unlikely <strong>IGRINS RV</strong> will achieve better  than the current ~25m/s precision. If you are obtaining worse precisions than this for your science targets and want to try to push toward better precisions, improving the accuracy of your stellar templates or increasing the signal quality of your data could help (note the precision achievable by <strong>IGRINS RV</strong> also depends on the vsin(i) of the target in question).</p>
+<p>–</p>
+</section>
+<section id="q-how-do-i-report-bugs">
+<h2>Q: How do I report bugs?<a class="headerlink" href="#q-how-do-i-report-bugs" title="Permalink to this headline">#</a></h2>
+<p><strong>Answer:</strong> Please open an issue at <a class="reference external" href="https://github.com/shihyuntang/igrins_rv/issues">https://github.com/shihyuntang/igrins_rv/issues</a>. When doing so, please let us know:</p>
+<ol class="arabic simple">
+<li><p>your operating system, and the OS version.</p></li>
+<li><p>detailed bug description</p></li>
+<li><p>detailed steps on how to reproduce the bug reported.</p></li>
+</ol>
+<p>–</p>
+</section>
+<section id="q-how-do-i-help-make-igrins-rv-better">
+<h2>Q: How do I help make <strong>IGRINS RV</strong> better?<a class="headerlink" href="#q-how-do-i-help-make-igrins-rv-better" title="Permalink to this headline">#</a></h2>
+<p><strong>Answer:</strong> Please open an issue at <a class="reference external" href="https://github.com/shihyuntang/igrins_rv/issues">https://github.com/shihyuntang/igrins_rv/issues</a> and describe your ideas to us. Currently, any help on making <strong>IGRINS RV</strong> run on Windows is welcome. Go to <a class="reference external" href="https://github.com/shihyuntang/igrins_rv/issues/7">this issue</a> and join the discussion with us.</p>
+<p>–</p>
+</section>
+<section id="q-how-do-i-properly-cite-igrins-rv">
+<h2>Q: How do I properly cite <strong>IGRINS RV</strong>?<a class="headerlink" href="#q-how-do-i-properly-cite-igrins-rv" title="Permalink to this headline">#</a></h2>
+<p><strong>Answer:</strong> Please cite both the AJ and the JOSS papers for <strong>IGRINS RV</strong>:</p>
+<ul class="simple">
+<li><p>AJ 161:283: <a class="reference external" href="https://ui.adsabs.harvard.edu/abs/2021AJ....161..283S/abstract">Stahl et al. 2021</a></p></li>
+<li><p>JOSS 6:62: <a class="reference external" href="https://joss.theoj.org/papers/10.21105/joss.03095#">Tang et al. 2021</a></p></li>
+</ul>
+<p>And cite:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">igrins</span> <span class="pre">plp</span> <span class="pre">v2.2.0</span></code> <a class="reference external" href="https://zenodo.org/record/845059#.Xzlp5C0wJQI">https://zenodo.org/record/845059#.Xzlp5C0wJQI</a>
+for 1d spectra reduction, and</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Telfit</span></code> paper on AJ <a class="reference external" href="https://ui.adsabs.harvard.edu/abs/2014AJ....148...53G/abstract">https://ui.adsabs.harvard.edu/abs/2014AJ….148…53G/abstract</a>
+for telluric line fitting.</p></li>
+</ul>
+<p>BibTex:</p>
+<div class="highlight-bibtex notranslate"><div class="highlight"><pre><span></span><span class="nc">@ARTICLE</span><span class="p">{</span><span class="nl">2021AJ....161..283S</span><span class="p">,</span><span class="w"></span>
+<span class="w">       </span><span class="na">author</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{{Stahl}, Asa G. and {Tang}, Shih-Yun and {Johns-Krull}, Christopher M. and {Prato}, L. and {Llama}, Joe and {Mace}, Gregory N. and {Joon Lee}, Jae and {Oh}, Heeyoung and {Luna}, Jessica and {Jaffe}, Daniel T.}</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="na">title</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">"{IGRINS RV: A Precision Radial Velocity Pipeline for IGRINS Using Modified Forward Modeling in the Near-infrared}"</span><span class="p">,</span><span class="w"></span>
+<span class="w">      </span><span class="na">journal</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{\aj}</span><span class="p">,</span><span class="w"></span>
+<span class="w">     </span><span class="na">keywords</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{Exoplanet detection methods, Exoplanet formation, Radial velocity, Near infrared astronomy, Open source software, Astronomy software, Starspots, Young stellar objects, 489, 492, 1332, 1093, 1866, 1855, 1572, 1834, Astrophysics - Instrumentation and Methods for Astrophysics}</span><span class="p">,</span><span class="w"></span>
+<span class="w">         </span><span class="na">year</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="m">2021</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="na">month</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nv">jun</span><span class="p">,</span><span class="w"></span>
+<span class="w">       </span><span class="na">volume</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{161}</span><span class="p">,</span><span class="w"></span>
+<span class="w">       </span><span class="na">number</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{6}</span><span class="p">,</span><span class="w"></span>
+<span class="w">          </span><span class="na">eid</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{283}</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="na">pages</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{283}</span><span class="p">,</span><span class="w"></span>
+<span class="w">          </span><span class="na">doi</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{10.3847/1538-3881/abf5e7}</span><span class="p">,</span><span class="w"></span>
+<span class="na">archivePrefix</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{arXiv}</span><span class="p">,</span><span class="w"></span>
+<span class="w">       </span><span class="na">eprint</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{2104.02082}</span><span class="p">,</span><span class="w"></span>
+<span class="w"> </span><span class="na">primaryClass</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{astro-ph.IM}</span><span class="p">,</span><span class="w"></span>
+<span class="w">       </span><span class="na">adsurl</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{https://ui.adsabs.harvard.edu/abs/2021AJ....161..283S}</span><span class="p">,</span><span class="w"></span>
+<span class="w">      </span><span class="na">adsnote</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{Provided by the SAO/NASA Astrophysics Data System}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="nc">@article</span><span class="p">{</span><span class="nl">Tang2021</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="na">doi</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{10.21105/joss.03095}</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="na">url</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{https://doi.org/10.21105/joss.03095}</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="na">year</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{2021}</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="na">publisher</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{The Open Journal}</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="na">volume</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{6}</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="na">number</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{62}</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="na">pages</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{3095}</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="na">author</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{Shih-Yun Tang and Asa G. Stahl and Christopher M. Johns-Krull and L. Prato and Joe Llama}</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="na">title</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{IGRINS RV: A Python Package for Precision Radial Velocities with Near-Infrared Spectra}</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="na">journal</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{Journal of Open Source Software}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="nc">@software</span><span class="p">{</span><span class="nl">jae_joon_lee_2017_845059</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="na">author</span><span class="w">       </span><span class="p">=</span><span class="w"> </span><span class="s">{Jae-Joon Lee and</span>
+<span class="s">                  Kevin Gullikson and</span>
+<span class="s">                  Kyle Kaplan}</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="na">title</span><span class="w">        </span><span class="p">=</span><span class="w"> </span><span class="s">{igrins/plp 2.2.0}</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="na">month</span><span class="w">        </span><span class="p">=</span><span class="w"> </span><span class="nv">aug</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="na">year</span><span class="w">         </span><span class="p">=</span><span class="w"> </span><span class="m">2017</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="na">publisher</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="s">{Zenodo}</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="na">doi</span><span class="w">          </span><span class="p">=</span><span class="w"> </span><span class="s">{10.5281/zenodo.845059}</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="na">url</span><span class="w">          </span><span class="p">=</span><span class="w"> </span><span class="s">{https://doi.org/10.5281/zenodo.845059}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="nc">@ARTICLE</span><span class="p">{</span><span class="nl">2014AJ....148...53G</span><span class="p">,</span><span class="w"></span>
+<span class="w">       </span><span class="na">author</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{{Gullikson}, Kevin and {Dodson-Robinson}, Sarah and {Kraus}, Adam}</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="na">title</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">"{Correcting for Telluric Absorption: Methods, Case Studies, and Release of the TelFit Code}"</span><span class="p">,</span><span class="w"></span>
+<span class="w">      </span><span class="na">journal</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{\aj}</span><span class="p">,</span><span class="w"></span>
+<span class="w">     </span><span class="na">keywords</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{atmospheric effects, instrumentation: spectrographs, techniques: spectroscopic, Astrophysics - Instrumentation and Methods for Astrophysics, Astrophysics - Solar and Stellar Astrophysics}</span><span class="p">,</span><span class="w"></span>
+<span class="w">         </span><span class="na">year</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="m">2014</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="na">month</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nv">sep</span><span class="p">,</span><span class="w"></span>
+<span class="w">       </span><span class="na">volume</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{148}</span><span class="p">,</span><span class="w"></span>
+<span class="w">       </span><span class="na">number</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{3}</span><span class="p">,</span><span class="w"></span>
+<span class="w">          </span><span class="na">eid</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{53}</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="na">pages</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{53}</span><span class="p">,</span><span class="w"></span>
+<span class="w">          </span><span class="na">doi</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{10.1088/0004-6256/148/3/53}</span><span class="p">,</span><span class="w"></span>
+<span class="na">archivePrefix</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{arXiv}</span><span class="p">,</span><span class="w"></span>
+<span class="w">       </span><span class="na">eprint</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{1406.6059}</span><span class="p">,</span><span class="w"></span>
+<span class="w"> </span><span class="na">primaryClass</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{astro-ph.IM}</span><span class="p">,</span><span class="w"></span>
+<span class="w">       </span><span class="na">adsurl</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{https://ui.adsabs.harvard.edu/abs/2014AJ....148...53G}</span><span class="p">,</span><span class="w"></span>
+<span class="w">      </span><span class="na">adsnote</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{Provided by the SAO/NASA Astrophysics Data System}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          
+          <a class="prev-page" href="Step%204%20vsini%20Uncertainty%20Calculation.html">
+              <svg><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Step4: vsini Uncertainty Calculation</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2022, Asa G. Stahl &amp; Shih-Yun Tang
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              
+            </div>
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            Contents
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">FAQ</a><ul>
+<li><a class="reference internal" href="#q-how-do-i-install-gfortran-for-telfit">Q: How do I install <code class="docutils literal notranslate"><span class="pre">gfortran</span></code> for <code class="docutils literal notranslate"><span class="pre">Telfit</span></code>?</a></li>
+<li><a class="reference internal" href="#q-why-do-i-see-an-error-message-with-ifort-while-installing-telfit">Q: Why do I see an error message with <code class="docutils literal notranslate"><span class="pre">ifort</span></code> while installing <code class="docutils literal notranslate"><span class="pre">Telfit</span></code>?</a></li>
+<li><a class="reference internal" href="#q-what-is-the-typical-run-time-of-igrins-rv">Q: What is the typical run time of <strong>IGRINS RV</strong>?</a></li>
+<li><a class="reference internal" href="#q-how-many-memory-ram-do-i-need-to-run-igrins-rv">Q: How many memory (RAM) do I need to run <strong>IGRINS RV</strong>?</a></li>
+<li><a class="reference internal" href="#q-can-igrins-rv-do-any-better-in-rv-precision">Q: Can <strong>IGRINS RV</strong> do any better in RV precision?</a></li>
+<li><a class="reference internal" href="#q-how-do-i-report-bugs">Q: How do I report bugs?</a></li>
+<li><a class="reference internal" href="#q-how-do-i-help-make-igrins-rv-better">Q: How do I help make <strong>IGRINS RV</strong> better?</a></li>
+<li><a class="reference internal" href="#q-how-do-i-properly-cite-igrins-rv">Q: How do I properly cite <strong>IGRINS RV</strong>?</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/scripts/furo.js"></script>
+    </body>
+</html>

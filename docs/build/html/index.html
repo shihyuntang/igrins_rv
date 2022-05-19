@@ -3,7 +3,7 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Installation" href="Installation.html" />
 
     <meta name="generator" content="sphinx-4.4.0, furo 2022.04.07"/>
         <title>igrins_rv 1.0.0 documentation</title>
@@ -134,7 +134,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
         <div class="visually-hidden">Toggle table of contents sidebar</div>
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
@@ -154,7 +154,30 @@
   <input type="hidden" name="area" value="default">
 </form>
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
-  
+  <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Overview%20and%20Workflow.html">Overview and Workflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Demo%20with%20Example%20Data%20%28GJ281%29.html">Demo with Example Data (GJ281)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Setup</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Setup%20Input%201D%20spectra%20%28plp%29.html">Setup: Input 1D spectra (plp)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Setup%20PrepData%20Files.html">PrepData Files (Step 0)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Setup%20Stellar%20Templates.html">Setup: Stellar Templates</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Main RV program</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Step%201%20Telluric%20Modelling.html">Step1: Telluric Modelling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Step%202%20Initial%20Convergence.html">Step2: Initial Convergence</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Step%203%20Full%20Analysis.html">Step3: Full Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Step%204%20vsini%20Uncertainty%20Calculation.html">Step4: vsini Uncertainty Calculation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Other</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="FAQ.html">FAQ</a></li>
+</ul>
+
 </div>
 </div>
 
@@ -179,41 +202,91 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
             <div class="visually-hidden">Toggle table of contents sidebar</div>
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
         </div>
         <article role="main">
-          <p><a class="reference external" href="https://joss.theoj.org/papers/37282917527e6c195d9dff80107388fd"><img alt="status" src="https://joss.theoj.org/papers/37282917527e6c195d9dff80107388fd/status.svg"/></a>
+          <!-- 
+```{include} ../../README.md
+``` -->
+<p><a class="reference external" href="https://joss.theoj.org/papers/37282917527e6c195d9dff80107388fd"><img alt="status" src="https://joss.theoj.org/papers/37282917527e6c195d9dff80107388fd/status.svg"/></a>
 <a class="reference external" href="https://zenodo.org/badge/latestdoi/266670787"><img alt="DOI" src="https://zenodo.org/badge/266670787.svg"/></a></p>
 <section id="igrins-rv-a-radial-velocity-pipeline-for-igrins">
-<h1><a class="reference external" href="https://github.com/shihyuntang/igrins_rv">IGRINS RV</a>: A Radial Velocity Pipeline for IGRINS<a class="headerlink" href="#igrins-rv-a-radial-velocity-pipeline-for-igrins" title="Permalink to this headline">#</a></h1>
-<p><code class="docutils literal notranslate"><span class="pre">IGRINS</span> <span class="pre">RV</span></code> is a <code class="docutils literal notranslate"><span class="pre">python</span></code> open source pipeline for extracting radial velocities (RVs) from spectra taken with the Immersion GRating INfrared Spectrometer (IGRINS). It uses a modified forward modeling technique that leverages telluric absorption lines as a common-path wavelength calibrator. <code class="docutils literal notranslate"><span class="pre">IGRINS</span> <span class="pre">RV</span></code> achieves an RV precision in the H and K bands of around 25-30 m/s for narrow-line stars, and it has successfully recovered the planet-induced RV signals of both HD 189733 and τ Boo A. Visit <a class="reference external" href="https://ui.adsabs.harvard.edu/abs/2021AJ....161..283S/abstract">Stahl et al. 2021</a> to see the published paper.</p>
+<h1>IGRINS RV: A Radial Velocity Pipeline for IGRINS<a class="headerlink" href="#igrins-rv-a-radial-velocity-pipeline-for-igrins" title="Permalink to this headline">#</a></h1>
+<p><strong>IGRINS RV</strong> is a <code class="docutils literal notranslate"><span class="pre">python</span></code> open source pipeline for extracting radial velocities (RVs) from spectra taken with the Immersion GRating INfrared Spectrometer (IGRINS). It uses a modified forward modeling technique that leverages telluric absorption lines as a common-path wavelength calibrator. <strong>IGRINS RV</strong> achieves an RV precision in the H and K bands of around 25-30 m/s for narrow-line stars, and it has successfully recovered the planet-induced RV signals of both HD 189733 and τ Boo A. Visit <a class="reference external" href="https://ui.adsabs.harvard.edu/abs/2021AJ....161..283S/abstract">Stahl et al. 2021</a> to see the published paper.</p>
 <p>If you have any questions, suggestions, or wish to report a bug, please let us know by either opening an issue or contacting us (asa.stahl@rice.edu or sytang@lowell.edu).
-More on how to contribute can be found in the <a class="reference external" href="https://github.com/shihyuntang/igrins_rv/wiki/FAQ#q-how-do-i-report-bugs">FAQ</a> page.</p>
-<section id="installation">
-<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">#</a></h2>
-<p>A detailed installation guide can be found on the <a class="reference external" href="https://github.com/shihyuntang/igrins_rv/wiki/Installation">GitHub wiki page</a>.</p>
-</section>
-<section id="how-to-run">
-<h2>How to run<a class="headerlink" href="#how-to-run" title="Permalink to this headline">#</a></h2>
-<p>The best way to learn how IGRINS RV works is to first play with the example data, following steps in <a class="reference external" href="https://github.com/shihyuntang/igrins_rv/wiki/Demo-Run-With-Example-Data-of-GJ281">Demo Run With Example Data of GJ281</a>. While you are waiting for the example code to finish, read the detailed documentation on the <a class="reference external" href="https://github.com/shihyuntang/igrins_rv/wiki">GitHub wiki page</a> so you know how to alter the example commands to fit your OWN science targets.</p>
-<hr class="docutils"/>
-<p>If you use <code class="docutils literal notranslate"><span class="pre">IGRINS</span> <span class="pre">RV</span></code> in your work, please go to the <a class="reference external" href="https://github.com/shihyuntang/igrins_rv/wiki/FAQ#q-how-do-i-properly-cite-igrins-rv">FAQ page</a> to see how to properly cite <code class="docutils literal notranslate"><span class="pre">IGRINS</span> <span class="pre">RV</span></code>.</p>
-<p>Acknowledgements:<br/>
-Many thanks to Dr. Gregory Mace for helping improve the user experence with <code class="docutils literal notranslate"><span class="pre">IGRINS</span> <span class="pre">RV</span></code>!</p>
-<div class="toctree-wrapper compound">
-</div>
-</section>
-</section>
-<section id="indices-and-tables">
-<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">#</a></h1>
+More on how to contribute can be found in <a class="reference internal" href="FAQ.html#q-how-do-i-report-bugs"><span class="std std-ref">Q: How do I report bugs?</span></a> page.</p>
+<p>If you have any question, idea or wish to report any bug, please let us know by either open an issue or contact us (asa.stahl@rice.edu or sytang@lowell.edu).</p>
+<p><strong>News:</strong></p>
 <ul class="simple">
-<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
-<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
-<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+<li><p><strong>2021/02/18: <strong>IGRINS RV</strong> v0.9.6-beta.3 public beta is ready for JOSS review!!<br/>
+(minor bugs related to example data fixed)</strong></p></li>
+<li><p>2021/01/29: <strong>IGRINS RV</strong> v0.9.6-beta.1 public beta<br/>
+(update the ability to process IGRINS data at Gemini South)</p></li>
+<li><p>2020/12/05: <strong>IGRINS RV</strong> v0.9.5-beta.1 public beta is under internal review and testing!!<br/>
+(update with modeling the flux suppression effect)</p></li>
+<li><p>2020/08/04: <strong>IGRINS RV</strong> v0.9-beta.1 public beta is under internal review and testing!!</p></li>
+<li><p>2020/06/23: <strong>IGRINS RV</strong> v0.85 is under internal review.. will come to public soon!!</p></li>
 </ul>
+<hr class="docutils"/>
+<p>For the sake of efficiency, <strong>IGRINS RV</strong> is broken up into several different steps. After <a class="reference internal" href="Installation.html#installation"><span class="std std-ref">Installation</span></a> all the required packages, the best way to learn how these steps work is to follow our <a class="reference internal" href="Demo%20with%20Example%20Data%20%28GJ281%29.html"><span class="doc">Demo with Example Data (GJ281)</span></a> using the example data provided. The demo will demonstrate how one user might run the steps of <strong>IGRINS RV</strong> to go from raw data to final RV measurements.</p>
+<p>As you go through the demo, navigate to the other wiki pages as they are linked to get a more detailed description of how each step works and why you’re running it. Once you’ve finished the demo and would like to begin analyzing your real science targets, these other pages will also explain what options you have for modifying the code’s default inputs to best suit the needs of your science:</p>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Overview%20and%20Workflow.html">Overview and Workflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Demo%20with%20Example%20Data%20%28GJ281%29.html">Demo with Example Data (GJ281)</a></li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Setup</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Setup%20Input%201D%20spectra%20%28plp%29.html">Setup: Input 1D spectra (plp)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Setup%20PrepData%20Files.html">PrepData Files (Step 0)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Setup%20Stellar%20Templates.html">Setup: Stellar Templates</a></li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Main RV program</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Step%201%20Telluric%20Modelling.html">Step1: Telluric Modelling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Step%202%20Initial%20Convergence.html">Step2: Initial Convergence</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Step%203%20Full%20Analysis.html">Step3: Full Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Step%204%20vsini%20Uncertainty%20Calculation.html">Step4: vsini Uncertainty Calculation</a></li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Other</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="FAQ.html">FAQ</a></li>
+</ul>
+</div>
+<hr class="docutils"/>
+<p>Please cite these papers if you use <strong>IGRINS RV</strong>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">igrins</span> <span class="pre">plp</span> <span class="pre">v2.2.0</span></code> <a class="reference external" href="https://zenodo.org/record/845059#.Xzlp5C0wJQI">https://zenodo.org/record/845059#.Xzlp5C0wJQI</a></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Telfit</span></code> paper on AJ <a class="reference external" href="https://ui.adsabs.harvard.edu/abs/2014AJ....148...53G/abstract">https://ui.adsabs.harvard.edu/abs/2014AJ….148…53G/abstract</a></p></li>
+<li><p><strong>IGRINS RV</strong> paper on AJ <a class="reference external" href="https://ui.adsabs.harvard.edu/abs/2021AJ....161..283S/abstract">https://ui.adsabs.harvard.edu/abs/2021AJ….161..283S/abstract</a></p></li>
+<li><p><strong>IGRINS RV</strong> paper on JOSS <a class="reference external" href="https://joss.theoj.org/papers/10.21105/joss.03095#">https://joss.theoj.org/papers/10.21105/joss.03095#</a></p></li>
+</ul>
+<!-- ```{toctree}
+:caption: 'Contents:'
+:maxdepth: 2
+:hidden:
+
+Home
+Installation
+Overview-and-Workflow
+FAQ
+``` -->
+<!-- # Indices and tables
+
+- {ref}`genindex`
+- {ref}`modindex`
+- {ref}`search` -->
 </section>
 
         </article>
@@ -221,7 +294,15 @@ Many thanks to Dr. Gregory Mace for helping improve the user experence with <cod
       <footer>
         
         <div class="related-pages">
-          
+          <a class="next-page" href="Installation.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Installation</div>
+              </div>
+              <svg><use href="#svg-arrow-right"></use></svg>
+            </a>
           
         </div>
         <div class="bottom-of-page">
@@ -243,29 +324,8 @@ Many thanks to Dr. Gregory Mace for helping improve the user experence with <cod
         
       </footer>
     </div>
-    <aside class="toc-drawer">
+    <aside class="toc-drawer no-toc">
       
-      
-      <div class="toc-sticky toc-scroll">
-        <div class="toc-title-container">
-          <span class="toc-title">
-            Contents
-          </span>
-        </div>
-        <div class="toc-tree-container">
-          <div class="toc-tree">
-            <ul>
-<li><a class="reference internal" href="#">IGRINS RV: A Radial Velocity Pipeline for IGRINS</a><ul>
-<li><a class="reference internal" href="#installation">Installation</a></li>
-<li><a class="reference internal" href="#how-to-run">How to run</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
-</ul>
-
-          </div>
-        </div>
-      </div>
       
       
     </aside>
