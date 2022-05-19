@@ -1,9 +1,7 @@
 # Overview and Workflow
 
-***
-
 *For a detailed understanding of how **IGRINS RV** works and how it should be run,\
-it is **HIGHLY** recommended that the user reads the associated paper, [Stahl et al. 2021 arXiv](https://ui.adsabs.harvard.edu/abs/2021arXiv210402082S/abstract).*
+it is **HIGHLY** recommended that the user reads the associated paper, [Stahl et al. 2021](https://ui.adsabs.harvard.edu/abs/2021AJ....161..283S/abstract).*
 
 ***
 
@@ -16,17 +14,6 @@ There are also two other steps that can be run, depending on the user and their 
 
 A diagram showcase the workflow:
 ![text](../IGRINS_RV_workflow_diagram.png)
-
-<!-- 
-.. raw:: html 
-
-   <div align="center">
-   <img src="IGRINS_RV_workflow_diagram.png" width="700px">
-   </img>
-   <br/>
-   </div>
-   <br/><br/> -->
-
 
 All steps are run as 
 ```shell

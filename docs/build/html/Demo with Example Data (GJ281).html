@@ -210,10 +210,9 @@
         <article role="main">
           <section id="demo-with-example-data-gj281">
 <h1>Demo with Example Data (GJ281)<a class="headerlink" href="#demo-with-example-data-gj281" title="Permalink to this headline">#</a></h1>
-<hr class="docutils"/>
 <p>This is a step by step walkthrough of <strong>IGRINS RV</strong> using the example data provided with the package installation.</p>
 <p>For the sake of efficiency, <strong>IGRINS RV</strong> is broken up into several different steps. The purpose of this page is to provide an example of how one user might run these steps to go from raw data to final RV measurements. Input commands and their resultant printouts are provided for illustration.</p>
-<p>As you go through this demo, navigate to the other wiki pages as they are linked to get a more detailed description of how each step works and why you’re running it. Once you’ve finished the demo and would like to begin analyzing your real science targets, these other pages will also provide explain what options you have for modifying the code’s default inputs to best suit the needs of your science.</p>
+<p>As you go through this demo, navigate to the other document pages as they are linked to get a more detailed description of how each step works and why you’re running it. Once you’ve finished the demo and would like to begin analyzing your real science targets, these other pages will also provide explain what options you have for modifying the code’s default inputs to best suit the needs of your science.</p>
 <p>Make sure you have all the packages installed before you begin. If not, please visit <a class="reference internal" href="Installation.html"><span class="doc">Installation</span></a> first.</p>
 <p><strong>Example data</strong>:</p>
 <ol class="arabic simple">
@@ -225,15 +224,15 @@
 </div></blockquote>
 <section id="an-important-note">
 <h2>AN IMPORTANT NOTE<a class="headerlink" href="#an-important-note" title="Permalink to this headline">#</a></h2>
-<p>GJ281 is an RV standard (STD) in reality, but for the sake of demonstration, we treat GJ281 as a normal target (TAR) in this demo! If you want to see how the input commands would be different if we were treating GJ281 as an RV standard, that information can be found throughout the wiki pages on Step1 – Step4.</p>
-<p>If you are only testing the function of <strong>IGRINS RV</strong> – and not that of the <code class="docutils literal notranslate"><span class="pre">plp</span></code> package it makes use of – please go to <a class="reference external" href="https://github.com/shihyuntang/igrins_rv/wiki/Demo-with-Example-Data-(GJ281)#demo-for-igrins-rv">Demo for IGRINS RV</a> section directly.</p>
+<p>GJ281 is an RV standard (STD) in reality, but for the sake of demonstration, we treat GJ281 as a normal target (TAR) in this demo! If you want to see how the input commands would be different if we were treating GJ281 as an RV standard, that information can be found throughout the <strong>MAIN RV PROGRAM</strong> section (Step1 – Step4).</p>
+<p>If you are only testing the function of <strong>IGRINS RV</strong> – and not that of the <code class="docutils literal notranslate"><span class="pre">plp</span></code> package it makes use of – please go to <a class="reference internal" href="#demo-for-igrins-rv"><span class="std std-ref">Demo for IGRINS RV</span></a> section directly.</p>
 </section>
 <hr class="docutils"/>
 <section id="demo-for-getting-the-1d-spectra-with-plp-v2-2-0">
 <h2>Demo for getting the 1D spectra with <code class="docutils literal notranslate"><span class="pre">plp</span> <span class="pre">v2.2.0</span></code><a class="headerlink" href="#demo-for-getting-the-1d-spectra-with-plp-v2-2-0" title="Permalink to this headline">#</a></h2>
 <section id="step-1-making-the-bash-run-script">
 <h3>Step 1: Making the bash run script<a class="headerlink" href="#step-1-making-the-bash-run-script" title="Permalink to this headline">#</a></h3>
-<p>Make sure you are in the /plp(-master) directory.</p>
+<p>Make sure you are in the <code class="docutils literal notranslate"><span class="pre">/plp(-master)</span></code> directory.</p>
 <p>Input:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>~/plp$ python plp_main_step1.py GJ<span class="se">\ </span><span class="m">281</span> -c <span class="m">6</span>
 </pre></div>
@@ -261,7 +260,7 @@
 </pre></div>
 </div>
 <blockquote>
-<div><p>While the code is running, visit <a class="reference external" href="https://github.com/shihyuntang/igrins_rv/wiki/Setup:-Input-1D-spectra-(plp)">Setup: Input 1D spectra (plp)</a> to learn more about what is going on here. You might want to pay special attention to the section about making the <strong>recipe</strong> for <code class="docutils literal notranslate"><span class="pre">plp</span></code>.</p>
+<div><p>While the code is running, visit <a class="reference internal" href="Setup%20Input%201D%20spectra%20%28plp%29.html"><span class="doc">Setup: Input 1D spectra (plp)</span></a> to learn more about what is going on here. You might want to pay special attention to the section about making the <strong>recipe</strong> for <code class="docutils literal notranslate"><span class="pre">plp</span></code>.</p>
 </div></blockquote>
 </section>
 <section id="step-3">
@@ -294,7 +293,7 @@
 <p>For this example, we have 6 nights of reduced data ready for you to use. Simply move <code class="docutils literal notranslate"><span class="pre">igrins_rv(-master)/Example/GJ281</span></code> to <code class="docutils literal notranslate"><span class="pre">igrins_rv/Input/</span></code>. If you completed the <code class="docutils literal notranslate"><span class="pre">plp</span></code> demo above, you should already done this step.</p>
 <p>All users now move <code class="docutils literal notranslate"><span class="pre">igrins_rv/Example/Prepdata_A0_GJ281.txt</span></code> and <code class="docutils literal notranslate"><span class="pre">igrins_rv/Example/Prepdata_targ_GJ281.txt</span></code> to <code class="docutils literal notranslate"><span class="pre">igrins_rv/Input/Prepdata/</span></code>.</p>
 <blockquote>
-<div><p>These files tell <strong>IGRINS RV</strong> what data are available for the science target and its associated A0 standards, as well as some information about the observations (e.g. time, barycentric velocity correction, observing conditions). Read <a class="reference external" href="https://github.com/shihyuntang/igrins_rv/wiki/Setup:-PrepData-Files">Setup: PrepData Files</a> to learn how to make your own <code class="docutils literal notranslate"><span class="pre">PrepData</span> <span class="pre">Files</span></code> for your science targets (you may want to wait until you begin running Step 1, below).</p>
+<div><p>These files tell <strong>IGRINS RV</strong> what data are available for the science target and its associated A0 standards, as well as some information about the observations (e.g. time, barycentric velocity correction, observing conditions). Read <a class="reference internal" href="Setup%20PrepData%20Files.html"><span class="doc">PrepData Files (Step 0)</span></a> to learn how to make your own <code class="docutils literal notranslate"><span class="pre">PrepData</span> <span class="pre">Files</span></code> for your science targets (you may want to wait until you begin running Step 1, below).</p>
 </div></blockquote>
 <p>The folder structure should now look like:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>igrins_rv(-master)
@@ -327,7 +326,7 @@
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>igrins_rv<span class="o">)</span> ~/igrins_rv $ python main_step1.py GJ281 -HorK K -Wr <span class="m">1</span> -c <span class="m">6</span> -plot
 </pre></div>
 </div>
-<p>While the code is running, visit <a class="reference external" href="https://github.com/shihyuntang/igrins_rv/wiki/Step-1:-Telluric-Modelling">Step 1: Telluric Modelling</a> to learn about what you’ve just started. And if you’re curious about how what you’ve done so far fits into the larger overall structure of the pipeline, check out <a class="reference external" href="https://github.com/shihyuntang/igrins_rv/wiki/Overview-and-Workflow">Overview and Workflow</a> (you may want to skim this and return to it once you’ve finished the demo).</p>
+<p>While the code is running, visit <a class="reference internal" href="Step%201%20Telluric%20Modelling.html"><span class="doc">Step1: Telluric Modelling</span></a> to learn about what you’ve just started. And if you’re curious about how what you’ve done so far fits into the larger overall structure of the pipeline, check out <a class="reference internal" href="Overview%20and%20Workflow.html"><span class="doc">Overview and Workflow</span></a> (you may want to skim this and return to it once you’ve finished the demo).</p>
 <p>After a while, you should get this final info:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>A0 Fitting Done!
 A0 Fitting using TelFit finished, Duration: 0:45:41.780903
@@ -385,7 +384,7 @@ COLLECTING | : 100%|████████████████████
 
 </pre></div>
 </div>
-<p>While the code is running, visit <a class="reference external" href="https://github.com/shihyuntang/igrins_rv/wiki/Step-2:-Initial-Convergence">Step 2: Initial Convergence</a> to learn more about what is going on here.</p>
+<p>While the code is running, visit <a class="reference internal" href="Step%202%20Initial%20Convergence.html"><span class="doc">Step2: Initial Convergence</span></a> to learn more about what is going on here.</p>
 <p>After a while, you should get this final printout:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>--------!Initial Guess!--------
 RV results:    mean= 20.1224 km/s, median= 20.1315 km/s, std= 0.0404 km/s
@@ -485,7 +484,7 @@ COLLECTING | : 100%|████████████████████
 ...
 </pre></div>
 </div>
-<p>While the code is running, visit <a class="reference external" href="https://github.com/shihyuntang/igrins_rv/wiki/Step-3:-Full-Analysis">Step 3: Full Analysis</a> to learn more about what is going on here.</p>
+<p>While the code is running, visit <a class="reference internal" href="Step%203%20Full%20Analysis.html"><span class="doc">Step3: Full Analysis</span></a> to learn more about what is going on here.</p>
 <p>After a while, you should get these final info.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>RV mean = 19.9862 km/s, std = 0.0364 km/s
 vsini mean = 3.3244 km/s, std = 0.4313 km/s
@@ -551,7 +550,7 @@ The final RV estimates you are looking for are in the RVresultsSummary files!
 ####################################################################################
 </pre></div>
 </div>
-<p>Why would you purposefully try to calculate RVs with vsini offset from your best estimate? Read about <a class="reference external" href="https://github.com/shihyuntang/igrins_rv/wiki/Step-4:-vsini-Uncertainty-Calculation">Step 4</a>.</p>
+<p>Why would you purposefully try to calculate RVs with vsini offset from your best estimate? Read about <a class="reference internal" href="Step%204%20vsini%20Uncertainty%20Calculation.html"><span class="doc">Step4: vsini Uncertainty Calculation</span></a>.</p>
 </section>
 </section>
 <section id="step-4-calculating-the-impact-of-vsini-uncertainty-on-your-rvs">
@@ -585,7 +584,7 @@ Output saved under ./Output/GJ281_K/RV_results_2_3_combined
 </div>
 <p>Voilà, you are ready to run <strong>IGRINS RV</strong> with your science data!</p>
 <blockquote>
-<div><p>It might be useful to take a look at <a class="reference external" href="https://github.com/shihyuntang/igrins_rv/wiki/Overview-and-Workflow">Overview and Workflow</a> again before you try to run the pipeline with your science data.</p>
+<div><p>It might be useful to take a look at <a class="reference internal" href="Overview%20and%20Workflow.html"><span class="doc">Overview and Workflow</span></a> again before you try to run the pipeline with your science data.</p>
 </div></blockquote>
 </section>
 </section>

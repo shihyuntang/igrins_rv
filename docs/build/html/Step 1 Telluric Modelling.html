@@ -210,11 +210,10 @@
         <article role="main">
           <section id="step1-telluric-modelling">
 <h1>Step1: Telluric Modelling<a class="headerlink" href="#step1-telluric-modelling" title="Permalink to this headline">#</a></h1>
-<hr class="docutils"/>
 <p><em>Defines the wavelength regions to be analyzed; generates a synthetic, high-resolution telluric template for use in later model fits on a night by night basis.</em></p>
 <hr class="docutils"/>
-<section id="input-data">
-<h2>Input data<a class="headerlink" href="#input-data" title="Permalink to this headline">#</a></h2>
+<section id="input-data-for-step1">
+<h2>Input data for step1<a class="headerlink" href="#input-data-for-step1" title="Permalink to this headline">#</a></h2>
 <p>If you got 1D spectra from running <code class="docutils literal notranslate"><span class="pre">igrins</span> <span class="pre">plp</span></code>, please make sure you’ve moved your folder <br/>
 <code class="docutils literal notranslate"><span class="pre">plp-master/final_A_B_spec/[target_name]</span></code> to <code class="docutils literal notranslate"><span class="pre">./igrins_rv-master/input/</span></code>.</p>
 <p>The folder structure should look like:</p>
@@ -250,8 +249,8 @@
 <h2>Generating telluric templates<a class="headerlink" href="#generating-telluric-templates" title="Permalink to this headline">#</a></h2>
 <p>The bus mostly drives itself here, with nothing required beyond the PrepData files and the wavelength regions. <strong>IGRINS RV</strong> will process all the B frames first for all orders and nights, then all the A frames.</p>
 </section>
-<section id="the-terminal-command">
-<h2>The terminal command<a class="headerlink" href="#the-terminal-command" title="Permalink to this headline">#</a></h2>
+<section id="the-terminal-command-for-step1">
+<h2>The terminal command for step1<a class="headerlink" href="#the-terminal-command-for-step1" title="Permalink to this headline">#</a></h2>
 <p>Call as:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>igrins_rv<span class="o">)</span> ~$ python main_step1.py <span class="o">[</span>target name<span class="o">]</span> <span class="o">[</span>keywords<span class="o">]</span>
 </pre></div>
@@ -272,8 +271,8 @@
 <li><p>-DeBug : If set, DeBug logging will be output, as well as (lots of) extra plots</p></li>
 </ul>
 </section>
-<section id="outputs">
-<h2>Outputs<a class="headerlink" href="#outputs" title="Permalink to this headline">#</a></h2>
+<section id="outputs-from-step1">
+<h2>Outputs from step1<a class="headerlink" href="#outputs-from-step1" title="Permalink to this headline">#</a></h2>
 <p>The synthetic telluric templates are saved to <code class="docutils literal notranslate"><span class="pre">./Output/[target_name]_[band]/A0Fits</span></code> as <code class="docutils literal notranslate"><span class="pre">[NIGHT]A0_[A/B</span> <span class="pre">nodding]treated_[band].fits</span></code></p>
 <p>Visualization of the <code class="docutils literal notranslate"><span class="pre">Telfit</span></code> fitting results can be found under <code class="docutils literal notranslate"><span class="pre">./Output/[target_name]_[band]/A0Fits/figs_[band]</span></code>. Users will mostly (or only) need to check the <code class="docutils literal notranslate"><span class="pre">A0Telfit_OrderXX_[NIGHT]_[A/B</span> <span class="pre">nodding].png</span></code>, which shows the final fitting result.</p>
 </section>
@@ -337,11 +336,11 @@
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">Step1: Telluric Modelling</a><ul>
-<li><a class="reference internal" href="#input-data">Input data</a></li>
+<li><a class="reference internal" href="#input-data-for-step1">Input data for step1</a></li>
 <li><a class="reference internal" href="#defining-analysis-regions">Defining analysis regions</a></li>
 <li><a class="reference internal" href="#generating-telluric-templates">Generating telluric templates</a></li>
-<li><a class="reference internal" href="#the-terminal-command">The terminal command</a></li>
-<li><a class="reference internal" href="#outputs">Outputs</a></li>
+<li><a class="reference internal" href="#the-terminal-command-for-step1">The terminal command for step1</a></li>
+<li><a class="reference internal" href="#outputs-from-step1">Outputs from step1</a></li>
 </ul>
 </li>
 </ul>

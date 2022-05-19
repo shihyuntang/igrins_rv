@@ -1,11 +1,10 @@
 # Demo with Example Data (GJ281)
 
-***
 This is a step by step walkthrough of **IGRINS RV** using the example data provided with the package installation.
 
 For the sake of efficiency, **IGRINS RV** is broken up into several different steps. The purpose of this page is to provide an example of how one user might run these steps to go from raw data to final RV measurements. Input commands and their resultant printouts are provided for illustration. 
 
-As you go through this demo, navigate to the other wiki pages as they are linked to get a more detailed description of how each step works and why you're running it. Once you've finished the demo and would like to begin analyzing your real science targets, these other pages will also provide explain what options you have for modifying the code's default inputs to best suit the needs of your science.
+As you go through this demo, navigate to the other document pages as they are linked to get a more detailed description of how each step works and why you're running it. Once you've finished the demo and would like to begin analyzing your real science targets, these other pages will also provide explain what options you have for modifying the code's default inputs to best suit the needs of your science.
 
 Make sure you have all the packages installed before you begin. If not, please visit {doc}`Installation` first.
 
@@ -17,10 +16,10 @@ Make sure you have all the packages installed before you begin. If not, please v
 
 
 ## AN IMPORTANT NOTE
-GJ281 is an RV standard (STD) in reality, but for the sake of demonstration, we treat GJ281 as a normal target (TAR) in this demo! If you want to see how the input commands would be different if we were treating GJ281 as an RV standard, that information can be found throughout the wiki pages on Step1 -- Step4.
+GJ281 is an RV standard (STD) in reality, but for the sake of demonstration, we treat GJ281 as a normal target (TAR) in this demo! If you want to see how the input commands would be different if we were treating GJ281 as an RV standard, that information can be found throughout the **MAIN RV PROGRAM** section (Step1 -- Step4).
 
 
-If you are only testing the function of **IGRINS RV** -- and not that of the `plp` package it makes use of -- please go to [Demo for IGRINS RV](https://github.com/shihyuntang/igrins_rv/wiki/Demo-with-Example-Data-(GJ281)#demo-for-igrins-rv) section directly.
+If you are only testing the function of **IGRINS RV** -- and not that of the `plp` package it makes use of -- please go to {ref}`Demo for IGRINS RV` section directly.
 
 
 ***
@@ -28,7 +27,7 @@ If you are only testing the function of **IGRINS RV** -- and not that of the `pl
 ## Demo for getting the 1D spectra with `plp v2.2.0`
 ### Step 1: Making the bash run script
 
-Make sure you are in the /plp(-master) directory.
+Make sure you are in the `/plp(-master)` directory.
 
 Input:
 ```shell
@@ -56,7 +55,7 @@ Now `cd` to `./run_sh`, and run
 ~/plp/run_sh $ bash GJ281_run_igrins1.sh
 ...
 ```
-> While the code is running, visit [Setup: Input 1D spectra (plp)](https://github.com/shihyuntang/igrins_rv/wiki/Setup:-Input-1D-spectra-(plp)) to learn more about what is going on here. You might want to pay special attention to the section about making the **recipe** for `plp`.
+> While the code is running, visit {doc}`Setup Input 1D spectra (plp)` to learn more about what is going on here. You might want to pay special attention to the section about making the **recipe** for `plp`.
 
 ### Step 3: 
 Now `cd ..` to get back to the directory `./run_sh/`. Then run:
@@ -84,7 +83,7 @@ For this example, we have 6 nights of reduced data ready for you to use. Simply 
 
 All users now move `igrins_rv/Example/Prepdata_A0_GJ281.txt` and `igrins_rv/Example/Prepdata_targ_GJ281.txt` to `igrins_rv/Input/Prepdata/`. 
 
-> These files tell **IGRINS RV** what data are available for the science target and its associated A0 standards, as well as some information about the observations (e.g. time, barycentric velocity correction, observing conditions). Read [Setup: PrepData Files](https://github.com/shihyuntang/igrins_rv/wiki/Setup:-PrepData-Files) to learn how to make your own `PrepData Files` for your science targets (you may want to wait until you begin running Step 1, below). 
+> These files tell **IGRINS RV** what data are available for the science target and its associated A0 standards, as well as some information about the observations (e.g. time, barycentric velocity correction, observing conditions). Read {doc}`Setup PrepData Files` to learn how to make your own `PrepData Files` for your science targets (you may want to wait until you begin running Step 1, below). 
 
 The folder structure should now look like:
 ```
@@ -117,7 +116,7 @@ or
 ```shell
 (igrins_rv) ~/igrins_rv $ python main_step1.py GJ281 -HorK K -Wr 1 -c 6 -plot
 ```
-While the code is running, visit [Step 1: Telluric Modelling](https://github.com/shihyuntang/igrins_rv/wiki/Step-1:-Telluric-Modelling) to learn about what you've just started. And if you're curious about how what you've done so far fits into the larger overall structure of the pipeline, check out [Overview and Workflow](https://github.com/shihyuntang/igrins_rv/wiki/Overview-and-Workflow) (you may want to skim this and return to it once you've finished the demo).
+While the code is running, visit {doc}`Step 1 Telluric Modelling` to learn about what you've just started. And if you're curious about how what you've done so far fits into the larger overall structure of the pipeline, check out {doc}`Overview and Workflow` (you may want to skim this and return to it once you've finished the demo).
 
 After a while, you should get this final info:
 
@@ -176,7 +175,7 @@ PROCESSING | : 100%|████████████████████
 COLLECTING | : 100%|███████████████████████████████████████████████████████████████| 6/6 [00:00<00:00, 87078.98it/s]
 
 ```
-While the code is running, visit [Step 2: Initial Convergence](https://github.com/shihyuntang/igrins_rv/wiki/Step-2:-Initial-Convergence) to learn more about what is going on here.
+While the code is running, visit {doc}`Step 2 Initial Convergence` to learn more about what is going on here.
 
 After a while, you should get this final printout:
 ```
@@ -273,7 +272,7 @@ PROCESSING | : 100%|████████████████████
 COLLECTING | : 100%|██████████████████████████████████████████████████████████████| 6/6 [00:00<00:00, 139810.13it/s]
 ...
 ```
-While the code is running, visit [Step 3: Full Analysis](https://github.com/shihyuntang/igrins_rv/wiki/Step-3:-Full-Analysis) to learn more about what is going on here.
+While the code is running, visit {doc}`Step 3 Full Analysis` to learn more about what is going on here.
 
 After a while, you should get these final info.
 ```
@@ -334,7 +333,7 @@ The final RV estimates you are looking for are in the RVresultsSummary files!
 ####################################################################################
 ```
 
-Why would you purposefully try to calculate RVs with vsini offset from your best estimate? Read about [Step 4](https://github.com/shihyuntang/igrins_rv/wiki/Step-4:-vsini-Uncertainty-Calculation).
+Why would you purposefully try to calculate RVs with vsini offset from your best estimate? Read about {doc}`Step 4 vsini Uncertainty Calculation`.
 
 ### Step 4: Calculating the impact of vsini uncertainty on your RVs
 Input:
@@ -366,6 +365,4 @@ Output saved under ./Output/GJ281_K/RV_results_2_3_combined
 ```
 
 Voilà, you are ready to run **IGRINS RV** with your science data!
-> It might be useful to take a look at [Overview and Workflow](https://github.com/shihyuntang/igrins_rv/wiki/Overview-and-Workflow) again before you try to run the pipeline with your science data.
-
-
+> It might be useful to take a look at {doc}`Overview and Workflow` again before you try to run the pipeline with your science data.

@@ -1,6 +1,5 @@
 # Step2: Initial Convergence
 
-***
 *Required if the average RV of the target star is unknown to > 5 km/s precision. Performs an abbreviated analysis of the target star observations in order to converge to coarsely accurate RVs, which will be used as starting points for the more precise analysis in the next step; simultaneously does the same for target star's vsini. Only a single echelle region is used, and only one B observation from a given exposure (e.g. AB or ABBA) is analyzed.*
 ***
 
@@ -9,7 +8,7 @@ It is recommended that the user choose what they think may be the most precise o
 This code can be run on both RV standard stars and stars where RV variability is expected. The difference appears in how you specify the keywords `-g` and/or `-gX`. Note that these keywords also allow you to easily use the RV results of a previous Step 2 run as the input RV guesses for a new run.
 
 
-### The terminal command
+## The terminal command for step2
 Call as:
 ```shell
 (igrins_rv) ~$ python main_step2.py [target name] [keywords]
@@ -31,7 +30,7 @@ Call as:
 
 > where -g 20.2 would apply a singular initial guess RV uniformly to all observations, while -gX 1 would apply a different starting guess for each observation based on the contents of `Initguesser_results_1.csv`. The former is used for targets where little intrinsic variance is expected (like RV standards); the latter is used for targets where RV variance is expected. The -g keyword is also used the first time the user runs Step 2, since presumably even if the RV variance is expected, the user only has an idea of the average absolute RV of the star.
 
-### Keywords
+### Keywords for step2
 
 * -HorK : Specifies which band to process, default = K 
 * -Wr : Specifies which wavelength regions file in `./Input/UseWv/WaveRegions_X` to use, default is those used in methods paper (-Wr 1)
@@ -50,11 +49,11 @@ Call as:
 * -DeBug : If set, DeBug logging will be output, as well as (lots of) extra plots
 
 
-## Outputs
+## Outputs from step2
 ### --RVs and vsin(i)s--
 Output files are saved as `./Output/[target_name]_[band]/Initguesser_results_[run_number].csv`. The mean RV and vsin(i) of the observations are printed from the terminal.
 
-### --Plots--
+### --Plots from step2--
 
 If the -plot keyword was specified, plots of individual spectral fits will be under `./Output/[target_name]_[band]/figs/main_step3_[band]_[run_number]`. The plots with the prefix:
 * "parfit" show the full spectral fit to the data

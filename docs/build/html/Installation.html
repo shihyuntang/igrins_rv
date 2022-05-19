@@ -210,21 +210,20 @@
         <article role="main">
           <section id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">#</a></h1>
-<hr class="docutils"/>
 <p><em>Setting up and running <strong>IGRINS RV</strong> is easy if you have <strong>Anaconda(Conda)</strong> installed!<br/>
 NOTE:The current versions (v1.0.0) of <strong>IGRINS RV</strong> has only been tested on Linux and MacOS…</em></p>
 <hr class="docutils"/>
 <section id="package-installation-part-1">
 <h2>Package installation (part 1)<a class="headerlink" href="#package-installation-part-1" title="Permalink to this headline">#</a></h2>
-<p>First, download/clone <strong>igrins_rv</strong> from github (and extract it) to the directory of your choice. Then <code class="docutils literal notranslate"><span class="pre">cd</span></code> to the directory.</p>
+<p>First, download/clone <strong>igrins_rv</strong> from github to the directory of your choice. Then <code class="docutils literal notranslate"><span class="pre">cd</span></code> to that directory in terminal.</p>
 <section id="package-installation-with-conda">
 <h3>Package installation with conda<a class="headerlink" href="#package-installation-with-conda" title="Permalink to this headline">#</a></h3>
-<p>You can use a single command to setup an environment with all needed packages (except <code class="docutils literal notranslate"><span class="pre">Telfit</span></code>):</p>
+<p>You can use a single command to setup an environment with all needed packages (except the <code class="docutils literal notranslate"><span class="pre">Telfit</span></code> package):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span>
 </pre></div>
 </div>
 <p>(this reads the <strong>environment.yml</strong> file and installs all the packages listed inside)</p>
-<p>This will create an environment called <code class="docutils literal notranslate"><span class="pre">igrins_rv</span></code>. You can use</p>
+<p>The above command will create an environment called <code class="docutils literal notranslate"><span class="pre">igrins_rv</span></code>. You can use</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">info</span> <span class="o">--</span><span class="n">envs</span>
 </pre></div>
 </div>
@@ -238,8 +237,8 @@ NOTE:The current versions (v1.0.0) of <strong>IGRINS RV</strong> has only been t
 </pre></div>
 </div>
 <p>to enter the environment.</p>
-<p>If you are successful, your command line will look like</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="n">igrins_rv</span><span class="p">)</span> <span class="o">--&gt;</span>
+<p>If you are successful, your command line will look something like</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(igrins_rv) ~$
 </pre></div>
 </div>
 </section>
@@ -267,14 +266,14 @@ is with python.3.7 or later, and the following packages/versions:</p>
 <hr class="docutils"/>
 <section id="packages-installation-part-2-telfit">
 <h2>Packages installation (part 2) - <code class="docutils literal notranslate"><span class="pre">Telfit</span></code><a class="headerlink" href="#packages-installation-part-2-telfit" title="Permalink to this headline">#</a></h2>
-<p>The most up to date version of `Telfit v1.4.0’ is still under the beta test stage of pip installation; thus,</p>
+<p>The most up to date version of <code class="docutils literal notranslate"><span class="pre">Telfit</span> <span class="pre">v1.4.0</span></code> is still under the beta test stage of pip installation; thus,</p>
 <div class="highlight-diff notranslate"><div class="highlight"><pre><span></span><span class="gd">---PLEASE install it via source---</span><span class="w"></span>
 </pre></div>
 </div>
 <p>Go to  <a class="reference external" href="https://github.com/kgullikson88/Telluric-Fitter"><code class="docutils literal notranslate"><span class="pre">Telfit</span></code></a>, download the <code class="docutils literal notranslate"><span class="pre">master</span> <span class="pre">branch</span></code>, and install it from source (If you’ve never installed a pkg from source, no worries, we will walk you through it).</p>
-<p><strong>To install <code class="docutils literal notranslate"><span class="pre">Telfit</span></code> from source:</strong> Enter the <code class="docutils literal notranslate"><span class="pre">igrins_rv</span></code> environment (within which Telfit must be installed) and <code class="docutils literal notranslate"><span class="pre">cd</span></code> into <code class="docutils literal notranslate"><span class="pre">Telluric-Fitter-master</span></code>, then run</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="n">igrins_rv</span><span class="p">)</span> <span class="o">--&gt;</span> <span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">build</span>
-<span class="p">(</span><span class="n">igrins_rv</span><span class="p">)</span> <span class="o">--&gt;</span> <span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
+<p><strong>To install <code class="docutils literal notranslate"><span class="pre">Telfit</span></code> from source:</strong> Enter the <code class="docutils literal notranslate"><span class="pre">igrins_rv</span></code> environment (within which Telfit must be installed) and <code class="docutils literal notranslate"><span class="pre">cd</span></code> into <code class="docutils literal notranslate"><span class="pre">Telluric-Fitter(-master)</span></code>, then run</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(igrins_rv) ~$ python setup.py build
+(igrins_rv) ~$ python setup.py install
 </pre></div>
 </div>
 <p>After that, you can use</p>

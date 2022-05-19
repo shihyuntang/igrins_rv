@@ -1,6 +1,5 @@
 # Setup: Stellar Templates
 
-***
 ***IGRINS RV** comes with a handful of synthetic stellar templates, but the user may wish to supply their own.*\
 This page describes those that come with the code as well as how to use your own templates.
 Details on how the supplied templates were constructed, as well as how sub-optimal choices of template Teff and log(g) may affect RVs, are given in the paper.

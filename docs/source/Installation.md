@@ -1,22 +1,21 @@
 # Installation
 
-***
 *Setting up and running **IGRINS RV** is easy if you have **Anaconda(Conda)** installed!\
 NOTE:The current versions (v1.0.0) of **IGRINS RV** has only been tested on Linux and MacOS...*
 ***
 
 ## Package installation (part 1)
 
-First, download/clone **igrins_rv** from github (and extract it) to the directory of your choice. Then `cd` to the directory. 
+First, download/clone **igrins_rv** from github to the directory of your choice. Then `cd` to that directory in terminal. 
 
 ### Package installation with conda
-You can use a single command to setup an environment with all needed packages (except ``Telfit``):
+You can use a single command to setup an environment with all needed packages (except the ``Telfit`` package):
 ```
 conda env create
 ```
 (this reads the **environment.yml** file and installs all the packages listed inside)
 
-This will create an environment called ``igrins_rv``. You can use
+The above command will create an environment called ``igrins_rv``. You can use
 ```
 conda info --envs
 ```
@@ -32,9 +31,9 @@ source activate igrins_rv
 ```
 to enter the environment.
 
-If you are successful, your command line will look like
+If you are successful, your command line will look something like
 ```
-(igrins_rv) -->
+(igrins_rv) ~$
 ```
 
 ### Manual package installation
@@ -59,16 +58,16 @@ is with python.3.7 or later, and the following packages/versions:
 
 ## Packages installation (part 2) - ``Telfit``
 
-The most up to date version of `Telfit v1.4.0' is still under the beta test stage of pip installation; thus, 
+The most up to date version of `Telfit v1.4.0` is still under the beta test stage of pip installation; thus, 
 ```diff
 ---PLEASE install it via source---
 ```
 Go to  [`Telfit`](https://github.com/kgullikson88/Telluric-Fitter), download the `master branch`, and install it from source (If you've never installed a pkg from source, no worries, we will walk you through it). 
 
-**To install ``Telfit`` from source:** Enter the `igrins_rv` environment (within which Telfit must be installed) and `cd` into `Telluric-Fitter-master`, then run
+**To install ``Telfit`` from source:** Enter the `igrins_rv` environment (within which Telfit must be installed) and `cd` into `Telluric-Fitter(-master)`, then run
 ```
-(igrins_rv) --> python setup.py build
-(igrins_rv) --> python setup.py install
+(igrins_rv) ~$ python setup.py build
+(igrins_rv) ~$ python setup.py install
 ```
 
 After that, you can use

@@ -210,7 +210,6 @@
         <article role="main">
           <section id="setup-input-1d-spectra-plp">
 <h1>Setup: Input 1D spectra (plp)<a class="headerlink" href="#setup-input-1d-spectra-plp" title="Permalink to this headline">#</a></h1>
-<hr class="docutils"/>
 <p>To enable error estimation, <strong>IGRINS RV</strong> <strong>cannot</strong> get RVs from the standard 1D spectra reduced by <a class="reference external" href="https://github.com/igrins/plp">igrins plp v2.2.0</a>. <strong>You will need the raw fits file, and to perform a specific (but semi-automated) reduction procedure</strong>.</p>
 <p>To derive uncertainty estimates for its radial velocity measurements, <strong>IGRINS RV</strong> analyzes each observation from an exposure (a nodding sequence) separately and calculates an RV from each. When it comes to data reduction, this is done by adding the <code class="docutils literal notranslate"><span class="pre">--frac-slit</span></code> command flag for A0 standards and the science targets during reduction.</p>
 <hr class="docutils"/>
@@ -306,7 +305,7 @@ They contain commands to obtain the A and B separated spectra, e.g:</p>
 <li><p>Tip: Open/login with muti-terminal and run <code class="docutils literal notranslate"><span class="pre">bash</span> <span class="pre">GJ281_run_igrinsX.sh</span></code> one by one in each terminal to save time.</p></li>
 </ul>
 <section id="analyzing-multiple-observations-per-night-i-e-multiple-rvs">
-<h3>Analyzing Multiple Observations Per Night (i.e. Multiple RVs)<a class="headerlink" href="#analyzing-multiple-observations-per-night-i-e-multiple-rvs" title="Permalink to this headline">#</a></h3>
+<h3>Analyzing Multiple Observations Per Night (i.e., Multiple RVs)<a class="headerlink" href="#analyzing-multiple-observations-per-night-i-e-multiple-rvs" title="Permalink to this headline">#</a></h3>
 <p>If you have intensely observed a target such that you have enough data to constitute multiple observations per night, you can change the reduction accordingly. In the <code class="docutils literal notranslate"><span class="pre">./tmp</span></code> file with:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">GJ</span> <span class="mi">281</span><span class="p">,</span> <span class="n">TAR</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">54</span><span class="p">,</span> <span class="mf">600.000000</span><span class="p">,</span> <span class="n">STELLAR_AB</span><span class="p">,</span><span class="mi">60</span> <span class="mi">61</span> <span class="mi">62</span> <span class="mi">63</span> <span class="mi">64</span> <span class="mi">65</span> <span class="mi">66</span> <span class="mi">67</span> <span class="mi">68</span> <span class="mi">69</span> <span class="mi">70</span> <span class="mi">71</span><span class="p">,</span> <span class="n">A</span> <span class="n">B</span> <span class="n">B</span> <span class="n">A</span> <span class="n">A</span> <span class="n">B</span> <span class="n">B</span> <span class="n">A</span> <span class="n">A</span> <span class="n">B</span> <span class="n">B</span> <span class="n">A</span>
 </pre></div>
@@ -340,8 +339,8 @@ They contain commands to obtain the A and B separated spectra, e.g:</p>
 <p>Run step2 like step1, and you will get final spectra under <code class="docutils literal notranslate"><span class="pre">./final_A_B_spec/[target_name]</span></code>.<br/>
 Now, move the entire folder <code class="docutils literal notranslate"><span class="pre">plp-master/final_A_B_spec/[target_name]</span></code> to <code class="docutils literal notranslate"><span class="pre">./igrins_rv-master/input/</span></code>.</p>
 <p>Voilà, you are almost ready to get RVs out from your data with <strong>IGRINS RV</strong>!<br/>
-Next you need to <a class="reference external" href="https://github.com/shihyuntang/igrins_rv/wiki/Setup:-PrepData-Files">set up the PrepData files</a>,
-and <a class="reference external" href="https://github.com/shihyuntang/igrins_rv/wiki/Setup:-Stellar-Templates">choose</a> the stellar template you would like to use.</p>
+Next you need to <a class="reference internal" href="Setup%20PrepData%20Files.html"><span class="doc">PrepData Files (Step 0)</span></a>,
+and choose (see <a class="reference internal" href="Setup%20Stellar%20Templates.html"><span class="doc">Setup: Stellar Templates</span></a>) the stellar template you would like to use.</p>
 </section>
 </section>
 
@@ -405,7 +404,7 @@ and <a class="reference external" href="https://github.com/shihyuntang/igrins_rv
 <li><a class="reference internal" href="#">Setup: Input 1D spectra (plp)</a><ul>
 <li><a class="reference internal" href="#running-igrins-pipeline-version-2-2-0-plp-v2-2-0">Running IGRINS pipeline version 2.2.0 (plp v2.2.0)</a></li>
 <li><a class="reference internal" href="#modify-the-raw-data-and-make-new-recipe">Modify the raw data and make new recipe</a><ul>
-<li><a class="reference internal" href="#analyzing-multiple-observations-per-night-i-e-multiple-rvs">Analyzing Multiple Observations Per Night (i.e. Multiple RVs)</a></li>
+<li><a class="reference internal" href="#analyzing-multiple-observations-per-night-i-e-multiple-rvs">Analyzing Multiple Observations Per Night (i.e., Multiple RVs)</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#getting-the-input-data-for-igrins-rv">Getting the <strong>input</strong> data for <strong>IGRINS RV</strong></a></li>

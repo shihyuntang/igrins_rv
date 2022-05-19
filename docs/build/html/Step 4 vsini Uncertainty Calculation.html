@@ -3,7 +3,7 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="&lt;no title&gt;" href="Home.html" /><link rel="prev" title="Step3: Full Analysis" href="Step%203%20Full%20Analysis.html" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="FAQ" href="FAQ.html" /><link rel="prev" title="Step3: Full Analysis" href="Step%203%20Full%20Analysis.html" />
 
     <meta name="generator" content="sphinx-4.4.0, furo 2022.04.07"/>
         <title>Step4: vsini Uncertainty Calculation - igrins_rv 1.0.0 documentation</title>
@@ -154,9 +154,11 @@
   <input type="hidden" name="area" value="default">
 </form>
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
-  <ul>
+  <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="Installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Overview%20and%20Workflow.html">Overview and Workflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Demo%20with%20Example%20Data%20%28GJ281%29.html">Demo with Example Data (GJ281)</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Setup</span></p>
 <ul>
@@ -171,9 +173,8 @@
 <li class="toctree-l1"><a class="reference internal" href="Step%203%20Full%20Analysis.html">Step3: Full Analysis</a></li>
 <li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Step4: vsini Uncertainty Calculation</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<p class="caption" role="heading"><span class="caption-text">Other</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="Installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="FAQ.html">FAQ</a></li>
 </ul>
 
@@ -209,12 +210,11 @@
         <article role="main">
           <section id="step4-vsini-uncertainty-calculation">
 <h1>Step4: vsini Uncertainty Calculation<a class="headerlink" href="#step4-vsini-uncertainty-calculation" title="Permalink to this headline">#</a></h1>
-<hr class="docutils"/>
 <p><em>Updates RV uncertainty estimates to take into account uncertainty in vsini.</em></p>
 <hr class="docutils"/>
 <p>This step takes two runs of Step 3, one with vsini held fixed at the best guess value and one with vsini held fixed at the best guess value plus or minus one sigma, and uses the difference between the two to produce updated RVs and uncertainties. For the most part, the uncertainties should change little (1 m/s), but for high vsini (&gt; 15 km/s) objects, they may increase by ~5 m/s or so.</p>
-<section id="the-terminal-command">
-<h2>The terminal command<a class="headerlink" href="#the-terminal-command" title="Permalink to this headline">#</a></h2>
+<section id="the-terminal-command-for-step4">
+<h2>The terminal command for step4<a class="headerlink" href="#the-terminal-command-for-step4" title="Permalink to this headline">#</a></h2>
 <p>Call as:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>igrins_rv<span class="o">)</span> ~$ python main_step4.py <span class="o">[</span>target name<span class="o">]</span> <span class="o">[</span>keywords<span class="o">]</span>
 </pre></div>
@@ -227,10 +227,10 @@
 </ul>
 <p>Keywords -run1 and -run2 are mandatory.</p>
 </section>
-<section id="outputs">
-<h2>Outputs<a class="headerlink" href="#outputs" title="Permalink to this headline">#</a></h2>
-<section id="rvs">
-<h3>–RVs–<a class="headerlink" href="#rvs" title="Permalink to this headline">#</a></h3>
+<section id="outputs-from-step4">
+<h2>Outputs from step4<a class="headerlink" href="#outputs-from-step4" title="Permalink to this headline">#</a></h2>
+<section id="rvs-step4">
+<h3>–RVs (step4)–<a class="headerlink" href="#rvs-step4" title="Permalink to this headline">#</a></h3>
 <p>Output files are saved to <code class="docutils literal notranslate"><span class="pre">./Output/[target_name]_[band]/RV_results_[run_number_1]_[run_number_2]_combined</span></code>. The primary output is the <code class="docutils literal notranslate"><span class="pre">RVresultsSummary.fits/csv</span></code> file, which contains the following columns in its table:</p>
 <ul class="simple">
 <li><p>‘NIGHT’ : Designation of observation based on PrepData files, either in format YYYYMMDD or YYYYMMDD_XXXX, where XXXX is for Multi-RVs per Night mode (see Setup: PrepData Files page)</p></li>
@@ -249,12 +249,12 @@
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="Home.html">
+          <a class="next-page" href="FAQ.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">&lt;no title&gt;</div>
+                <div class="title">FAQ</div>
               </div>
               <svg><use href="#svg-arrow-right"></use></svg>
             </a>
@@ -302,9 +302,9 @@
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">Step4: vsini Uncertainty Calculation</a><ul>
-<li><a class="reference internal" href="#the-terminal-command">The terminal command</a></li>
-<li><a class="reference internal" href="#outputs">Outputs</a><ul>
-<li><a class="reference internal" href="#rvs">–RVs–</a></li>
+<li><a class="reference internal" href="#the-terminal-command-for-step4">The terminal command for step4</a></li>
+<li><a class="reference internal" href="#outputs-from-step4">Outputs from step4</a><ul>
+<li><a class="reference internal" href="#rvs-step4">–RVs (step4)–</a></li>
 </ul>
 </li>
 </ul>

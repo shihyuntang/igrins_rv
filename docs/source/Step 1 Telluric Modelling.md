@@ -1,9 +1,9 @@
 # Step1: Telluric Modelling
-***
+
 *Defines the wavelength regions to be analyzed; generates a synthetic, high-resolution telluric template for use in later model fits on a night by night basis.*
 ***
 
-### Input data
+## Input data for step1
 If you got 1D spectra from running `igrins plp`, please make sure you've moved your folder \
 `plp-master/final_A_B_spec/[target_name]` to `./igrins_rv-master/input/`.
 
@@ -28,7 +28,7 @@ igrins_rv(-master)
 └── ... 
 ```
 
-###  Defining analysis regions
+##  Defining analysis regions
 By default, **IGRINS RV** analyzes portions of 5 echelle orders in the H band and 4 in the K band. These regions were handpicked based off visual inspections of preliminary fits to target star spectra.
 
 **IGRINS RV** comes with these regions pre-loaded, but users can also customize their own lists of wavelength regions they would like the code to fit; this is recommended if the user is studying target stars are different spectral types than those presented in the paper linked at the start of this wiki (F,G,K,M). As part of Step 1, **IGRINS RV** will automatically take the input list of wavelength ranges and convert it into the echelle orders and pixel ranges that will be fit as part of RV estimation. 
@@ -40,10 +40,10 @@ To use the default wavelength regions, do not specify any value for the keyword 
 To use your own wavelength regions, go to `./Input/UseWv/` and create your own `WaveRegions_X_Y.csv` file, where `X` is a greater number than already present and `Y` is the band (H or K) you wish to analyze. In the `.csv` file, list the orders and wavelength ranges (in microns) you'd like to analyze, using a default WaveRegions file as a template. Then specify `-Wr X`, where `X` is the number of the file you created, when you run Step 1.
 
 
-###  Generating telluric templates
+##  Generating telluric templates
 The bus mostly drives itself here, with nothing required beyond the PrepData files and the wavelength regions. **IGRINS RV** will process all the B frames first for all orders and nights, then all the A frames.
 
-### The terminal command
+## The terminal command for step1
 Call as:
 ```shell
 (igrins_rv) ~$ python main_step1.py [target name] [keywords]
@@ -66,7 +66,7 @@ With keywords
 * -DeBug : If set, DeBug logging will be output, as well as (lots of) extra plots
 
 
-### Outputs
+## Outputs from step1
 
 The synthetic telluric templates are saved to `./Output/[target_name]_[band]/A0Fits` as `[NIGHT]A0_[A/B nodding]treated_[band].fits`
 

@@ -3,7 +3,7 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="The terminal command" href="Step%203%20Full%20Analysis.html" /><link rel="prev" title="Step1: Telluric Modelling" href="Step%201%20Telluric%20Modelling.html" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Step3: Full Analysis" href="Step%203%20Full%20Analysis.html" /><link rel="prev" title="Step1: Telluric Modelling" href="Step%201%20Telluric%20Modelling.html" />
 
     <meta name="generator" content="sphinx-4.4.0, furo 2022.04.07"/>
         <title>Step2: Initial Convergence - igrins_rv 1.0.0 documentation</title>
@@ -154,9 +154,11 @@
   <input type="hidden" name="area" value="default">
 </form>
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
-  <ul>
+  <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="Installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Overview%20and%20Workflow.html">Overview and Workflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Demo%20with%20Example%20Data%20%28GJ281%29.html">Demo with Example Data (GJ281)</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Setup</span></p>
 <ul>
@@ -168,14 +170,11 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="Step%201%20Telluric%20Modelling.html">Step1: Telluric Modelling</a></li>
 <li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Step2: Initial Convergence</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Step%203%20Full%20Analysis.html">The terminal command</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Step%203%20Full%20Analysis.html#outputs">Outputs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Step%204%20vsini%20Uncertainty%20Calculation.html">The terminal command</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Step%204%20vsini%20Uncertainty%20Calculation.html#outputs">Outputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Step%203%20Full%20Analysis.html">Step3: Full Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Step%204%20vsini%20Uncertainty%20Calculation.html">Step4: vsini Uncertainty Calculation</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<p class="caption" role="heading"><span class="caption-text">Other</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="Installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="FAQ.html">FAQ</a></li>
 </ul>
 
@@ -211,13 +210,12 @@
         <article role="main">
           <section id="step2-initial-convergence">
 <h1>Step2: Initial Convergence<a class="headerlink" href="#step2-initial-convergence" title="Permalink to this headline">#</a></h1>
-<hr class="docutils"/>
 <p><em>Required if the average RV of the target star is unknown to &gt; 5 km/s precision. Performs an abbreviated analysis of the target star observations in order to converge to coarsely accurate RVs, which will be used as starting points for the more precise analysis in the next step; simultaneously does the same for target star’s vsini. Only a single echelle region is used, and only one B observation from a given exposure (e.g. AB or ABBA) is analyzed.</em></p>
 <hr class="docutils"/>
 <p>It is recommended that the user choose what they think may be the most precise of the wavelength regions defined in Step 1 for Step 2 (presumably whichever has the greatest number of strong stellar and telluric lines). This can be specified in the <code class="docutils literal notranslate"><span class="pre">-l_use</span></code> keyword.</p>
 <p>This code can be run on both RV standard stars and stars where RV variability is expected. The difference appears in how you specify the keywords <code class="docutils literal notranslate"><span class="pre">-g</span></code> and/or <code class="docutils literal notranslate"><span class="pre">-gX</span></code>. Note that these keywords also allow you to easily use the RV results of a previous Step 2 run as the input RV guesses for a new run.</p>
-<section id="the-terminal-command">
-<h2>The terminal command<a class="headerlink" href="#the-terminal-command" title="Permalink to this headline">#</a></h2>
+<section id="the-terminal-command-for-step2">
+<h2>The terminal command for step2<a class="headerlink" href="#the-terminal-command-for-step2" title="Permalink to this headline">#</a></h2>
 <p>Call as:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>igrins_rv<span class="o">)</span> ~$ python main_step2.py <span class="o">[</span>target name<span class="o">]</span> <span class="o">[</span>keywords<span class="o">]</span>
 </pre></div>
@@ -241,9 +239,8 @@
 <blockquote>
 <div><p>where -g 20.2 would apply a singular initial guess RV uniformly to all observations, while -gX 1 would apply a different starting guess for each observation based on the contents of <code class="docutils literal notranslate"><span class="pre">Initguesser_results_1.csv</span></code>. The former is used for targets where little intrinsic variance is expected (like RV standards); the latter is used for targets where RV variance is expected. The -g keyword is also used the first time the user runs Step 2, since presumably even if the RV variance is expected, the user only has an idea of the average absolute RV of the star.</p>
 </div></blockquote>
-</section>
-<section id="keywords">
-<h2>Keywords<a class="headerlink" href="#keywords" title="Permalink to this headline">#</a></h2>
+<section id="keywords-for-step2">
+<h3>Keywords for step2<a class="headerlink" href="#keywords-for-step2" title="Permalink to this headline">#</a></h3>
 <ul class="simple">
 <li><p>-HorK : Specifies which band to process, default = K</p></li>
 <li><p>-Wr : Specifies which wavelength regions file in <code class="docutils literal notranslate"><span class="pre">./Input/UseWv/WaveRegions_X</span></code> to use, default is those used in methods paper (-Wr 1)</p></li>
@@ -262,14 +259,15 @@
 <li><p>-DeBug : If set, DeBug logging will be output, as well as (lots of) extra plots</p></li>
 </ul>
 </section>
-<section id="outputs">
-<h2>Outputs<a class="headerlink" href="#outputs" title="Permalink to this headline">#</a></h2>
+</section>
+<section id="outputs-from-step2">
+<h2>Outputs from step2<a class="headerlink" href="#outputs-from-step2" title="Permalink to this headline">#</a></h2>
 <section id="rvs-and-vsin-i-s">
 <h3>–RVs and vsin(i)s–<a class="headerlink" href="#rvs-and-vsin-i-s" title="Permalink to this headline">#</a></h3>
 <p>Output files are saved as <code class="docutils literal notranslate"><span class="pre">./Output/[target_name]_[band]/Initguesser_results_[run_number].csv</span></code>. The mean RV and vsin(i) of the observations are printed from the terminal.</p>
 </section>
-<section id="plots">
-<h3>–Plots–<a class="headerlink" href="#plots" title="Permalink to this headline">#</a></h3>
+<section id="plots-from-step2">
+<h3>–Plots from step2–<a class="headerlink" href="#plots-from-step2" title="Permalink to this headline">#</a></h3>
 <p>If the -plot keyword was specified, plots of individual spectral fits will be under <code class="docutils literal notranslate"><span class="pre">./Output/[target_name]_[band]/figs/main_step3_[band]_[run_number]</span></code>. The plots with the prefix:</p>
 <ul class="simple">
 <li><p>“parfit” show the full spectral fit to the data</p></li>
@@ -290,7 +288,7 @@
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">The terminal command</div>
+                <div class="title">Step3: Full Analysis</div>
               </div>
               <svg><use href="#svg-arrow-right"></use></svg>
             </a>
@@ -338,11 +336,13 @@
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">Step2: Initial Convergence</a><ul>
-<li><a class="reference internal" href="#the-terminal-command">The terminal command</a></li>
-<li><a class="reference internal" href="#keywords">Keywords</a></li>
-<li><a class="reference internal" href="#outputs">Outputs</a><ul>
+<li><a class="reference internal" href="#the-terminal-command-for-step2">The terminal command for step2</a><ul>
+<li><a class="reference internal" href="#keywords-for-step2">Keywords for step2</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#outputs-from-step2">Outputs from step2</a><ul>
 <li><a class="reference internal" href="#rvs-and-vsin-i-s">–RVs and vsin(i)s–</a></li>
-<li><a class="reference internal" href="#plots">–Plots–</a></li>
+<li><a class="reference internal" href="#plots-from-step2">–Plots from step2–</a></li>
 </ul>
 </li>
 </ul>

@@ -1,0 +1,9 @@
+name: docs
+channels:
+  - conda-forge
+  - default
+dependencies:
+  - python=3.7
+  - sphinx==4.0.2
+  - furo==2022.4.7
+  - myst-parser==0.17.2

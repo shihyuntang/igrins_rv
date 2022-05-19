@@ -1,6 +1,5 @@
 # Step3: Full Analysis
 
-***
 *Performs a full analysis of each target star observation to produce accurate and precise RVs.*
 ***
 
@@ -12,7 +11,7 @@ If the user seeks the best possible RV uncertainty estimates, or if their target
 
 Like Step 2, this code can be run on both RV standard stars (use "-mode STD") and stars where RV variability is expected (use "-mode TAR"). The difference appears in how you specify the keywords `-mode`, `-g`, `-gS`, and/or `-gX`. Note that these keywords also allow you to easily use the RV results of a previous Step 3 run as the input RV guesses for a new run.
 
-### The terminal command
+## The terminal command for step3
 Call as:
 ```shell
 (igrins_rv) ~$ python main_step3.py [target name] [keywords]
@@ -42,7 +41,7 @@ An example for TAR mode
 (igrins_rv) ~$ python main_step3.py GJ281 -mode STD -HorK K -Wr 1 -nAB 1 -i 3.0755 -v 0 -g 19.9611 -t synthetic -temp 4000 -logg 4.5 -c 4 -plot -abs_out rel
 ```
 
-#### Keywords
+### Keywords for step3
 
 * -mode : Specifies whether analysis is of RV standard (STD) or a normal target (TAR). 
 * -g : For STD star (-mode STD). Initial guess for RV (km/s) that will be uniformly applied to all observations. Given by Step 2 results. Use -gX instead if you want to reference an Initguesser_results file from a previous run of Step 2, which will have a different initial guess for each observation (-mode TAR). 
@@ -64,8 +63,8 @@ An example for TAR mode
 * -plot : If set, will generate plots of fitting results under `./Output/[target_name]_[band]/figs/main_step3_[band]_[run_number]`
 * -DeBug : If set, DeBug logging will be output, as well as (lots of) extra plots
 
-## Outputs
-### --RVs--
+## Outputs from step3
+### --RVs (step3)--
 Output files are saved to `./Output/[target_name]_[band]/RV_results_[run_number]`. The primary output is the `RVresultsSummary.fits` file, which contains the following columns in its table:
 * 'NIGHT' : Designation of observation based on PrepData files, either in format YYYYMMDD or YYYYMMDD_XXXX, where XXXX is for Multi-RVs per Night mode (see Setup: PrepData Files page)
 * 'JD' : Julian date
@@ -83,7 +82,7 @@ from astropy.table import Table
 data = Table.read('RVresultsSummary.fits', format='fits')
 ```
 
-### --Plots--
+### --Plots from step3--
 
 A plot summarizing the final RV measurements will be in the same directory as the RVresultsSummary file. If some of your observations were taken during the time when IGRINS experienced the defocus and some during other times, IGRINS RV will also produce separate plots for each of these epochs.
 

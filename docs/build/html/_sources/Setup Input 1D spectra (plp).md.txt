@@ -1,6 +1,5 @@
 # Setup: Input 1D spectra (plp)
 
-***
 To enable error estimation, **IGRINS RV** **cannot** get RVs from the standard 1D spectra reduced by [igrins plp v2.2.0](https://github.com/igrins/plp). **You will need the raw fits file, and to perform a specific (but semi-automated) reduction procedure**.
 
 To derive uncertainty estimates for its radial velocity measurements, **IGRINS RV** analyzes each observation from an exposure (a nodding sequence) separately and calculates an RV from each. When it comes to data reduction, this is done by adding the ``--frac-slit`` command flag for A0 standards and the science targets during reduction.
@@ -87,7 +86,7 @@ They contain commands to obtain the A and B separated spectra, e.g:
 * Tip: Open/login with muti-terminal and run `bash GJ281_run_igrinsX.sh` one by one in each terminal to save time.
 
 
-### Analyzing Multiple Observations Per Night (i.e. Multiple RVs)
+### Analyzing Multiple Observations Per Night (i.e., Multiple RVs)
 If you have intensely observed a target such that you have enough data to constitute multiple observations per night, you can change the reduction accordingly. In the `./tmp` file with:
 ```python
 GJ 281, TAR, 60, 54, 600.000000, STELLAR_AB,60 61 62 63 64 65 66 67 68 69 70 71, A B B A A B B A A B B A
@@ -119,7 +118,7 @@ Run step2 like step1, and you will get final spectra under `./final_A_B_spec/[ta
 Now, move the entire folder `plp-master/final_A_B_spec/[target_name]` to `./igrins_rv-master/input/`. 
 
 Voilà, you are almost ready to get RVs out from your data with **IGRINS RV**!\
-Next you need to [set up the PrepData files](https://github.com/shihyuntang/igrins_rv/wiki/Setup:-PrepData-Files),
-and [choose](https://github.com/shihyuntang/igrins_rv/wiki/Setup:-Stellar-Templates) the stellar template you would like to use.
+Next you need to {doc}`Setup PrepData Files`,
+and choose (see {doc}`Setup Stellar Templates`) the stellar template you would like to use.
 
 
