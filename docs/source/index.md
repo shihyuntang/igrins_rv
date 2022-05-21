@@ -16,17 +16,24 @@
 If you have any questions, suggestions, or wish to report a bug, please let us know by either opening an issue or contacting us: Asa G. Stahl (asa.stahl@rice.edu) or Shih-Yun Tang (sytang@lowell.edu).
 More on how to contribute can be found in {ref}`Q: How do I help make **IGRINS RV** better?` page.
 
-**News:**
 > Starting from v1.5.1, the example data & synthetic stellar templates are not shipped with **IGRINS RV** as to reduce the repo size. Synthetic stellar templates are now stored on google drive [link](https://drive.google.com/drive/folders/1WRiQ3PKCbhueQi6htd0zusq_1ieKXgHP?usp=sharing).
-* **2021/06/09: **IGRINS RV** v1.0.0 First Public Release!!**
+
+**News:**
+* **2022/06/01: **IGRINS RV** v1.5.1!!**
+    * **Who might be effected?**
+      * People with only a few observations (<~5) that use K band.
+      * People who need more *precise* ABSOLUTE RV.
+    * **What's new?:**
+      1. Reduce the K band RV Order by Order shift between orders.
+      2. Remove *relative* RV mode.
+      3. Drop the usage of Order 3 for K band RV calculation.
+      4. Better characterize RV error for individual measurement\
+        (more see ??)
+* 2021/06/09: **IGRINS RV** v1.0.0 First Public Release!!
 * 2021/02/18: **IGRINS RV** v0.9.6-beta.3 public beta is ready for JOSS review!!\
 (minor bugs related to example data fixed)
 * 2021/01/29: **IGRINS RV** v0.9.6-beta.1 public beta\
 (update the ability to process IGRINS data at Gemini South)
-* 2020/12/05: **IGRINS RV** v0.9.5-beta.1 public beta is under internal review and testing!!\
-(update with modeling the flux suppression effect)
-* 2020/08/04: **IGRINS RV** v0.9-beta.1 public beta is under internal review and testing!!
-* 2020/06/23: **IGRINS RV** v0.85 is under internal review.. will come to public soon!!
 
 ***
 
@@ -37,8 +44,8 @@ For the sake of efficiency, **IGRINS RV** is broken up into several different st
 :maxdepth: 1
 
 Installation
-Overview and Workflow
 Demo with Example Data (GJ281)
+Overview and Workflow
 ```
 
 As you go through the demo, navigate to the other document pages as they are linked to get a more detailed description of how each step works and why you're running it. Once you've finished the demo and would like to begin analyzing your real science targets, these other pages will also explain what options you have for modifying the code's default inputs to best suit the needs of your science:
@@ -68,6 +75,7 @@ Step 4 vsini Uncertainty Calculation
 
 FAQ
 Use latest lblrtm
+Version history
 ```
 
 

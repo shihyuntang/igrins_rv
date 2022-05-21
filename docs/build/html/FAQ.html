@@ -3,7 +3,7 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="prev" title="Step4: vsini Uncertainty Calculation" href="Step%204%20vsini%20Uncertainty%20Calculation.html" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Use the Latest Version of lblrtm/lnfl/aer_line_file" href="Use%20latest%20lblrtm.html" /><link rel="prev" title="Step4: vsini Uncertainty Calculation" href="Step%204%20vsini%20Uncertainty%20Calculation.html" />
 
     <meta name="generator" content="sphinx-4.4.0, furo 2022.04.07"/>
         <title>FAQ - igrins_rv 1.5.1 documentation</title>
@@ -176,6 +176,7 @@
 <p class="caption" role="heading"><span class="caption-text">Other</span></p>
 <ul class="current">
 <li class="toctree-l1 current current-page"><a class="current reference internal" href="#">FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Use%20latest%20lblrtm.html">Use the Latest Version of lblrtm/lnfl/aer_line_file</a></li>
 </ul>
 
 </div>
@@ -237,14 +238,32 @@
 If so, you are good!</p>
 <p>–</p>
 </section>
+<section id="q-how-can-i-tell-telfit-to-use-ifort-compiler">
+<h2>Q: How can I tell <code class="docutils literal notranslate"><span class="pre">Telfit</span></code> to use <code class="docutils literal notranslate"><span class="pre">ifort</span></code> compiler?<a class="headerlink" href="#q-how-can-i-tell-telfit-to-use-ifort-compiler" title="Permalink to this headline">#</a></h2>
+<p><strong>Answer:</strong> Change the order of compilers in <code class="docutils literal notranslate"><span class="pre">/Telluric-Fitter(-master)/setup.py</span></code> line <a class="reference external" href="https://github.com/kgullikson88/Telluric-Fitter/blob/7ae98db278525e157d2d0abaf4697e2fe778d6bc/setup.py#L117">117</a> to 122
+from</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">compilers</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"gfortran"</span><span class="p">,</span>
+                 <span class="s2">"ifort"</span><span class="p">,</span>
+                 <span class="s2">"g95"</span><span class="p">]</span>
+    <span class="n">comp_strs</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"GNU"</span><span class="p">,</span>
+                 <span class="s2">"INTEL"</span><span class="p">,</span>
+                 <span class="s2">"G95"</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>to</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">compilers</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"ifort"</span><span class="p">,</span>
+                 <span class="s2">"gfortran"</span><span class="p">,</span>
+                 <span class="s2">"g95"</span><span class="p">]</span>
+    <span class="n">comp_strs</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"INTEL"</span><span class="p">,</span>
+                 <span class="s2">"GNU"</span><span class="p">,</span>
+                 <span class="s2">"G95"</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>–</p>
+</section>
 <section id="q-why-do-i-see-an-error-message-with-ifort-while-installing-telfit">
 <h2>Q: Why do I see an error message with <code class="docutils literal notranslate"><span class="pre">ifort</span></code> while installing <code class="docutils literal notranslate"><span class="pre">Telfit</span></code>?<a class="headerlink" href="#q-why-do-i-see-an-error-message-with-ifort-while-installing-telfit" title="Permalink to this headline">#</a></h2>
-<p><strong>Answer:</strong> Well…lucky you. Looks like you have the <code class="docutils literal notranslate"><span class="pre">ifort</span></code> fortran complier installed already. Quickest way to resolve this is to tell <code class="docutils literal notranslate"><span class="pre">Telfit</span></code> <code class="docutils literal notranslate"><span class="pre">setup.py</span></code> not to look for <code class="docutils literal notranslate"><span class="pre">ifort</span></code>.</p>
-<ol class="arabic simple">
-<li><p>Open <code class="docutils literal notranslate"><span class="pre">setup.py</span></code> under the <code class="docutils literal notranslate"><span class="pre">igrins_rv(-master)/Telfit</span></code> folder (it may be called something like <code class="docutils literal notranslate"><span class="pre">Telluric-Fitter-master</span></code>). You will find two lists, <code class="docutils literal notranslate"><span class="pre">compilers</span></code> and <code class="docutils literal notranslate"><span class="pre">comp_strs</span></code>, around lines 188.</p></li>
-<li><p>Delete <code class="docutils literal notranslate"><span class="pre">ifort</span></code> and <code class="docutils literal notranslate"><span class="pre">INTEL</span></code> in each list.</p></li>
-</ol>
-<p>You should be fine now~</p>
+<p><strong>Answer:</strong> Well…lucky you. This issue occurs if you have a new version of <code class="docutils literal notranslate"><span class="pre">ifort</span></code> but running with old versions of lblrtm/lnfl. Updating the lblrtm/lnfl (you might as well also update the aer_line_files) to the latest version will fix this. See <a class="reference internal" href="Use%20latest%20lblrtm.html"><span class="doc">Use the Latest Version of lblrtm/lnfl/aer_line_file</span></a> for detail instructions.</p>
 <p>–</p>
 </section>
 <section id="q-what-is-the-typical-run-time-of-igrins-rv">
@@ -364,7 +383,15 @@ for telluric line fitting.</p></li>
       <footer>
         
         <div class="related-pages">
-          
+          <a class="next-page" href="Use%20latest%20lblrtm.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Use the Latest Version of lblrtm/lnfl/aer_line_file</div>
+              </div>
+              <svg><use href="#svg-arrow-right"></use></svg>
+            </a>
           <a class="prev-page" href="Step%204%20vsini%20Uncertainty%20Calculation.html">
               <svg><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
@@ -410,6 +437,7 @@ for telluric line fitting.</p></li>
             <ul>
 <li><a class="reference internal" href="#">FAQ</a><ul>
 <li><a class="reference internal" href="#q-how-do-i-install-gfortran-for-telfit">Q: How do I install <code class="docutils literal notranslate"><span class="pre">gfortran</span></code> for <code class="docutils literal notranslate"><span class="pre">Telfit</span></code>?</a></li>
+<li><a class="reference internal" href="#q-how-can-i-tell-telfit-to-use-ifort-compiler">Q: How can I tell <code class="docutils literal notranslate"><span class="pre">Telfit</span></code> to use <code class="docutils literal notranslate"><span class="pre">ifort</span></code> compiler?</a></li>
 <li><a class="reference internal" href="#q-why-do-i-see-an-error-message-with-ifort-while-installing-telfit">Q: Why do I see an error message with <code class="docutils literal notranslate"><span class="pre">ifort</span></code> while installing <code class="docutils literal notranslate"><span class="pre">Telfit</span></code>?</a></li>
 <li><a class="reference internal" href="#q-what-is-the-typical-run-time-of-igrins-rv">Q: What is the typical run time of <strong>IGRINS RV</strong>?</a></li>
 <li><a class="reference internal" href="#q-how-many-memory-ram-do-i-need-to-run-igrins-rv">Q: How many memory (RAM) do I need to run <strong>IGRINS RV</strong>?</a></li>

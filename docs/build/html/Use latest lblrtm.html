@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="prev" title="FAQ" href="FAQ.html" />
 
     <meta name="generator" content="sphinx-4.4.0, furo 2022.04.07"/>
-        <title>Use the Latest Version of lblrtm/lnfl/aer - igrins_rv 1.5.1 documentation</title>
+        <title>Use the Latest Version of lblrtm/lnfl/aer_line_file - igrins_rv 1.5.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=68f4518137b9aefe99b631505a2064c3c42c9852" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
@@ -176,7 +176,7 @@
 <p class="caption" role="heading"><span class="caption-text">Other</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="FAQ.html">FAQ</a></li>
-<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Use the Latest Version of lblrtm/lnfl/aer</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Use the Latest Version of lblrtm/lnfl/aer_line_file</a></li>
 </ul>
 
 </div>
@@ -209,15 +209,15 @@
           </label>
         </div>
         <article role="main">
-          <section id="use-the-latest-version-of-lblrtm-lnfl-aer">
-<h1>Use the Latest Version of lblrtm/lnfl/aer<a class="headerlink" href="#use-the-latest-version-of-lblrtm-lnfl-aer" title="Permalink to this headline">#</a></h1>
+          <section id="use-the-latest-version-of-lblrtm-lnfl-aer-line-file">
+<h1>Use the Latest Version of lblrtm/lnfl/aer_line_file<a class="headerlink" href="#use-the-latest-version-of-lblrtm-lnfl-aer-line-file" title="Permalink to this headline">#</a></h1>
 <p><em>IGRINS RV Step 1 use <code class="docutils literal notranslate"><span class="pre">telfit</span></code> package to model atmosphere absolution lines (telluric lines), and <code class="docutils literal notranslate"><span class="pre">telfit</span></code> use the LBLTRM model to generate telluric spectrum. Currently, <code class="docutils literal notranslate"><span class="pre">telfit</span></code> is using lblrtm v12.2.1, lnfl v2.6, and aer_line_file v3.2 on <a class="reference external" href="https://zenodo.org/record/1202479/#.YohJ7C-B2-Y">this zenodo</a>. However, on May 20, 2022, the latest version are lblrtm v12.11, lnfl v3.2, and aer_line_file v3.8.1 on <a class="reference external" href="https://github.com/AER-RC">Atmospheric and Environmental Research R&amp;C (AER-RC)’s</a> Github repository.</em></p>
 <hr class="docutils"/>
 <blockquote>
 <div><p>Using the latest version of lblrtm/lnfl/aer <strong>IS NOT REQUIRED</strong> to run <strong>IGRINS RV</strong>, however, update lblrtm/lnfl/aer can help to fix several reported issue while running <code class="docutils literal notranslate"><span class="pre">telfit</span></code>.</p>
 </div></blockquote>
-<section id="benefits-of-using-the-latest-version-of-lblrtm-lnfl-aer">
-<h2>Benefits of using the latest version of lblrtm/lnfl/aer<a class="headerlink" href="#benefits-of-using-the-latest-version-of-lblrtm-lnfl-aer" title="Permalink to this headline">#</a></h2>
+<section id="benefits-of-using-the-latest-version-of-lblrtm-lnfl-aer-line-file">
+<h2>Benefits of using the latest version of lblrtm/lnfl/aer_line_file<a class="headerlink" href="#benefits-of-using-the-latest-version-of-lblrtm-lnfl-aer-line-file" title="Permalink to this headline">#</a></h2>
 <ol class="arabic simple">
 <li><p>Fix error while running Step 1 (calling <code class="docutils literal notranslate"><span class="pre">telfit</span></code> under the hood) using <code class="docutils literal notranslate"><span class="pre">ifort</span></code> compiler with lblrtm v12.2.1, lnfl v2.6, and aer_line_file v3.2.</p></li>
 <li><p>With the ability to run <code class="docutils literal notranslate"><span class="pre">telfit</span></code> with <code class="docutils literal notranslate"><span class="pre">ifort</span></code>, we can then fix the <strong>End of File Runtime Error</strong> (see issue <a class="reference external" href="https://github.com/kgullikson88/Telluric-Fitter/issues/9">#9</a>). The <strong>End of File Runtime Error</strong> seems to occur when using <code class="docutils literal notranslate"><span class="pre">gfortran</span></code> compiler.</p></li>
@@ -227,8 +227,8 @@
 <h2>Make sure the default installation of telfit is working<a class="headerlink" href="#make-sure-the-default-installation-of-telfit-is-working" title="Permalink to this headline">#</a></h2>
 <p>Before you try to update lblrtm/lnfl/aer files, please first make sure you followed <a class="reference internal" href="Installation.html#packages-installation-part-2-telfit"><span class="std std-ref">Packages installation (part 2) - Telfit</span></a> and that `telfit is working.</p>
 </section>
-<section id="update-telfit-to-use-latest-lblrtm-lnfl-aer">
-<h2>Update telfit to use latest lblrtm/lnfl/aer<a class="headerlink" href="#update-telfit-to-use-latest-lblrtm-lnfl-aer" title="Permalink to this headline">#</a></h2>
+<section id="update-telfit-to-use-latest-lblrtm-lnfl-aer-line-file">
+<h2>Update telfit to use latest lblrtm/lnfl/aer_line_file<a class="headerlink" href="#update-telfit-to-use-latest-lblrtm-lnfl-aer-line-file" title="Permalink to this headline">#</a></h2>
 <p>The lblrtm/lnfl/aer files <code class="docutils literal notranslate"><span class="pre">telfit</span></code> used are saved under a hidden folder <code class="docutils literal notranslate"><span class="pre">.Telfit</span></code> at the home dir.
 Do</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>~$ cd ~/.Telfit
@@ -255,8 +255,8 @@ Do</p>
 └── ...
 </pre></div>
 </div>
-<section id="getting-the-latest-version-of-lblrtm-lnfl-aer">
-<h3>1. Getting the latest version of lblrtm/lnfl/aer<a class="headerlink" href="#getting-the-latest-version-of-lblrtm-lnfl-aer" title="Permalink to this headline">#</a></h3>
+<section id="getting-the-latest-version-of-lblrtm-lnfl-aer-line-file">
+<h3>1. Getting the latest version of lblrtm/lnfl/aer_line_file<a class="headerlink" href="#getting-the-latest-version-of-lblrtm-lnfl-aer-line-file" title="Permalink to this headline">#</a></h3>
 <p>All files can be found on <a class="reference external" href="https://github.com/AER-RC">Atmospheric and Environmental Research R&amp;C (AER-RC)</a>.<br/>
 More specifically, follow the clone/tarball_download instruction on each of the github README page below</p>
 <ul class="simple">
@@ -264,14 +264,14 @@ More specifically, follow the clone/tarball_download instruction on each of the 
 <li><p>lnfl: <a class="reference external" href="https://github.com/AER-RC/LNFL">https://github.com/AER-RC/LNFL</a></p></li>
 <li><p>aer_line_file: <a class="reference external" href="https://github.com/AER-RC/AER_Line_File">https://github.com/AER-RC/AER_Line_File</a></p></li>
 </ul>
-<p>to get folders: <code class="docutils literal notranslate"><span class="pre">LNFL-3.2</span></code>, <code class="docutils literal notranslate"><span class="pre">LBLRTM-12.11</span></code>, and <code class="docutils literal notranslate"><span class="pre">AER_Line_File</span></code> (take lblrtm v12.11, lnfl v3.2, and aer_line_file v3.8.1 for example).</p>
+<p>to get folders: <code class="docutils literal notranslate"><span class="pre">LNFL(-3.2)</span></code>, <code class="docutils literal notranslate"><span class="pre">LBLRTM(-12.11)</span></code>, and <code class="docutils literal notranslate"><span class="pre">AER_Line_File</span></code> (take lblrtm v12.11, lnfl v3.2, and aer_line_file v3.8.1 for example).</p>
 <blockquote>
 <div><p>It is important to follow all instructions on their github README pages. Stuff related to <code class="docutils literal notranslate"><span class="pre">submodule</span></code> is critical to whether the update of lblrtm &amp; lnfl is success or not!</p>
 </div></blockquote>
 </section>
 <section id="replacement-with-new-version">
 <h3>2. Replacement with new version<a class="headerlink" href="#replacement-with-new-version" title="Permalink to this headline">#</a></h3>
-<p>For <code class="docutils literal notranslate"><span class="pre">lblrtm</span></code> and <code class="docutils literal notranslate"><span class="pre">lnfl</span></code>, simply delete all stuff under  <code class="docutils literal notranslate"><span class="pre">~/.Telfit/lblrtm/*</span></code> and <code class="docutils literal notranslate"><span class="pre">~/.Telfit/lnfl/*</span></code> then copy everything in the <code class="docutils literal notranslate"><span class="pre">LBLRTM-12.11/*</span></code> to <code class="docutils literal notranslate"><span class="pre">~/.Telfit/lblrtm/*</span></code> and everything in the <code class="docutils literal notranslate"><span class="pre">LNFL-3.2/*</span></code> to <code class="docutils literal notranslate"><span class="pre">~/.Telfit/lnfl/*</span></code>.</p>
+<p>For <code class="docutils literal notranslate"><span class="pre">lblrtm</span></code> and <code class="docutils literal notranslate"><span class="pre">lnfl</span></code>, simply delete all stuff under  <code class="docutils literal notranslate"><span class="pre">~/.Telfit/lblrtm/*</span></code> and <code class="docutils literal notranslate"><span class="pre">~/.Telfit/lnfl/*</span></code> then copy everything in the <code class="docutils literal notranslate"><span class="pre">LBLRTM(-12.11)/*</span></code> to <code class="docutils literal notranslate"><span class="pre">~/.Telfit/lblrtm/*</span></code> and everything in the <code class="docutils literal notranslate"><span class="pre">LNFL(-3.2)/*</span></code> to <code class="docutils literal notranslate"><span class="pre">~/.Telfit/lnfl/*</span></code>.</p>
 <p>As for <code class="docutils literal notranslate"><span class="pre">AER_Line_File</span></code>, remember to follow the <a class="reference external" href="https://github.com/AER-RC/AER_Line_File#dependencies">Dependencies</a> and <a class="reference external" href="https://github.com/AER-RC/AER_Line_File#downloading-and-staging-the-line-file">Downloading and Staging the Line File</a> steps on <a class="reference external" href="https://github.com/AER-RC/AER_Line_File">aer_line_file</a> to download the line files.
 If you follow the instruction, under <code class="docutils literal notranslate"><span class="pre">AER_Line_File</span></code> you will have:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>./AER_Line_File/
@@ -305,7 +305,32 @@ If you follow the instruction, under <code class="docutils literal notranslate">
 </section>
 <section id="update-the-setup-py">
 <h3>3. Update the setup.py<a class="headerlink" href="#update-the-setup-py" title="Permalink to this headline">#</a></h3>
-<p>In <code class="docutils literal notranslate"><span class="pre">/Telluric-Fitter(-master)/setup.py</span></code> line <a class="reference external" href="https://github.com/kgullikson88/Telluric-Fitter/blob/7ae98db278525e157d2d0abaf4697e2fe778d6bc/setup.py#L193">193</a>, change</p>
+<p>–</p>
+<ol class="arabic simple">
+<li><p>Change the order of compilers in <code class="docutils literal notranslate"><span class="pre">/Telluric-Fitter(-master)/setup.py</span></code> line <a class="reference external" href="https://github.com/kgullikson88/Telluric-Fitter/blob/7ae98db278525e157d2d0abaf4697e2fe778d6bc/setup.py#L117">117</a> to 122
+from</p></li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">compilers</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"gfortran"</span><span class="p">,</span>
+                 <span class="s2">"ifort"</span><span class="p">,</span>
+                 <span class="s2">"g95"</span><span class="p">]</span>
+    <span class="n">comp_strs</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"GNU"</span><span class="p">,</span>
+                 <span class="s2">"INTEL"</span><span class="p">,</span>
+                 <span class="s2">"G95"</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>to</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">compilers</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"ifort"</span><span class="p">,</span>
+                 <span class="s2">"gfortran"</span><span class="p">,</span>
+                 <span class="s2">"g95"</span><span class="p">]</span>
+    <span class="n">comp_strs</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"INTEL"</span><span class="p">,</span>
+                 <span class="s2">"GNU"</span><span class="p">,</span>
+                 <span class="s2">"G95"</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>–</p>
+<ol class="arabic simple" start="2">
+<li><p>In <code class="docutils literal notranslate"><span class="pre">/Telluric-Fitter(-master)/setup.py</span></code> line <a class="reference external" href="https://github.com/kgullikson88/Telluric-Fitter/blob/7ae98db278525e157d2d0abaf4697e2fe778d6bc/setup.py#L193">193</a>, change</p></li>
+</ol>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">linfile</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">"</span><span class="si">{0:s}</span><span class="s2">/aer_v_3.2/line_file/aer_v_3.2"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">TELLURICMODELING</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -313,7 +338,10 @@ If you follow the instruction, under <code class="docutils literal notranslate">
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">linfile</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">"</span><span class="si">{0:s}</span><span class="s2">/aer_v_3.8/line_file/aer_v_3.8"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">TELLURICMODELING</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Then commented (#) out line <a class="reference external" href="https://github.com/kgullikson88/Telluric-Fitter/blob/7ae98db278525e157d2d0abaf4697e2fe778d6bc/setup.py#L230">230</a> to line 237:</p>
+<p>–</p>
+<ol class="arabic simple" start="3">
+<li><p>Then commented (#) out line <a class="reference external" href="https://github.com/kgullikson88/Telluric-Fitter/blob/7ae98db278525e157d2d0abaf4697e2fe778d6bc/setup.py#L230">230</a> to line 237:</p></li>
+</ol>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span>    <span class="c1">#Get/Unpack the tar files</span>
     <span class="c1"># for fname in ['aer_v_3.2.tar.gz', 'aerlnfl_v2.6.tar.gz', 'aerlbl_v12.2.1.tar.gz']:</span>
     <span class="c1">#     if fname not in os.listdir(TELLURICMODELING):</span>
@@ -333,7 +361,11 @@ If you follow the instruction, under <code class="docutils literal notranslate">
 (igrins_rv) ~$ python setup.py install
 </pre></div>
 </div>
-<p>If you don’t see any Error, then, congratulation, you successfully update your lblrtm/lnfl/aer versions!</p>
+<p>If you see:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Finished processing dependencies for TelFit==1.4.0
+</pre></div>
+</div>
+<p>then, congratulation, you successfully update your lblrtm/lnfl/aer_line_file versions!</p>
 </section>
 </section>
 </section>
@@ -387,11 +419,11 @@ If you follow the instruction, under <code class="docutils literal notranslate">
         <div class="toc-tree-container">
           <div class="toc-tree">
             <ul>
-<li><a class="reference internal" href="#">Use the Latest Version of lblrtm/lnfl/aer</a><ul>
-<li><a class="reference internal" href="#benefits-of-using-the-latest-version-of-lblrtm-lnfl-aer">Benefits of using the latest version of lblrtm/lnfl/aer</a></li>
+<li><a class="reference internal" href="#">Use the Latest Version of lblrtm/lnfl/aer_line_file</a><ul>
+<li><a class="reference internal" href="#benefits-of-using-the-latest-version-of-lblrtm-lnfl-aer-line-file">Benefits of using the latest version of lblrtm/lnfl/aer_line_file</a></li>
 <li><a class="reference internal" href="#make-sure-the-default-installation-of-telfit-is-working">Make sure the default installation of telfit is working</a></li>
-<li><a class="reference internal" href="#update-telfit-to-use-latest-lblrtm-lnfl-aer">Update telfit to use latest lblrtm/lnfl/aer</a><ul>
-<li><a class="reference internal" href="#getting-the-latest-version-of-lblrtm-lnfl-aer">1. Getting the latest version of lblrtm/lnfl/aer</a></li>
+<li><a class="reference internal" href="#update-telfit-to-use-latest-lblrtm-lnfl-aer-line-file">Update telfit to use latest lblrtm/lnfl/aer_line_file</a><ul>
+<li><a class="reference internal" href="#getting-the-latest-version-of-lblrtm-lnfl-aer-line-file">1. Getting the latest version of lblrtm/lnfl/aer_line_file</a></li>
 <li><a class="reference internal" href="#replacement-with-new-version">2. Replacement with new version</a></li>
 <li><a class="reference internal" href="#update-the-setup-py">3. Update the setup.py</a></li>
 <li><a class="reference internal" href="#re-run-setup-py">4. Re-run setup.py</a></li>

@@ -3,10 +3,10 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Overview and Workflow" href="Overview%20and%20Workflow.html" /><link rel="prev" title="IGRINS RV: A Radial Velocity Pipeline for IGRINS" href="index.html" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="prev" title="Use the Latest Version of lblrtm/lnfl/aer_line_file" href="Use%20latest%20lblrtm.html" />
 
     <meta name="generator" content="sphinx-4.4.0, furo 2022.04.07"/>
-        <title>Installation - igrins_rv 1.5.1 documentation</title>
+        <title>Version History - igrins_rv 1.5.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=68f4518137b9aefe99b631505a2064c3c42c9852" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
@@ -155,10 +155,10 @@
 </form>
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
-<ul class="current">
-<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Overview%20and%20Workflow.html">Overview and Workflow</a></li>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Demo%20with%20Example%20Data%20%28GJ281%29.html">Demo with Example Data (GJ281)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Overview%20and%20Workflow.html">Overview and Workflow</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Setup</span></p>
 <ul>
@@ -174,9 +174,10 @@
 <li class="toctree-l1"><a class="reference internal" href="Step%204%20vsini%20Uncertainty%20Calculation.html">Step4: vsini Uncertainty Calculation</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Other</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="FAQ.html">FAQ</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Use%20latest%20lblrtm.html">Use the Latest Version of lblrtm/lnfl/aer_line_file</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Version History</a></li>
 </ul>
 
 </div>
@@ -209,105 +210,36 @@
           </label>
         </div>
         <article role="main">
-          <section id="installation">
-<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">#</a></h1>
-<p><em>Setting up and running <strong>IGRINS RV</strong> is easy if you have <strong>Anaconda(Conda)</strong> installed!<br/>
-NOTE:The current versions (v1.5.1) of <strong>IGRINS RV</strong> has only been tested on Linux and MacOS</em></p>
-<hr class="docutils"/>
-<section id="package-installation-part-1">
-<h2>Package installation (part 1)<a class="headerlink" href="#package-installation-part-1" title="Permalink to this headline">#</a></h2>
-<p>First, download/clone <strong>igrins_rv</strong> from github to the directory of your choice. Then <code class="docutils literal notranslate"><span class="pre">cd</span></code> to that directory in terminal.</p>
-<section id="package-installation-with-conda">
-<h3>Package installation with conda<a class="headerlink" href="#package-installation-with-conda" title="Permalink to this headline">#</a></h3>
-<p>You can use a single command to setup an environment with all needed packages (except the <code class="docutils literal notranslate"><span class="pre">Telfit</span></code> package):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span>
-</pre></div>
-</div>
-<p>(this reads the <strong>environment.yml</strong> file and installs all the packages listed inside)</p>
-<p>The above command will create an environment called <code class="docutils literal notranslate"><span class="pre">igrins_rv</span></code>. You can use</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">info</span> <span class="o">--</span><span class="n">envs</span>
-</pre></div>
-</div>
-<p>to check all available environments.</p>
-<p>Use</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">activate</span> <span class="n">igrins_rv</span>
-</pre></div>
-</div>
-<p>or</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="n">activate</span> <span class="n">igrins_rv</span>
-</pre></div>
-</div>
-<p>to enter the environment.</p>
-<p>If you are successful, your command line will look something like</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(igrins_rv) ~$
-</pre></div>
-</div>
-</section>
-<section id="manual-package-installation">
-<h3>Manual package installation<a class="headerlink" href="#manual-package-installation" title="Permalink to this headline">#</a></h3>
-<p>If you do not have <strong>Conda</strong>, the basic requirement for running <strong>IGRINS RV</strong>
-is with python.3.7 or later, and the following packages/versions:</p>
+          <section id="version-history">
+<h1>Version History<a class="headerlink" href="#version-history" title="Permalink to this headline">#</a></h1>
+<section id="public-release">
+<h2>Public Release<a class="headerlink" href="#public-release" title="Permalink to this headline">#</a></h2>
 <ul class="simple">
-<li><p>python=3.7</p></li>
-<li><p>matplotlib=3.1.3</p></li>
-<li><p>numpy=1.18.1</p></li>
-<li><p>pandas=1.0.3</p></li>
-<li><p>scipy=1.4.1</p></li>
-<li><p>astropy=4.0</p></li>
-<li><p>multiprocess</p></li>
-<li><p>cython=0.29.15</p></li>
-<li><p>requests=2.23.0</p></li>
-<li><p>nlopt=2.7.*</p></li>
-<li><p>numba</p></li>
-<li><p>pip</p></li>
-<li><p>via pip: pysynphot=0.9.14</p></li>
-<li><p>via pip: more_itertools</p></li>
-<li><p>via pip: pqdm</p></li>
+<li><p><strong>2022/06/01: <strong>IGRINS RV</strong> v1.5.1!!</strong><br/>
+<em>What’s new?:</em></p>
+<ol class="arabic simple">
+<li><p>Reduce the K band RV Order by Order shift between orders.</p></li>
+<li><p>Remove <em>relative</em> RV mode.</p></li>
+<li><p>Drop the usage of Order 3 for K band RV calculation.</p></li>
+<li><p>Better characterize RV error for individual measurement<br/>
+(more see ??)</p></li>
+</ol>
+</li>
+<li><p>2021/06/09: <strong>IGRINS RV v1.0.0</strong> First Public Release!!</p></li>
 </ul>
 </section>
-</section>
-<hr class="docutils"/>
-<section id="packages-installation-part-2-telfit">
-<h2>Packages installation (part 2) - Telfit<a class="headerlink" href="#packages-installation-part-2-telfit" title="Permalink to this headline">#</a></h2>
-<p>Although <code class="docutils literal notranslate"><span class="pre">Telfit</span> <span class="pre">v1.4.0</span></code> is able to install via pip, it is <strong>STRONGLY recommended</strong> to install <code class="docutils literal notranslate"><span class="pre">Telfit</span></code> from source!</p>
-<div class="highlight-diff notranslate"><div class="highlight"><pre><span></span><span class="gd">---STRONGLY recommended to install Telfit via source---</span><span class="w"></span>
-</pre></div>
-</div>
-<p>Go to <a class="reference external" href="https://github.com/kgullikson88/Telluric-Fitter"><code class="docutils literal notranslate"><span class="pre">Telfit</span></code></a>, download the <code class="docutils literal notranslate"><span class="pre">master</span> <span class="pre">branch</span></code>, and install it from source (If you’ve never installed a pkg from source, no worries, we will walk you through it).</p>
-<blockquote>
-<div><p>If you are new to source installation, you can clone/download <code class="docutils literal notranslate"><span class="pre">Telfit</span></code> master under the same dir as the <strong>IGRINS RV</strong></p>
-</div></blockquote>
-<section id="install-telfit-from-source">
-<h3>Install Telfit from source<a class="headerlink" href="#install-telfit-from-source" title="Permalink to this headline">#</a></h3>
-<p>Enter the <code class="docutils literal notranslate"><span class="pre">igrins_rv</span></code> environment (within which Telfit must be installed) and <code class="docutils literal notranslate"><span class="pre">cd</span></code> into <code class="docutils literal notranslate"><span class="pre">Telluric-Fitter(-master)</span></code>, then run</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(igrins_rv) ~$ python setup.py build
-(igrins_rv) ~$ python setup.py install
-</pre></div>
-</div>
-<p>You can ignore this warning:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span> <span class="c1">#warning "Using deprecated NumPy API, disable it with " \</span>
-</pre></div>
-</div>
-<p>show up during the build and install step.</p>
-<p>Now, you can use</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="nb">list</span>
-</pre></div>
-</div>
-<p>to check if <code class="docutils literal notranslate"><span class="pre">Telfit</span></code> installed successfully.</p>
-</section>
-</section>
-<hr class="docutils"/>
-<section id="packages-installation-part-3-igrins-plp">
-<h2>Packages installation (part 3) - <code class="docutils literal notranslate"><span class="pre">igrins</span> <span class="pre">plp</span></code><a class="headerlink" href="#packages-installation-part-3-igrins-plp" title="Permalink to this headline">#</a></h2>
-<blockquote>
-<div><p>If you are only testing the functionality of <strong>IGRINS RV</strong>, you can skip steps related to <code class="docutils literal notranslate"><span class="pre">plp</span></code>, and go to the <a class="reference internal" href="Demo%20with%20Example%20Data%20%28GJ281%29.html#demo-for-igrins-rv"><span class="std std-ref">Demo for IGRINS RV</span></a> section under the <a class="reference internal" href="Demo%20with%20Example%20Data%20%28GJ281%29.html"><span class="doc">Demo with Example Data (GJ281)</span></a>.</p>
-</div></blockquote>
-<p>To enable error estimation, <strong>IGRINS RV</strong> cannot get RVs from the 1D spectra reduced by <code class="docutils literal notranslate"><span class="pre">igrins</span> <span class="pre">plp</span> <span class="pre">v2.2.0</span></code> from combined ABs/ABBAs/etc. Users will always need to re-run <code class="docutils literal notranslate"><span class="pre">igrins</span> <span class="pre">plp</span></code> to get separated A and B frame 1D spectra.
-Download or clone <code class="docutils literal notranslate"><span class="pre">igrins</span> <span class="pre">plp</span> <span class="pre">v2.2.0</span></code> at <a class="reference external" href="https://github.com/shihyuntang/plp">https://github.com/shihyuntang/plp</a>.
-See <a class="reference internal" href="Setup%20Input%201D%20spectra%20%28plp%29.html"><span class="doc">Setup: Input 1D spectra (plp)</span></a> for more details.</p>
-<blockquote>
-<div><p>If you already have <code class="docutils literal notranslate"><span class="pre">igrins</span> <span class="pre">plp</span> <span class="pre">v2.2.0</span></code> on your machine, you can just download <code class="docutils literal notranslate"><span class="pre">plp_main_step1.py</span></code>, <code class="docutils literal notranslate"><span class="pre">plp_main_step2.py</span></code>, and <code class="docutils literal notranslate"><span class="pre">plp_main_step2_s.py</span></code>. Put these three <code class="docutils literal notranslate"><span class="pre">.py</span></code> files at the same level as the <code class="docutils literal notranslate"><span class="pre">igr_pipe.py</span></code>.</p>
-</div></blockquote>
+<section id="pre-public-release">
+<h2>Pre-Public Release<a class="headerlink" href="#pre-public-release" title="Permalink to this headline">#</a></h2>
+<ul class="simple">
+<li><p>2021/02/18: <strong>IGRINS RV</strong> v0.9.6-beta.3 public beta is ready for JOSS review!!<br/>
+(minor bugs related to example data fixed)</p></li>
+<li><p>2021/01/29: <strong>IGRINS RV</strong> v0.9.6-beta.1 public beta<br/>
+(update the ability to process IGRINS data at Gemini South)</p></li>
+<li><p>2020/12/05: <strong>IGRINS RV</strong> v0.9.5-beta.1 public beta is under internal review and testing!!<br/>
+(update with modeling the flux suppression effect)</p></li>
+<li><p>2020/08/04: <strong>IGRINS RV</strong> v0.9-beta.1 public beta is under internal review and testing!!</p></li>
+<li><p>2020/06/23: <strong>IGRINS RV</strong> v0.85 is under internal review. Will come to public soon!!</p></li>
+</ul>
 </section>
 </section>
 
@@ -316,23 +248,15 @@ See <a class="reference internal" href="Setup%20Input%201D%20spectra%20%28plp%29
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="Overview%20and%20Workflow.html">
-              <div class="page-info">
-                <div class="context">
-                  <span>Next</span>
-                </div>
-                <div class="title">Overview and Workflow</div>
-              </div>
-              <svg><use href="#svg-arrow-right"></use></svg>
-            </a>
-          <a class="prev-page" href="index.html">
+          
+          <a class="prev-page" href="Use%20latest%20lblrtm.html">
               <svg><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">Home</div>
+                <div class="title">Use the Latest Version of lblrtm/lnfl/aer_line_file</div>
                 
               </div>
             </a>
@@ -368,17 +292,9 @@ See <a class="reference internal" href="Setup%20Input%201D%20spectra%20%28plp%29
         <div class="toc-tree-container">
           <div class="toc-tree">
             <ul>
-<li><a class="reference internal" href="#">Installation</a><ul>
-<li><a class="reference internal" href="#package-installation-part-1">Package installation (part 1)</a><ul>
-<li><a class="reference internal" href="#package-installation-with-conda">Package installation with conda</a></li>
-<li><a class="reference internal" href="#manual-package-installation">Manual package installation</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#packages-installation-part-2-telfit">Packages installation (part 2) - Telfit</a><ul>
-<li><a class="reference internal" href="#install-telfit-from-source">Install Telfit from source</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#packages-installation-part-3-igrins-plp">Packages installation (part 3) - <code class="docutils literal notranslate"><span class="pre">igrins</span> <span class="pre">plp</span></code></a></li>
+<li><a class="reference internal" href="#">Version History</a><ul>
+<li><a class="reference internal" href="#public-release">Public Release</a></li>
+<li><a class="reference internal" href="#pre-public-release">Pre-Public Release</a></li>
 </ul>
 </li>
 </ul>

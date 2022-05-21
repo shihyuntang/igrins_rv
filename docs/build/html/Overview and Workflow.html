@@ -176,6 +176,7 @@
 <p class="caption" role="heading"><span class="caption-text">Other</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="FAQ.html">FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Use%20latest%20lblrtm.html">Use the Latest Version of lblrtm/lnfl/aer_line_file</a></li>
 </ul>
 
 </div>
@@ -213,6 +214,9 @@
 <p><em>For a detailed understanding of how <strong>IGRINS RV</strong> works and how it should be run,<br/>
 it is <strong>HIGHLY</strong> recommended that the user reads the associated paper, <a class="reference external" href="https://ui.adsabs.harvard.edu/abs/2021AJ....161..283S/abstract">Stahl et al. 2021</a>.</em></p>
 <hr class="docutils"/>
+<div class="highlight-diff notranslate"><div class="highlight"><pre><span></span><span class="gd">---There are small differences in the Workflow between **IGRINS RV** v1.0.x and v1.5.x---</span><span class="w"></span>
+</pre></div>
+</div>
 <p><strong>IGRINS RV</strong> is divided into three main steps:</p>
 <ol class="arabic simple">
 <li><p>Telluric Modeling</p></li>
@@ -221,7 +225,7 @@ it is <strong>HIGHLY</strong> recommended that the user reads the associated pap
 </ol>
 <p>There are also two other steps that can be run, depending on the user and their science. Each step is provided in the package as a separate file and can be run from the command line with keywords specifying all relevant information.</p>
 <p>A diagram showcase the workflow:
-<img alt="text" src="_images/IGRINS_RV_workflow_diagram.png"/></p>
+<img alt="text" src="_images/IGRINS_RV_workflow_diagram_v1.5.x.png"/></p>
 <p>All steps are run as</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>igrins_rv<span class="o">)</span> ~$ python main_stepX.py <span class="o">[</span>target name<span class="o">]</span> <span class="o">[</span>keywords<span class="o">]</span>
 </pre></div>
@@ -259,11 +263,14 @@ In this way, you can run Step 2 as many times as you’d like, using the outputs
 <ul class="simple">
 <li><p>If you know the vsin(i) and the average RV, and you know the RV variance of your star is &lt; 5 km/s, then you can provide an initial guess for the average RV of your star that will be uniformly applied to all your observations. Otherwise, you may use your favorite output from Step 2 to provide the initial RV guesses for Step 3.</p></li>
 <li><p>If the target star vsin(i) is already known to high accuracy (&lt; ~1 km/s), then Step 3 needs only be run once - the code will fully converge to the final RVs (within uncertainty) through just one run.</p></li>
-<li><p>If not, an initial run of Step 3 in which vsin(i) is allowed to vary is required. This will provide a more precise estimate of vsin(i), which you will then plug in as a fixed value in a second run of Step 3.</p></li>
-<li><p>If you choose to run Step 3 more than once, and want your subsequent runs of Step 3 to use the previous runs’ outputs as starting points, then <strong>those runs must be set to output absolute - not relative - RVs</strong> via the appropriate keyword (“-abs_out abs”).</p></li>
-<li><p>If you want the most precise RVs, don’t care about measuring the absolute RV of the star, and don’t plan on using the output of the Step 3 run you’re about to do as starting guesses for another Step 3 run, then set the keyword to compute relative RVs (“-abs_out rel”).</p></li>
+<li><p>If not, an initial run of Step 3 in which vsin(i) is allowed to vary is required. This will provide a more precise estimate of vsin(i), which you will then plug in as a <strong>fixed value</strong> (with <code class="docutils literal notranslate"><span class="pre">-v</span> <span class="pre">0</span></code>) in a second run of Step 3.</p></li>
 </ul>
 </li>
+</ol>
+<!-- 
+   * If you choose to run Step 3 more than once, and want your subsequent runs of Step 3 to use the previous runs' outputs as starting points, then **those runs must be set to output absolute - not relative - RVs** via the appropriate keyword ("-abs_out abs").  -->
+<!-- * If you want the most precise RVs, don't care about measuring the absolute RV of the star, and don't plan on using the output of the Step 3 run you're about to do as starting guesses for another Step 3 run, then set the keyword to compute relative RVs ("-abs_out rel").  -->
+<ol class="arabic simple" start="6">
 <li><p>If the user seeks the best possible RV uncertainty estimates, or if their target star has a relatively high vsin(i) (&gt; 10 km/s), then an additional run of Step 3 is required, this one with vsin(i) held fixed at its estimated value plus or minus one sigma. The user then runs Step 4, which simply incorporates the minor differences in the RVs of the two runs (as low as &lt; 1 m/s and as high as 9 m/s) to revise the final RV uncertainties.</p></li>
 </ol>
 </section>

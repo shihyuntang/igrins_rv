@@ -176,6 +176,7 @@
 <p class="caption" role="heading"><span class="caption-text">Other</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="FAQ.html">FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Use%20latest%20lblrtm.html">Use the Latest Version of lblrtm/lnfl/aer_line_file</a></li>
 </ul>
 
 </div>
@@ -226,11 +227,11 @@
 <div><p>NOTE: Not all keywords have default values, meaning that <strong>the code will not run without certain keywords explicitly specified</strong>. These keywords are <strong>-i</strong>, <strong>-temp</strong>, <strong>-logg</strong>, and either one of <strong>-g</strong> or <strong>-gX</strong>. The user must be sure to specify keywords as needed if their desired run of the code varies from the defaults, as well (e.g. if they want to run H band instead of K, or use a different number of CPU threads).</p>
 </div></blockquote>
 <p><em>† An example for STD mode (for the example data, GJ281)</em></p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>igrins_rv<span class="o">)</span> ~$ python main_step3.py GJ281 -mode STD -HorK K -Wr <span class="m">1</span> -nAB <span class="m">1</span> -i <span class="m">2</span>.7561 -v <span class="m">5</span> -g <span class="m">20</span>.1478 -t synthetic -temp <span class="m">4000</span> -logg <span class="m">4</span>.5 -c <span class="m">4</span> -plot -abs_out abs
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>igrins_rv<span class="o">)</span> ~$ python main_step3.py GJ281 -mode STD -HorK K -Wr <span class="m">1</span> -nAB <span class="m">1</span> -i <span class="m">2</span>.7561 -v <span class="m">5</span> -g <span class="m">20</span>.1478 -t synthetic -temp <span class="m">4000</span> -logg <span class="m">4</span>.5 -c <span class="m">4</span> -plot
 </pre></div>
 </div>
 <p>An example for TAR mode</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>igrins_rv<span class="o">)</span> ~$ python main_step3.py HD189733 -mode TAR -HorK K -Wr <span class="m">1</span> -i <span class="m">4</span>.0276 -v <span class="m">5</span> -gS init -gX <span class="m">1</span> -c <span class="m">4</span> -plot -t synthetic -temp <span class="m">5000</span> -logg <span class="m">4</span>.5 -abs_out abs
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>igrins_rv<span class="o">)</span> ~$ python main_step3.py HD189733 -mode TAR -HorK K -Wr <span class="m">1</span> -i <span class="m">4</span>.0276 -v <span class="m">5</span> -gS init -gX <span class="m">1</span> -c <span class="m">4</span> -plot -t synthetic -temp <span class="m">5000</span> -logg <span class="m">4</span>.5
 </pre></div>
 </div>
 <blockquote>
@@ -239,16 +240,15 @@
 <blockquote>
 <div><p>If you want or need to run Step 3 multiple times on the same data set (see top of page) then you can instruct <strong>IGRINS RV</strong> to look for RV initial guesses in the output of Step3. The keyword <code class="docutils literal notranslate"><span class="pre">-gS</span> <span class="pre">rvre</span> <span class="pre">-gX</span> <span class="pre">1</span></code> would fetch initial guesses from <code class="docutils literal notranslate"><span class="pre">RVresultsSummary_1.csv</span></code>, for example:</p>
 </div></blockquote>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>igrins_rv<span class="o">)</span> ~$ python main_step3.py HD189733 -mode TAR -HorK K -Wr <span class="m">1</span> -i <span class="m">4</span>.3789 -v <span class="m">0</span> -gS rvre -gX <span class="m">1</span> -c <span class="m">36</span> -plot -t synthetic -temp <span class="m">5000</span> -logg <span class="m">4</span>.5 -abs_out rel
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>igrins_rv<span class="o">)</span> ~$ python main_step3.py HD189733 -mode TAR -HorK K -Wr <span class="m">1</span> -i <span class="m">4</span>.3789 -v <span class="m">0</span> -gS rvre -gX <span class="m">1</span> -c <span class="m">36</span> -plot -t synthetic -temp <span class="m">5000</span> -logg <span class="m">4</span>.5
 </pre></div>
 </div>
-<blockquote>
-<div><p>In the above command, we have also set the keyword <code class="docutils literal notranslate"><span class="pre">-abs_out</span> <span class="pre">rel</span></code>, which will give relative RVs (more precise) rather than absolute RVs (less precise).</p>
-</div></blockquote>
-<p><em>† An example for target GJ281 to get the relative RVs</em></p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>igrins_rv<span class="o">)</span> ~$ python main_step3.py GJ281 -mode STD -HorK K -Wr <span class="m">1</span> -nAB <span class="m">1</span> -i <span class="m">3</span>.0755 -v <span class="m">0</span> -g <span class="m">19</span>.9611 -t synthetic -temp <span class="m">4000</span> -logg <span class="m">4</span>.5 -c <span class="m">4</span> -plot -abs_out rel
-</pre></div>
-</div>
+<!-- >  In the above command, we have also set the keyword `-abs_out rel`, which will give relative RVs (more precise) rather than absolute RVs (less precise). 
+
+*&dagger; An example for target GJ281 to get the relative RVs*
+```shell
+(igrins_rv) ~$ python main_step3.py GJ281 -mode STD -HorK K -Wr 1 -nAB 1 -i 3.0755 -v 0 -g 19.9611 -t synthetic -temp 4000 -logg 4.5 -c 4 -plot
+``` -->
 <section id="keywords-for-step3">
 <h3>Keywords for step3<a class="headerlink" href="#keywords-for-step3" title="Permalink to this headline">#</a></h3>
 <ul class="simple">
@@ -265,7 +265,9 @@
 <li><p>-t : Stellar template kind. Pick from ‘synthetic’ or ‘user’ (which then needs to be supplied in <code class="docutils literal notranslate"><span class="pre">./Engine/user_templates</span></code>). Default = ‘synthetic’</p></li>
 <li><p>-temp : Synthetic stellar template Teff (K). See <code class="docutils literal notranslate"><span class="pre">./Engine/syn_template</span></code> for all those available.</p></li>
 <li><p>-logg : Synthetic stellar template log(g) (cgs). See <code class="docutils literal notranslate"><span class="pre">./Engine/syn_template</span></code> for all those available.</p></li>
-<li><p>-abs_out : Set to ‘REL’ for more precise, relative RVs (default); set to ‘ABS’ for slightly less precise absolute RVs.</p></li>
+</ul>
+<!-- * -abs_out : Set to 'REL' for more precise, relative RVs (default); set to 'ABS' for slightly less precise absolute RVs. -->
+<ul class="simple">
 <li><p>-c : Specifies number of CPU threads to use, default is 1/2 of available ones</p></li>
 <li><p>-n_use : Specifies an array of observations you wish to process here (e.g. [20181111,20181112]) if you don’t want to process all the observations in the <code class="docutils literal notranslate"><span class="pre">./Input/*target/</span></code> folder</p></li>
 <li><p>-plot : If set, will generate plots of fitting results under <code class="docutils literal notranslate"><span class="pre">./Output/[target_name]_[band]/figs/main_step3_[band]_[run_number]</span></code></p></li>
@@ -279,18 +281,16 @@
 <h3>–RVs (step3)–<a class="headerlink" href="#rvs-step3" title="Permalink to this headline">#</a></h3>
 <p>Output files are saved to <code class="docutils literal notranslate"><span class="pre">./Output/[target_name]_[band]/RV_results_[run_number]</span></code>. The primary output is the <code class="docutils literal notranslate"><span class="pre">RVresultsSummary.fits</span></code> file, which contains the following columns in its table:</p>
 <ul class="simple">
-<li><p>‘NIGHT’ : Designation of observation based on PrepData files, either in format YYYYMMDD or YYYYMMDD_XXXX, where XXXX is for Multi-RVs per Night mode (see Setup: PrepData Files page)</p></li>
-<li><p>‘JD’ : Julian date</p></li>
-<li><p>‘RVfinal’ - Final RV estimate for each ‘NIGHT’</p></li>
-<li><p>‘STDfinal’ - Final uncertainty estimates of RVs</p></li>
-<li><p>‘VSINI’ - Final vsin(i) estimate for each ‘NIGHT’</p></li>
+<li><p><strong>NIGHT</strong> : Designation of observation based on PrepData files, either in format YYYYMMDD or YYYYMMDD_XXXX, where XXXX is for Multi-RVs per Night mode (see Setup: PrepData Files page)</p></li>
+<li><p><strong>JD</strong> : Julian date</p></li>
+<li><p><strong>RVfinal</strong> - Final RV estimate for each ‘NIGHT’</p></li>
+<li><p><strong>STDfinal</strong> - Final uncertainty estimates of RVs</p></li>
+<li><p><strong>VSINI</strong> - Final vsin(i) estimate for each ‘NIGHT’</p></li>
 </ul>
 <p>This is likely all you are looking for.</p>
 <blockquote>
 <div><p>the csv file under <code class="docutils literal notranslate"><span class="pre">./Output/[target_name]_[band]/</span></code>, <code class="docutils literal notranslate"><span class="pre">RVresultsSummary_[run_number].csv</span></code> has the same content as the <code class="docutils literal notranslate"><span class="pre">RVresultsSummary.fits</span></code>.</p>
-</div></blockquote>
-<blockquote>
-<div><p><code class="docutils literal notranslate"><span class="pre">RVresultsSummary.fits</span></code> file is a fits table, therefore, you can read it by</p>
+<p><code class="docutils literal notranslate"><span class="pre">RVresultsSummary.fits</span></code> file is a fits table, therefore, you can read it by</p>
 </div></blockquote>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">astropy.table</span> <span class="kn">import</span> <span class="n">Table</span>
 <span class="n">data</span> <span class="o">=</span> <span class="n">Table</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s1">'RVresultsSummary.fits'</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">'fits'</span><span class="p">)</span>
@@ -302,26 +302,33 @@
 <p>A plot summarizing the final RV measurements will be in the same directory as the RVresultsSummary file. If some of your observations were taken during the time when IGRINS experienced the defocus and some during other times, IGRINS RV will also produce separate plots for each of these epochs.</p>
 <p>Additionally, if the -plot keyword was specified, plots of individual spectral fits will be under <code class="docutils literal notranslate"><span class="pre">./Output/[target_name]_[band]/figs/main_step3_[band]_[run_number]</span></code>. The plots with the prefix:</p>
 <ul class="simple">
-<li><p>“parfit” show the full spectral fit to the data</p></li>
-<li><p>“parfitS” shows solely the stellar template contribution</p></li>
-<li><p>“parfitT” shows solely the telluric template contribution</p></li>
+<li><p><strong>parfit</strong> show the full spectral fit to the data</p></li>
+<li><p><strong>parfitS</strong> shows solely the stellar template contribution</p></li>
+<li><p><strong>parfitT</strong> shows solely the telluric template contribution</p></li>
 </ul>
 </section>
 <section id="data-advanced">
 <h3>–Data– (Advanced)<a class="headerlink" href="#data-advanced" title="Permalink to this headline">#</a></h3>
-<p>If you are using a different means of generating stellar templates than those provided, or have defined your own wavelength regions for analysis, then it is recommended that you apply your version of the pipeline to an RV standard star in order to characterize these variances under the new conditions. In this case, you would run Step 3 in STD mode on an RV standard, and take the output ‘sigma_method2’ array and plug it back into IGRINS RV under <code class="docutils literal notranslate"><span class="pre">./Engine/classes.py</span></code>. Your uncertainties would then be properly characterized when you run science targets with the new setup.</p>
-<p>This ‘sigma_method2’ array is printed automatically when Step 3 is done processing in STD mode. It can also be found in the RVresultsAdvanced file in the column named ‘Sigma_method2’.</p>
-<p>The RVresultsAdvanced file contains additional columns, but these should not be needed by the user:</p>
+<p>If you are using a different means of generating stellar templates than those provided, or have defined your own wavelength regions for analysis, then it is recommended that you apply your version of the pipeline to an RV standard star in order to characterize these variances under the new conditions. In this case, you would run Step 3 in STD mode on an RV standard, and take the output <code class="docutils literal notranslate"><span class="pre">sigma_method2</span></code> array and plug it back into IGRINS RV under <code class="docutils literal notranslate"><span class="pre">./Engine/classes.py</span></code>. Your uncertainties would then be properly characterized when you run science targets with the new setup.</p>
+<p>This <code class="docutils literal notranslate"><span class="pre">sigma_method2</span></code> array is printed automatically when Step 3 is done processing in STD mode. It can also be found in the <code class="docutils literal notranslate"><span class="pre">RVresultsAdvanced.fits</span></code> file in the column named <code class="docutils literal notranslate"><span class="pre">Sigma_method2</span></code>.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">RVresultsAdvanced.fits</span></code> file contains additional columns, but these should not be needed by the user:</p>
 <ul class="simple">
-<li><p>‘RVBOX’ - 2D array of the RV estimates from different orders for each ‘NIGHT’</p></li>
-<li><p>‘STDBOX’ - 2D array of the uncertainty estimates in the RVs from different orders for each ‘NIGHT’, without method uncertainty added in</p></li>
-<li><p>‘Sigma_ON2’- 2D array of the variance estimates in the RVs from different orders for each ‘NIGHT’, with method uncertainty added in</p></li>
+<li><p><strong>RVBOX</strong> - 2D array of the RV estimates from different orders for each ‘NIGHT’</p></li>
+<li><p><strong>STDBOX</strong> - 2D array of the uncertainty estimates in the RVs from different orders for each ‘NIGHT’, without method uncertainty added in</p></li>
+<li><p><strong>Sigma_ON2</strong>- 2D array of the variance estimates in the RVs from different orders for each ‘NIGHT’, with method uncertainty added in</p></li>
 </ul>
 <p>If Step 3 was run in STD mode, there will also be:</p>
 <ul class="simple">
-<li><p>‘Sigma_O2’ - The variance of RVs within a given order across all exposures</p></li>
-<li><p>‘Sigma_ABbar2’ - 2D array of the median  of the variances of each set of  observations</p></li>
+<li><p><strong>Sigma_O2</strong> - The variance of RVs within a given order across all exposures</p></li>
+<li><p><strong>Sigma_ABbar2</strong> - 2D array of the median  of the variances of each set of  observations</p></li>
 </ul>
+<blockquote>
+<div><p><code class="docutils literal notranslate"><span class="pre">RVresultsAdvanced.fits</span></code> file is not a single level fits table, therefore, you will need to open it via</p>
+</div></blockquote>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">astropy.io</span> <span class="kn">import</span> <span class="n">fits</span>
+<span class="n">h</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">'RVresultsAdvanced.fits'</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>The output directory should also contain <code class="docutils literal notranslate"><span class="pre">RVresultsRawBox.fits</span></code>, which provides the results of the spectral model fits without any additional processing. Users should not need this.</p>
 </section>
 </section>

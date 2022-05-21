@@ -157,8 +157,8 @@
   <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="Installation.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Overview%20and%20Workflow.html">Overview and Workflow</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Demo%20with%20Example%20Data%20%28GJ281%29.html">Demo with Example Data (GJ281)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Overview%20and%20Workflow.html">Overview and Workflow</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Setup</span></p>
 <ul>
@@ -176,7 +176,8 @@
 <p class="caption" role="heading"><span class="caption-text">Other</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="FAQ.html">FAQ</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Use%20latest%20lblrtm.html">Use the Latest Version of lblrtm/lnfl/aer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Use%20latest%20lblrtm.html">Use the Latest Version of lblrtm/lnfl/aer_line_file</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Version%20history.html">Version History</a></li>
 </ul>
 
 </div>
@@ -219,20 +220,35 @@
 <p><strong>IGRINS RV</strong> is a <code class="docutils literal notranslate"><span class="pre">python</span></code> open source pipeline for extracting radial velocities (RVs) from spectra taken with the Immersion GRating INfrared Spectrometer (IGRINS). It uses a modified forward modeling technique that leverages telluric absorption lines as a common-path wavelength calibrator. <strong>IGRINS RV</strong> achieves an RV precision in the H and K bands of around 25-30 m/s for narrow-line stars, and it has successfully recovered the planet-induced RV signals of both HD 189733 and τ Boo A. Visit <a class="reference external" href="https://ui.adsabs.harvard.edu/abs/2021AJ....161..283S/abstract">Stahl et al. 2021</a> to see the published paper.</p>
 <p>If you have any questions, suggestions, or wish to report a bug, please let us know by either opening an issue or contacting us: Asa G. Stahl (asa.stahl@rice.edu) or Shih-Yun Tang (sytang@lowell.edu).
 More on how to contribute can be found in <a class="reference internal" href="FAQ.html#q-how-do-i-help-make-igrins-rv-better"><span class="std std-ref">Q: How do I help make IGRINS RV better?</span></a> page.</p>
-<p><strong>News:</strong></p>
 <blockquote>
 <div><p>Starting from v1.5.1, the example data &amp; synthetic stellar templates are not shipped with <strong>IGRINS RV</strong> as to reduce the repo size. Synthetic stellar templates are now stored on google drive <a class="reference external" href="https://drive.google.com/drive/folders/1WRiQ3PKCbhueQi6htd0zusq_1ieKXgHP?usp=sharing">link</a>.</p>
 </div></blockquote>
+<p><strong>News:</strong></p>
 <ul class="simple">
-<li><p><strong>2021/06/09: <strong>IGRINS RV</strong> v1.0.0 First Public Release!!</strong></p></li>
+<li><p><strong>2022/06/01: <strong>IGRINS RV</strong> v1.5.1!!</strong></p>
+<ul>
+<li><p><strong>Who might be effected?</strong></p>
+<ul>
+<li><p>People with only a few observations (&lt;~5) that use K band.</p></li>
+<li><p>People who need more <em>precise</em> ABSOLUTE RV.</p></li>
+</ul>
+</li>
+<li><p><strong>What’s new?:</strong></p>
+<ol class="arabic simple">
+<li><p>Reduce the K band RV Order by Order shift between orders.</p></li>
+<li><p>Remove <em>relative</em> RV mode.</p></li>
+<li><p>Drop the usage of Order 3 for K band RV calculation.</p></li>
+<li><p>Better characterize RV error for individual measurement<br/>
+(more see ??)</p></li>
+</ol>
+</li>
+</ul>
+</li>
+<li><p>2021/06/09: <strong>IGRINS RV</strong> v1.0.0 First Public Release!!</p></li>
 <li><p>2021/02/18: <strong>IGRINS RV</strong> v0.9.6-beta.3 public beta is ready for JOSS review!!<br/>
 (minor bugs related to example data fixed)</p></li>
 <li><p>2021/01/29: <strong>IGRINS RV</strong> v0.9.6-beta.1 public beta<br/>
 (update the ability to process IGRINS data at Gemini South)</p></li>
-<li><p>2020/12/05: <strong>IGRINS RV</strong> v0.9.5-beta.1 public beta is under internal review and testing!!<br/>
-(update with modeling the flux suppression effect)</p></li>
-<li><p>2020/08/04: <strong>IGRINS RV</strong> v0.9-beta.1 public beta is under internal review and testing!!</p></li>
-<li><p>2020/06/23: <strong>IGRINS RV</strong> v0.85 is under internal review.. will come to public soon!!</p></li>
 </ul>
 <hr class="docutils"/>
 <p>For the sake of efficiency, <strong>IGRINS RV</strong> is broken up into several different steps. After installed (see <a class="reference internal" href="Installation.html#installation"><span class="std std-ref">Installation</span></a>) all the required packages, the best way to learn how these steps work is to follow our <a class="reference internal" href="Demo%20with%20Example%20Data%20%28GJ281%29.html"><span class="doc">Demo with Example Data (GJ281)</span></a> using the example data provided. The demo will demonstrate how one user might run the steps of <strong>IGRINS RV</strong> to go from raw data to final RV measurements.</p>
@@ -240,8 +256,8 @@ More on how to contribute can be found in <a class="reference internal" href="FA
 <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="Installation.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Overview%20and%20Workflow.html">Overview and Workflow</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Demo%20with%20Example%20Data%20%28GJ281%29.html">Demo with Example Data (GJ281)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Overview%20and%20Workflow.html">Overview and Workflow</a></li>
 </ul>
 </div>
 <p>As you go through the demo, navigate to the other document pages as they are linked to get a more detailed description of how each step works and why you’re running it. Once you’ve finished the demo and would like to begin analyzing your real science targets, these other pages will also explain what options you have for modifying the code’s default inputs to best suit the needs of your science:</p>
@@ -266,7 +282,8 @@ More on how to contribute can be found in <a class="reference internal" href="FA
 <p class="caption" role="heading"><span class="caption-text">Other</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="FAQ.html">FAQ</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Use%20latest%20lblrtm.html">Use the Latest Version of lblrtm/lnfl/aer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Use%20latest%20lblrtm.html">Use the Latest Version of lblrtm/lnfl/aer_line_file</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Version%20history.html">Version History</a></li>
 </ul>
 </div>
 <hr class="docutils"/>

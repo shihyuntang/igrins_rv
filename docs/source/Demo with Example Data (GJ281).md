@@ -14,7 +14,6 @@ Make sure you have all the packages installed before you begin. If not, please v
 2. Example data is stored on google drive [link](https://drive.google.com/drive/folders/1WRiQ3PKCbhueQi6htd0zusq_1ieKXgHP?usp=sharing) under `./GJ281/`.
 > If you are only testing the function of **IGRINS RV**, and not the `plp` package it makes use of, please skip all steps related to `plp`.
 
-
 ## AN IMPORTANT NOTE
 GJ281 is an RV standard (STD) in reality, but for the sake of demonstration, we treat GJ281 as a normal target (TAR) in this demo! If you want to see how the input commands would be different if we were treating GJ281 as an RV standard, that information can be found throughout the **MAIN RV PROGRAM** section (Step1 -- Step4).
 
@@ -80,6 +79,7 @@ You can find the reduced 1D spectra under `./plp/final_A_B_spec/GJ281`. Copy thi
 ## Demo for IGRINS RV
 ### Input data
 For this example, we have 6 nights of reduced data ready for you to use. Simply move the `GJ281` folder you downloaded from google drive under `igrins_rv/Input/`. If you completed the `plp` demo above, you should already done this step.
+*(Example data is stored on google drive [link](https://drive.google.com/drive/folders/1WRiQ3PKCbhueQi6htd0zusq_1ieKXgHP?usp=sharing) under `./GJ281/`.)*
 
 All users now move `igrins_rv/Example/Prepdata_A0_GJ281.txt` and `igrins_rv/Example/Prepdata_targ_GJ281.txt` to `igrins_rv/Input/Prepdata/`. 
 
@@ -130,7 +130,7 @@ You can now run main_step2.py to produce RV and vsini initial guess(es)
 ####################################################################################
 ```
 
-> Tip: All important printouts are also saved under the `.log` file, e.g., `/igrins_rv-master/Output/GJ281_K/A0Fits/GJ281_K_A0Fits.log`
+> Tip: All important printouts are also saved under the `.log` file, e.g., `/igrins_rv(-master)/Output/GJ281_K/A0Fits/GJ281_K_A0Fits.log`
 
 
 ### Step 2: Initial Convergence
@@ -169,20 +169,21 @@ Writing output to ./Output/GJ281_K/Initguesser_results_1.csv
 Analyze with 6 nights
 Using K-band synthetic stellar template...
 synthetic stellar template with T4000 logg4.5!!!!!
+Stellar template resolution is ~0.03 Angstrom, rebinning to 0.045 Angstrom...
 
-SUBMITTING | : 100%|█████████████████████████████████████████████████████████████████| 6/6 [00:00<00:00, 462.79it/s]
-PROCESSING | : 100%|██████████████████████████████████████████████████████████████████| 6/6 [02:14<00:00, 22.37s/it]
+SUBMITTING | : 100%|███████████████████████████████████████████████████████████████| 6/6 [00:00<00:00, 462.79it/s]
+PROCESSING | : 100%|███████████████████████████████████████████████████████████████| 6/6 [08:15<00:00, 85.37s/it]
 COLLECTING | : 100%|███████████████████████████████████████████████████████████████| 6/6 [00:00<00:00, 87078.98it/s]
-
+ 
 ```
 While the code is running, visit {doc}`Step 2 Initial Convergence` to learn more about what is going on here.
 
 After a while, you should get this final printout:
 ```
 --------!Initial Guess!--------
-RV results:    mean= 20.1224 km/s, median= 20.1315 km/s, std= 0.0404 km/s
+RV results:    mean= 20.0680 km/s, median= 20.0738 km/s, std= 0.0384 km/s
 vsini results: mean= 5.0000 km/s, median= 5.0000 km/s, std= 0.0000 km/s
-RV Initial Guess DONE... Duration: 0:01:42.228705
+RV Initial Guess DONE... Duration: 0:08:15.226742
 Output saved under ./Output/GJ281_K/Initguesser_results_1.csv
 ---------------------------------------------------------------
 You can now try to get a better RV initial guess with by rerunning Step 2 with -gX set to the run number you just completed.
@@ -215,15 +216,16 @@ Writing output to ./Output/GJ281_K/Initguesser_results_2.csv
 Analyze with 6 nights
 Using K-band synthetic stellar template...
 synthetic stellar template with T4000 logg4.5!!!!!
+Stellar template resolution is ~0.03 Angstrom, rebinning to 0.045 Angstrom...
 
-SUBMITTING | : 100%|██████████████████████████████████████████████████████████████████| 6/6 [00:00<00:00, 22.99it/s]
-PROCESSING | : 100%|██████████████████████████████████████████████████████████████████| 6/6 [02:14<00:00, 22.47s/it]
-COLLECTING | : 100%|██████████████████████████████████████████████████████████████| 6/6 [00:00<00:00, 133152.51it/s]
+QUEUEING TASKS | : 100%|███████████████████████████████████████████████████████████████████| 6/6 [00:00<00:00, 283.09it/s]
+PROCESSING TASKS | : 100%|█████████████████████████████████████████████████████████████████| 6/6 [08:19<00:00, 83.17s/it]
+COLLECTING RESULTS | : 100%|███████████████████████████████████████████████████████████████| 6/6 [00:00<00:00, 69905.07it/s]
 
 --------!Initial Guess!--------
-RV results:    mean= 20.1373 km/s, median= 20.1465 km/s, std= 0.0390 km/s
-vsini results: mean= 3.1850 km/s, median= 3.2428 km/s, std= 0.2046 km/s
-RV Initial Guess DONE... Duration: 0:01:33.994598
+RV results:    mean= 20.0802 km/s, median= 20.0862 km/s, std= 0.0398 km/s
+vsini results: mean= 2.9907 km/s, median= 3.0082 km/s, std= 0.1662 km/s
+RV Initial Guess DONE... Duration: 0:08:19.469011
 Output saved under ./Output/GJ281_K/Initguesser_results_2.csv
 ---------------------------------------------------------------
 You can now try to get a better RV initial guess with by rerunning Step 2 with -gX set to the run number you just completed.
@@ -233,14 +235,14 @@ OR, you can go on to the full RV analysis in Step 3.
 
 
 ### Step 3: Full Analysis
-#### Step 3 - Run No. 1 (getting precise absolute RVs)
+#### Step 3 - Run No. 1 (get better vsini value with -v 5)
 The input parameters for Step 3 are based on the results from step 2. \
-For the starting vsini guess (`-i`), use the printout from Step2: `vsini results: mean= 3.1850 km/s` from step2 (command: `-i 3.1850`).\
+For the starting vsini guess (`-i`), use the printout from Step2: `vsini results: mean= 2.9907 km/s` from step2 (command: `-i 2.9907`).\
 For the starting guesses for the RVs, use the `./Output/GJ281_K/Initguesser_results_2.csv` from Step 2 (command: `-gS init -gX 2`).
 
 Input:
 ```shell
-(igrins_rv) ~/igrins_rv $ python main_step3.py GJ281 -mode TAR -HorK K -Wr 1 -nAB 1 -i 3.1850 -v 5 -gS init -gX 2 -t synthetic -temp 4000 -logg 4.5 -c 6 -plot -abs_out abs -sk_check
+(igrins_rv) ~/igrins_rv $ python main_step3.py GJ281 -mode TAR -HorK K -Wr 1 -nAB 1 -i 2.9907 -v 5 -gS init -gX 2 -t synthetic -temp 4000 -logg 4.5 -c 6 -plot -sk_check
 ```
 Output:
 ```
@@ -253,45 +255,42 @@ Writing output to ./Output/GJ281_K/RV_results_1
 Analyze with 6 nights
 Using K-band synthetic stellar template...
 synthetic stellar template with T4000 logg4.5!!!!!
+Stellar template resolution is ~0.03 Angstrom, rebinning to 0.045 Angstrom...
 
-Working on order 3 (01/04)
-SUBMITTING | : 100%|██████████████████████████████████████████████████████████████████| 6/6 [00:00<00:00, 19.18it/s]
-PROCESSING | : 100%|██████████████████████████████████████████████████████████████████| 6/6 [05:25<00:00, 54.30s/it]
-COLLECTING | : 100%|██████████████████████████████████████████████████████████████| 6/6 [00:00<00:00, 139037.70it/s]
-Working on order 4 (02/04)
-SUBMITTING | : 100%|█████████████████████████████████████████████████████████████████| 6/6 [00:00<00:00, 659.03it/s]
-PROCESSING | : 100%|██████████████████████████████████████████████████████████████████| 6/6 [07:11<00:00, 71.91s/it]
-COLLECTING | : 100%|██████████████████████████████████████████████████████████████| 6/6 [00:00<00:00, 142987.64it/s]
-Working on order 5 (03/04)
-SUBMITTING | : 100%|█████████████████████████████████████████████████████████████████| 6/6 [00:00<00:00, 726.92it/s]
-PROCESSING | : 100%|█████████████████████████████████████████████████████████████████| 6/6 [12:50<00:00, 128.48s/it]
-COLLECTING | : 100%|██████████████████████████████████████████████████████████████| 6/6 [00:00<00:00, 142987.64it/s]
-Working on order 6 (04/04)
-SUBMITTING | : 100%|█████████████████████████████████████████████████████████████████| 6/6 [00:00<00:00, 733.59it/s]
-PROCESSING | : 100%|█████████████████████████████████████████████████████████████████| 6/6 [17:32<00:00, 175.37s/it]
-COLLECTING | : 100%|██████████████████████████████████████████████████████████████| 6/6 [00:00<00:00, 139810.13it/s]
+Working on order 4 (01/03)
+QUEUEING TASKS | : 100%|███████████████████████████████████████████████████████████████████| 6/6 [00:00<00:00, 251.60it/s]
+PROCESSING TASKS | : 100%|█████████████████████████████████████████████████████████████████| 6/6 [1:06:53<00:00, 668.84s/it]
+COLLECTING RESULTS | : 100%|███████████████████████████████████████████████████████████████| 6/6 [00:00<00:00, 66400.59it/s]
+Working on order 5 (02/03)
+QUEUEING TASKS | : 100%|███████████████████████████████████████████████████████████████████| 6/6 [00:00<00:00, 288.09it/s]
+PROCESSING TASKS | : 100%|█████████████████████████████████████████████████████████████████| 6/6 [48:14<00:00, 482.39s/it]
+COLLECTING RESULTS | : 100%|███████████████████████████████████████████████████████████████| 6/6 [00:00<00:00, 76491.87it/s]
+Working on order 6 (03/03)
+QUEUEING TASKS | : 100%|███████████████████████████████████████████████████████████████████| 6/6 [00:00<00:00, 298.72it/s]
+PROCESSING TASKS | : 100%|█████████████████████████████████████████████████████████████████| 6/6 [1:14:39<00:00, 746.57s/it]
+COLLECTING RESULTS | : 100%|███████████████████████████████████████████████████████████████| 6/6 [00:00<00:00, 84449.07it/s]
 ...
 ```
 While the code is running, visit {doc}`Step 3 Full Analysis` to learn more about what is going on here.
 
 After a while, you should get these final info.
 ```
-RV mean = 19.9862 km/s, std = 0.0364 km/s
-vsini mean = 3.3244 km/s, std = 0.4313 km/s
+RV mean = 20.1014 km/s, std = 0.0796 km/s
+vsini mean = 3.2160 km/s, std = 0.3134 km/s
 
 **********************************************************************************
 WARNING!! you got warning message during this run. Please check the log file under:
           ./Output/GJ281_K/GJ281_K_A0Fits.log
 **********************************************************************************
 
-Whole process DONE!!!!!!, Duration: 0:32:15.134722
+Whole process DONE!!!!!!, Duration: 3:09:48.566853
 Output saved under ./Output/GJ281_K/RV_results_1
 The final RV estimates you are looking for are in the RVresultsSummary files!
 ```
 You can visually check how the fitting went by looking at the plots saved under `./Output/GJ281_K/figs/main_step3_K_1/`
 
 
-#### Step 3 - Run No. 2 (getting relative RVs that are more precise than the absolute RVs)
+#### Step 3 - Run No. 2 (fix vsini with -v 0)
 > The command differences from the previous one are:
 > 1. -i 3.1850 --> 3.3244 (start the mean vsini output by the previous run)
 > 2. -gS init -gX 2 --> -gS rvre -gX 1 (start from the output RVs from the previous run, e.g., `./Output/GJ281_K/RVresultsSummary_1.csv`)
@@ -299,7 +298,7 @@ You can visually check how the fitting went by looking at the plots saved under 
 
 Input:
 ```shell
-(igrins_rv) ~/igrins_rv $ python main_step3.py GJ281 -mode TAR -HorK K -Wr 1 -nAB 1 -i 3.3244 -v 0 -gS rvre -gX 1 -t synthetic -temp 4000 -logg 4.5 -c 6 -plot -abs_out rel -sk_check
+(igrins_rv) ~/igrins_rv $ python main_step3.py GJ281 -mode TAR -HorK K -Wr 1 -nAB 1 -i 3.3244 -v 0 -gS rvre -gX 1 -t synthetic -temp 4000 -logg 4.5 -c 6 -plot -sk_check
 ```
 Output:
 ```
@@ -313,7 +312,7 @@ The final RV estimates you are looking for are in the RVresultsSummary files!
 ####################################################################################
 ```
 
-#### Step 3 - Run No. 3 (getting the relative RVs with vsini fixed at its best fit plus 1 sigma)
+#### Step 3 - Run No. 3 (vsini fixed at its best fit plus 1 sigma)
 > Difference in the terminal command from the previous one is:
 > 1. -i 3.3244 --> 3.7557 (Use RV_results_1's mean vsini plus the standard deviation of that estimate, 3.3244 + 0.4313 = 3.7557)
 

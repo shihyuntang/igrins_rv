@@ -3,7 +3,7 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Setup: Input 1D spectra (plp)" href="Setup%20Input%201D%20spectra%20%28plp%29.html" /><link rel="prev" title="Overview and Workflow" href="Overview%20and%20Workflow.html" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Overview and Workflow" href="Overview%20and%20Workflow.html" /><link rel="prev" title="Installation" href="Installation.html" />
 
     <meta name="generator" content="sphinx-4.4.0, furo 2022.04.07"/>
         <title>Demo with Example Data (GJ281) - igrins_rv 1.5.1 documentation</title>
@@ -157,8 +157,8 @@
   <p class="caption" role="heading"><span class="caption-text">Quick Start</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="Installation.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Overview%20and%20Workflow.html">Overview and Workflow</a></li>
 <li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Demo with Example Data (GJ281)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Overview%20and%20Workflow.html">Overview and Workflow</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Setup</span></p>
 <ul>
@@ -176,7 +176,7 @@
 <p class="caption" role="heading"><span class="caption-text">Other</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="FAQ.html">FAQ</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Use%20latest%20lblrtm.html">Use the Latest Version of lblrtm/lnfl/aer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Use%20latest%20lblrtm.html">Use the Latest Version of lblrtm/lnfl/aer_line_file</a></li>
 </ul>
 
 </div>
@@ -291,7 +291,8 @@
 <h2>Demo for IGRINS RV<a class="headerlink" href="#demo-for-igrins-rv" title="Permalink to this headline">#</a></h2>
 <section id="input-data">
 <h3>Input data<a class="headerlink" href="#input-data" title="Permalink to this headline">#</a></h3>
-<p>For this example, we have 6 nights of reduced data ready for you to use. Simply move the <code class="docutils literal notranslate"><span class="pre">GJ281</span></code> folder you downloaded from google drive under <code class="docutils literal notranslate"><span class="pre">igrins_rv/Input/</span></code>. If you completed the <code class="docutils literal notranslate"><span class="pre">plp</span></code> demo above, you should already done this step.</p>
+<p>For this example, we have 6 nights of reduced data ready for you to use. Simply move the <code class="docutils literal notranslate"><span class="pre">GJ281</span></code> folder you downloaded from google drive under <code class="docutils literal notranslate"><span class="pre">igrins_rv/Input/</span></code>. If you completed the <code class="docutils literal notranslate"><span class="pre">plp</span></code> demo above, you should already done this step.
+<em>(Example data is stored on google drive <a class="reference external" href="https://drive.google.com/drive/folders/1WRiQ3PKCbhueQi6htd0zusq_1ieKXgHP?usp=sharing">link</a> under <code class="docutils literal notranslate"><span class="pre">./GJ281/</span></code>.)</em></p>
 <p>All users now move <code class="docutils literal notranslate"><span class="pre">igrins_rv/Example/Prepdata_A0_GJ281.txt</span></code> and <code class="docutils literal notranslate"><span class="pre">igrins_rv/Example/Prepdata_targ_GJ281.txt</span></code> to <code class="docutils literal notranslate"><span class="pre">igrins_rv/Input/Prepdata/</span></code>.</p>
 <blockquote>
 <div><p>These files tell <strong>IGRINS RV</strong> what data are available for the science target and its associated A0 standards, as well as some information about the observations (e.g. time, barycentric velocity correction, observing conditions). Read <a class="reference internal" href="Setup%20PrepData%20Files.html"><span class="doc">PrepData Files (Step 0)</span></a> to learn how to make your own <code class="docutils literal notranslate"><span class="pre">PrepData</span> <span class="pre">Files</span></code> for your science targets (you may want to wait until you begin running Step 1, below).</p>
@@ -339,7 +340,7 @@ You can now run main_step2.py to produce RV and vsini initial guess(es)
 </pre></div>
 </div>
 <blockquote>
-<div><p>Tip: All important printouts are also saved under the <code class="docutils literal notranslate"><span class="pre">.log</span></code> file, e.g., <code class="docutils literal notranslate"><span class="pre">/igrins_rv-master/Output/GJ281_K/A0Fits/GJ281_K_A0Fits.log</span></code></p>
+<div><p>Tip: All important printouts are also saved under the <code class="docutils literal notranslate"><span class="pre">.log</span></code> file, e.g., <code class="docutils literal notranslate"><span class="pre">/igrins_rv(-master)/Output/GJ281_K/A0Fits/GJ281_K_A0Fits.log</span></code></p>
 </div></blockquote>
 </section>
 <section id="step-2-initial-convergence">
@@ -378,19 +379,20 @@ Writing output to ./Output/GJ281_K/Initguesser_results_1.csv
 Analyze with 6 nights
 Using K-band synthetic stellar template...
 synthetic stellar template with T4000 logg4.5!!!!!
+Stellar template resolution is ~0.03 Angstrom, rebinning to 0.045 Angstrom...
 
-SUBMITTING | : 100%|█████████████████████████████████████████████████████████████████| 6/6 [00:00&lt;00:00, 462.79it/s]
-PROCESSING | : 100%|██████████████████████████████████████████████████████████████████| 6/6 [02:14&lt;00:00, 22.37s/it]
+SUBMITTING | : 100%|███████████████████████████████████████████████████████████████| 6/6 [00:00&lt;00:00, 462.79it/s]
+PROCESSING | : 100%|███████████████████████████████████████████████████████████████| 6/6 [08:15&lt;00:00, 85.37s/it]
 COLLECTING | : 100%|███████████████████████████████████████████████████████████████| 6/6 [00:00&lt;00:00, 87078.98it/s]
-
+ 
 </pre></div>
 </div>
 <p>While the code is running, visit <a class="reference internal" href="Step%202%20Initial%20Convergence.html"><span class="doc">Step2: Initial Convergence</span></a> to learn more about what is going on here.</p>
 <p>After a while, you should get this final printout:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>--------!Initial Guess!--------
-RV results:    mean= 20.1224 km/s, median= 20.1315 km/s, std= 0.0404 km/s
+RV results:    mean= 20.0680 km/s, median= 20.0738 km/s, std= 0.0384 km/s
 vsini results: mean= 5.0000 km/s, median= 5.0000 km/s, std= 0.0000 km/s
-RV Initial Guess DONE... Duration: 0:01:42.228705
+RV Initial Guess DONE... Duration: 0:08:15.226742
 Output saved under ./Output/GJ281_K/Initguesser_results_1.csv
 ---------------------------------------------------------------
 You can now try to get a better RV initial guess with by rerunning Step 2 with -gX set to the run number you just completed.
@@ -426,15 +428,16 @@ Writing output to ./Output/GJ281_K/Initguesser_results_2.csv
 Analyze with 6 nights
 Using K-band synthetic stellar template...
 synthetic stellar template with T4000 logg4.5!!!!!
+Stellar template resolution is ~0.03 Angstrom, rebinning to 0.045 Angstrom...
 
-SUBMITTING | : 100%|██████████████████████████████████████████████████████████████████| 6/6 [00:00&lt;00:00, 22.99it/s]
-PROCESSING | : 100%|██████████████████████████████████████████████████████████████████| 6/6 [02:14&lt;00:00, 22.47s/it]
-COLLECTING | : 100%|██████████████████████████████████████████████████████████████| 6/6 [00:00&lt;00:00, 133152.51it/s]
+QUEUEING TASKS | : 100%|███████████████████████████████████████████████████████████████████| 6/6 [00:00&lt;00:00, 283.09it/s]
+PROCESSING TASKS | : 100%|█████████████████████████████████████████████████████████████████| 6/6 [08:19&lt;00:00, 83.17s/it]
+COLLECTING RESULTS | : 100%|███████████████████████████████████████████████████████████████| 6/6 [00:00&lt;00:00, 69905.07it/s]
 
 --------!Initial Guess!--------
-RV results:    mean= 20.1373 km/s, median= 20.1465 km/s, std= 0.0390 km/s
-vsini results: mean= 3.1850 km/s, median= 3.2428 km/s, std= 0.2046 km/s
-RV Initial Guess DONE... Duration: 0:01:33.994598
+RV results:    mean= 20.0802 km/s, median= 20.0862 km/s, std= 0.0398 km/s
+vsini results: mean= 2.9907 km/s, median= 3.0082 km/s, std= 0.1662 km/s
+RV Initial Guess DONE... Duration: 0:08:19.469011
 Output saved under ./Output/GJ281_K/Initguesser_results_2.csv
 ---------------------------------------------------------------
 You can now try to get a better RV initial guess with by rerunning Step 2 with -gX set to the run number you just completed.
@@ -446,13 +449,13 @@ OR, you can go on to the full RV analysis in Step 3.
 </section>
 <section id="step-3-full-analysis">
 <h3>Step 3: Full Analysis<a class="headerlink" href="#step-3-full-analysis" title="Permalink to this headline">#</a></h3>
-<section id="step-3-run-no-1-getting-precise-absolute-rvs">
-<h4>Step 3 - Run No. 1 (getting precise absolute RVs)<a class="headerlink" href="#step-3-run-no-1-getting-precise-absolute-rvs" title="Permalink to this headline">#</a></h4>
+<section id="step-3-run-no-1-get-better-vsini-value-with-v-5">
+<h4>Step 3 - Run No. 1 (get better vsini value with -v 5)<a class="headerlink" href="#step-3-run-no-1-get-better-vsini-value-with-v-5" title="Permalink to this headline">#</a></h4>
 <p>The input parameters for Step 3 are based on the results from step 2. <br/>
-For the starting vsini guess (<code class="docutils literal notranslate"><span class="pre">-i</span></code>), use the printout from Step2: <code class="docutils literal notranslate"><span class="pre">vsini</span> <span class="pre">results:</span> <span class="pre">mean=</span> <span class="pre">3.1850</span> <span class="pre">km/s</span></code> from step2 (command: <code class="docutils literal notranslate"><span class="pre">-i</span> <span class="pre">3.1850</span></code>).<br/>
+For the starting vsini guess (<code class="docutils literal notranslate"><span class="pre">-i</span></code>), use the printout from Step2: <code class="docutils literal notranslate"><span class="pre">vsini</span> <span class="pre">results:</span> <span class="pre">mean=</span> <span class="pre">2.9907</span> <span class="pre">km/s</span></code> from step2 (command: <code class="docutils literal notranslate"><span class="pre">-i</span> <span class="pre">2.9907</span></code>).<br/>
 For the starting guesses for the RVs, use the <code class="docutils literal notranslate"><span class="pre">./Output/GJ281_K/Initguesser_results_2.csv</span></code> from Step 2 (command: <code class="docutils literal notranslate"><span class="pre">-gS</span> <span class="pre">init</span> <span class="pre">-gX</span> <span class="pre">2</span></code>).</p>
 <p>Input:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>igrins_rv<span class="o">)</span> ~/igrins_rv $ python main_step3.py GJ281 -mode TAR -HorK K -Wr <span class="m">1</span> -nAB <span class="m">1</span> -i <span class="m">3</span>.1850 -v <span class="m">5</span> -gS init -gX <span class="m">2</span> -t synthetic -temp <span class="m">4000</span> -logg <span class="m">4</span>.5 -c <span class="m">6</span> -plot -abs_out abs -sk_check
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>igrins_rv<span class="o">)</span> ~/igrins_rv $ python main_step3.py GJ281 -mode TAR -HorK K -Wr <span class="m">1</span> -nAB <span class="m">1</span> -i <span class="m">2</span>.9907 -v <span class="m">5</span> -gS init -gX <span class="m">2</span> -t synthetic -temp <span class="m">4000</span> -logg <span class="m">4</span>.5 -c <span class="m">6</span> -plot -sk_check
 </pre></div>
 </div>
 <p>Output:</p>
@@ -465,45 +468,42 @@ Writing output to ./Output/GJ281_K/RV_results_1
 Analyze with 6 nights
 Using K-band synthetic stellar template...
 synthetic stellar template with T4000 logg4.5!!!!!
+Stellar template resolution is ~0.03 Angstrom, rebinning to 0.045 Angstrom...
 
-Working on order 3 (01/04)
-SUBMITTING | : 100%|██████████████████████████████████████████████████████████████████| 6/6 [00:00&lt;00:00, 19.18it/s]
-PROCESSING | : 100%|██████████████████████████████████████████████████████████████████| 6/6 [05:25&lt;00:00, 54.30s/it]
-COLLECTING | : 100%|██████████████████████████████████████████████████████████████| 6/6 [00:00&lt;00:00, 139037.70it/s]
-Working on order 4 (02/04)
-SUBMITTING | : 100%|█████████████████████████████████████████████████████████████████| 6/6 [00:00&lt;00:00, 659.03it/s]
-PROCESSING | : 100%|██████████████████████████████████████████████████████████████████| 6/6 [07:11&lt;00:00, 71.91s/it]
-COLLECTING | : 100%|██████████████████████████████████████████████████████████████| 6/6 [00:00&lt;00:00, 142987.64it/s]
-Working on order 5 (03/04)
-SUBMITTING | : 100%|█████████████████████████████████████████████████████████████████| 6/6 [00:00&lt;00:00, 726.92it/s]
-PROCESSING | : 100%|█████████████████████████████████████████████████████████████████| 6/6 [12:50&lt;00:00, 128.48s/it]
-COLLECTING | : 100%|██████████████████████████████████████████████████████████████| 6/6 [00:00&lt;00:00, 142987.64it/s]
-Working on order 6 (04/04)
-SUBMITTING | : 100%|█████████████████████████████████████████████████████████████████| 6/6 [00:00&lt;00:00, 733.59it/s]
-PROCESSING | : 100%|█████████████████████████████████████████████████████████████████| 6/6 [17:32&lt;00:00, 175.37s/it]
-COLLECTING | : 100%|██████████████████████████████████████████████████████████████| 6/6 [00:00&lt;00:00, 139810.13it/s]
+Working on order 4 (01/03)
+QUEUEING TASKS | : 100%|███████████████████████████████████████████████████████████████████| 6/6 [00:00&lt;00:00, 251.60it/s]
+PROCESSING TASKS | : 100%|█████████████████████████████████████████████████████████████████| 6/6 [1:06:53&lt;00:00, 668.84s/it]
+COLLECTING RESULTS | : 100%|███████████████████████████████████████████████████████████████| 6/6 [00:00&lt;00:00, 66400.59it/s]
+Working on order 5 (02/03)
+QUEUEING TASKS | : 100%|███████████████████████████████████████████████████████████████████| 6/6 [00:00&lt;00:00, 288.09it/s]
+PROCESSING TASKS | : 100%|█████████████████████████████████████████████████████████████████| 6/6 [48:14&lt;00:00, 482.39s/it]
+COLLECTING RESULTS | : 100%|███████████████████████████████████████████████████████████████| 6/6 [00:00&lt;00:00, 76491.87it/s]
+Working on order 6 (03/03)
+QUEUEING TASKS | : 100%|███████████████████████████████████████████████████████████████████| 6/6 [00:00&lt;00:00, 298.72it/s]
+PROCESSING TASKS | : 100%|█████████████████████████████████████████████████████████████████| 6/6 [1:14:39&lt;00:00, 746.57s/it]
+COLLECTING RESULTS | : 100%|███████████████████████████████████████████████████████████████| 6/6 [00:00&lt;00:00, 84449.07it/s]
 ...
 </pre></div>
 </div>
 <p>While the code is running, visit <a class="reference internal" href="Step%203%20Full%20Analysis.html"><span class="doc">Step3: Full Analysis</span></a> to learn more about what is going on here.</p>
 <p>After a while, you should get these final info.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>RV mean = 19.9862 km/s, std = 0.0364 km/s
-vsini mean = 3.3244 km/s, std = 0.4313 km/s
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>RV mean = 20.1014 km/s, std = 0.0796 km/s
+vsini mean = 3.2160 km/s, std = 0.3134 km/s
 
 **********************************************************************************
 WARNING!! you got warning message during this run. Please check the log file under:
           ./Output/GJ281_K/GJ281_K_A0Fits.log
 **********************************************************************************
 
-Whole process DONE!!!!!!, Duration: 0:32:15.134722
+Whole process DONE!!!!!!, Duration: 3:09:48.566853
 Output saved under ./Output/GJ281_K/RV_results_1
 The final RV estimates you are looking for are in the RVresultsSummary files!
 </pre></div>
 </div>
 <p>You can visually check how the fitting went by looking at the plots saved under <code class="docutils literal notranslate"><span class="pre">./Output/GJ281_K/figs/main_step3_K_1/</span></code></p>
 </section>
-<section id="step-3-run-no-2-getting-relative-rvs-that-are-more-precise-than-the-absolute-rvs">
-<h4>Step 3 - Run No. 2 (getting relative RVs that are more precise than the absolute RVs)<a class="headerlink" href="#step-3-run-no-2-getting-relative-rvs-that-are-more-precise-than-the-absolute-rvs" title="Permalink to this headline">#</a></h4>
+<section id="step-3-run-no-2-fix-vsini-with-v-0">
+<h4>Step 3 - Run No. 2 (fix vsini with -v 0)<a class="headerlink" href="#step-3-run-no-2-fix-vsini-with-v-0" title="Permalink to this headline">#</a></h4>
 <blockquote>
 <div><p>The command differences from the previous one are:</p>
 <ol class="arabic simple">
@@ -513,7 +513,7 @@ The final RV estimates you are looking for are in the RVresultsSummary files!
 </ol>
 </div></blockquote>
 <p>Input:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>igrins_rv<span class="o">)</span> ~/igrins_rv $ python main_step3.py GJ281 -mode TAR -HorK K -Wr <span class="m">1</span> -nAB <span class="m">1</span> -i <span class="m">3</span>.3244 -v <span class="m">0</span> -gS rvre -gX <span class="m">1</span> -t synthetic -temp <span class="m">4000</span> -logg <span class="m">4</span>.5 -c <span class="m">6</span> -plot -abs_out rel -sk_check
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>igrins_rv<span class="o">)</span> ~/igrins_rv $ python main_step3.py GJ281 -mode TAR -HorK K -Wr <span class="m">1</span> -nAB <span class="m">1</span> -i <span class="m">3</span>.3244 -v <span class="m">0</span> -gS rvre -gX <span class="m">1</span> -t synthetic -temp <span class="m">4000</span> -logg <span class="m">4</span>.5 -c <span class="m">6</span> -plot -sk_check
 </pre></div>
 </div>
 <p>Output:</p>
@@ -528,8 +528,8 @@ The final RV estimates you are looking for are in the RVresultsSummary files!
 </pre></div>
 </div>
 </section>
-<section id="step-3-run-no-3-getting-the-relative-rvs-with-vsini-fixed-at-its-best-fit-plus-1-sigma">
-<h4>Step 3 - Run No. 3 (getting the relative RVs with vsini fixed at its best fit plus 1 sigma)<a class="headerlink" href="#step-3-run-no-3-getting-the-relative-rvs-with-vsini-fixed-at-its-best-fit-plus-1-sigma" title="Permalink to this headline">#</a></h4>
+<section id="step-3-run-no-3-vsini-fixed-at-its-best-fit-plus-1-sigma">
+<h4>Step 3 - Run No. 3 (vsini fixed at its best fit plus 1 sigma)<a class="headerlink" href="#step-3-run-no-3-vsini-fixed-at-its-best-fit-plus-1-sigma" title="Permalink to this headline">#</a></h4>
 <blockquote>
 <div><p>Difference in the terminal command from the previous one is:</p>
 <ol class="arabic simple">
@@ -596,23 +596,23 @@ Output saved under ./Output/GJ281_K/RV_results_2_3_combined
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="Setup%20Input%201D%20spectra%20%28plp%29.html">
+          <a class="next-page" href="Overview%20and%20Workflow.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">Setup: Input 1D spectra (plp)</div>
+                <div class="title">Overview and Workflow</div>
               </div>
               <svg><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="Overview%20and%20Workflow.html">
+          <a class="prev-page" href="Installation.html">
               <svg><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">Overview and Workflow</div>
+                <div class="title">Installation</div>
                 
               </div>
             </a>
@@ -665,9 +665,9 @@ Output saved under ./Output/GJ281_K/RV_results_2_3_combined
 </ul>
 </li>
 <li><a class="reference internal" href="#step-3-full-analysis">Step 3: Full Analysis</a><ul>
-<li><a class="reference internal" href="#step-3-run-no-1-getting-precise-absolute-rvs">Step 3 - Run No. 1 (getting precise absolute RVs)</a></li>
-<li><a class="reference internal" href="#step-3-run-no-2-getting-relative-rvs-that-are-more-precise-than-the-absolute-rvs">Step 3 - Run No. 2 (getting relative RVs that are more precise than the absolute RVs)</a></li>
-<li><a class="reference internal" href="#step-3-run-no-3-getting-the-relative-rvs-with-vsini-fixed-at-its-best-fit-plus-1-sigma">Step 3 - Run No. 3 (getting the relative RVs with vsini fixed at its best fit plus 1 sigma)</a></li>
+<li><a class="reference internal" href="#step-3-run-no-1-get-better-vsini-value-with-v-5">Step 3 - Run No. 1 (get better vsini value with -v 5)</a></li>
+<li><a class="reference internal" href="#step-3-run-no-2-fix-vsini-with-v-0">Step 3 - Run No. 2 (fix vsini with -v 0)</a></li>
+<li><a class="reference internal" href="#step-3-run-no-3-vsini-fixed-at-its-best-fit-plus-1-sigma">Step 3 - Run No. 3 (vsini fixed at its best fit plus 1 sigma)</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#step-4-calculating-the-impact-of-vsini-uncertainty-on-your-rvs">Step 4: Calculating the impact of vsini uncertainty on your RVs</a></li>

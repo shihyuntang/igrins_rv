@@ -27,12 +27,31 @@ If successful, try `gfortran --version` to see if you can see the versions numbe
 If so, you are good!
 
 --
-## Q: Why do I see an error message with `ifort` while installing `Telfit`?
-**Answer:** Well...lucky you. Looks like you have the `ifort` fortran complier installed already. Quickest way to resolve this is to tell `Telfit` `setup.py` not to look for `ifort`. 
-1. Open `setup.py` under the `igrins_rv(-master)/Telfit` folder (it may be called something like `Telluric-Fitter-master`). You will find two lists, `compilers` and `comp_strs`, around lines 188. 
-2. Delete `ifort` and `INTEL` in each list.
 
-You should be fine now~
+## Q: How can I tell `Telfit` to use `ifort` compiler?
+**Answer:** Change the order of compilers in `/Telluric-Fitter(-master)/setup.py` line [117](https://github.com/kgullikson88/Telluric-Fitter/blob/7ae98db278525e157d2d0abaf4697e2fe778d6bc/setup.py#L117) to 122
+from 
+```
+    compilers = ["gfortran",
+                 "ifort",
+                 "g95"]
+    comp_strs = ["GNU",
+                 "INTEL",
+                 "G95"]
+```
+to
+```
+    compilers = ["ifort",
+                 "gfortran",
+                 "g95"]
+    comp_strs = ["INTEL",
+                 "GNU",
+                 "G95"]
+```
+
+--
+## Q: Why do I see an error message with `ifort` while installing `Telfit`?
+**Answer:** Well...lucky you. This issue occurs if you have a new version of `ifort` but running with old versions of lblrtm/lnfl. Updating the lblrtm/lnfl (you might as well also update the aer_line_files) to the latest version will fix this. See {doc}`Use latest lblrtm` for detail instructions.
 
 --
 ## Q: What is the typical run time of **IGRINS RV**?
