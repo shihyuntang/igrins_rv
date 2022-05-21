@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Setup: Input 1D spectra (plp)" href="Setup%20Input%201D%20spectra%20%28plp%29.html" /><link rel="prev" title="Overview and Workflow" href="Overview%20and%20Workflow.html" />
 
     <meta name="generator" content="sphinx-4.4.0, furo 2022.04.07"/>
-        <title>Demo with Example Data (GJ281) - igrins_rv 1.0.0 documentation</title>
+        <title>Demo with Example Data (GJ281) - igrins_rv 1.5.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=68f4518137b9aefe99b631505a2064c3c42c9852" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
@@ -123,7 +123,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="index.html"><div class="brand">igrins_rv 1.0.0 documentation</div></a>
+      <a href="index.html"><div class="brand">igrins_rv 1.5.1 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -146,7 +146,7 @@
       <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
   
   
-  <span class="sidebar-brand-text">igrins_rv 1.0.0 documentation</span>
+  <span class="sidebar-brand-text">igrins_rv 1.5.1 documentation</span>
   
 </a><form class="sidebar-search-container" method="get" action="search.html" role="search">
   <input class="sidebar-search" placeholder=Search name="q" aria-label="Search">
@@ -176,6 +176,7 @@
 <p class="caption" role="heading"><span class="caption-text">Other</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="FAQ.html">FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Use%20latest%20lblrtm.html">Use the Latest Version of lblrtm/lnfl/aer</a></li>
 </ul>
 
 </div>
@@ -217,7 +218,7 @@
 <p><strong>Example data</strong>:</p>
 <ol class="arabic simple">
 <li><p>Under <code class="docutils literal notranslate"><span class="pre">plp/indata/</span></code>. Contain raw spectral images for testing all <code class="docutils literal notranslate"><span class="pre">plp</span></code> related steps.</p></li>
-<li><p>Under <code class="docutils literal notranslate"><span class="pre">igrins_rv/Example/</span></code>. Contain 1D reduced spectra for testing all <strong>IGRINS RV</strong>  related steps.</p></li>
+<li><p>Example data is stored on google drive <a class="reference external" href="https://drive.google.com/drive/folders/1WRiQ3PKCbhueQi6htd0zusq_1ieKXgHP?usp=sharing">link</a> under <code class="docutils literal notranslate"><span class="pre">./GJ281/</span></code>.</p></li>
 </ol>
 <blockquote>
 <div><p>If you are only testing the function of <strong>IGRINS RV</strong>, and not the <code class="docutils literal notranslate"><span class="pre">plp</span></code> package it makes use of, please skip all steps related to <code class="docutils literal notranslate"><span class="pre">plp</span></code>.</p>
@@ -290,7 +291,7 @@
 <h2>Demo for IGRINS RV<a class="headerlink" href="#demo-for-igrins-rv" title="Permalink to this headline">#</a></h2>
 <section id="input-data">
 <h3>Input data<a class="headerlink" href="#input-data" title="Permalink to this headline">#</a></h3>
-<p>For this example, we have 6 nights of reduced data ready for you to use. Simply move <code class="docutils literal notranslate"><span class="pre">igrins_rv(-master)/Example/GJ281</span></code> to <code class="docutils literal notranslate"><span class="pre">igrins_rv/Input/</span></code>. If you completed the <code class="docutils literal notranslate"><span class="pre">plp</span></code> demo above, you should already done this step.</p>
+<p>For this example, we have 6 nights of reduced data ready for you to use. Simply move the <code class="docutils literal notranslate"><span class="pre">GJ281</span></code> folder you downloaded from google drive under <code class="docutils literal notranslate"><span class="pre">igrins_rv/Input/</span></code>. If you completed the <code class="docutils literal notranslate"><span class="pre">plp</span></code> demo above, you should already done this step.</p>
 <p>All users now move <code class="docutils literal notranslate"><span class="pre">igrins_rv/Example/Prepdata_A0_GJ281.txt</span></code> and <code class="docutils literal notranslate"><span class="pre">igrins_rv/Example/Prepdata_targ_GJ281.txt</span></code> to <code class="docutils literal notranslate"><span class="pre">igrins_rv/Input/Prepdata/</span></code>.</p>
 <blockquote>
 <div><p>These files tell <strong>IGRINS RV</strong> what data are available for the science target and its associated A0 standards, as well as some information about the observations (e.g. time, barycentric velocity correction, observing conditions). Read <a class="reference internal" href="Setup%20PrepData%20Files.html"><span class="doc">PrepData Files (Step 0)</span></a> to learn how to make your own <code class="docutils literal notranslate"><span class="pre">PrepData</span> <span class="pre">Files</span></code> for your science targets (you may want to wait until you begin running Step 1, below).</p>

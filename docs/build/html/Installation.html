@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Overview and Workflow" href="Overview%20and%20Workflow.html" /><link rel="prev" title="IGRINS RV: A Radial Velocity Pipeline for IGRINS" href="index.html" />
 
     <meta name="generator" content="sphinx-4.4.0, furo 2022.04.07"/>
-        <title>Installation - igrins_rv 1.0.0 documentation</title>
+        <title>Installation - igrins_rv 1.5.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=68f4518137b9aefe99b631505a2064c3c42c9852" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
@@ -123,7 +123,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="index.html"><div class="brand">igrins_rv 1.0.0 documentation</div></a>
+      <a href="index.html"><div class="brand">igrins_rv 1.5.1 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -146,7 +146,7 @@
       <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
   
   
-  <span class="sidebar-brand-text">igrins_rv 1.0.0 documentation</span>
+  <span class="sidebar-brand-text">igrins_rv 1.5.1 documentation</span>
   
 </a><form class="sidebar-search-container" method="get" action="search.html" role="search">
   <input class="sidebar-search" placeholder=Search name="q" aria-label="Search">
@@ -176,6 +176,7 @@
 <p class="caption" role="heading"><span class="caption-text">Other</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="FAQ.html">FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Use%20latest%20lblrtm.html">Use the Latest Version of lblrtm/lnfl/aer</a></li>
 </ul>
 
 </div>
@@ -211,7 +212,7 @@
           <section id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">#</a></h1>
 <p><em>Setting up and running <strong>IGRINS RV</strong> is easy if you have <strong>Anaconda(Conda)</strong> installed!<br/>
-NOTE:The current versions (v1.0.0) of <strong>IGRINS RV</strong> has only been tested on Linux and MacOS…</em></p>
+NOTE:The current versions (v1.5.1) of <strong>IGRINS RV</strong> has only been tested on Linux and MacOS</em></p>
 <hr class="docutils"/>
 <section id="package-installation-part-1">
 <h2>Package installation (part 1)<a class="headerlink" href="#package-installation-part-1" title="Permalink to this headline">#</a></h2>
@@ -256,7 +257,9 @@ is with python.3.7 or later, and the following packages/versions:</p>
 <li><p>multiprocess</p></li>
 <li><p>cython=0.29.15</p></li>
 <li><p>requests=2.23.0</p></li>
-<li><p>nlopt=2.6.1</p></li>
+<li><p>nlopt=2.7.*</p></li>
+<li><p>numba</p></li>
+<li><p>pip</p></li>
 <li><p>via pip: pysynphot=0.9.14</p></li>
 <li><p>via pip: more_itertools</p></li>
 <li><p>via pip: pqdm</p></li>
@@ -265,13 +268,34 @@ is with python.3.7 or later, and the following packages/versions:</p>
 </section>
 <hr class="docutils"/>
 <section id="packages-installation-part-2-telfit">
-<h2>Packages installation (part 2) - <code class="docutils literal notranslate"><span class="pre">Telfit</span></code><a class="headerlink" href="#packages-installation-part-2-telfit" title="Permalink to this headline">#</a></h2>
+<h2>Packages installation (part 2) - Telfit<a class="headerlink" href="#packages-installation-part-2-telfit" title="Permalink to this headline">#</a></h2>
 <p>The most up to date version of <code class="docutils literal notranslate"><span class="pre">Telfit</span> <span class="pre">v1.4.0</span></code> is still under the beta test stage of pip installation; thus,</p>
 <div class="highlight-diff notranslate"><div class="highlight"><pre><span></span><span class="gd">---PLEASE install it via source---</span><span class="w"></span>
 </pre></div>
 </div>
 <p>Go to  <a class="reference external" href="https://github.com/kgullikson88/Telluric-Fitter"><code class="docutils literal notranslate"><span class="pre">Telfit</span></code></a>, download the <code class="docutils literal notranslate"><span class="pre">master</span> <span class="pre">branch</span></code>, and install it from source (If you’ve never installed a pkg from source, no worries, we will walk you through it).</p>
-<p><strong>To install <code class="docutils literal notranslate"><span class="pre">Telfit</span></code> from source:</strong> Enter the <code class="docutils literal notranslate"><span class="pre">igrins_rv</span></code> environment (within which Telfit must be installed) and <code class="docutils literal notranslate"><span class="pre">cd</span></code> into <code class="docutils literal notranslate"><span class="pre">Telluric-Fitter(-master)</span></code>, then run</p>
+<p><strong>The default (first option) fortran compiler in <code class="docutils literal notranslate"><span class="pre">telfit</span></code> is <code class="docutils literal notranslate"><span class="pre">gfortran</span></code> , however, it is recommend to use <code class="docutils literal notranslate"><span class="pre">ifort</span></code> if possible.</strong></p>
+<p>Change the order of compilers in <code class="docutils literal notranslate"><span class="pre">/Telluric-Fitter(-master)/setup.py</span></code> line <a class="reference external" href="https://github.com/kgullikson88/Telluric-Fitter/blob/7ae98db278525e157d2d0abaf4697e2fe778d6bc/setup.py#L117">117</a> to 122
+from</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">compilers</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"gfortran"</span><span class="p">,</span>
+                 <span class="s2">"ifort"</span><span class="p">,</span>
+                 <span class="s2">"g95"</span><span class="p">]</span>
+    <span class="n">comp_strs</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"GNU"</span><span class="p">,</span>
+                 <span class="s2">"INTEL"</span><span class="p">,</span>
+                 <span class="s2">"G95"</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>to</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">compilers</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"ifort"</span><span class="p">,</span>
+                 <span class="s2">"gfortran"</span><span class="p">,</span>
+                 <span class="s2">"g95"</span><span class="p">]</span>
+    <span class="n">comp_strs</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"INTEL"</span><span class="p">,</span>
+                 <span class="s2">"GNU"</span><span class="p">,</span>
+                 <span class="s2">"G95"</span><span class="p">]</span>
+</pre></div>
+</div>
+<p><strong>Install <code class="docutils literal notranslate"><span class="pre">Telfit</span></code> from source:</strong><br/>
+Enter the <code class="docutils literal notranslate"><span class="pre">igrins_rv</span></code> environment (within which Telfit must be installed) and <code class="docutils literal notranslate"><span class="pre">cd</span></code> into <code class="docutils literal notranslate"><span class="pre">Telluric-Fitter(-master)</span></code>, then run</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(igrins_rv) ~$ python setup.py build
 (igrins_rv) ~$ python setup.py install
 </pre></div>
@@ -360,7 +384,7 @@ See <a class="reference internal" href="Setup%20Input%201D%20spectra%20%28plp%29
 <li><a class="reference internal" href="#manual-package-installation">Manual package installation</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#packages-installation-part-2-telfit">Packages installation (part 2) - <code class="docutils literal notranslate"><span class="pre">Telfit</span></code></a></li>
+<li><a class="reference internal" href="#packages-installation-part-2-telfit">Packages installation (part 2) - Telfit</a></li>
 <li><a class="reference internal" href="#packages-installation-part-3-igrins-plp">Packages installation (part 3) - <code class="docutils literal notranslate"><span class="pre">igrins</span> <span class="pre">plp</span></code></a></li>
 </ul>
 </li>

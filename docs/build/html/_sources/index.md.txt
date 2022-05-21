@@ -17,6 +17,7 @@ If you have any questions, suggestions, or wish to report a bug, please let us k
 More on how to contribute can be found in {ref}`Q: How do I help make **IGRINS RV** better?` page.
 
 **News:**
+> Starting from v1.5.1, the example data & synthetic stellar templates are not shipped with **IGRINS RV** as to reduce the repo size. Synthetic stellar templates are now stored on google drive [link](https://drive.google.com/drive/folders/1WRiQ3PKCbhueQi6htd0zusq_1ieKXgHP?usp=sharing).
 * **2021/06/09: **IGRINS RV** v1.0.0 First Public Release!!**
 * 2021/02/18: **IGRINS RV** v0.9.6-beta.3 public beta is ready for JOSS review!!\
 (minor bugs related to example data fixed)
@@ -66,6 +67,7 @@ Step 4 vsini Uncertainty Calculation
 :maxdepth: 1
 
 FAQ
+Use latest lblrtm
 ```
 
 

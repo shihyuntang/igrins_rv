@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Step1: Telluric Modelling" href="Step%201%20Telluric%20Modelling.html" /><link rel="prev" title="PrepData Files (Step 0)" href="Setup%20PrepData%20Files.html" />
 
     <meta name="generator" content="sphinx-4.4.0, furo 2022.04.07"/>
-        <title>Setup: Stellar Templates - igrins_rv 1.0.0 documentation</title>
+        <title>Setup: Stellar Templates - igrins_rv 1.5.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=68f4518137b9aefe99b631505a2064c3c42c9852" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
@@ -123,7 +123,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="index.html"><div class="brand">igrins_rv 1.0.0 documentation</div></a>
+      <a href="index.html"><div class="brand">igrins_rv 1.5.1 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -146,7 +146,7 @@
       <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
   
   
-  <span class="sidebar-brand-text">igrins_rv 1.0.0 documentation</span>
+  <span class="sidebar-brand-text">igrins_rv 1.5.1 documentation</span>
   
 </a><form class="sidebar-search-container" method="get" action="search.html" role="search">
   <input class="sidebar-search" placeholder=Search name="q" aria-label="Search">
@@ -176,6 +176,7 @@
 <p class="caption" role="heading"><span class="caption-text">Other</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="FAQ.html">FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Use%20latest%20lblrtm.html">Use the Latest Version of lblrtm/lnfl/aer</a></li>
 </ul>
 
 </div>
@@ -214,6 +215,9 @@
 This page describes those that come with the code as well as how to use your own templates.
 Details on how the supplied templates were constructed, as well as how sub-optimal choices of template Teff and log(g) may affect RVs, are given in the paper.</p>
 <hr class="docutils"/>
+<blockquote>
+<div><p>Starting from v1.5.1, the synthetic stellar templates are not shipped with <strong>IGRINS RV</strong> as to reduce the repo size. Synthetic stellar templates are now stored on google drive <a class="reference external" href="https://drive.google.com/drive/folders/1WRiQ3PKCbhueQi6htd0zusq_1ieKXgHP?usp=sharing">link</a>.</p>
+</div></blockquote>
 <section id="synthmag">
 <h2>SYNTHMAG<a class="headerlink" href="#synthmag" title="Permalink to this headline">#</a></h2>
 <p>The following templates are from the <code class="docutils literal notranslate"><span class="pre">SYNTHMAG</span> <span class="pre">IDL</span> <span class="pre">code</span></code> (Kochukhov 2007) with atmospheres profile from the PHOENIX NextGen model (Hauschildt et al. 1999) and the stellar lines from the VALD database (Ryabchikova et al. 2015).

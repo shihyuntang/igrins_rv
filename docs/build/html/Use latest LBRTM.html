@@ -3,10 +3,10 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="FAQ" href="FAQ.html" /><link rel="prev" title="Step3: Full Analysis" href="Step%203%20Full%20Analysis.html" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" />
 
     <meta name="generator" content="sphinx-4.4.0, furo 2022.04.07"/>
-        <title>Step4: vsini Uncertainty Calculation - igrins_rv 1.5.1 documentation</title>
+        <title>&lt;no title&gt; - igrins_rv 1.5.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=68f4518137b9aefe99b631505a2064c3c42c9852" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
@@ -134,7 +134,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
         <div class="visually-hidden">Toggle table of contents sidebar</div>
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
@@ -167,11 +167,11 @@
 <li class="toctree-l1"><a class="reference internal" href="Setup%20Stellar%20Templates.html">Setup: Stellar Templates</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Main RV program</span></p>
-<ul class="current">
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="Step%201%20Telluric%20Modelling.html">Step1: Telluric Modelling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Step%202%20Initial%20Convergence.html">Step2: Initial Convergence</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Step%203%20Full%20Analysis.html">Step3: Full Analysis</a></li>
-<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Step4: vsini Uncertainty Calculation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Step%204%20vsini%20Uncertainty%20Calculation.html">Step4: vsini Uncertainty Calculation</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Other</span></p>
 <ul>
@@ -202,73 +202,20 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
             <div class="visually-hidden">Toggle table of contents sidebar</div>
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
         </div>
         <article role="main">
-          <section id="step4-vsini-uncertainty-calculation">
-<h1>Step4: vsini Uncertainty Calculation<a class="headerlink" href="#step4-vsini-uncertainty-calculation" title="Permalink to this headline">#</a></h1>
-<p><em>Updates RV uncertainty estimates to take into account uncertainty in vsini.</em></p>
-<hr class="docutils"/>
-<p>This step takes two runs of Step 3, one with vsini held fixed at the best guess value and one with vsini held fixed at the best guess value plus or minus one sigma, and uses the difference between the two to produce updated RVs and uncertainties. For the most part, the uncertainties should change little (1 m/s), but for high vsini (&gt; 15 km/s) objects, they may increase by ~5 m/s or so.</p>
-<section id="the-terminal-command-for-step4">
-<h2>The terminal command for step4<a class="headerlink" href="#the-terminal-command-for-step4" title="Permalink to this headline">#</a></h2>
-<p>Call as:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>igrins_rv<span class="o">)</span> ~$ python main_step4.py <span class="o">[</span>target name<span class="o">]</span> <span class="o">[</span>keywords<span class="o">]</span>
-</pre></div>
-</div>
-<p>With keywords</p>
-<ul class="simple">
-<li><p>-run1 : First step3 run that will be used, the one with vsini held fixed AT THE BEST GUESS. Takes the string that suffixes <code class="docutils literal notranslate"><span class="pre">RV_results_</span></code>, e.g. for <code class="docutils literal notranslate"><span class="pre">RV_results_1</span></code>, you would set this to <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p></li>
-<li><p>-run2 : Second step3 run that will be used, the one with vsini held fixed at the best guess PLUS OR MINUS SIGMA.</p></li>
-<li><p>-HorK : Which band to process? H or K?. Default = K</p></li>
-</ul>
-<p>Keywords -run1 and -run2 are mandatory.</p>
-</section>
-<section id="outputs-from-step4">
-<h2>Outputs from step4<a class="headerlink" href="#outputs-from-step4" title="Permalink to this headline">#</a></h2>
-<section id="rvs-step4">
-<h3>–RVs (step4)–<a class="headerlink" href="#rvs-step4" title="Permalink to this headline">#</a></h3>
-<p>Output files are saved to <code class="docutils literal notranslate"><span class="pre">./Output/[target_name]_[band]/RV_results_[run_number_1]_[run_number_2]_combined</span></code>. The primary output is the <code class="docutils literal notranslate"><span class="pre">RVresultsSummary.fits/csv</span></code> file, which contains the following columns in its table:</p>
-<ul class="simple">
-<li><p>‘NIGHT’ : Designation of observation based on PrepData files, either in format YYYYMMDD or YYYYMMDD_XXXX, where XXXX is for Multi-RVs per Night mode (see Setup: PrepData Files page)</p></li>
-<li><p>‘JD’ : Julian date</p></li>
-<li><p>‘RVfinal’ - Final RV estimate for each ‘NIGHT’</p></li>
-<li><p>‘STDfinal’ - Final uncertainty estimates of RVs</p></li>
-<li><p>‘VSINI’ - Final vsin(i) estimate for each ‘NIGHT’</p></li>
-</ul>
-<p>This is the same as in Step 3.</p>
-</section>
-</section>
-</section>
-
+          
         </article>
       </div>
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="FAQ.html">
-              <div class="page-info">
-                <div class="context">
-                  <span>Next</span>
-                </div>
-                <div class="title">FAQ</div>
-              </div>
-              <svg><use href="#svg-arrow-right"></use></svg>
-            </a>
-          <a class="prev-page" href="Step%203%20Full%20Analysis.html">
-              <svg><use href="#svg-arrow-right"></use></svg>
-              <div class="page-info">
-                <div class="context">
-                  <span>Previous</span>
-                </div>
-                
-                <div class="title">Step3: Full Analysis</div>
-                
-              </div>
-            </a>
+          
+          
         </div>
         <div class="bottom-of-page">
           <div class="left-details">
@@ -289,31 +236,8 @@
         
       </footer>
     </div>
-    <aside class="toc-drawer">
+    <aside class="toc-drawer no-toc">
       
-      
-      <div class="toc-sticky toc-scroll">
-        <div class="toc-title-container">
-          <span class="toc-title">
-            Contents
-          </span>
-        </div>
-        <div class="toc-tree-container">
-          <div class="toc-tree">
-            <ul>
-<li><a class="reference internal" href="#">Step4: vsini Uncertainty Calculation</a><ul>
-<li><a class="reference internal" href="#the-terminal-command-for-step4">The terminal command for step4</a></li>
-<li><a class="reference internal" href="#outputs-from-step4">Outputs from step4</a><ul>
-<li><a class="reference internal" href="#rvs-step4">–RVs (step4)–</a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-
-          </div>
-        </div>
-      </div>
       
       
     </aside>

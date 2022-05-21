@@ -11,7 +11,7 @@ Make sure you have all the packages installed before you begin. If not, please v
 
 **Example data**:
 1. Under `plp/indata/`. Contain raw spectral images for testing all `plp` related steps.
-2. Under `igrins_rv/Example/`. Contain 1D reduced spectra for testing all **IGRINS RV**  related steps.
+2. Example data is stored on google drive [link](https://drive.google.com/drive/folders/1WRiQ3PKCbhueQi6htd0zusq_1ieKXgHP?usp=sharing) under `./GJ281/`.
 > If you are only testing the function of **IGRINS RV**, and not the `plp` package it makes use of, please skip all steps related to `plp`.
 
 
@@ -79,7 +79,7 @@ You can find the reduced 1D spectra under `./plp/final_A_B_spec/GJ281`. Copy thi
 ***
 ## Demo for IGRINS RV
 ### Input data
-For this example, we have 6 nights of reduced data ready for you to use. Simply move `igrins_rv(-master)/Example/GJ281` to `igrins_rv/Input/`. If you completed the `plp` demo above, you should already done this step.
+For this example, we have 6 nights of reduced data ready for you to use. Simply move the `GJ281` folder you downloaded from google drive under `igrins_rv/Input/`. If you completed the `plp` demo above, you should already done this step.
 
 All users now move `igrins_rv/Example/Prepdata_A0_GJ281.txt` and `igrins_rv/Example/Prepdata_targ_GJ281.txt` to `igrins_rv/Input/Prepdata/`. 
 

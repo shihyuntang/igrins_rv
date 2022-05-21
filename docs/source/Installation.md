@@ -1,7 +1,7 @@
 # Installation
 
 *Setting up and running **IGRINS RV** is easy if you have **Anaconda(Conda)** installed!\
-NOTE:The current versions (v1.0.0) of **IGRINS RV** has only been tested on Linux and MacOS...*
+NOTE:The current versions (v1.5.1) of **IGRINS RV** has only been tested on Linux and MacOS*
 ***
 
 ## Package installation (part 1)
@@ -48,7 +48,9 @@ is with python.3.7 or later, and the following packages/versions:
 * multiprocess
 * cython=0.29.15
 * requests=2.23.0
-* nlopt=2.6.1
+* nlopt=2.7.*
+* numba
+* pip
 * via pip: pysynphot=0.9.14
 * via pip: more_itertools
 * via pip: pqdm
@@ -56,7 +58,7 @@ is with python.3.7 or later, and the following packages/versions:
 
 ***
 
-## Packages installation (part 2) - ``Telfit``
+## Packages installation (part 2) - Telfit
 
 The most up to date version of `Telfit v1.4.0` is still under the beta test stage of pip installation; thus, 
 ```diff
@@ -64,7 +66,31 @@ The most up to date version of `Telfit v1.4.0` is still under the beta test stag
 ```
 Go to  [`Telfit`](https://github.com/kgullikson88/Telluric-Fitter), download the `master branch`, and install it from source (If you've never installed a pkg from source, no worries, we will walk you through it). 
 
-**To install ``Telfit`` from source:** Enter the `igrins_rv` environment (within which Telfit must be installed) and `cd` into `Telluric-Fitter(-master)`, then run
+**The default (first option) fortran compiler in `telfit` is `gfortran` , however, it is recommend to use `ifort` if possible.**
+
+Change the order of compilers in `/Telluric-Fitter(-master)/setup.py` line [117](https://github.com/kgullikson88/Telluric-Fitter/blob/7ae98db278525e157d2d0abaf4697e2fe778d6bc/setup.py#L117) to 122
+from 
+
+```
+    compilers = ["gfortran",
+                 "ifort",
+                 "g95"]
+    comp_strs = ["GNU",
+                 "INTEL",
+                 "G95"]
+```
+to
+```
+    compilers = ["ifort",
+                 "gfortran",
+                 "g95"]
+    comp_strs = ["INTEL",
+                 "GNU",
+                 "G95"]
+```
+
+**Install ``Telfit`` from source:**\
+Enter the `igrins_rv` environment (within which Telfit must be installed) and `cd` into `Telluric-Fitter(-master)`, then run
 ```
 (igrins_rv) ~$ python setup.py build
 (igrins_rv) ~$ python setup.py install
@@ -75,7 +101,6 @@ After that, you can use
 conda list
 ```
 to check if `Telfit` installed successfully.
-
 
 ***
 ## Packages installation (part 3) - ``igrins plp``

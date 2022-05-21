@@ -5,6 +5,7 @@ This page describes those that come with the code as well as how to use your own
 Details on how the supplied templates were constructed, as well as how sub-optimal choices of template Teff and log(g) may affect RVs, are given in the paper.
 ***
 
+> Starting from v1.5.1, the synthetic stellar templates are not shipped with **IGRINS RV** as to reduce the repo size. Synthetic stellar templates are now stored on google drive [link](https://drive.google.com/drive/folders/1WRiQ3PKCbhueQi6htd0zusq_1ieKXgHP?usp=sharing).
 
 ## SYNTHMAG
 The following templates are from the `SYNTHMAG IDL code` (Kochukhov 2007) with atmospheres profile from the PHOENIX NextGen model (Hauschildt et al. 1999) and the stellar lines from the VALD database (Ryabchikova et al. 2015). 

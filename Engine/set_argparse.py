@@ -7,7 +7,7 @@ import multiprocessing as mp
 
 _epilog = "Contact authors: Asa Stahl (asa.stahl@rice.edu);\
                 Shih-Yun Tang (sytang@lowell.edu)"
-_igrins_version = '1.5.0 beta'
+_igrins_version = '1.5.1'
 
 def _add_common_arguments_1(parser):
     parser.add_argument(
