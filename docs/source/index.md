@@ -29,6 +29,7 @@ More on how to contribute can be found in {ref}`Q: How do I help make **IGRINS R
       3. Drop the usage of Order 3 for K band RV calculation.
       4. Better characterize RV error for individual measurement\
         (more see ??)
+* 2022/05/23: **IGRINS RV** v1.0.1
 * 2021/06/09: **IGRINS RV** v1.0.0 First Public Release!!
 * 2021/02/18: **IGRINS RV** v0.9.6-beta.3 public beta is ready for JOSS review!!\
 (minor bugs related to example data fixed)
