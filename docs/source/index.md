@@ -17,7 +17,11 @@ If you have any questions, suggestions, or wish to report a bug, please let us k
 More on how to contribute can be found in {ref}`Q: How do I help make **IGRINS RV** better?` page.
 
 **News:**
-* **2021/06/09: **IGRINS RV** v1.0.0 First Public Release!!**
+* **2022/05/23: **IGRINS RV** v1.0.1**
+    * No changes in the main code
+    * **What's new?:**
+      1. Move stuff from the wiki page to the readthedocs site for version control
+* 2021/06/09: **IGRINS RV** v1.0.0 First Public Release!!
 * 2021/02/18: **IGRINS RV** v0.9.6-beta.3 public beta is ready for JOSS review!!\
 (minor bugs related to example data fixed)
 * 2021/01/29: **IGRINS RV** v0.9.6-beta.1 public beta\
