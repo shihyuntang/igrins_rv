@@ -4,19 +4,19 @@
 
 ***
 
-> Using the latest version of lblrtm/lnfl/aer **IS NOT REQUIRED** to run **IGRINS RV**, however, update lblrtm/lnfl/aer can help to fix several reported issue while running `telfit`.
+> Using the latest version of lblrtm/lnfl/aer **IS NOT REQUIRED** to run **IGRINS RV**, however, the updated lblrtm/lnfl/aer can help fix several reported issue while running `telfit`.
 
 ## Benefits of using the latest version of lblrtm/lnfl/aer_line_file
 
-1. Fix error while running Step 1 (calling `telfit` under the hood) using `ifort` compiler with lblrtm v12.2.1, lnfl v2.6, and aer_line_file v3.2.  
-2. With the ability to run `telfit` with `ifort`, we can then fix the **End of File Runtime Error** (see issue [#9](https://github.com/kgullikson88/Telluric-Fitter/issues/9)). The **End of File Runtime Error** seems to occur when using `gfortran` compiler.
+1. Fixes occasional error while running Step 1 (calling `telfit` under the hood) using `ifort` compiler with lblrtm v12.2.1, lnfl v2.6, and aer_line_file v3.2.  
+2. Running `telfit` with `ifort` fixes the **End of File Runtime Error** (see issue [#9](https://github.com/kgullikson88/Telluric-Fitter/issues/9)). The **End of File Runtime Error** seems to occur when using `gfortran` compiler.
 
 
 ## Make sure the default installation of telfit is working
 
 Before you try to update lblrtm/lnfl/aer files, please first make sure you followed {ref}`Packages installation (part 2) - Telfit` and that `telfit is working.
 
-## Update telfit to use latest lblrtm/lnfl/aer_line_file
+## Update telfit to use latest lblrtm/lnfl/aer_line_file  
 
 The lblrtm/lnfl/aer files `telfit` used are saved under a hidden folder `.Telfit` at the home dir.
 Do 
@@ -48,14 +48,14 @@ to enter the folder. Under `./Telfit`, the folder structure is like:
 ### 1. Getting the latest version of lblrtm/lnfl/aer_line_file
 
 All files can be found on [Atmospheric and Environmental Research R&C (AER-RC)](https://github.com/AER-RC).\
-More specifically, follow the clone/tarball_download instruction on each of the github README page below 
+More specifically, follow the clone/tarball_download instruction on each of the github README pages below 
 * lblrtm: [https://github.com/AER-RC/LBLRTM](https://github.com/AER-RC/LBLRTM)
 * lnfl: [https://github.com/AER-RC/LNFL](https://github.com/AER-RC/LNFL)
 * aer_line_file: [https://github.com/AER-RC/AER_Line_File](https://github.com/AER-RC/AER_Line_File)
   
 to get folders: `LNFL(-3.2)`, `LBLRTM(-12.11)`, and `AER_Line_File` (take lblrtm v12.11, lnfl v3.2, and aer_line_file v3.8.1 for example).
 
-> It is important to follow all instructions on their github README pages. Stuff related to `submodule` is critical to whether the update of lblrtm & lnfl is success or not!
+> It is important to follow all instructions on their github README pages. Stuff related to `submodule` is critical to whether the update of lblrtm & lnfl is successful or not!
 
 ### 2. Replacement with new version
 
@@ -130,7 +130,7 @@ linfile = u"{0:s}/aer_v_3.8/line_file/aer_v_3.8".format(TELLURICMODELING)
 
 --
 
-3. Then commented (#) out line [230](https://github.com/kgullikson88/Telluric-Fitter/blob/7ae98db278525e157d2d0abaf4697e2fe778d6bc/setup.py#L230) to line 237:
+3. Then comment (#) out line [230](https://github.com/kgullikson88/Telluric-Fitter/blob/7ae98db278525e157d2d0abaf4697e2fe778d6bc/setup.py#L230) to line 237:
 ```python
     #Get/Unpack the tar files
     # for fname in ['aer_v_3.2.tar.gz', 'aerlnfl_v2.6.tar.gz', 'aerlbl_v12.2.1.tar.gz']:
@@ -141,7 +141,7 @@ linfile = u"{0:s}/aer_v_3.8/line_file/aer_v_3.8".format(TELLURICMODELING)
     #     print("Un-packing {}".format(fname))
     #     subprocess.check_call(["tar", "-xzf", '{}{}'.format(TELLURICMODELING, fname), '-C', TELLURICMODELING])
 ```
-**so the next time we run `(igrins_rv) ~$ python setup.py build` the `./lnlf` and `./lblrtm` won't be overwritten by the old version!**
+**so that the next time we run `(igrins_rv) ~$ python setup.py build` the `./lnlf` and `./lblrtm` won't be overwritten by the old version!**
 
 ### 4. Re-run setup.py
 
@@ -155,4 +155,4 @@ If you see:
 ```none
 Finished processing dependencies for TelFit==1.4.0
 ```
-then, congratulation, you successfully update your lblrtm/lnfl/aer_line_file versions!
+then, congratulation, you successfully updated your lblrtm/lnfl/aer_line_file versions!
