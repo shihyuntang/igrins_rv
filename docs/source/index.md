@@ -33,7 +33,7 @@ More on how to contribute can be found in {ref}`Q: How do I help make **IGRINS R
 
 ***
 
-For the sake of efficiency, **IGRINS RV** is broken up into several different steps. After installed (see {ref}`Installation`) all the required packages, the best way to learn how these steps work is to follow our {doc}`Demo with Example Data (GJ281)` using the example data provided. The demo will demonstrate how one user might run the steps of **IGRINS RV** to go from raw data to final RV measurements. 
+For the sake of efficiency, **IGRINS RV** is broken up into several different steps. After installing (see {ref}`Installation`) all the required packages, the best way to learn how these steps work is to follow our {doc}`Demo with Example Data (GJ281)` using the example data provided. The demo will demonstrate how one user might run the steps of **IGRINS RV** to go from raw data to final RV measurements. 
 
 ```{toctree}
 :caption: 'Quick Start'
