@@ -7,7 +7,7 @@ Details on how the supplied templates were constructed, as well as how sub-optim
 
 > Starting from v1.5.1, the synthetic stellar templates are not shipped with **IGRINS RV** as to reduce the repo size. Synthetic stellar templates are now stored on google drive [link](https://drive.google.com/drive/folders/1WRiQ3PKCbhueQi6htd0zusq_1ieKXgHP?usp=sharing) under `./syn_template/`. 
 > 
-> Also, Starting from v1.5.1, IGRINS RV can read in syn spectra as .gz compress format, so NOT NEED TO **unzip** them!
+> Also, Starting from v1.5.1, IGRINS RV can read in syn spectra as .gz compress format, so YOU DO NOT NEED TO **unzip** them!
 
 ```diff
 ---!! It is recommenced to use SYNTHMAG templates for target >~3500K, 
@@ -48,7 +48,7 @@ syntheticstellar_kband_T3800_logg3.5_0.0kG.csv.gz	syntheticstellar_kband_T6400_l
 
 > These can generally be applied to stars of the same log(g) and a Teff within a few hundred K of the template. 
 
-Call these templates via for example:
+Call these templates like, for example:
 ```shell 
 (igrins_rv) ~$ python main_stepX.py [target name] -HorK H -t synthetic -temp 5000 -logg 4.5
 ```
