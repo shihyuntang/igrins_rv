@@ -393,7 +393,18 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
         elif T_Ls[boxind] == 'L':
             nights_use = nightsL.copy(); kind = 'Defocused'
         #-------------------------------------------------------------------------------
-
+        if len(nights_use) == 1:
+            rvfinaltemp    = rvfinal0[nightsRV == nights_use[0]]
+            rvstdfinaltemp = rvstdfinal0[nightsRV == nights_use[0]]
+            jdfinaltemp    = jd0[nightsRV == nights_use[0]]
+            nightsCombined     = np.concatenate((nightsCombined, nights_use))
+            jdsCombined        = np.concatenate((jdsCombined, jdfinaltemp.astype(float)))
+            bifinalCombined    = np.concatenate((bifinalCombined, np.array([np.nan])))
+            stdfinalCombined   = np.concatenate((stdfinalCombined, np.array([np.nan])))
+            rvfinalCombined    = np.concatenate((rvfinalCombined, rvfinaltemp.astype(float)))
+            rvstdfinalCombined  = np.concatenate((rvstdfinalCombined, rvstdfinaltemp.astype(float)))
+            continue
+        
         # Note bimasterbox indexed as [nights,orders]
         Nnights = len(bimasterbox[:,0])
 
