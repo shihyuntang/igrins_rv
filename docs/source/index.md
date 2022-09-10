@@ -77,6 +77,7 @@ Step 4 vsini Uncertainty Calculation
 FAQ
 Use latest lblrtm
 Version history
+What to Know About v1.5.1 Update
 ```
 
 
