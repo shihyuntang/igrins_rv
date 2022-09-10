@@ -71,7 +71,7 @@ Go to [`Telfit`](https://github.com/kgullikson88/Telluric-Fitter), download the 
 Enter the `igrins_rv` environment (within which Telfit must be installed) and `cd` into `Telluric-Fitter(-master)`, then run
 ```
 (igrins_rv) ~$ python setup.py build
-(igrins_rv) ~$ python setup.py install
+(igrins_rv) ~$ pip install .
 ```
 
 You can ignore this warning:
