@@ -66,6 +66,10 @@ to
 **Answer:** **IGRINS RV** uses telluric (atmospheric) absorption lines as a common-path wavelength calibrator, so its precision is limited by the internal RV stability of Earth's atmosphere. This has been estimated to be ~10-20 m/s, so it is unlikely **IGRINS RV** will achieve better  than the current ~25m/s precision. If you are obtaining worse precisions than this for your science targets and want to try to push toward better precisions, improving the accuracy of your stellar templates or increasing the signal quality of your data could help (note the precision achievable by **IGRINS RV** also depends on the vsin(i) of the target in question).
 
 --
+## Q: What happened to absolute vs relative RV modes?
+**Answer:** All RVs are now absolute, not relative. See Section "What's new in v1.5.1?".
+
+--
 ## Q: How do I report bugs?
 **Answer:** Please open an issue at [https://github.com/shihyuntang/igrins_rv/issues](https://github.com/shihyuntang/igrins_rv/issues). When doing so, please let us know:
 1. your operating system, and the OS version.
