@@ -130,7 +130,7 @@ def read_prepdata(args):
     obs         : Dictionary of observatory corresponding to observation, referenced by night
     '''
 
-    if 'igrins' in os.getcwd().split('/')[-1]:
+    if 'Engine' in os.listdir():
         A0data   = Table.read(
             './Input/Prepdata/Prepdata_A0_{}.txt'.format(args.targname), 
             format='ascii')
@@ -142,7 +142,7 @@ def read_prepdata(args):
     ams0 = np.array(A0data['airmass'])
     obs0 = {str(k):str(v) for k,v in zip(A0data['night'],A0data['obs'])}
 
-    if 'igrins' in os.getcwd().split('/')[-1]:
+    if 'Engine' in os.listdir():
         targdata = Table.read(
             './Input/Prepdata/Prepdata_targ_{}.txt'.format(args.targname), 
             format='ascii')
@@ -157,7 +157,7 @@ def read_prepdata(args):
     bvcs0 = np.array(targdata['bvc'])
     ams = np.array(targdata['airmass'])
 
-    if 'igrins' in os.getcwd().split('/')[-1]:
+    if 'Engine' in os.listdir():
         bounddata = Table.read(
             './Input/UseWv/XRegions_{}_{}.csv'.format(args.WRegion, args.band), 
             format='csv')

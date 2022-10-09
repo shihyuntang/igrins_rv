@@ -283,7 +283,7 @@ def setup_templates(logger, kind='synthetic', band='K',
             temploc = f'syntheticstellar_{band.lower()}band_T{temperature}_logg{logg}_0.0kG.csv.gz'
         else:
             temploc = f'syntheticstellar_{band.lower()}band_T{temperature}_logg{logg}_{B}kG.csv.gz'
-        if 'igrins' in os.getcwd().split('/')[-1]:
+        if 'Engine' in os.listdir():
             if os.path.exists(f'./Engine/syn_template/{temploc}'):
                 stelldata = _pdread2astrotable(f'./Engine/syn_template/{temploc}')
             else:
@@ -305,7 +305,7 @@ def setup_templates(logger, kind='synthetic', band='K',
         logger.info(f'PHOENIX stellar template with T{temperature} logg{logg}!!!!!')
 
         temploc = f'PHOENIX-lte0{temperature}-{logg}0-0.0_contadj.csv.gz'
-        if 'igrins' in os.getcwd().split('/')[-1]:
+        if 'Engine' in os.listdir():
             if os.path.exists(f'./Engine/syn_template/{temploc}'):
                 stelldata = _pdread2astrotable(f'./Engine/syn_template/{temploc}')
             else:
@@ -334,7 +334,7 @@ def setup_templates(logger, kind='synthetic', band='K',
                             'formatting conventions described in the github '
                             'wiki AND are placed under ./Engine/user_templates.')
 
-        if 'igrins' in os.getcwd().split('/')[-1]:
+        if 'Engine' in os.listdir():
             stelldata = Table.read(
                 f'./Engine/user_templates/user_T{temperature}_logg{logg}_{band}band.txt',
                 format='ascii')
@@ -353,7 +353,7 @@ def setup_templates(logger, kind='synthetic', band='K',
         logger.info(f'Input kind is {kind}, but must be either "synthetic", '
                         '"phoenix" (for IGRINS RV team usage only), or "user"!')
 
-    if 'igrins' in os.getcwd().split('/')[-1]:
+    if 'Engine' in os.listdir():
         telluricdata = Table.read(
             './Engine/PhotoAtl_Organized.csv', format='csv')  
     else:
@@ -419,7 +419,7 @@ def setup_templates_tel():
     mflux0  : Corresponding flux of stellar template
     '''
 
-    if 'igrins' in os.getcwd().split('/')[-1]:
+    if 'Engine' in os.listdir():
         spotdata = Table.read(
             './Engine/SpotAtl_Organized.csv', format='csv')
     else:
@@ -432,7 +432,7 @@ def setup_templates_tel():
     mflux0 = mflux0[(np.isfinite(mflux0))]
     mflux0[(mflux0 < 0)] = 0
 
-    if 'igrins' in os.getcwd().split('/')[-1]:
+    if 'Engine' in os.listdir():
         telluricdata = Table.read(
             './Engine/PhotoAtl_Organized.csv', format='csv')  
     else:
