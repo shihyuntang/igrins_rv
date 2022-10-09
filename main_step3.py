@@ -531,14 +531,16 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
             x, wave, s, u, xbounds, maskwaves, 3
             )
 
-        if (len(s_piece[testmask]) / len(s_piece) < 0.3) \
-            or (len(s_piece[testmask]) < 350):
-            logger.warning(
-                'Only {} unmasked pixels for {} order {}, SKIP'.format(
-                    len(s_piece[testmask]), night, order
-                    ))
-            return (nightsout, rvsminibox, parfitminibox, vsiniminibox,
-                        tagsminibox, rvsminibox2, vsiniminibox2, chisminibox)
+        if args.band == 'K':
+            # only K band do H2O line masking
+            if (len(s_piece[testmask]) / len(s_piece) < 0.3) \
+                or (len(s_piece[testmask]) < 350):
+                logger.warning(
+                    'Only {} unmasked pixels for {} order {}, SKIP'.format(
+                        len(s_piece[testmask]), night, order
+                        ))
+                return (nightsout, rvsminibox, parfitminibox, vsiniminibox,
+                            tagsminibox, rvsminibox2, vsiniminibox2, chisminibox)
 
         # Save data for second template cutting after optimization cycle 1 done
         s_save = s_piece.copy()
@@ -742,18 +744,7 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
                 _, _, w, _ = fmod(parfit, fitobj, binary=args.binary)
                 
                 molmask = mask_wave2pixel_range(maskwaves, fitobj, w)
-                
-                # get st template
-                # parfit[3] = 0; parfit[24] = 0
-                # smod, _, w, cont = fmod(parfit, fitobj, binary=args.binary)
-    
-                # nonCO_mask_box = nonCO_masker(
-                #     smod, w, cont, int(order), parfit[0], 
-                #     fitobj, flux_cut=0.96
-                #     )
-
-                # template_mask = merge_pixel_masks(molmask, nonCO_mask_box)
-                template_mask = molmask
+                template_mask = molmask if args.band == 'K' else []
 
                 fitobj = FitObjs(
                     s_piece, x_piece, u_piece, continuum_in, watm_in,
@@ -768,22 +759,7 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
 
                     fitobj = _add_npar(parfit, optgroup, dpars, fitobj)
                 
-            # if nc > 1:
-            #     parfit = parfit_1.copy()
-            #     # update the st nonCO mask region based on new rv0
-            #     parfit[3] = 0; parfit[24] = 0
-            #     smod, _, w, cont = fmod(parfit, fitobj, binary=args.binary)
                 
-            #     nonCO_mask_box = nonCO_masker(
-            #         smod, w, cont, int(order), parfit[0], 
-            #         fitobj, flux_cut=0.96
-            #         )
-                
-            #     template_mask = merge_pixel_masks(molmask, nonCO_mask_box)
-
-            #     fitobj.molmask = template_mask
-
-
         parfit = parfit_1.copy()
         #-------------------------------------------------------------------------------
 
