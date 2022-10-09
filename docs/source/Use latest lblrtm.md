@@ -55,7 +55,7 @@ More specifically, follow the clone/tarball_download instruction on each of the 
   
 to get folders: `LNFL(-3.2)`, `LBLRTM(-12.11)`, and `AER_Line_File` (take lblrtm v12.11, lnfl v3.2, and aer_line_file v3.8.1 for example).
 
-> It is important to follow all instructions on their github README pages. Stuff related to `submodule` is critical to whether the update of lblrtm & lnfl is successful or not!
+> It is important to follow all instructions on their github README pages. Stuff related to `submodule` is critical to whether the update of lblrtm & lnfl is successful or not! Also, for **LBLRTM**, when doing `git checkout tags/v12.11`, make sure to switch to `v12.11`, instead of `v12.13`. There might be error popping up when building lblrtm if with v12.13 (lasted update Oct. 9, 2022).
 
 ### 2. Replacement with new version
 
@@ -148,7 +148,7 @@ linfile = u"{0:s}/aer_v_3.8/line_file/aer_v_3.8".format(TELLURICMODELING)
 Enter the `igrins_rv` environment (within which Telfit must be installed) and `cd` into `Telluric-Fitter(-master)`, then run
 ```
 (igrins_rv) ~$ python setup.py build
-(igrins_rv) ~$ python setup.py install
+(igrins_rv) ~$ pip install .
 ```
 
 If you see:

@@ -11,12 +11,12 @@ Subtracting the zero-point offsets is only reasonable when a given target has ma
 
 ## The Solution: V1.5.1
 
-**IGRINS RV v1.5.1** almost completely removes the zero-point offset issue in the K band and includes a more robust treatment of offsets in the cases when they remain. Beyond a number of smaller improvements, the biggest change to the pipeline involves the masking of H2O absorption lines during the spectrum fitting process, as these lines were skewing the derived wavelength solutions. The upgrade to **v1.5.1** particularly benefits targets with only a handful of observations (less than around 10). 
+**IGRINS RV v1.5.1** almost completely removes the zero-point offset issue in the K band and includes a more robust treatment of offsets in the cases when they remain. Beyond a number of smaller improvements, the biggest change to the pipeline involves the masking of H$_2$O absorption lines during the spectrum fitting process, as these lines were skewing the derived wavelength solutions. The upgrade to **v1.5.1** particularly benefits targets with only a handful of observations (less than around 10). 
 
 For a more detailed description of the performance differences of **IGRINS RV v1.5.1**, complete with figures, see Tang et al. 2022 (currently in prep). 
 
 ## Remaining Issues
 
-Though **IGRINS RV v1.5.1** almost completely removes the zero-point offset issue in the K band, it fails to do so in the H band. The code can still be run in the H band, and the effect of the zero-point order offsets on the estimated RVs will be taken into account in the RV uncertainties. But the precision will be worse (in other words, **IGRINS RV v1.0** was in some cases underestimating uncertainties). Future work will aim to reduce the zero-point offsetsin the H band as well; for now, **IGRINS RV v1.5.1** can still deliver accurate RVs for H band data -- just (for some targets) at coarser precision than **v1.0** would have unrealistically reported.
+Though **IGRINS RV v1.5.1** almost completely removes the zero-point offset issue in the K band, it fails to do so in the H band. The code can still be run in the H band, and the effect of the zero-point order offsets on the estimated RVs will be taken into account in the RV uncertainties. But the precision will be worse, from about 30 m/s in v1.0 to about 45 m/s in v1.5.1 (in other words, **IGRINS RV v1.0** was in some cases underestimating uncertainties). Future work will aim to reduce the zero-point offsets in the H band as well; for now, **IGRINS RV v1.5.1** can still deliver accurate RVs for H band data -- just (for some targets) at coarser precision than **v1.0** would have unrealistically reported.
 
 
