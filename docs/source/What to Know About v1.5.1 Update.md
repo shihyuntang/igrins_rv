@@ -3,15 +3,15 @@
 
 ## V1.0.x / The Problem:
 
-**IGRINS RV v1.0.x** could only measure relative (not absolute) RVs to the highest possible precisions because, for a given target, RVs derived from different spectral orders were affected by constant zero-point differences (see Figure 6 in Stahl et al. 2021). **IGRINS RV v1.0.x** subtracts out these zero-point offsets, an approach which successfully recovered the planet-induced RV signal for the tau Boo and HD 189733 systems. And users still had the option to run the code in "absolute RV" mode, which sacrificed precision.
+**IGRINS RV v1.0.x** could only measure relative (not absolute) RVs to the highest possible precisions because, for a given target, RVs derived from different spectral orders were affected by constant zero-point differences (see Figure 6 in Stahl et al. 2021). **IGRINS RV v1.0.x** subtracts out these zero-point offsets, an approach which successfully recovered the planet-induced RV signal for the tau Boo and HD 189733 systems. And users still had the option to run the code in "absolute RV" mode, which sacrificed precision for the sake of preserving absolute RV information.
 
 ## The Problem:
 
-Subtracting the zero-point offsets is only reasonable when a given target has many observations, allowing the offsets to be estimated accurately. If a target has only a few observations, then the zero-point offset corrections could be wrong.
+Subtracting the zero-point offsets is only reasonable when a given target has many observations, so that the offsets can be estimated accurately. If a target has only a few observations, then the zero-point offset corrections could be wrong.
 
 ## The Solution: V1.5.1
 
-**IGRINS RV v1.5.1** almost completely removes the zero-point offset issue in the K band and includes a more robust treatment of offsets in the cases when they remain. Beyond a number of smaller improvements, the biggest change to the pipeline involves the masking of H2O absorption lines during the spectrum fitting process, as these lines were skewing the derived wavelength solutions. The upgrade to **v1.5.1** particularly benefits targets with only a handful of observations (less than around 10). 
+**IGRINS RV v1.5.1** almost completely removes the zero-point offset issue in the K band and includes a more robust treatment of offsets in the cases when they remain. Beyond a number of smaller improvements, the biggest change to the pipeline involves the masking of H2O telluric absorption lines during the K band spectrum fitting process, as these lines were skewing the derived wavelength solutions. The upgrade to **v1.5.1** particularly benefits targets with only a handful of observations (less than around 10). 
 
 Below show the order by order Radial Velocity (RV) for the RV standard, GJ~281.\
 (a) shows results from **IGRINS RV v1.0.0**, and (b) shows results from **IGRINS RV v1.5.1**.
