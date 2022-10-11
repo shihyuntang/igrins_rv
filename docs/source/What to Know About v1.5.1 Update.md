@@ -13,7 +13,12 @@ Subtracting the zero-point offsets is only reasonable when a given target has ma
 
 **IGRINS RV v1.5.1** almost completely removes the zero-point offset issue in the K band and includes a more robust treatment of offsets in the cases when they remain. Beyond a number of smaller improvements, the biggest change to the pipeline involves the masking of H2O absorption lines during the spectrum fitting process, as these lines were skewing the derived wavelength solutions. The upgrade to **v1.5.1** particularly benefits targets with only a handful of observations (less than around 10). 
 
-For a more detailed description of the performance differences of **IGRINS RV v1.5.1**, complete with figures, see Tang et al. 2022 (currently in prep). 
+Below show the order by order Radial Velocity (RV) for the RV standard, GJ~281.\
+(a) shows results from **IGRINS RV v1.0.0**, and (b) shows results from **IGRINS RV v1.5.1**.
+![text](../igrins_version_compare.png)
+(Tang et al. 2022, in prep.)
+
+For a more detailed description of the performance differences of **IGRINS RV v1.5.1**, see Tang et al. 2022 (in prep.). 
 
 ## Remaining Issues
 
