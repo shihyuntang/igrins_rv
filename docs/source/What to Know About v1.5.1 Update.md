@@ -3,7 +3,7 @@
 
 ## V1.0.x / The Problem:
 
-**IGRINS RV v1.0.x** could only measure relative (not absolute) RVs to the highest possible precisions because, for a given target, RVs derived from different spectral orders were affected by constant zero-point differences (see Figure 6 in Stahl et al. 2021). **IGRINS RV v1.0.x** subtracts out these zero-point offsets, and approach which successfully recovered the planet-induced RV signal for the tau Boo and HD 189733 systems. And users still had the option to run the code in "absolute RV" mode, which sacrificed precision.
+**IGRINS RV v1.0.x** could only measure relative (not absolute) RVs to the highest possible precisions because, for a given target, RVs derived from different spectral orders were affected by constant zero-point differences (see Figure 6 in Stahl et al. 2021). **IGRINS RV v1.0.x** subtracts out these zero-point offsets, an approach which successfully recovered the planet-induced RV signal for the tau Boo and HD 189733 systems. And users still had the option to run the code in "absolute RV" mode, which sacrificed precision.
 
 ## The Problem:
 
