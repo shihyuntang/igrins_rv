@@ -18,5 +18,3 @@ The best way to learn how IGRINS RV works is to first play with the example data
 ***
 If you use ``IGRINS RV`` in your work, please go to the [FAQ page](https://igrins-rv.readthedocs.io/en/latest/FAQ.html) to see how to properly cite ``IGRINS RV``.
 
-Acknowledgements:\
-Many thanks to Dr. Gregory Mace for helping improve the user experence with `IGRINS RV`!

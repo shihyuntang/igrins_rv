@@ -19,22 +19,14 @@ More on how to contribute can be found in {ref}`Q: How do I help make **IGRINS R
 > Starting from v1.5.1, the example data & synthetic stellar templates are not shipped with **IGRINS RV** as to reduce the repo size. Synthetic stellar templates are now stored on google drive [link](https://drive.google.com/drive/folders/1WRiQ3PKCbhueQi6htd0zusq_1ieKXgHP?usp=sharing).
 
 **News:**
-* **2022/06/01: **IGRINS RV** v1.5.1!!**
+* **2022/10/11: IGRINS RV v1.5.1!!**
     * **Who might be effected?**
       * People with only a few observations (<~5) that use K band.
       * People who need more *precise* ABSOLUTE RV.
     * **What's new?:**
-      1. Reduce the K band RV Order by Order shift between orders.
-      2. Remove *relative* RV mode.
-      3. Drop the usage of Order 3 for K band RV calculation.
-      4. Better characterize RV error for individual measurement\
-        (more see ??)
-* 2022/05/23: **IGRINS RV** v1.0.1
-* 2021/06/09: **IGRINS RV** v1.0.0 First Public Release!!
-* 2021/02/18: **IGRINS RV** v0.9.6-beta.3 public beta is ready for JOSS review!!\
-(minor bugs related to example data fixed)
-* 2021/01/29: **IGRINS RV** v0.9.6-beta.1 public beta\
-(update the ability to process IGRINS data at Gemini South)
+      1. Significantly reduced the K band RV shift between orders.
+      2. Removed choice between *relative* and *absolute* RV modes (for both H and K band). Now only absolute RVs are calculated, but an order-to-order RV correction is still applied, and the uncertainties provided are updated to take into account this correction. (for more info, see {doc}`What to Know About v1.5.1 Update`)
+      3. Dropped the usage of Order 3 for K band RV calculation, as well as Order 4 during the period when IGRINS was slightly defocused as the result of a mounting issue.
 
 ***
 
