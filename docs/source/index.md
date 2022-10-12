@@ -19,7 +19,7 @@ More on how to contribute can be found in {ref}`Q: How do I help make **IGRINS R
 > Starting from v1.5.1, the example data & synthetic stellar templates are not shipped with **IGRINS RV** as to reduce the repo size. Synthetic stellar templates are now stored on google drive [link](https://drive.google.com/drive/folders/1WRiQ3PKCbhueQi6htd0zusq_1ieKXgHP?usp=sharing).
 
 **News:**
-* **2022/10/11: IGRINS RV v1.5.1!!**
+* **2022/10/12: IGRINS RV v1.5.1!!**
     * **Who might be effected?**
       * People with only a few observations (<~5) that use K band.
       * People who need more *precise* ABSOLUTE RV.

@@ -2,7 +2,7 @@
 # Version History
 
 ## Public Release
-* **2022/10/11: IGRINS RV v1.5.1!!**\
+* **2022/10/12: IGRINS RV v1.5.1!!**\
   *What's new?:*
   1. Significantly reduced the K band RV shift between orders.
   2. Removed choice between *relative* and *absolute* RV modes (for both H and K band). Now only absolute RVs are calculated, but an order-to-order RV correction is still applied, and the uncertainties provided are updated to take into account this correction. (for more info, see {doc}`What to Know About v1.5.1 Update`)
