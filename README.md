@@ -3,6 +3,7 @@
 
 # [IGRINS RV](https://github.com/shihyuntang/igrins_rv): A Radial Velocity Pipeline for IGRINS
 
+Latest version is **v1.5.1**, more see [https://igrins-rv.readthedocs.io](https://igrins-rv.readthedocs.io).
 
 ``IGRINS RV`` is a ``python`` open source pipeline for extracting radial velocities (RVs) from spectra taken with the Immersion GRating INfrared Spectrometer (IGRINS). It uses a modified forward modeling technique that leverages telluric absorption lines as a common-path wavelength calibrator. ``IGRINS RV`` achieves an RV precision in the H and K bands of around 25-30 m/s for narrow-line stars, and it has successfully recovered the planet-induced RV signals of both HD 189733 and &tau; Boo A. Visit [Stahl et al. 2021](https://ui.adsabs.harvard.edu/abs/2021AJ....161..283S/abstract) to see the published paper.
 
