@@ -5,6 +5,10 @@ it is **HIGHLY** recommended that the user reads the associated paper, [Stahl et
 
 ***
 
+```diff
+---There are small differences in the Workflow between **IGRINS RV** v1.0.x and v1.5.x---
+```
+
 **IGRINS RV** is divided into three main steps: 
 1. Telluric Modeling
 2. Initial Convergence
@@ -13,7 +17,7 @@ it is **HIGHLY** recommended that the user reads the associated paper, [Stahl et
 There are also two other steps that can be run, depending on the user and their science. Each step is provided in the package as a separate file and can be run from the command line with keywords specifying all relevant information.
 
 A diagram showcase the workflow:
-![text](../IGRINS_RV_workflow_diagram.png)
+![text](../IGRINS_RV_workflow_diagram_v1.5.x.png)
 
 All steps are run as 
 ```shell
@@ -51,11 +55,11 @@ In this way, you can run Step 2 as many times as you'd like, using the outputs o
 
    * If the target star vsin(i) is already known to high accuracy (< ~1 km/s), then Step 3 needs only be run once - the code will fully converge to the final RVs (within uncertainty) through just one run.
 
-   * If not, an initial run of Step 3 in which vsin(i) is allowed to vary is required. This will provide a more precise estimate of vsin(i), which you will then plug in as a fixed value in a second run of Step 3.
+   * If not, an initial run of Step 3 in which vsin(i) is allowed to vary is required. This will provide a more precise estimate of vsin(i), which you will then plug in as a **fixed value** (with `-v 0`) in a second run of Step 3.
+<!-- 
+   * If you choose to run Step 3 more than once, and want your subsequent runs of Step 3 to use the previous runs' outputs as starting points, then **those runs must be set to output absolute - not relative - RVs** via the appropriate keyword ("-abs_out abs").  -->
 
-   * If you choose to run Step 3 more than once, and want your subsequent runs of Step 3 to use the previous runs' outputs as starting points, then **those runs must be set to output absolute - not relative - RVs** via the appropriate keyword ("-abs_out abs"). 
-
-   * If you want the most precise RVs, don't care about measuring the absolute RV of the star, and don't plan on using the output of the Step 3 run you're about to do as starting guesses for another Step 3 run, then set the keyword to compute relative RVs ("-abs_out rel"). 
+   <!-- * If you want the most precise RVs, don't care about measuring the absolute RV of the star, and don't plan on using the output of the Step 3 run you're about to do as starting guesses for another Step 3 run, then set the keyword to compute relative RVs ("-abs_out rel").  -->
 
 6. If the user seeks the best possible RV uncertainty estimates, or if their target star has a relatively high vsin(i) (> 10 km/s), then an additional run of Step 3 is required, this one with vsin(i) held fixed at its estimated value plus or minus one sigma. The user then runs Step 4, which simply incorporates the minor differences in the RVs of the two runs (as low as < 1 m/s and as high as 9 m/s) to revise the final RV uncertainties. 
 

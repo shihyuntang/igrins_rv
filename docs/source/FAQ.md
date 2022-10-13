@@ -27,12 +27,31 @@ If successful, try `gfortran --version` to see if you can see the versions numbe
 If so, you are good!
 
 --
-## Q: Why do I see an error message with `ifort` while installing `Telfit`?
-**Answer:** Well...lucky you. Looks like you have the `ifort` fortran complier installed already. Quickest way to resolve this is to tell `Telfit` `setup.py` not to look for `ifort`. 
-1. Open `setup.py` under the `igrins_rv(-master)/Telfit` folder (it may be called something like `Telluric-Fitter-master`). You will find two lists, `compilers` and `comp_strs`, around lines 188. 
-2. Delete `ifort` and `INTEL` in each list.
 
-You should be fine now~
+## Q: How can I tell `Telfit` to use `ifort` compiler?
+**Answer:** Change the order of compilers in `/Telluric-Fitter(-master)/setup.py` line [117](https://github.com/kgullikson88/Telluric-Fitter/blob/7ae98db278525e157d2d0abaf4697e2fe778d6bc/setup.py#L117) to 122
+from 
+```
+    compilers = ["gfortran",
+                 "ifort",
+                 "g95"]
+    comp_strs = ["GNU",
+                 "INTEL",
+                 "G95"]
+```
+to
+```
+    compilers = ["ifort",
+                 "gfortran",
+                 "g95"]
+    comp_strs = ["INTEL",
+                 "GNU",
+                 "G95"]
+```
+
+--
+## Q: Why do I see an error message with `ifort` while installing `Telfit`?
+**Answer:** Well...lucky you. This issue occurs if you have a new version of `ifort` but running with old versions of lblrtm/lnfl. Updating the lblrtm/lnfl (you might as well also update the aer_line_files) to the latest version will fix this. See {doc}`Use latest lblrtm` for detail instructions.
 
 --
 ## Q: What is the typical run time of **IGRINS RV**?
@@ -45,6 +64,10 @@ You should be fine now~
 --
 ## Q: Can **IGRINS RV** do any better in RV precision?
 **Answer:** **IGRINS RV** uses telluric (atmospheric) absorption lines as a common-path wavelength calibrator, so its precision is limited by the internal RV stability of Earth's atmosphere. This has been estimated to be ~10-20 m/s, so it is unlikely **IGRINS RV** will achieve better  than the current ~25m/s precision. If you are obtaining worse precisions than this for your science targets and want to try to push toward better precisions, improving the accuracy of your stellar templates or increasing the signal quality of your data could help (note the precision achievable by **IGRINS RV** also depends on the vsin(i) of the target in question).
+
+--
+## Q: What happened to absolute vs relative RV modes?
+**Answer:** All RVs are now absolute, not relative. See Section "What's new in v1.5.1?".
 
 --
 ## Q: How do I report bugs?

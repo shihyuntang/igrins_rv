@@ -13,10 +13,9 @@ More on how to contribute can be found in the [FAQ](https://igrins-rv.readthedoc
 A detailed installation guide can be found [here](https://igrins-rv.readthedocs.io/en/latest/Installation.html).
 
 ## How to run
-The best way to learn how IGRINS RV works is to first play with the example data, following steps in [Demo Run With Example Data of GJ281](https://igrins-rv.readthedocs.io/en/latest/Demo%20with%20Example%20Data%20%28GJ281%29.html). While you are waiting for the example code to finish, read the detailed documentation on [https://igrins-rv.readthedocs.io](https://igrins-rv.readthedocs.io) so you know how to alter the example commands to fit your OWN science targets.
+The best way to learn how IGRINS RV works is to first play with the example data, following steps in [Demo Run With Example Data of GJ281](https://igrins-rv.readthedocs.io/en/latest/Demo%20with%20Example%20Data%20%28GJ281%29.html). \
+While you are waiting for the example code to finish, read the **detailed documentation on [https://igrins-rv.readthedocs.io](https://igrins-rv.readthedocs.io)** so you know how to alter the example commands to fit your OWN science targets.
 
 ***
 If you use ``IGRINS RV`` in your work, please go to the [FAQ page](https://igrins-rv.readthedocs.io/en/latest/FAQ.html) to see how to properly cite ``IGRINS RV``.
 
-Acknowledgements:\
-Many thanks to Dr. Gregory Mace for helping improve the user experence with `IGRINS RV`!

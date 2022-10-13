@@ -1,58 +1,96 @@
 
-from Engine.opt       import fmod
+from Engine.opt   import fmod
 from Engine.importmodule import *
 from Engine.detect_peaks import detect_peaks
+from Engine.rebin_jv import rebin_jv
 
 
-def CRmasker(parfit,fitobj):
+def cr_masker(parfit, fitobj, binary, tel=False):
     '''
-    Identify cosmic rays and hot pixels in spectrum, as well as places where the model does not have the ability to reflect the data.
+    Identify cosmic rays and hot pixels in spectrum, as well as places where
+    the model does not have the ability to reflect the data.
 
     Inputs:
     parfit    : Best fit spectral model parameters
     fitobj    : Class containing data to be fit and stellar and telluric templates
 
     Outputs:
-    CRmaskF : Pixels to be masked    
+    CRmaskF : Pixels to be masked
     '''
 
-    fit,chi = fmod(parfit, fitobj)
+    if tel:
+        clip_slope_tol = 40
+        clip_pixel_tol = 12
+    else:
+        clip_slope_tol = 300
+        clip_pixel_tol = 6
 
-    # Everywhere where data protrudes high above model, check whether slope surrounding protrusion is /\ and mask if sufficiently steep
-    residual = fitobj.s/fit
+    fit,chi,w,continuum = fmod(parfit, fitobj, binary)
+
+    # Everywhere where data protrudes high above model, check whether slope
+    # surrounding protrusion is /\ and mask if sufficiently steep
+
+    initwave = fitobj.initwave.copy()
+    xgrid = (initwave - np.median(initwave)) / (np.max(initwave) - np.min(initwave))
+    dx = chebyshev.chebval(xgrid, parfit[6:10])
+    w = initwave + dx
+
+    xdata = fitobj.x.copy()
+    sdata = fitobj.s.copy()
+
+    residual = sdata/fit
     MAD = np.median(np.abs(np.median(residual)-residual))
     CRmask = np.array(np.where(residual > np.median(residual)+2*MAD)[0])
 
-    CRmaskF = []; CRmask = list(CRmask);
+    CRmaskF = []
+    CRmask = list(CRmask)
 
-    for hit in [0,len(fitobj.x)-1]:
+    for hit in [0,len(xdata)-1]:
         if hit in CRmask:
             CRmaskF.append(hit)
             CRmask.remove(hit)
-    CRmask = np.array(CRmask, dtype=np.int); CRmaskF = np.array(CRmaskF, dtype=np.int);
+    CRmask = np.array(CRmask, dtype=int)
+    CRmaskF = np.array(CRmaskF, dtype=int)
 
     for group in mit.consecutive_groups(CRmask):
         group = np.array(list(group))
         if len(group) == 1:
-            gL = group-1; gR = group+1;
+            gL = group-1; gR = group+1
         else:
-            peaks = detect_peaks(fitobj.s[group])
+            peaks = detect_peaks(sdata[group])
             if len(peaks) < 1:
-                group = np.concatenate((np.array([group[0]-1]),group,np.array([group[-1]+1])))
-                peaks = detect_peaks(fitobj.s[group])
+                group = np.concatenate(
+                    (np.array([group[0]-1]),
+                     group,
+                     np.array([group[-1]+1])
+                     )
+                     )
+                peaks = detect_peaks(sdata[group])
                 if len(peaks) < 1:
                     continue
             if len(peaks) > 1:
                 continue
-            gL = group[:peaks[0]]; gR = group[peaks[0]+1:];
+            gL = group[:peaks[0]]
+            gR = group[peaks[0]+1:]
 
-        slopeL = (fitobj.s[gL+1]-fitobj.s[gL])/(fitobj.x[gL+1]-fitobj.x[gL])
-        slopeR = (fitobj.s[gR]-fitobj.s[gR-1])/(fitobj.x[gR]-fitobj.x[gR-1])
+        slopeL = (sdata[gL+1]-sdata[gL])/(xdata[gL+1]-xdata[gL])
+        slopeR = (sdata[gR]-sdata[gR-1])/(xdata[gR]-xdata[gR-1])
         try:
-            if (np.min(slopeL) > 300) and (np.max(slopeR) < -300) and len(group) < 6:
+            if (np.min(slopeL) > clip_slope_tol) \
+                    and (np.max(slopeR) < -clip_slope_tol) \
+                    and (len(group) < clip_pixel_tol):
                 CRmaskF = np.concatenate((CRmaskF,group))
         except ValueError:
-            if (slopeL > 300) and (slopeR < -300):
+            if (slopeL > clip_slope) and (slopeR < -clip_slope):
+
                 CRmaskF = np.concatenate((CRmaskF,group))
 
-    return CRmaskF
+    sflat = sdata/continuum
+    sflat /= np.percentile(sflat,98)
+    ind = np.where(sflat < 0.2)[0]
+    if len(ind) > 0:
+        for group in mit.consecutive_groups(ind):
+            group = np.array(list(group))
+            CRmaskF = np.concatenate((CRmaskF,group))
+
+    return [xdata,CRmaskF]

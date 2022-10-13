@@ -1,36 +1,228 @@
 from Engine.importmodule import *
 from Engine.importmodule import read_prepdata
+from Engine.set_argparse import _argparse_step2
 
-from Engine.IO_AB      import setup_templates, init_fitsread,stellarmodel_setup, setup_outdir
+from Engine.IO_AB      import setup_templates, init_fitsread, setup_outdir
 from Engine.clips      import basicclip_above
-from Engine.contfit    import A0cont
-from Engine.classes    import fitobjs,inparams
+from Engine.contfit    import a0cont
+from Engine.classes    import FitObjs,InParams,_setup_bound_cut
 from Engine.rebin_jv   import rebin_jv
 from Engine.rotint     import rotint
-from Engine.opt import optimizer, fmod, fmod_conti
+from Engine.opt        import optimizer, fmod
 from Engine.outplotter import outplotter_23
 from Engine.detect_peaks import detect_peaks
-from Engine.crmask    import CRmasker
+from Engine.crmask    import cr_masker
+from Engine.molmask    import h2o_masker
+from Engine.step2and3common_func import (setup_fitting_init_pars, 
+    _make_dpars, trim_obs_data, trim_tel_data, check_if_template_exist,
+    check_user_input, setup_logger, _add_npar)
+
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
-def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
+# idx and description of optimizing parameters in pars0
+#   0: The shift of the stellar template (km/s) [assigned later]
+#   1: The scale factor for the stellar template
+#   2: The shift of the telluric template (km/s)
+#   3: The scale factor for the telluric template
+#   4: vsini (km/s)
+#   5: The instrumental resolution (FWHM) in pixels
+#   6: Wavelength 0-pt
+#   7: Wavelength linear component
+#   8: Wavelength quadratic component
+#   9: Wavelength cubic component
+#   10: Continuum zero point
+#   11: Continuum linear component
+#   12: Continuum quadratic component
+#   13: Instrumental resolution linear component
+#   14: Instrumental resolution quadratic component
+#   15: Blaze dip center location
+#   16: Blaze dip full width
+#   17: Blaze dip depth
+#   18: Secondary blaze dip full width
+#   19: Blaze dip depth
+#   20: Continuum cubic component
+#   21: Continuum quartic component
+#   22: Continuum pentic component
+#   23: Continuum hexic component
+#   24: The shift of the second stellar template (km/s) [assigned later]
+#   25: The scale factor for the second stellar template
+#   26: Secondary vsini (km/s)
+#   27: Secondary to primary flux ratio S2/S1 (km/s)
+  #-------------------------------------------------------------------------------
 
-    # Main function for RV fitting that will be threaded over by multiprocessing
+def base_dpars_dict(vsini_v1, band, order, numofpars, run_num=1, vsini_v2=-1):
+    """Setup basic sets of paramaeter variable ranges
 
-    nights = inparam.nights
-    night  = nights[i] # current looped night
+    Args:
+        vsini_v1 (float): initial vsini value
+        band (str): H or K band
+        order (int): Current run order
+        run_num (int): Number of the optimize sequence that is being running
+        vsini_v2 (float): initial vsini value for the secondary
 
-    order   = order_use
+    Returns:
+        dpars_org (dict): Sets of optimize parameters' variable ranges
+    """
+    dpars_org = {}
+    dpars_org = _make_dpars('cont',
+                            [10, 11, 12, 15, 16, 17,  18,  19, 20, 21, 22, 23],
+                            [1e7, 1,  1, 10, 30, 0.2, 50, 0.2,  1,  1,  1,  1],
+                            numofpars, dpars_org
+                            )
+    dpars_org = _make_dpars('twave',
+                            [3, 6, 7, 8, 9],
+                            [1, 1, 1, 1, 1],
+                            numofpars, dpars_org
+                            )
+    dpars_org = _make_dpars('ip',
+                            [5],
+                            [0.5],
+                            numofpars, dpars_org
+                            )
+    dpars_org = _make_dpars('s',
+                            [0, 1],
+                            [20, 1],
+                            numofpars, dpars_org
+                            )
+    dpars_org = _make_dpars('v',
+                            [4],
+                            [vsini_v1],
+                            numofpars, dpars_org
+                            )
+    dpars_org = _make_dpars('ts',
+                            [0, 1, 3],
+                            [20, 1, 1],
+                            numofpars, dpars_org
+                            )
+
+    if vsini_v2 != -1:
+        dpars_org = _make_dpars('s2',
+                            [24, 25],
+                            [20, 1],
+                            numofpars, dpars_org
+                            )
+        dpars_org = _make_dpars('v2',
+                            [26],
+                            [vsini_v2],
+                            numofpars, dpars_org
+                            )
+        dpars_org = _make_dpars('s1s2',
+                            [0, 1, 24, 25],
+                            [5, 1, 20, 1],
+                            numofpars, dpars_org
+                            )
+
+    # blaze fitting order setting
+    if band == 'H':
+        if order in [13]:
+            # fit a quadratic (2) continuum
+            dpars_org['cont'][20:] = 0
+        elif order in [6,14,21]:
+            # fit a cubic (3) continuum
+            dpars_org['cont'][21:] = 0
+        else:
+            pass
+    elif band == 'K':
+        if order in [3,5]:
+            # fit a cubic (3) continuum
+            dpars_org['cont'][21:] = 0
+        elif order in [4,6]:
+            # fit a quartic (4) continuum
+            dpars_org['cont'][22:] = 0
+        else:
+            pass
+
+    if run_num == 2:
+        dpars_org['s'][0] = 5.0 # The shift of the stellar template (km/s)
+        dpars_org['ts'][0] = 5.0 # The shift of the stellar template (km/s)
+
+    return dpars_org
+
+def setup_init_rv_guess(args):
+    if args.guesses != '':
+        try:
+            initguesses = float(args.guesses)
+            initguesses_show = initguesses
+        except:
+            sys.exit('ERROR: -g ONLY TAKES A NUMBER AS INPUT!')
+
+    # Load initial RV guesses from file
+    if args.guessesX != '':
+        try:
+            guessdata = Table.read(
+                f'./Output/{args.targname}_{args.band}/'
+                    f'Initguesser_results_{args.guessesX}.csv',
+                format='csv')
+        except:
+            sys.exit(
+                f'ERROR: "./Output/{args.targname}_{args.band}/'
+                    f'Initguesser_results_{args.guessesX}.csv" NOT FOUND!')
+
+        initnights = np.array(guessdata['night'])
+        initrvs    = np.array(guessdata['bestguess'])
+        initguesses = {}
+        initguesses_show = f'Initguesser_results_{args.guessesX}.csv'
+        for hrt in range(len(initnights)):
+            initguesses[str(initnights[hrt])] = float(initrvs[hrt])
+
+        if args.binary:
+            initrvs2    = np.array(guessdata['bestguess2'])
+            initguesses2 = {}
+            for hrt in range(len(initnights)):
+                initguesses2[str(initnights[hrt])] = float(initrvs2[hrt])
+
+            return initguesses, initguesses_show, initguesses2
+
+    return initguesses, initguesses_show
+
+def mkdir_output_dic(args):
+    if not os.path.isdir('./Output'):
+        os.mkdir('./Output')
+
+    if not os.path.isdir(f'./Output/{args.targname}_{args.band}'):
+        os.mkdir(f'./Output/{args.targname}_{args.band}')
+    filesndirs = os.listdir(f'./Output/{args.targname}_{args.band}')
+
+    trk = 1; go = True
+    while go == True:
+        iniguess_dir = 'Initguesser_results_{}.csv'.format(trk)
+        if iniguess_dir not in filesndirs:
+            break
+        trk += 1
+
+    if not os.path.isdir(f'./Output/{args.targname}_{args.band}/figs'):
+        os.mkdir(f'./Output/{args.targname}_{args.band}/figs')
+
+    step2or3 = 2
+    temp_f_dir = f'./Output/{args.targname}_{args.band}/figs/'\
+                        f'main_step{step2or3}_{args.band}_{trk}'
+    if not os.path.isdir(temp_f_dir):
+        os.mkdir(temp_f_dir)
+
+    outpath = f'./Output/{args.targname}_{args.band}'
+
+    return trk, outpath, step2or3, iniguess_dir
+
+
+#-------------------------------------------------------------------------------
+def main(args, inparam, orders, order_use, trk, step2or3, i):
+    """Main function for RV fitting that will be threaded over
+    by multiprocessing
+    """
+
+    nights   = inparam.nights
+    night = nights[i] # current looped night
+
+    order = order_use
     xbounds = inparam.xbounddict[order]
 
     if args.debug:
-        print('Working on order {:02d}, night {:03d}/{:03d} ({}) PID:{}...'.format(int(order),
-                                                                                               i+1,
-                                                                                               len(inparam.nights),
-                                                                                               night,
-                                                                                               mp.current_process().pid) )
-
-    #-------------------------------------------------------------------------------
+        print('Working on order {:02d}, night {:03d}/{:03d} '
+                '({}) PID:{}...'.format(int(order),
+                                        i+1,
+                                        len(inparam.nights),
+                                        night,
+                                        mp.current_process().pid) )
 
     # Collect initial RV guesses
     if type(inparam.initguesses) == dict:
@@ -38,72 +230,60 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     elif type(inparam.initguesses) == float:
         initguesses = inparam.initguesses
     else:
-        sys.exit('ERROR! EXPECING SINGAL NUMBER OR FILE FOR INITGUESSES! QUITTING!')
+        sys.exit(
+            'ERROR! EXPECTING SINGLE NUMBER OR FILE FOR INITGUESSES! QUITTING!'
+            )
 
     if np.isnan(initguesses) == True:
-        logger.warning(f'  --> Previous run of {night} found it inadequate, skipping...')
-        return night, np.nan, np.nan
+        logger.warning(
+            f'  --> Previous run of {night} found it inadequate, skipping...'
+            )
+        return night, np.nan, np.nan, np.nan, np.nan
+
+    if args.binary:
+        if type(inparam.initguesses2) == dict:
+            initguesses2 = inparam.initguesses2[night]
+        elif type(inparam.initguesses2) == float:
+            initguesses2 = inparam.initguesses2
+        else:
+            sys.exit('ERROR! EXPECTING SINGLE NUMBER OR FILE FOR '
+                        'INITGUESSES 2! QUITTING!')
 
     # Collect relevant beam and filenum info
-    tagsnight = []; beamsnight = np.array([]);
+    tagsnight = []; beamsnight = np.array([])
     for tag in inparam.tagsB[night]:
         tagsnight.append(tag)
         beamsnight = np.append(beamsnight, 'B')
 
     # Only do B exposures, and just use first B nodding
-    masterbeam = 'B'; beam = 'B';
+    masterbeam = 'B'; beam = 'B'
     try:
         tag  = tagsnight[0]
     except IndexError:
         logger.warning(f'  --> No B nodding(frame) for night {night}, skipping...')
-        return night, np.nan, np.nan
+        return night, np.nan, np.nan, np.nan, np.nan
 
+    if args.binary:
+        pars0 = setup_fitting_init_pars(
+            args.band, inparam.initvsini, order, inparam.initvsini2,
+            float(args.fluxratio)
+            )
+    else:
+        pars0 = setup_fitting_init_pars(args.band, inparam.initvsini, order)
 
-    #-------------------------------------------------------------------------------
-    ### Initialize parameter array for optimization as well as half-range values for each parameter during the various steps of the optimization.
-    ### Many of the parameters initialized here will be changed throughout the code before optimization and in between optimization steps.
-    pars0 = np.array([np.nan,                                                # 0: The shift of the stellar template (km/s) [assigned later]
-                      0.3,                                                   # 1: The scale factor for the stellar template
-                      0.0,                                                   # 2: The shift of the telluric template (km/s)
-                      0.6,                                                   # 3: The scale factor for the telluric template
-                      inparam.initvsini,                                     # 4: vsini (km/s)
-                      np.nan,                                                # 5: The instrumental resolution (FWHM) in pixels
-                      np.nan,                                                # 6: Wavelength 0-pt
-                      np.nan,                                                # 7: Wavelength linear component
-                      np.nan,                                                # 8: Wavelength quadratic component
-                      np.nan,                                                # 9: Wavelength cubic component
-                      1.0,                                                   #10: Continuum zero point
-                      0.,                                                    #11: Continuum linear component
-                      0.,                                                    #12: Continuum quadratic component
-                      np.nan,                                                #13: Instrumental resolution linear component
-                      np.nan,                                                #14: Instrumental resolution quadratic component
-                      0,                                                     #15: Blaze dip center location
-                      0,                                                     #16: Blaze dip full width
-                      0,                                                     #17: Blaze dip depth
-                      0,                                                     #18: Secondary blaze dip full width
-                      0,                                                     #19: Blaze dip depth
-                      0.0,                                                   #20: Continuum cubic component
-                      0.0,                                                   #21: Continuum quartic component
-                      0.0,                                                   #22: Continuum pentic component
-                      0.0])                                                  #23: Continuum hexic component
-
-
-    # This one specific order is small and telluric dominated, start with greater stellar template power to ensure good fits
-    if int(order) == 13:
-        pars0[1] = 0.8
-
-    # Load synthetic telluric template generated during Step 1
-    # [:8] here is to ensure program works under Night_Split mode
-
-    A0loc = f'./Output/{args.targname}_{args.band}/A0Fits/{night[:8]}A0_{beam}treated_{args.band}.fits'
+    A0loc = f'./Output/{args.targname}_{args.band}/A0Fits/'\
+                f'{night[:8]}A0_{beam}treated_{args.band}.fits'
 
     try:
         hdulist = fits.open(A0loc)
     except IOError:
-        logger.warning(f'  --> No A0-fitted template for night {night}, skipping...')
-        return night, np.nan, np.nan
+        logger.warning(
+            f'  --> No A0-fitted template for night {night}, skipping...'
+            )
+        return night, np.nan, np.nan, np.nan, np.nan
 
-    # Find corresponding table in fits file, given the tables do not go sequentially by order number due to multiprocessing in Step 1
+    # Find corresponding table in fits file, given the tables do not go
+    # sequentially by order number due to multiprocessing in Step 1
     num_orders = 0
     for i in range(25):
         try:
@@ -112,24 +292,31 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         except:
             continue
 
-    fits_layer = [ i for i in np.arange(num_orders)+1 if np.int(hdulist[i].columns[0].name[9:]) == order ][0]
+    fits_layer = [ i for i in np.arange(num_orders)+1 \
+                    if int(hdulist[i].columns[0].name[9:]) == order ][0]
 
     tbdata = hdulist[ fits_layer ].data
     flag = np.array(tbdata[f'ERRORFLAG{order}'])[0]
 
-    # Check whether Telfit hit critical error in Step 1 for the chosen order with this night. If so, try another order. If all hit the error, skip the night.
+    # Check whether Telfit hit critical error in Step 1 for the chosen order
+    # with this night. If so, try another order. If all hit the error, skip the night.
     nexto = 0
     ordertry = order
     while 1 == 1:
-        fits_layer = [ i for i in np.arange(num_orders)+1 if np.int(hdulist[i].columns[0].name[9:]) == ordertry ][0]
+        fits_layer = [ i for i in np.arange(num_orders)+1 \
+                        if int(hdulist[i].columns[0].name[9:]) == ordertry ][0]
 
         tbdata = hdulist[ fits_layer ].data
         flag = np.array(tbdata[f'ERRORFLAG{ordertry}'])[0]
 
-        if flag == 1:  # If Telfit hit unknown critical error in Step 1, this order can't be used for this night. Try another.
+        # If Telfit hit unknown critical error in Step 1, this order can't
+        # be used for this night. Try another.
+        if flag == 1:
             orderbad = ordertry
             ordertry = orders[nexto]
-            logger.warning(f'  --> TELFIT ENCOUNTERED CRITICAL ERROR IN ORDER: {orderbad} NIGHT: {night}, TRYING ORDER {ordertry} INSTEAD...')
+            logger.warning(f'  --> TELFIT ENCOUNTERED CRITICAL ERROR IN ORDER: '
+                                f'{orderbad} NIGHT: {night}, TRYING ORDER '
+                                f'{ordertry} INSTEAD...')
 
         else: # All good, continue
             order = ordertry
@@ -137,84 +324,127 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
         nexto += 1
         if nexto == len(orders):
-            logger.warning(f'  --> TELFIT ENCOUNTERED CRITICAL ERROR IN ALL ORDERS FOR NIGHT: {night}, skipping...')
-            return night, np.nan, np.nan
+            logger.warning(f'  --> TELFIT ENCOUNTERED CRITICAL ERROR IN ALL '
+                                f'ORDERS FOR NIGHT: {night}, skipping...')
+            return night, np.nan, np.nan, np.nan, np.nan
 
+
+    # Use instrumental profile dictionary corresponding to whether IGRINS
+    # mounting was loose or not
+    if int(night[:8]) < 20180401 or int(night[:8]) > 20190531:
+        IPpars = inparam.ips_tightmount_pars[args.band][masterbeam][order]
+    else:
+        IPpars = inparam.ips_loosemount_pars[args.band][masterbeam][order]
 
     watm = tbdata['WATM'+str(order)]
     satm = tbdata['SATM'+str(order)]
     a0contx    = tbdata['X'+str(order)]
     continuum  = tbdata['BLAZE'+str(order)]
+    molnames   = tbdata['MOLNAMES']
 
     # Remove extra rows leftover from having columns of unequal length
     satm = satm[(watm != 0)]
     watm = watm[(watm != 0)]
-    satm[(satm < 1e-4)] = 0. # set very low points to zero so that they don't go to NaN when taken to an exponent by template power in fmodel_chi
+
+    # set very low points to zero so that they don't go to NaN when taken
+    # to an exponent by template power in fmodel_chi
+    satm[(satm < 1e-4)] = 0.
     a0contx = a0contx[(continuum != 0)]
     continuum = continuum[(continuum != 0)]
 
-
-    # Use instrumental profile dictionary corresponding to whether IGRINS mounting was loose or not
-    if (np.int(night[:8]) < 20180401) or (np.int(night[:8]) > 20190531):
-        IPpars = inparam.ips_tightmount_pars[args.band][masterbeam][order]
-    else:
-        IPpars = inparam.ips_loosemount_pars[args.band][masterbeam][order]
-
-    # Retrieve pixel bounds for where within each other significant telluric absorption is present.
-    # If these bounds were not applied, analyzing some orders would give garbage fits.
-    if args.band=='K':
-        if int(order) in [3, 13, 14]:
-            bound_cut = inparam.bound_cut_dic[args.band][order]
-        else:
-            bound_cut = [150, 150]
-
-    elif args.band=='H':
-        if int(order) in [6, 10, 11, 13, 14, 16, 17, 20, 21, 22]:
-            bound_cut = inparam.bound_cut_dic[args.band][order]
-        else:
-            bound_cut = [150, 150]
+    #-------------------------------------------------------------------------------
+    bound_cut = _setup_bound_cut(inparam.bound_cut_dic, args.band, order)
 
     # Load target spectrum
-    x,wave,s,u = init_fitsread(f'{inparam.inpath}/',
-                                'target',
-                                'combined'+str(masterbeam),
-                                night,
-                                order,
-                                inparam.tagsB[night][0],
-                                args.band,
-                                bound_cut)
 
-    #-------------------------------------------------------------------------------
+    x,wave,s,u = init_fitsread(
+        f'{inparam.inpath}/',
+        'target',
+        'combined'+str(masterbeam),
+        night,
+        order,
+        inparam.tagsB[night][0],
+        args.band,
+        bound_cut
+        )
 
     # Execute S/N cut
     s2n = s/u
-    if np.nanmedian(s2n) < np.float(args.SN_cut):
-        logger.warning('  --> Bad S/N {:1.3f} < {} for {}{} {}... '.format( np.nanmedian(s2n), args.SN_cut, night, beam, tag))
+    if np.nanmedian(s2n) < float(args.SN_cut):
+        logger.warning(
+            '  --> Bad S/N {:1.3f} < {} for {}{} {}... '.format(
+                np.nanmedian(s2n), args.SN_cut, night, beam, tag
+                ))
         pass
 
-    # Trim obvious outliers above the blaze (i.e. cosmic rays)
-    nzones = 5
-    x = basicclip_above(x,s,nzones); wave = basicclip_above(wave,s,nzones); u = basicclip_above(u,s,nzones); s = basicclip_above(s,s,nzones);
-    x = basicclip_above(x,s,nzones); wave = basicclip_above(wave,s,nzones); u = basicclip_above(u,s,nzones); s = basicclip_above(s,s,nzones);
+    s_piece, u_piece, wave_piece, x_piece = trim_obs_data(
+        x, wave, s, u, xbounds
+        )
 
-    # Cut spectrum to within wavelength regions defined in input list
-    s_piece    = s[    (x > xbounds[0]) & (x < xbounds[-1]) ]
-    u_piece    = u[    (x > xbounds[0]) & (x < xbounds[-1]) ]
-    wave_piece = wave[ (x > xbounds[0]) & (x < xbounds[-1]) ]
-    x_piece    = x[    (x > xbounds[0]) & (x < xbounds[-1]) ]
+    # Save data for second template cutting after optimization cycle 1 done
+    s_save = s_piece.copy()
+    x_save = x_piece.copy()
+    u_save = u_piece.copy()
 
-    # Trim stellar template to relevant wavelength range
-    mwave_in,mflux_in = stellarmodel_setup(wave_piece,inparam.mwave0,inparam.mflux0)
+    satm_in, watm_in, wave_piece, s_piece, u_piece, x_piece = trim_tel_data(
+        watm, satm, wave_piece, s_piece, u_piece, x_piece
+        )
 
-    # Trim telluric template to relevant wavelength range
-    satm_in = satm[(watm > np.min(wave_piece)*1e4 - 11) & (watm < np.max(wave_piece)*1e4 + 11)]
-    watm_in = watm[(watm > np.min(wave_piece)*1e4 - 11) & (watm < np.max(wave_piece)*1e4 + 11)]
+    Rstell1 = np.median(np.diff(inparam.mwave0))
 
-    # Make sure data is within telluric template range (shouldn't do anything)
-    s_piece    = s_piece[   (wave_piece*1e4 > np.min(watm_in)+5) & (wave_piece*1e4 < np.max(watm_in)-5)]
-    u_piece    = u_piece[   (wave_piece*1e4 > np.min(watm_in)+5) & (wave_piece*1e4 < np.max(watm_in)-5)]
-    x_piece    = x_piece[   (wave_piece*1e4 > np.min(watm_in)+5) & (wave_piece*1e4 < np.max(watm_in)-5)]
-    wave_piece = wave_piece[(wave_piece*1e4 > np.min(watm_in)+5) & (wave_piece*1e4 < np.max(watm_in)-5)]
+    if args.binary:
+        Rstell2 = np.median(np.diff(inparam.mwave2))
+
+        if  Rstell1 > Rstell2:
+            rebin2to1 = True; extra1 = 0.; extra2 = 10.
+        else:
+            rebin2to1 = False; extra1 = 10.; extra2 = 0.
+
+        mflux_in2 = inparam.mflux2[
+                (inparam.mwave2 > np.min(wave_piece)*1e4 - 5 - extra2) \
+                & (inparam.mwave2 < np.max(wave_piece)*1e4 + 5 + extra2)
+            ]
+        mwave_in2 = inparam.mwave2[
+                (inparam.mwave2 > np.min(wave_piece)*1e4 - 5 - extra2) \
+                & (inparam.mwave2 < np.max(wave_piece)*1e4 + 5 + extra2)
+            ]
+        Rstell = np.min([Rstell1,Rstell2])
+
+        dstep = Rstell2
+        nstep = int((mwave_in2[-1]-mwave_in2[0])/dstep)
+        mwave1 = np.linspace(mwave_in2[0],mwave_in2[-1],nstep)
+        mflux1 = rebin_jv(mwave_in2,mflux_in2,mwave1,False)
+        mwave_in2 = mwave1.copy(); mflux_in2 = mflux1.copy()
+        mwave_in2 = mwave_in2[1:-1]
+        mflux_in2 = mflux_in2[1:-1]
+    else:
+        extra1 = 0
+        extra2 = 0
+        Rstell = Rstell1
+
+    # Trim stellar template to data range +- 10 AA
+    mflux_in = inparam.mflux0[
+            (inparam.mwave0 > np.min(wave_piece)*1e4 - 5 - extra1) \
+            & (inparam.mwave0 < np.max(wave_piece)*1e4 + 5 + extra1)
+        ]
+    mwave_in = inparam.mwave0[
+            (inparam.mwave0 > np.min(wave_piece)*1e4 - 5 - extra1) \
+            & (inparam.mwave0 < np.max(wave_piece)*1e4 + 5 + extra1)
+        ]
+    Rtell = np.median(np.diff(watm_in))
+    if Rstell < Rtell:
+        sys.exit(f'Telluric template resolution ({round(Rtell,4)} AA) '
+                    'must be finer than stellar template resolution '
+                    '({round(Rstell,4)} AA) !')
+
+    # Rebin stellar template to uniform wavelength scale
+    dstep = Rstell1
+    nstep = int((mwave_in[-1]-mwave_in[0])/dstep)
+    mwave1 = np.linspace(mwave_in[0],mwave_in[-1],nstep)
+    mflux1 = rebin_jv(mwave_in,mflux_in,mwave1,False)
+    mwave_in = mwave1.copy(); mflux_in = mflux1.copy()
+    mwave_in = mwave_in[1:-1]
+    mflux_in = mflux_in[1:-1]
 
     # Normalize continuum from A0 to flux scale of data
     continuum /= np.nanmedian(continuum)
@@ -225,57 +455,48 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     par = pars0.copy()
 
     # Get initial guess for cubic wavelength solution from reduction pipeline
-    f = np.polyfit(x_piece,wave_piece,3)
-    par9in = f[0]*1e4; par8in = f[1]*1e4; par7in = f[2]*1e4; par6in = f[3]*1e4;
-    par[9] = par9in ; par[8] = par8in ; par[7] = par7in ; par[6] = par6in
+    f = np.polyfit(x_piece, wave_piece, 3)
+    q = np.poly1d(f)
+    initwave = q(x_piece)*1e4
 
-    par[0] = initguesses-inparam.bvcs[night+tag] # Initial RV with barycentric correction
-    par[5] = IPpars[2]; par[13] = IPpars[1]; par[14] = IPpars[0];
-
-    # Arrays defining parameter variations during optimization steps
-    # Optimization will cycle twice. In the first cycle, the RVs can vary more than in the second.
-    #                             | 0    1    2    3 |  | ------ 4 ------ |  | 5 |   | 6     7     8           9  |  |10  11  12| |13 14|  |15  16  17  18  19|  |20   21   22   23 |
-    dpars1 = {'cont' : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    1e7, 1, 1,   0, 0,    0., 0., 0., 0., 0.,   1.0, 1.0, 1.0, 1.0  ]),
-              'twave': np.array([  0.0, 0.0, 0.0, 1.0,   0.0,                 0.0,   10.0, 10.0,  5.00000e-5, 1e-7,   0,   0, 0,   0, 0,    0., 0., 0., 0., 0.,   0.0, 0.0, 0.0, 0.0 ]),
-              'ip'   : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.5,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,    0., 0., 0., 0., 0.,   0.0, 0.0, 0.0, 0.0 ]),
-              's'    : np.array([ 20.0, 2.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,    0., 0., 0., 0., 0.,   0.0, 0.0, 0.0, 0.0 ]),
-              'v'    : np.array([  0.0, 0.0, 0.0, 0.0,   inparam.vsinivary,   0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,    0., 0., 0., 0., 0.,   0.0, 0.0, 0.0, 0.0 ])}
-
-    dpars2 = {'cont' : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    1e7, 1, 1,   0, 0,    0., 0., 0., 0., 0.,  1.0, 1.0, 1.0, 1.0  ]),
-              'twave': np.array([  0.0, 0.0, 0.0, 1.0,   0.0,                 0.0,   10.0, 10.0,  5.00000e-5, 1e-7,   0,   0, 0,   0, 0,    0., 0., 0., 0., 0.,   0.0, 0.0, 0.0, 0.0 ]),
-              'ip'   : np.array([  0.0, 0.0, 0.0, 0.0,   0.0,                 0.5,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,    0., 0., 0., 0., 0.,   0.0, 0.0, 0.0, 0.0 ]),
-              's'    : np.array([  5.0, 2.0, 0.0, 0.0,   0.0,                 0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,    0., 0., 0., 0., 0.,   0.0, 0.0, 0.0, 0.0 ]),
-              'v'    : np.array([  0.0, 0.0, 0.0, 0.0,   inparam.vsinivary,   0.0,    0.0,  0.0,  0.0,        0.0,    0,   0, 0,   0, 0,    0., 0., 0., 0., 0.,   0.0, 0.0, 0.0, 0.0 ])}
-
-    # Use quadratic blaze correction for order 13; cubic for orders 6, 14, 21; quartic for orders 16 and 22
-    if args.band == 'H':
-        if int(order) in [13]:
-            dpars1['cont'][20] = 0.; dpars1['cont'][21] = 0.; dpars1['cont'][22] = 0.; dpars1['cont'][23] = 0.;
-            dpars2['cont'][20] = 0.; dpars2['cont'][21] = 0.; dpars2['cont'][22] = 0.; dpars2['cont'][23] = 0.;
-        elif int(order) in [6,14,21]:
-            dpars1['cont'][21] = 0.; dpars1['cont'][22] = 0.; dpars1['cont'][23] = 0.;
-            dpars2['cont'][21] = 0.; dpars2['cont'][22] = 0.; dpars2['cont'][23] = 0.;
-        else:
-            pass
+    # Initial RV with barycentric correction
+    par[0] = initguesses-inparam.bvcs[night+tag]
+    par[5]  = IPpars[2]
+    par[13] = IPpars[1]
+    par[14] = IPpars[0]
+    if args.binary:
+        par[24] = initguesses2-inparam.bvcs[night+tag]
+    # setup fitting boundary
+    if args.binary:
+        dpars1 = base_dpars_dict(inparam.vsinivary, args.band,
+                                    int(order), len(pars0),
+                                    run_num=1,
+                                    vsini_v2=inparam.vsinivary2
+                                    )
+        dpars2 = base_dpars_dict(inparam.vsinivary, args.band,
+                                    int(order), len(pars0),
+                                    run_num=2,
+                                    vsini_v2=inparam.vsinivary2)
     else:
-        if np.int(order) in [3]:
-            dpars1['cont'][20] = 0.; dpars1['cont'][21] = 0.; dpars1['cont'][22] = 0.; dpars1['cont'][23] = 0.;
-            dpars2['cont'][20] = 0.; dpars2['cont'][21] = 0.; dpars2['cont'][22] = 0.; dpars2['cont'][23] = 0.;
-        elif np.int(order) in [4,5]:
-            dpars1['cont'][21] = 0.; dpars1['cont'][22] = 0.; dpars1['cont'][23] = 0.;
-            dpars2['cont'][21] = 0.; dpars2['cont'][22] = 0.; dpars2['cont'][23] = 0.;
-        elif np.int(order) in [6]:
-            dpars1['cont'][22] = 0.; dpars1['cont'][23] = 0.;
-            dpars2['cont'][22] = 0.; dpars2['cont'][23] = 0.;
-        else:
-            pass
+        dpars1 = base_dpars_dict(inparam.vsinivary, args.band,
+                                    int(order), len(pars0), run_num=1)
+        dpars2 = base_dpars_dict(inparam.vsinivary, args.band,
+                                    int(order), len(pars0), run_num=2)
 
-    continuum_in = rebin_jv(a0contx,continuum,x_piece,False)
-    fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]),masterbeam,np.array([],dtype=int))
 
+    continuum_in = rebin_jv(a0contx, continuum, x_piece, False)
+    fitobj = FitObjs(
+        s_piece, x_piece, u_piece, continuum_in, watm_in, satm_in,
+        mflux_in, mwave_in, ast.literal_eval(inparam.maskdict[order]),
+        masterbeam, [np.array([],dtype=int),np.array([],dtype=int)],
+        initwave, [])
+
+    if args.binary:
+        fitobj.addsecondary(mwave_in2,mflux_in2,rebin2to1)
     #-------------------------------------------------------------------------------
 
-    # Initialize an array that puts hard bounds on vsini and the instrumental resolution to make sure they do not diverge to unphysical values
+    # Initialize an array that puts hard bounds on vsini and the instrumental
+    # resolution to make sure they do not diverge to unphysical values
     optimize = True
     par_in = par.copy()
     hardbounds = [par_in[4] - dpars1['v'][4],  par_in[4] + dpars1['v'][4],
@@ -287,12 +508,21 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
     if hardbounds[2] < 1:
         hardbounds[2] = 1
 
-    # Begin optimization. Fit the blaze, the wavelength solution, the telluric template power and RV, the stellar template power and RV, the
-    # zero point for the instrumental resolution, and the vsini of the star separately, iterating and cycling between each set of parameter fits.
+    if args.binary:
+        hardbounds.append(par_in[26] - dpars2['v2'][26])
+        hardbounds.append(par_in[26] + dpars2['v2'][26])
+        if hardbounds[-2] < 0.5:
+            hardbounds[-2] = 0.5
 
-    cycles = 2
+    
+    # Begin optimization. Fit the blaze, the wavelength solution, the telluric
+    # template power and RV, the stellar template power and RV, the
+    # zero point for the instrumental resolution, and the vsini of the star
+    # separately, iterating and cycling between each set of parameter fits.
 
-    optgroup = ['cont', 'twave', 'cont', 's',
+    cycles = 4 if args.binary else 2
+
+    optgroup1 = ['cont', 'twave', 'cont', 's',
                 'cont', 'twave', 's', 'cont',
                 'twave',
                 'ip', 'v',
@@ -300,6 +530,18 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                 'twave',  's',
                 'twave',  's']
 
+    optgroup2 = ['cont', 'twave', 'cont', 's1s2',
+            'cont', 'twave', 's','s2', 'cont',
+            'twave',
+            'ip', 'v','v2',
+            'ip', 'v','v2',
+            'twave',  's','s2',
+            'twave',  's','s1s2']
+
+    optgroup = optgroup1.copy(); initstellpow2 = par_in[25]
+    par_in[25] = 0.
+
+    
     nk = 1
     for nc, cycle in enumerate(np.arange(cycles), start=1):
         if cycle == 0:
@@ -308,193 +550,146 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
         else:
             dpars = dpars2
 
+        fitobj = _add_npar(par_in, optgroup, dpars, fitobj)
+
         for optkind in optgroup:
-            parfit_1 = optimizer(parstart, dpars[optkind], hardbounds, fitobj, optimize)
+            parfit_1 = optimizer(
+                parstart, dpars[optkind], hardbounds, fitobj, optimize,
+                binary=args.binary
+                )
+
             parstart = parfit_1.copy()
+
             if args.debug == True:
-                outplotter_23(parfit_1,fitobj,'{}_{}_{}_parfit_{}{}'.format(order,night,tag,nk,optkind), trk, inparam, args, step2or3, order)
+                outplotter_23(
+                    parfit_1,fitobj,'{}_{}_{}_parfit_{}{}'.format(
+                        order,night,tag,nk,optkind),
+                        trk, inparam, args, step2or3, order)
                 logger.debug(f'{order}_{tag}_{nk}_{optkind}:\n {parfit_1}')
             nk += 1
 
+        # if nc == 2:
+        if args.binary:
+            optgroup = optgroup2.copy()
+            parstart[25] = initstellpow2
+
+            fitobj = _add_npar(par_in, optgroup, dpars, fitobj)
+            
     parfit = parfit_1.copy()
 
     #-------------------------------------------------------------------------------
 
-
     # if best fit stellar template power is very low, throw out result
     if parfit[1] < 0.1:
-        logger.warning(f'  --> Stellar template power is low for {night}! Data likely being misfit! Throwing out result...')
-        return night, np.nan, np.nan
+        logger.warning(f'  --> Stellar template power is low for {night}! '
+                            'Data likely being misfit! Throwing out result...')
+        return night, np.nan, np.nan, np.nan, np.nan
 
-    # if best fit stellar or telluric template powers are exactly equal to their starting values, fit failed, throw out result
-    if parfit[1] == par_in[1] or parfit[3] == par_in[3]:
-        logger.warning(f'  --> Stellar or telluric template powers have not budged from starting values for {night}! Fit is broken! Optimizer bounds may be unfeasible, or chi-squared may be NaN? Throwing out result...')
-        return night, np.nan, np.nan
+    if args.binary and parfit[25] < 0.05:
+        logger.warning(f'  --> Secondary stellar template power is low for {night}! '
+                            'Data likely being misfit! Throwing out result...')
+        return night, np.nan, np.nan, np.nan, np.nan
 
-    # if best fit model dips below zero at any point, we're to close to edge of blaze, fit may be comrpomised, throw out result
-    smod,chisq = fmod(parfit,fitobj)
+    # if best fit stellar or telluric template powers are exactly equal
+    # to their starting values, fit failed, throw out result
+    if parfit[1] == par_in[1] or parfit[3] == par_in[3] \
+        or (args.binary and (parfit[25] == par_in[25])):
+        logger.warning(f'  --> Stellar or telluric template powers have not '
+                            f'budged from starting values for {night}! Fit is '
+                            'broken! Optimizer bounds may be unfeasible, or '
+                            'chi-squared may be NaN? Throwing out result...')
+        return night, np.nan, np.nan, np.nan, np.nan
+
+    # if best fit model dips below zero at any point, we're to close to edge of
+    # blaze, fit may be compromised, throw out result
+    smod,chisq,trash,trash2 = fmod(parfit,fitobj,args.binary)
     if len(smod[(smod < 0)]) > 0:
-        logger.warning(f'  --> Best fit model dips below 0 for {night}! May be too close to edge of blaze, throwing out result...')
-        return night, np.nan, np.nan
-
+        logger.warning(f'  --> Best fit model dips below 0 for {night}! '
+                            'May be too close to edge of blaze, throwing '
+                            'out result...')
+        return night, np.nan, np.nan, np.nan, np.nan
 
     #-------------------------------------------------------------------------------
-
     if args.plotfigs == True:
-        parfitS = parfit.copy(); parfitS[3] = 0
-        parfitT = parfit.copy(); parfitT[1] = 0
-        outplotter_23(parfitS, fitobj, 'parfitS_{}_{}_{}'.format(order,night,tag), trk, inparam, args, step2or3, order)
-        outplotter_23(parfitT, fitobj, 'parfitT_{}_{}_{}'.format(order,night,tag), trk, inparam, args, step2or3, order)
-        outplotter_23(parfit, fitobj,  'parfit_{}_{}_{}'.format(order,night,tag), trk, inparam, args, step2or3, order)
+        parfitS1 = parfit.copy(); parfitS1[3] = 0; parfitS1[25] = 0
+        parfitS2 = parfit.copy(); parfitS2[3] = 0; parfitS2[1] = 0
+        parfitT = parfit.copy(); parfitT[1] = 0; parfitT[25] = 0
+        if args.binary:
+            outplotter_23(
+                parfitS1, fitobj, 'parfitS1_{}_{}_{}'.format(order,night,tag),
+                trk, inparam, args, step2or3, order)
+            outplotter_23(
+                parfitS2, fitobj, 'parfitS2_{}_{}_{}'.format(order,night,tag),
+                trk, inparam, args, step2or3, order)
+        else:
+            outplotter_23(
+                parfitS1, fitobj, 'parfitS_{}_{}_{}'.format(order,night,tag),
+                trk, inparam, args, step2or3, order)
+        outplotter_23(
+            parfitT, fitobj, 'parfitT_{}_{}_{}'.format(order,night,tag),
+            trk, inparam, args, step2or3,order)
+        outplotter_23(
+            parfit, fitobj,  'parfit_{}_{}_{}'.format(order,night,tag),
+            trk, inparam, args, step2or3, order, chi_new=chisq)
 
     rv0 = parfit[0]
-    rvsmini    = rv0 + inparam.bvcs[night+tag] + rv0*inparam.bvcs[night+tag]/(2.99792458e5**2) # Barycentric correction
+    # Barycentric correction
+    rvsmini = rv0 + inparam.bvcs[night+tag] \
+        + rv0*inparam.bvcs[night+tag]/(2.99792458e5**2)
     vsinismini = parfit[4]
 
     bestguess = np.round(rvsmini,5)
     vsinimini = np.round(vsinismini,5)
-    return night, bestguess, vsinimini
 
-#-------------------------------------------------------------------------------
+    if args.binary:
+        rv2 = parfit[24]
+        bestguess2 = rv2  + inparam.bvcs[night+tag] \
+            + rv2*inparam.bvcs[night+tag]/(2.99792458e5**2)
+        vsinimini2 = parfit[26]
+    else:
+        bestguess2 = np.nan
+        vsinimini2 = np.nan
+
+    return night, bestguess, vsinimini, bestguess2, vsinimini2
+
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(
-                                     prog        = 'IGRINS Spectra Radial Velocity Pipeline - Step 2',
-                                     description = '''
-                                     Required if the average RV of the target star is unknown to > 5 km/s precision. \n
-                                     Performs an abbreviated analysis of the target star observations in order to converge to coarsely accurate RVs, which will be used as starting points for the more precise analysis in the next step; \n
-                                     simultaneously does the same for target star's vsini. \n
-                                     Only the single most precise wavelength region is used, and all separate observations for a given exposure are combined into one higher S/N spectrum before being fit.
-                                     ''',
-                                     epilog = "Contact authors: asa.stahl@rice.edu; sytang@lowell.edu")
-    parser.add_argument("targname",                          action="store",
-                        help="Enter your *target name, no space",            type=str)
-    parser.add_argument("-HorK",    dest="band",             action="store",
-                        help="Which band to process? H or K?. Default = K",
-                        type=str,   default='K')
-    parser.add_argument("-Wr",      dest="WRegion",          action="store",
-                        help="Which list of wavelength regions file (./Input/UseWv/WaveRegions_X) to use? Defaults to those chosen by IGRINS RV team, -Wr 1",
-                        type=int,   default=int(1))
-    parser.add_argument("-l_use",   dest="label_use",        action="store",
-                        help="Specify ORDER used. Default is the first in WRegion list",
-                        type=int,   default=int(0))
-    parser.add_argument("-SN",      dest="SN_cut",           action="store",
-                        help="Spectrum S/N quality cut. Spectra with median S/N below this will not be analyzed. Default = 50 ",
-                        type=str,   default='50')
-    parser.add_argument('-i',       dest="initvsini",        action="store",
-                        help="Initial vsini (float, km/s)",
-                        type=str,   default='' )
-    parser.add_argument('-v',       dest="vsinivary",        action="store",
-                        help="Range of allowed vsini variation during optimization (float, if set to zero vsini will be held constant), default = 5.0 km/s",
-                        type=str,   default='5' )
-    parser.add_argument('-g',       dest="guesses",          action="store",
-                        help="Initial guess for RV (int or float, km/s) for all nights. Use -gX instead if you want to reference an Initguesser_results file from a previous run of this step, which will have a different initial guess for each night",
-                        type=str,   default='')
-    parser.add_argument('-gX',      dest="guessesX",         action="store",
-                        help="The number, X, that refers to the ./*targname/Initguesser_results_X file you wish to use for initial RV guesses",
-                        type=str,   default='')
-    parser.add_argument('-t',       dest="template",         action="store",
-                        help="Stellar template. Pick from 'synthetic', 'PHOENIX', or 'livingston'. Default = 'synthetic'",
-                        type=str,   default='synthetic' )
-    parser.add_argument('-temp',      dest="temperature",           action="store",
-                        help="The synthetic template temperature used, e.g., 5000",
-                        type=str,   default='' )
-    parser.add_argument('-logg',      dest="logg",           action="store",
-                        help="The synthetic template logg used, e.g., 4.5",
-                        type=str,   default='' )
-    # parser.add_argument('-sp',      dest="sptype",           action="store",
-    #                     help="The spectral type of the *target. (Letter only)",
-    #                     type=str,   default='' )
-    parser.add_argument('-c',       dest="Nthreads",         action="store",
-                        help="Number of cpu (threads) to use, default is 1/2 of avalible ones (you have %i cpus (threads) avaliable)"%(mp.cpu_count()),
-                        type=int,   default=int(mp.cpu_count()//2) )
-    parser.add_argument('-plot',    dest="plotfigs",          action="store_true",
-                        help="If set, will generate plots of the basic fitting results under ./Output/*targname_*band/figs/main_step2_*band_*runnumber")
-    parser.add_argument('-n_use',   dest="nights_use",       action="store",
-                        help="If you don't want to process all nights under the ./Input/*target/ folder, specify an array of night you wish to process here. e.g., [20181111,20181112]",
-                        type=str,   default='')
-    parser.add_argument('-DeBug',    dest="debug",           action="store_true",
-                        help="If set, DeBug logging will be output, as well as (lots of) extra plots.")
-    parser.add_argument('-sk_check', dest="skip",           action="store_true",
-                        help="If set, will skip the input parameters check. Handy when running mutiple targets line by line")
-    parser.add_argument('--version',                          action='version',  version='%(prog)s 1.0.0')
-    args = parser.parse_args()
+
+    args = _argparse_step2()
     inpath   = './Input/{}'.format(args.targname)
     cdbs_loc = '~/cdbs/'
 
+    check_user_input(args, singleORdouble=1)
+    check_if_template_exist(args, singleORdouble=1)
+
+    initvsini = float(args.initvsini)
+    vsinivary = float(args.vsinivary)
+
+    if args.binary:
+        initvsini2 = float(args.initvsini2)
+        vsinivary2 = float(args.vsinivary2)
+
+        check_user_input(args, singleORdouble=2)
+        check_if_template_exist(args, singleORdouble=2)
+
     #-------------------------------------------------------------------------------
-
-    #### Check user inputs
-
-    initvsini = np.float(args.initvsini)
-    vsinivary = np.float(args.vsinivary)
-
-    if args.initvsini == '':
-        sys.exit('ERROR: YOU MUST PROVIDE AN INITIAL GUESS FOR VSINI VALUE, "-i"')
-
-    if (args.guesses == '') & (args.guessesX == ''):
-        sys.exit('ERROR: YOU MUST PROVIDE AN INITIAL GUESS FOR RV VALUE(S) BY USING "-g" OR "-gX"')
-
-    if (args.temperature == '') & (args.logg == ''):
-        sys.exit('ERROR: YOU MUST PROVIDE THE TEMPERATURE AND LOGG VALUE FOR STELLAR TEMPLATE. GO TO "./Engine/syn_template/" TO SEE AVAILABLE TEMPLATES')
-    #------------------------------
-
-    if args.template.lower() not in ['synthetic', 'livingston', 'phoenix']:
-        sys.exit('ERROR: UNEXPECTED STELLAR TEMPLATE FOR "-t" INPUT!')
-
-    #------------------------------
-
-    syntemp = os.listdir(f'./Engine/syn_template')
-    syntemp = [i for i in syntemp if i[:3] == 'syn'] #list of all syntheticstellar
-
-    synT    = [ i.split('_')[2][1:]  for i in syntemp ]
-    synlogg = [ i.split('_')[3][4:7] for i in syntemp ]
-
-    if args.temperature not in synT:
-        sys.exit(f'ERROR: UNEXPECTED STELLAR TEMPERATURE FOR "-temp" INPUT! {syntemp} AVALIABLE UNDER ./Engine/syn_template/')
-
-    if args.logg not in synlogg:
-        sys.exit(f'ERROR: UNEXPECTED STELLAR LOGG FOR "-logg" INPUT! {syntemp} AVALIABLE UNDER ./Engine/syn_template/')
-
-    #------------------------------
-
-    if (args.guesses != '') & (args.guessesX != ''):
-        sys.exit('ERROR: YOU CAN ONLY CHOOSE EITHER -g OR -gX')
-
-    #------------------------------
     # Specify initial RV guesses as a single value applied to all nights
 
-    if args.guesses != '':
-        try:
-            initguesses = float(args.guesses)
-            initguesses_show = initguesses
-        except:
-            sys.exit('ERROR: -g ONLY TAKES A NUMBER AS INPUT!')
-
-    #------------------------------
-
-    # Load initial RV guesses from file
-    if args.guessesX != '':
-        try:
-            guessdata = Table.read(f'./Output/{args.targname}_{args.band}/Initguesser_results_{args.guessesX}.csv', format='csv')
-
-        except:
-            sys.exit(f'ERROR: "./Output/{args.targname}_{args.band}/Initguesser_results_{args.guessesX}.csv" NOT FOUND!')
-
-        initnights = np.array(guessdata['night'])
-        initrvs    = np.array(guessdata['bestguess'])
-        initguesses = {}
-        initguesses_show = f'Initguesser_results_{args.guessesX}.csv'
-        for hrt in range(len(initnights)):
-            initguesses[str(initnights[hrt])] = float(initrvs[hrt])
+    if args.binary:
+        initguesses, initguesses_show, initguesses2 = setup_init_rv_guess(args)
+    else:
+        initguesses, initguesses_show = setup_init_rv_guess(args)
 
     #------------------------------
     # Read in the Prepdata under ./Input/Prpedata/
-    xbounddict, maskdict, tagsA, tagsB, mjds, bvcs, nightsFinal, orders, obs = read_prepdata(args)
+    xbounddict, maskdict, tagsA, tagsB, mjds, \
+        bvcs, nightsFinal, orders, obs = read_prepdata(args)
 
     if int(args.label_use) not in orders:
-        sys.exit(f'Oops! -l_use INPUT "{args.label_use}" is not in "{orders}" from the given WRegion list!!')
+        sys.exit(
+            f'Oops! -l_use INPUT "{args.label_use}" is not in "{orders}" '
+                'from the given WRegion list!!')
 
 #-------------------------------------------------------------------------------
 
@@ -515,10 +710,11 @@ Input Parameters:
     syn template temp   = \33[37;1;41m {} \033[0m
     syn template logg   = \33[37;1;41m {} \033[0m
     Threads use         =  {}
-    '''.format(args.targname, args.band, args.WRegion, args.SN_cut, args.label_use,
-               initvsini, vsinivary, initguesses_show, args.template, args.temperature, args.logg, args.Nthreads))
+    '''.format(args.targname, args.band, args.WRegion, args.SN_cut,
+                args.label_use, initvsini, vsinivary, initguesses_show,
+                args.template, args.temperature, args.logg, args.Nthreads)
+        )
 
-# Target Spectral Type= \33[41m {} \033[0m             <-------  [late K, M] recommended 'synthetic', [F, G, early K] SpTy recommended 'livingston'
     if not args.skip:
         while True:
             inpp = input("Press [Y]es to continue, [N]o to quit...\n --> ")
@@ -530,74 +726,61 @@ Input Parameters:
                 print('I cannot understand what you are saying... TRY AGAIN')
                 continue
 
+    if args.binary:
+        print(u'''
+PLUS BINARY PARAMETERS:
+    Initial vsini #2        = \33[37;1;41m {} km/s \033[0m
+    vsini #2 vary range     \u00B1 \33[37;1;41m {} km/s \033[0m
+    Stellar template #2 use = \33[37;1;41m {} \033[0m
+    syn template temp #2    = \33[37;1;41m {} \033[0m
+    syn template logg #2    = \33[37;1;41m {} \033[0m
+    syn template B #2       = \33[37;1;41m {} \033[0m
+        '''.format(initvsini2, vsinivary2, args.template2,
+                    args.temperature2, args.logg2, args.B2)
+        )
+        if not args.skip:
+            while True:
+                inpp = input("Press [Y]es to continue, [N]o to quite...\n --> ")
+                if 'n' in inpp.lower():
+                    sys.exit('QUIT, PLEASE RE-ENTER YOUR PARAMETERS')
+                elif 'y' in inpp.lower():
+                    break
+                else:
+                    print('I cannot understand what you are saying... TRY AGAIN')
+                    continue
+
     print('---------------------------------------------------------------')
     print('Running Step 2 for {}...'.format(args.targname))
     print('This Will Take a While..........')
 
     #-------------------------------------------------------------------------------
 
-    # Make output directories as needed
-    if not os.path.isdir('./Output'):
-        os.mkdir('./Output')
-
-    if not os.path.isdir(f'./Output/{args.targname}_{args.band}'):
-        os.mkdir(f'./Output/{args.targname}_{args.band}')
-    filesndirs = os.listdir(f'./Output/{args.targname}_{args.band}')
-
-    trk = 1; go = True;
-    while go == True:
-        iniguess_dir = 'Initguesser_results_{}.csv'.format(trk)
-        if iniguess_dir not in filesndirs:
-            break
-        trk += 1
-
-    if not os.path.isdir(f'./Output/{args.targname}_{args.band}/figs'):
-        os.mkdir(f'./Output/{args.targname}_{args.band}/figs')
-
-    step2or3 = 2
-    if not os.path.isdir(f'./Output/{args.targname}_{args.band}/figs/main_step{step2or3}_{args.band}_{trk}'):
-        os.mkdir(f'./Output/{args.targname}_{args.band}/figs/main_step{step2or3}_{args.band}_{trk}')
-
-    outpath = f'./Output/{args.targname}_{args.band}'
-
-
-    #-------------------------------------------------------------------------------
-
-    # Set up logger
-    logger = logging.getLogger(__name__)
-    if args.debug:
-        logger.setLevel(logging.DEBUG)
-    else:
-        logger.setLevel(logging.INFO)
-    formatter = logging.Formatter('%(asctime)s: %(module)s.py: %(levelname)s--> %(message)s')
-
-    file_hander  = logging.FileHandler(f'{outpath}/{args.targname}_{args.band}.log')
-    stream_hander= logging.StreamHandler()
-
-    # file_hander.setLevel()
-    file_hander.setFormatter(formatter)
-
-    logger.addHandler(file_hander)
-    logger.addHandler(stream_hander)
-    logger.propagate = False
+    trk, outpath, step2or3, iniguess_dir = mkdir_output_dic(args)
+    logger, stream_hander = setup_logger(args, outpath)
 
     #-------------------------------------------------------------------------------
     # Create output file to write to
-    logger.info(f'Writing output to ./Output/{args.targname}_{args.band}/{iniguess_dir}')
+    logger.info(
+        f'Writing output to ./Output/{args.targname}_{args.band}/{iniguess_dir}'
+        )
 
-    filew = open(f'./Output/{args.targname}_{args.band}/{iniguess_dir}','w')
-    filew.write('night, bestguess, vsini')
-    filew.write('\n')
+    filew = open(
+        f'./Output/{args.targname}_{args.band}/{iniguess_dir}','w')
 
-    #-------------------------------------------------------------------------------
-
+    if args.binary:
+        filew.write('night, bestguess, vsini, bestguess2, vsini2\n')
+    else:
+        filew.write('night, bestguess, vsini\n')
 
     # Use subset of nights if specified
     if args.nights_use != '':
         nightstemp = np.array(ast.literal_eval(args.nights_use), dtype=str)
         for nnn in nightstemp:
             if nnn not in nightsFinal:
-                sys.exit('NIGHT {} NOT FOUND UNDER ./Input_Data/{}'.format(nnn, args.targname))
+                sys.exit(
+                    'NIGHT {} NOT FOUND UNDER ./Input_Data/{}'.format(
+                        nnn, args.targname
+                        ))
         nightsFinal = nightstemp
         print('Only processing nights: {}'.format(nightsFinal))
 
@@ -620,11 +803,27 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
     #-------------------------------------------------------------------------------
 
     # Retrieve stellar and telluric templates
-    watm,satm, mwave0, mflux0 = setup_templates(logger, args.template, args.band, int(args.temperature), float(args.logg))
+    watm,satm, mwave0, mflux0 = setup_templates(
+        logger, args.template, args.band, int(args.temperature),
+        float(args.logg), float(args.B)
+        )
 
     # Save pars in class for future use
-    inparam = inparams(inpath,outpath,initvsini,vsinivary,args.plotfigs,
-                       initguesses,bvcs,tagsA,tagsB,nightsFinal,mwave0,mflux0,None,xbounddict,maskdict)
+    inparam = InParams(
+        inpath, outpath, initvsini, vsinivary, args.plotfigs, initguesses,
+        bvcs, tagsA, tagsB, nightsFinal, mwave0, mflux0, None, xbounddict,
+        maskdict
+        )
+
+    if args.binary:
+        print('\n Loading secondary stellar template... \n')
+        watm,satm, mwave2, mflux2 = setup_templates(
+            logger, args.template2, args.band, int(args.temperature2),
+            float(args.logg2), float(args.B2)
+            )
+        inparam.addsecondary(
+            initvsini2, vsinivary2, mwave2, mflux2, initguesses2
+            )
 
     #-------------------------------------------------------------------------------
     # if not in debug mode than enter quite mode, i.e., all message saved in log file
@@ -632,25 +831,40 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
     print('\n')
 
     # Run order by order, multiprocessing over nights within an order
-    func = partial(rv_MPinst, args, inparam, orders, int(args.label_use), trk, step2or3 )
+    func = partial(
+        main, args, inparam, orders, int(args.label_use), trk, step2or3
+        )
     outs = pqdm(np.arange(len(nightsFinal)), func, n_jobs=args.Nthreads)
-    # pool = mp.Pool(processes = args.Nthreads)
-    # outs = pool.map(func, np.arange(len(nightsFinal)))
-    # pool.close()
-    # pool.join()
+
+    # for ii in np.arange(len(nightsFinal)):
+    #     main(args, inparam, orders, int(args.label_use), trk, step2or3, ii)
 
     # Write outputs to file
-    vsinis = []; finalrvs = [];
+    vsinis = []; finalrvs = []; vsinis2 = []; finalrvs2 = []
     for n in range(len(nightsFinal)):
         nightout = outs[n]
-        filew.write('{}, {}, {}'.format(nightout[0], nightout[1], nightout[2]))
+        if args.binary:
+            filew.write(
+                '{}, {}, {}, {}, {}'.format(
+                    nightout[0], nightout[1], nightout[2],
+                    nightout[3], nightout[4])
+                    )
+        else:
+            filew.write(
+                '{}, {}, {}'.format(
+                    nightout[0], nightout[1], nightout[2])
+                    )
         filew.write('\n')
+        vsinis2.append(nightout[4])
+        finalrvs2.append(nightout[3])
         vsinis.append(nightout[2])
         finalrvs.append(nightout[1])
 
     filew.close()
 
-    warning_r = log_warning_id(f'{outpath}/{args.targname}_{args.band}.log', start_time)
+    warning_r = log_warning_id(
+        f'{outpath}/{args.targname}_{args.band}.log', start_time
+        )
     if warning_r:
         print(f'''
 **********************************************************************************
@@ -658,19 +872,34 @@ WARNING!! you got warning message during this run. Please check the log file und
           {outpath}/{args.targname}_{args.band}.log
 **********************************************************************************
 ''')
-    print('\n')
     if not args.debug: logger.addHandler(stream_hander)
     print('--------!Initial Guess!--------')
-    logger.info('RV results:    mean= {:1.4f} km/s, median= {:1.4f} km/s, std= {:1.4f} km/s'.format(np.nanmean(finalrvs),
-                                                                                                    np.nanmedian(finalrvs),
-                                                                                                    np.nanstd(finalrvs)      ))
-    logger.info('vsini results: mean= {:1.4f} km/s, median= {:1.4f} km/s, std= {:1.4f} km/s'.format(np.nanmean(vsinis),
-                                                                                                    np.nanmedian(vsinis),
-                                                                                                    np.nanstd(vsinis)      ))
+    logger.info(
+        'RV results:    mean= {:1.4f} km/s, median= {:1.4f} km/s, std= {:1.4f} km/s'.format(
+            np.nanmean(finalrvs), np.nanmedian(finalrvs), np.nanstd(finalrvs) )
+            )
+    logger.info(
+        'vsini results: mean= {:1.4f} km/s, median= {:1.4f} km/s, std= {:1.4f} km/s'.format(
+            np.nanmean(vsinis), np.nanmedian(vsinis), np.nanstd(vsinis) )
+            )
+    if args.binary:
+        logger.info(
+            'RV 2 results:    mean= {:1.4f} km/s, median= {:1.4f} km/s, std= {:1.4f} km/s'.format(
+                np.nanmean(finalrvs2), np.nanmedian(finalrvs2), np.nanstd(finalrvs2) )
+                )
+        logger.info(
+            'vsini 2 results: mean= {:1.4f} km/s, median= {:1.4f} km/s, std= {:1.4f} km/s'.format(
+                np.nanmean(vsinis2), np.nanmedian(vsinis2), np.nanstd(vsinis2) )
+                )
     end_time = datetime.now()
-    logger.info('RV Initial Guess DONE... Duration: {}'.format(end_time - start_time))
-    logger.info(f'Output saved under ./Output/{args.targname}_{args.band}/{iniguess_dir}')
-    print('---------------------------------------------------------------')
-    print('You can now try to get a better RV initial guess with by rerunning Step 2 with -gX set to the run number you just completed.')
+    logger.info(
+        '\nRV Initial Guess DONE... Duration: {}'.format(end_time - start_time)
+        )
+    logger.info(
+        f'Output saved under ./Output/{args.targname}_{args.band}/{iniguess_dir}'
+        )
+    print('---------------------------------------------------------------\n')
+    print('You can now try to get a better RV initial guess with by')
+    print('rerunning Step 2 with -gX set to the run number you just completed.')
     print('OR, you can go on to the full RV analysis in Step 3.')
     print('####################################################################################')

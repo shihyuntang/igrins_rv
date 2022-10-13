@@ -2,18 +2,21 @@ import sys
 sys.path.append("..") # Adds higher directory to python modules path.
 
 from Engine.importmodule import *
-from Engine.IO_AB    import setup_templates, init_fitsread, stellarmodel_setup, setup_outdir
+from Engine.IO_AB    import (setup_templates, init_fitsread, stellarmodel_setup, 
+                                setup_outdir)
 from Engine.clips    import basicclip_above
-from Engine.contfit  import A0cont
-from Engine.classes  import fitobjs, inparamsA0
+from Engine.contfit  import a0cont
+from Engine.classes  import FitObjs, InParamsA0
 from Engine.rebin_jv import rebin_jv
 from Engine.rotint   import rotint
 from Engine.opt      import optimizer
+from Engine.set_argparse import _argparse_step0_s
 # -------------------------------------------------------------------------------
 # -------------------------------------------------------------------------------
-def DataPrep(args, tar_night, tar_num, tar_frame, file_night_num, std_name, std_num, std_night):
+def DataPrep(args, tar_night, tar_num, tar_frame, file_night_num, 
+                std_name, std_num, std_night):
     star = args.targname.replace(' ', '')
-    inpath     = '../Input/{}/'.format(star)
+    inpath = '../Input/{}/'.format(star)
 
     # Find all nights of observations of target in master log
     master_log_fh = '../Engine/IGRINS_MASTERLOG.csv'
@@ -27,7 +30,8 @@ def DataPrep(args, tar_night, tar_num, tar_frame, file_night_num, std_name, std_
     fileT.write('night beam tag jd facility airmass bvc\n')
 
     nightsT = []
-#    for x in range(len(star_files['CIVIL'])):
+    
+    # for x in range(len(star_files['CIVIL'])):
     print('target nights', tar_night)
     for x in range(len(tar_night)):
         night    = str(tar_night[x])
@@ -46,31 +50,40 @@ def DataPrep(args, tar_night, tar_num, tar_frame, file_night_num, std_name, std_
         try:
             temp_dir = 'SDC{}_{}_{}.spec.fits'.format(args.band, night, tag)
             if temp_dir in os.listdir('{}{}_{}/A'.format(inpath, night, tag)):
-                print('{}{}_{}/A/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag, args.band, night, tag))
-                hdulist = fits.open('{}{}_{}/A/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag, args.band, night, tag))
-                save_yn = 0 ; fram_ty = 'A'
+                print('{}{}_{}/A/SDC{}_{}_{}.spec.fits'.format(
+                            inpath, night, tag, args.band, night, tag))
+                hdulist = fits.open('{}{}_{}/A/SDC{}_{}_{}.spec.fits'.format(
+                            inpath, night, tag, args.band, night, tag))
+                save_yn = 0
+                fram_ty = 'A'
                 print('first')
             else:
-                print('{}{}_{}/B/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag, args.band, night, tag))
-                hdulist = fits.open('{}{}_{}/B/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag, args.band, night, tag))
-                save_yn = 0 ; fram_ty = 'B'
+                print('{}{}_{}/B/SDC{}_{}_{}.spec.fits'.format(
+                        inpath, night, tag, args.band, night, tag))
+                hdulist = fits.open('{}{}_{}/B/SDC{}_{}_{}.spec.fits'.format(
+                        inpath, night, tag, args.band, night, tag))
+                save_yn = 0 
+                fram_ty = 'B'
                 print('first')
-
-            # hdulist = fits.open('{}{}_{}/{}/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag, frame, args.band, night, tag))
-            # print('{}{}_{}/{}/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag, frame, args.band, night, tag))
-            # print('first')
-            # save_yn = 0
 
         except:
             temp_dir = 'SDC{}_{}_{}.spec.fits'.format(args.band, night, tag)
             if temp_dir in os.listdir('{}{}_{}/A'.format(inpath, night, tag_temp)):
-                print('{}{}_{}/A/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag_temp, args.band, night, tag))
-                hdulist = fits.open('{}{}_{}/A/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag_temp, args.band, night, tag))
-                save_yn = 1 ; fram_ty = 'A'
+                print('{}{}_{}/A/SDC{}_{}_{}.spec.fits'.format(
+                        inpath, night, tag_temp, args.band, night, tag))
+                hdulist = fits.open('{}{}_{}/A/SDC{}_{}_{}.spec.fits'.format(
+                                        inpath, night, tag_temp, args.band, 
+                                        night, tag))
+                save_yn = 1
+                fram_ty = 'A'
             else:
-                print('{}{}_{}/B/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag_temp, args.band, night, tag))
-                hdulist = fits.open('{}{}_{}/B/SDC{}_{}_{}.spec.fits'.format(inpath, night, tag_temp, args.band, night, tag))
-                save_yn = 1 ; fram_ty = 'B'
+                print('{}{}_{}/B/SDC{}_{}_{}.spec.fits'.format(
+                        inpath, night, tag_temp, args.band, night, tag))
+                hdulist = fits.open('{}{}_{}/B/SDC{}_{}_{}.spec.fits'.format(
+                                        inpath, night, tag_temp, args.band, 
+                                        night, tag))
+                save_yn = 1
+                fram_ty = 'B'
 
 
         if save_yn == 0:
@@ -80,14 +93,20 @@ def DataPrep(args, tar_night, tar_num, tar_frame, file_night_num, std_name, std_
         head = hdulist[0].header
         if head['OBSERVAT'].lower() == 'lowell observatory':
             obs = 'DCT'
-        elif (head['OBSERVAT'].lower() == 'mcdonald observatory') or (head['OBSERVAT'].lower()  == 'mcdonald'):
+        elif (head['OBSERVAT'].lower() == 'mcdonald observatory') \
+                or (head['OBSERVAT'].lower()  == 'mcdonald'):
             obs = 'McD'
         else:
-            print('EXPECTED LOWELL OR MCDONALD OBSERVATORY, GOT {}. CODE MUST BE EDITED TO INCLUDE THIS OPTION - CONTACT AUTHORS WITH EXAMPLE OBSERVATION FITS FILE AND THEY WILL UPDATE'.format( head['OBSERVAT'].lower() ))
+            print(f'EXPECTED LOWELL OR MCDONALD OBSERVATORY, GOT {head["OBSERVAT"].lower()}. '
+                    'CODE MUST BE EDITED TO INCLUDE THIS OPTION - '
+                    'CONTACT AUTHORS WITH EXAMPLE OBSERVATION FITS FILE '
+                    'AND THEY WILL UPDATE')
 
         # Collect time of mid-exposure
         try:
-            time_midpoint = np.mean([float(head['JD-OBS']),float(head['JD-END'])])
+            time_midpoint = np.mean(
+                [float(head['JD-OBS']),float(head['JD-END'])]
+                )
         except KeyError:
             l0 = []
             for nm in ['DATE-OBS','DATE-END']:
@@ -105,15 +124,17 @@ def DataPrep(args, tar_night, tar_num, tar_frame, file_night_num, std_name, std_
             pmra_deg = np.array(ast.literal_eval(args.pm), dtype=float)[0]
             pmde_deg = np.array(ast.literal_eval(args.pm), dtype=float)[1]
 
-            targ_c = SkyCoord(ra  =  ra_deg                   *units.degree,
-                              dec =  de_deg                   *units.degree,
-                              pm_ra_cosdec = pmra_deg         *units.mas/units.yr,
-                              pm_dec       = pmde_deg         *units.mas/units.yr,
-                              # distance = float(args.distance) *units.pc,
-                              frame='icrs',
-                              obstime="J2015.5")
+            targ_c = SkyCoord(
+                ra  =  ra_deg           *units.degree,
+                dec =  de_deg           *units.degree,
+                pm_ra_cosdec = pmra_deg *units.mas/units.yr,
+                pm_dec       = pmde_deg *units.mas/units.yr,
+                frame='icrs',
+                obstime="J2015.5")
 
-            new_coord = targ_c.apply_space_motion(new_obstime=Time(time_midpoint, format='jd'))
+            new_coord = targ_c.apply_space_motion(
+                            new_obstime=Time(time_midpoint, format='jd')
+                            )
 
 
             if obs == 'McD':
@@ -126,21 +147,31 @@ def DataPrep(args, tar_night, tar_num, tar_frame, file_night_num, std_name, std_
 
             sc = SkyCoord(ra=new_RA, dec=new_DE, frame=ICRS)
 
-            barycorr  = sc.radial_velocity_correction(obstime=Time(time_midpoint, format='jd'), location=observatoryN)
+            barycorr  = sc.radial_velocity_correction(
+                            obstime=Time(time_midpoint, format='jd'), 
+                            location=observatoryN
+                            )
             BVCfile   = barycorr.to(units.km/units.s).value
 
         else:
             if obs == 'McD':
                 observatoryN = EarthLocation.of_site('McDonald Observatory')
-                BVCfile  = float(np.array(star_files['BVC'])[x]       ) #BVC in the master log might be wrong, so, re-calculated below...
+                #BVC in the master log might be wrong, so, re-calculated below...
+                BVCfile  = float(np.array(star_files['BVC'])[x]) 
 
             elif obs == 'DCT':
                 print('Calculating BVC base on the fits header info. ...')
                 observatoryN = EarthLocation.of_site('DCT')
 
                 framee = f"{head['RADECSYS'][:2].lower()}{head['RADECSYS'][-1]}"
-                sc = SkyCoord(f"{head['TELRA']} {head['TELDEC']}", frame=framee, unit=(units.hourangle, units.deg))
-                barycorr = sc.radial_velocity_correction(obstime=Time(time_midpoint, format='jd'), location=observatoryN)
+                sc = SkyCoord(f"{head['TELRA']} {head['TELDEC']}", 
+                                frame=framee, 
+                                unit=(units.hourangle, units.deg)
+                                )
+                barycorr = sc.radial_velocity_correction(
+                                obstime=Time(time_midpoint, format='jd'), 
+                                location=observatoryN
+                                )
                 BVCfile = barycorr.to(units.km/units.s).value
 
         mjd = time_midpoint
@@ -185,14 +216,16 @@ def DataPrep(args, tar_night, tar_num, tar_frame, file_night_num, std_name, std_
             tagA0 = int(num)
 
             tagA = '{:04d}'.format(tagA0)
-            subpath = '{}std/{}/A/SDC{}_{}_{}.spec.fits'.format(inpath, night, args.band, night, tagA)
+            subpath = '{}std/{}/A/SDC{}_{}_{}.spec.fits'.format(
+                                    inpath, night, args.band, night, tagA)
 
             try:
                 hdulist = fits.open(subpath)
                 head = hdulist[0].header
 
             except FileNotFoundError:
-                # If best airmass match A0 for night not found, check if Joe chose a different A0 instead
+                # If best airmass match A0 for night not found, check if Joe 
+                # chose a different A0 instead
                 subpath        = '{}std/{}/A/'.format(inpath, night)
                 fullpathprefix = '{}SDC{}_{}_'.format(subpath, args.band, night)
 
@@ -210,7 +243,8 @@ def DataPrep(args, tar_night, tar_num, tar_frame, file_night_num, std_name, std_
 
             if head['OBSERVAT'] == 'Lowell Observatory':
                 obs = 'DCT'
-            elif (head['OBSERVAT'] == 'McDonald Observatory') or (head['OBSERVAT'] == 'McDonald'):
+            elif (head['OBSERVAT'] == 'McDonald Observatory') \
+                    or (head['OBSERVAT'] == 'McDonald'):
                 obs = 'McD'
             else:
                 sys.exit('EXPECTED LOWELL OR McDonald, GOT ' +
@@ -250,48 +284,24 @@ def DataPrep(args, tar_night, tar_num, tar_frame, file_night_num, std_name, std_
     if len(noA0nights) != 0:
         print('No reduced A0s found for following nights:')
         print(n)
-        print('To achieve highest precision, this pipeline defaults to not analyzing target spectra for these nights.\n')
+        print('To achieve highest precision, this pipeline defaults '
+                'to not analyzing target spectra for these nights.\n')
 
 
 # -------------------------------------------------------------------------------
 # -------------------------------------------------------------------------------
 # -------------------------------------------------------------------------------
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(
-                                     prog        = 'IGRINS Spectra Radial Velocity Pipeline',
-                                     description = '''
-                                     This is a pipeline that helps you to extract radial velocity \n
-                                     from IGRINS spectra. \n
-                                     ''',
-                                     epilog = "Contact authors: asa.stahl@rice.edu; sytang@lowell.edu")
-    parser.add_argument("targname",                          action="store",
-                        help="Enter your *target name",            type=str)
-    parser.add_argument("-HorK",    dest="band",            action="store",
-                        help="Which band to process? H or K?",
-                        type=str,   default='K')
 
-    parser.add_argument("-coord",    dest="coord",            action="store",
-                        help="Optional [-XX.xx,-XX.xx] deg, GaiaDR2 coordinates at J2015.5. If give, will calculate BVC base on this info.",
-                        type=str,   default='')
-    parser.add_argument("-pm",       dest="pm",               action="store",
-                        help="Optional [-XX.xx,-XX.xx] [mas/yr], GaiaDR2 proper motion. If give, will calculate BVC base on this info.",
-                        type=str,   default='')
-    # parser.add_argument("-dist",    dest="distance",          action="store",
-    #                     help="Optional (pc), can be from GaiaDR2 parallax [mas] (1/plx), or from Bailer-Jones et al. 2018. If give, will calculate BVC base on this info.",
-    #                     type=str,   default='')
-
-    parser.add_argument('-c',       dest="Nthreads",         action="store",
-                        help="Number of cpu (threads) to use, default is 1/2 of avalible ones (you have %i cpus (threads) avaliable)" % (
-                            mp.cpu_count()),
-                        type=int,   default=int(mp.cpu_count()//2))
-    parser.add_argument('--version',
-                        action='version',  version='%(prog)s 0.9')
-    args = parser.parse_args()
-    cdbs_loc = '~/cdbs/'
+    args = _argparse_step0_s()
     inpath     = '../Input/{}/'.format(args.targname)
 
-    new_tar_list = os.listdir('./{}_recipes'.format(args.targname.replace(' ', '')))
-    target_have  = np.sort([int(dump[:8]) for dump in new_tar_list if dump[-1] == 'p'])
+    new_tar_list = os.listdir(
+        './{}_recipes'.format(args.targname.replace(' ', ''))
+        )
+    target_have = np.sort(
+        [int(dump[:8]) for dump in new_tar_list if dump[-1] == 'p']
+        )
 
     tar_night = []
     tar_num   = []
@@ -302,7 +312,10 @@ if __name__ == '__main__':
     std_name = []
     std_num  = []
     for i in target_have:
-        tempp = Table.read('./{}_recipes/{}.recipes.tmp'.format(args.targname.replace(' ', ''), i), format='ascii')
+        tempp = Table.read(
+            './{}_recipes/{}.recipes.tmp'.format(
+                args.targname.replace(' ', ''), i),
+                format='ascii')
 
         temp = tempp[ tempp['OBJNAME'] == '{}'.format(args.targname) ]
         for rows in range(len(temp)):
@@ -314,7 +327,9 @@ if __name__ == '__main__':
                 tar_frame.append(nn)
                 tar_night.append(i)
 
-                file_night_num.append('{}_{:04d}'.format(i, int(temp[rows]['GROUP1']) ))
+                file_night_num.append(
+                    '{}_{:04d}'.format(i, int(temp[rows]['GROUP1']) )
+                    )
 
         temp = tempp[ tempp['OBJTYPE'] == 'STD' ]
         for rows in range(len(temp)):
@@ -328,6 +343,7 @@ if __name__ == '__main__':
     print('###############################################################')
     print('Data Preparation for {} (1/2)...'.format(args.targname))
     time.sleep(1)
-    DataPrep(args, tar_night, tar_num, tar_frame, file_night_num, std_name, std_num, std_night)
+    DataPrep(args, tar_night, tar_num, tar_frame, file_night_num, 
+                std_name, std_num, std_night)
 
     print('Data Preparation Done!')

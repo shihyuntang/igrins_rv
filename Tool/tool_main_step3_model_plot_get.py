@@ -6,8 +6,8 @@ from Engine.importmodule import read_prepdata
 
 from Engine.IO_AB      import setup_templates, init_fitsread,stellarmodel_setup, setup_outdir
 from Engine.clips      import basicclip_above
-from Engine.contfit    import A0cont
-from Engine.classes    import fitobjs,inparams
+from Engine.contfit    import a0cont
+from Engine.classes    import FitObjs,InParams
 from Engine.rebin_jv   import rebin_jv
 from Engine.rotint     import rotint
 from Engine.opt        import optimizer, fmod, fmod_conti
@@ -281,7 +281,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                 pass
 
         continuum_in = rebin_jv(a0contx,continuum,x_piece,False)
-        fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]),masterbeam,np.array([],dtype=int))
+        fitobj = FitObjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]),masterbeam,np.array([],dtype=int))
 
         #-------------------------------------------------------------------------------
 
@@ -373,7 +373,7 @@ def rv_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
                         if (slopeL > 300) and (slopeR < -300):
                             CRmaskF = np.concatenate((CRmaskF,group))
 
-                fitobj = fitobjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]),masterbeam,CRmaskF)
+                fitobj = FitObjs(s_piece, x_piece, u_piece, continuum_in, watm_in,satm_in,mflux_in,mwave_in,ast.literal_eval(inparam.maskdict[order]),masterbeam,CRmaskF)
 
         parfit = parfit_1.copy()
 
@@ -714,7 +714,7 @@ Input Parameters:
     watm,satm, mwave0, mflux0 = setup_templates(logger, args.template, args.band, np.int(args.temperature), np.float(args.logg))
 
     # Save pars in class for future use
-    inparam = inparams(inpath,outpath,initvsini,vsinivary,args.plotfigs,
+    inparam = InParams(inpath,outpath,initvsini,vsinivary,args.plotfigs,
                        initguesses,bvcs,tagsA,tagsB,nightsFinal,mwave0,mflux0,None,xbounddict,maskdict)
 
     #-------------------------------------------------------------------------------

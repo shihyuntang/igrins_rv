@@ -5,15 +5,15 @@ from Engine.importmodule import *
 
 from Engine.IO_AB     import setup_templates_tel, init_fitsread, stellarmodel_setup, setup_outdir
 from Engine.clips     import basicclip_above
-from Engine.contfit   import A0cont
-from Engine.classes   import fitobjs,inparamsA0,orderdict_cla
+from Engine.contfit   import a0cont
+from Engine.classes   import FitObjs,InParamsA0,OrderDictCla
 from Engine.rebin_jv  import rebin_jv
 from Engine.rotint    import rotint
 from Engine.Telfitter import telfitter
 from Engine.opt       import optimizer, fmod
 from Engine.outplotter import outplotter_tel
 from Engine.detect_peaks import detect_peaks
-from Engine.crmask    import CRmasker
+from Engine.crmask    import cr_masker
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 
@@ -96,7 +96,7 @@ def MPinstB(args, inparam, jerp, orders, i):
     a0u        = basicclip_above(a0u,a0fluxlist,nzones);   a0fluxlist = basicclip_above(a0fluxlist,a0fluxlist,nzones);
 
     # Compute rough blaze function estimate. Better fit will be provided by Telfit later.
-    continuum    = A0cont(a0wavelist,a0fluxlist,night,order,args.band)
+    continuum    = a0cont(a0wavelist,a0fluxlist,night,order,args.band)
     a0masterwave = a0wavelist.copy()
     a0masterwave *= 1e4
 
@@ -172,7 +172,7 @@ def MPinstB(args, inparam, jerp, orders, i):
     s = a0fluxlist.copy(); x = a0x.copy(); u = a0u.copy();
 
     # Collect all fit variables into one class
-    fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam, np.array([],dtype=int))
+    fitobj = FitObjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam, np.array([],dtype=int))
 
     #                            |0    1    2    3  |  | 4 |  | 5 |   | 6    7    8           9  |    |10 11 12|  |13 14|    |15    16    17   18    19|  |20   21   22    23 |
     dpars = {'cont' :   np.array([0.0, 0.0, 0.0, 0.0,   0.0,   0.0,    0.0,  0.0, 0.0,        0.,     1e7, 1, 1,    0, 0,     0.0,  0.0, 0.0,  0.0, 0.0,   1.0, 1.0, 1.0, 1.0 ]),
@@ -263,15 +263,15 @@ def MPinstB(args, inparam, jerp, orders, i):
                 ## After first cycle, use best fit model to identify CRs/hot pixels
                 if nc == 1:
                     parfit = parfit_1.copy()
-                    CRmaskF = CRmasker(parfit,fitobj)
+                    CRmaskF = cr_masker(parfit,fitobj)
 
                     # Redo rough blaze fit in case hot pixels were throwing it off
                     w = parfit[6] + parfit[7]*fitobj.x + parfit[8]*(fitobj.x**2.) + parfit[9]*(fitobj.x**3.)
                     mask = np.ones_like(w,dtype=bool)
                     mask[CRmaskF] = False
-                    continuum    = A0cont(w[mask]/1e4,s[mask],night,order,args.band)
+                    continuum    = a0cont(w[mask]/1e4,s[mask],night,order,args.band)
                     continuum    = rebin_jv(w[mask],continuum,w,False)
-                    fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam, CRmaskF)
+                    fitobj = FitObjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam, CRmaskF)
 
             if misfit_flag_low == 0 or restarted == True:
 
@@ -344,7 +344,7 @@ def MPinstB(args, inparam, jerp, orders, i):
 
         # Fit the A0 again using the new synthetic telluric template.
         # This allows for any tweaks to the blaze function fit that may be necessary.
-        fitobj = fitobjs(s, x, u, continuum,watm1,satm1,mflux_in,mwave_in,[], masterbeam, CRmaskF)
+        fitobj = FitObjs(s, x, u, continuum,watm1,satm1,mflux_in,mwave_in,[], masterbeam, CRmaskF)
 
         optgroup = ['twave', 'cont',
                     'twave', 'cont',
@@ -366,8 +366,8 @@ def MPinstB(args, inparam, jerp, orders, i):
             ## After first cycle, use best fit model to identify CRs/hot pixels
             if nc == 1:
                 parfit = parfit_1.copy()
-                CRmaskF = CRmasker(parfit,fitobj)
-                fitobj = fitobjs(s, x, u, continuum, watm1, satm1, mflux_in, mwave_in, [], masterbeam, CRmaskF)
+                CRmaskF = cr_masker(parfit,fitobj)
+                fitobj = FitObjs(s, x, u, continuum, watm1, satm1, mflux_in, mwave_in, [], masterbeam, CRmaskF)
 
         parfit = parfit_1.copy()
 
@@ -636,7 +636,7 @@ def MPinstA(args, inparam, jerp, orders, i):
         s = a0fluxlist.copy(); x = a0x.copy(); u = a0u.copy();
 
         # Collect all fit variables into one class
-        fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam, np.array([],dtype=int))
+        fitobj = FitObjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam, np.array([],dtype=int))
 
         #                            |0    1    2    3  |  | 4 |  | 5 |   | 6    7    8           9  |    |10 11 12|  |13 14|    |15    16    17   18    19|  |20   21   22    23 |
         dpars = {'cont' :   np.array([0.0, 0.0, 0.0, 0.0,   0.0,   0.0,    0.0,  0.0, 0.0,        0.0,    1e7, 1, 1,    0, 0,    10.0, 20.0, 0.2, 50.0, 0.2,   1.0, 1.0, 1.0, 1.0 ]),
@@ -752,8 +752,8 @@ def MPinstA(args, inparam, jerp, orders, i):
                     ## After first cycle, use best fit model to identify CRs/hot pixels
                     if nc == 1:
                         parfit = parfit_1.copy()
-                        CRmaskF = CRmasker(parfit,fitobj)
-                        fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam, CRmaskF)
+                        CRmaskF = cr_masker(parfit,fitobj)
+                        fitobj = FitObjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [], masterbeam, CRmaskF)
 
                 if misfit_flag_low == 0 or restarted == True:
 
@@ -784,7 +784,7 @@ def MPinstA(args, inparam, jerp, orders, i):
             hardbounds = [par_in[4]  - 0,                 par_in[4]  + 0,
                                   par_in[5]  - dpars['ip'][5],    par_in[5]  + dpars['ip'][5]
                                  ]
-            fitobj = fitobjs(s, x, u, continuum, watm_inLIV, satm_inLIV, mflux_in, mwave_in, [], masterbeam, CRmaskF)
+            fitobj = FitObjs(s, x, u, continuum, watm_inLIV, satm_inLIV, mflux_in, mwave_in, [], masterbeam, CRmaskF)
 
             go = 1; misfit_flag_low = 0; restarted = False;
 
@@ -895,7 +895,7 @@ def MPinstA(args, inparam, jerp, orders, i):
             dpars['cont'] = dpar_cont_save
             hardbounds = hardbounds_save.copy()
             
-            fitobj = fitobjs(s, x, u, continuum,watm1,satm1,mflux_in,mwave_in,[], masterbeam, CRmaskF)
+            fitobj = FitObjs(s, x, u, continuum,watm1,satm1,mflux_in,mwave_in,[], masterbeam, CRmaskF)
 
             optgroup2 = ['t',
                         'twave', 'cont',
@@ -918,8 +918,8 @@ def MPinstA(args, inparam, jerp, orders, i):
                 ## After first cycle, use best fit model to identify CRs/hot pixels
                 if nc == 1:
                     parfit = parfit_1.copy()
-                    CRmaskF = CRmasker(parfit,fitobj)
-                    fitobj = fitobjs(s, x, u, continuum, watm1, satm1, mflux_in, mwave_in, [], masterbeam, CRmaskF)
+                    CRmaskF = cr_masker(parfit,fitobj)
+                    fitobj = FitObjs(s, x, u, continuum, watm1, satm1, mflux_in, mwave_in, [], masterbeam, CRmaskF)
 
             parfit = parfit_1.copy()
 
@@ -1003,10 +1003,10 @@ def use_w(args):
         m_order  = np.array(bounddata['order'])
         starts   = np.array(bounddata['start'])
         ends     = np.array(bounddata['end'])
-        ords     = list( sorted(orderdict_cla().orderdict[args.band].keys()) )
+        ords     = list( sorted(OrderDictCla().orderdict[args.band].keys()) )
 
-        Ostarts  = [orderdict_cla().orderdict[args.band][k][0] for k in ords]
-        Oends    = [orderdict_cla().orderdict[args.band][k][1] for k in ords]
+        Ostarts  = [OrderDictCla().orderdict[args.band][k][0] for k in ords]
+        Oends    = [OrderDictCla().orderdict[args.band][k][1] for k in ords]
         labels   = []
 
         m_orders_unique = np.unique(m_order)
@@ -1174,7 +1174,7 @@ if __name__ == '__main__':
     # Retrieve stellar and telluric templates
     watm, satm, mwave0, mflux0 = setup_templates_tel()
 
-    inparam = inparamsA0(inpath,outpath,args.plotfigs,tags,nightsFinal,humids,
+    inparam = InParamsA0(inpath,outpath,args.plotfigs,tags,nightsFinal,humids,
                          temps,zds,press,obs,watm,satm,mwave0,mflux0,cdbs_loc,xbounddict,None)
 
     #-------------------------------------------------------------------------------

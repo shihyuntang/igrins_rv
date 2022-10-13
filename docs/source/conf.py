@@ -14,7 +14,6 @@
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
 
-
 # -- Project information -----------------------------------------------------
 
 project = 'igrins_rv'
@@ -22,7 +21,7 @@ copyright = '2022, Asa G. Stahl & Shih-Yun Tang'
 author = 'Asa G. Stahl & Shih-Yun Tang'
 
 # The full version, including alpha/beta/rc tags
-release = '1.0.0'
+release = '1.5.1'
 
 
 # -- General configuration ---------------------------------------------------

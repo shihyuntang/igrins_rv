@@ -5,8 +5,8 @@ from Engine.importmodule import *
 
 from Engine.IO_AB     import setup_templates_tel, init_fitsread, stellarmodel_setup, setup_outdir
 from Engine.clips     import basicclip_above
-from Engine.contfit   import A0cont
-from Engine.classes   import fitobjs,inparamsA0,orderdict_cla
+from Engine.contfit   import a0cont
+from Engine.classes   import FitObjs,InParamsA0,OrderDictCla
 from Engine.macbro    import macbro
 from Engine.rebin_jv  import rebin_jv
 from Engine.rotint    import rotint
@@ -57,7 +57,7 @@ def MPinst(args, inparam, i, order0, order):
     a0fluxlist /= np.median(a0fluxlist)
 
     # Compute rough blaze fn estimate
-    continuum    = A0cont(a0wavelist,a0fluxlist,night,order)
+    continuum    = a0cont(a0wavelist,a0fluxlist,night,order)
     a0contwave   = a0wavelist.copy()
     a0masterwave = a0wavelist.copy()
     a0masterwave *= 1e4
@@ -113,7 +113,7 @@ def MPinst(args, inparam, i, order0, order):
     s = a0fluxlist.copy(); x = a0x.copy(); u = a0u.copy();
 
     # Collect all fit variables into one class
-    fitobj = fitobjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [])
+    fitobj = FitObjs(s, x, u, continuum, watm_in, satm_in, mflux_in, mwave_in, [])
 
     # Arrays defining parameter variations during optimization steps
     dpar_cont = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,   0.0,  0.0,        0.,   1e7, 1, 1, 0,    0])
@@ -186,7 +186,7 @@ def MPinst(args, inparam, i, order0, order):
 
         # Fit the A0 again using the new synthetic telluric template.
         # This allows for any tweaks to the blaze function fit that may be necessary.
-        fitobj = fitobjs(s, x, u, continuum,watm1,satm1,mflux_in,mwave_in,[])
+        fitobj = FitObjs(s, x, u, continuum,watm1,satm1,mflux_in,mwave_in,[])
 
         parfit_1 = optimizer(par_in,   dpar_st,   hardbounds, fitobj, optimize)
         parfit_2 = optimizer(parfit_1, dpar_wave, hardbounds, fitobj, optimize)
@@ -344,7 +344,7 @@ if __name__ == '__main__':
     # Retrieve stellar and telluric templates
     watm, satm, mwave0, mflux0 = setup_templates_tel()
 
-    inparam = inparamsA0(inpath,outpath,args.plotfigs,tags,nightsFinal,humids,
+    inparam = InParamsA0(inpath,outpath,args.plotfigs,tags,nightsFinal,humids,
                          temps,zds,press,obs,watm,satm,mwave0,mflux0,cdbs_loc,xbounddict,None)
 
     #-------------------------------------------------------------------------------

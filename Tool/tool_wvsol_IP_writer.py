@@ -3,13 +3,13 @@ sys.path.append("..") # Adds higher directory to python modules path.
 
 from Engine.importmodule import *
 from Engine.rebin_jv import rebin_jv
-from Engine.classes   import inparamsA0,orderdict_cla
+from Engine.classes   import InParamsA0,OrderDictCla
 
 #-------------------------------------------------------------------------------
 
 def IPval(tar,band,args):
 
-    inparam = inparamsA0(None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None)
+    inparam = InParamsA0(None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None)
     xbounddict = inparam.bound_cut_dic[band]
 
     for a in range(27):

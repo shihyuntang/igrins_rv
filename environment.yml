@@ -3,7 +3,7 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - python=3.7
+  - python>=3.7
   - matplotlib
   - numpy
   - pandas
@@ -12,7 +12,8 @@ dependencies:
   - multiprocess
   - cython
   - requests
-  - nlopt
+  - nlopt=2.7.*
+  - numba
   - pip
   - pip:
     - pysynphot

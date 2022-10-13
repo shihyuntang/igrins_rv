@@ -1,9 +1,9 @@
 import numpy as np
 from scipy import interpolate
-from Engine.detect_peaks import detect_peaks
-#import matplotlib.pyplot as plt
 
-def A0cont(a0wavecut,a0vcut,night,order,band):
+from Engine.detect_peaks import detect_peaks
+
+def a0cont(a0wavecut,a0vcut,night,order,band):
     '''
     Performs first-pass fit to blaze shape of telluric standard spectrum.
 
@@ -11,7 +11,8 @@ def A0cont(a0wavecut,a0vcut,night,order,band):
     a0wavecut : Wavelength scale of telluric standard spectrum
     a0vcut    : Corresponding flux of telluric standard spectrum
     night     : Date of observation in YYYYMMDD
-    order     : Echelle order, as characterized by file index (as opposed to m number; for conversion between the two, see Stahl et al. 2021)
+    order     : Echelle order, as characterized by file index (as opposed to m 
+                number; for conversion between the two, see Stahl et al. 2021)
     band      : H or K band
 
     Outputs:
@@ -31,10 +32,10 @@ def A0cont(a0wavecut,a0vcut,night,order,band):
     for ii in range(xtimes):
         mask = np.ones(len(peaks), dtype=bool)
 
-        f = np.polyfit(x[peaks],a0vcut[peaks],4)
+        f = np.polyfit(x[peaks], a0vcut[peaks], 4)
         q = np.poly1d(f)
-        residual = a0vcut[peaks]-q(x[peaks])
-        MAD = np.median(np.abs(residual-np.median(residual)))
+        residual = a0vcut[peaks] - q(x[peaks])
+        MAD = np.median(np.abs(residual - np.median(residual)))
 
         '''
         plt.figure(figsize=(20,12))
@@ -55,8 +56,9 @@ def A0cont(a0wavecut,a0vcut,night,order,band):
 
     c = 0
 
-    for smoothing in np.arange(1e6,1e8,1e6):
-        f = interpolate.UnivariateSpline(x[peaks], a0vcut[peaks], k=3, s=smoothing)
+    for smoothing in np.arange(1e6, 1e8, 1e6):
+        f = interpolate.UnivariateSpline(x[peaks], a0vcut[peaks], 
+                                            k=3, s=smoothing)
         continuum = f(x)
         peaks2 = detect_peaks(continuum)
         if len(peaks2) == 1:
@@ -65,8 +67,9 @@ def A0cont(a0wavecut,a0vcut,night,order,band):
             break
 
     if smoothing == 99000000.0:
-        for smoothing in np.arange(1e8,1e10,1e8):
-            f = interpolate.UnivariateSpline(x[peaks], a0vcut[peaks], k=3, s=smoothing)
+        for smoothing in np.arange(1e8, 1e10, 1e8):
+            f = interpolate.UnivariateSpline(x[peaks], a0vcut[peaks], 
+                                                k=3, s=smoothing)
             continuum = f(x)
             peaks2 = detect_peaks(continuum)
             if len(peaks2) == 1:

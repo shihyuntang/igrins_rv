@@ -1,5 +1,3 @@
-
-
 import numpy as np
 from scipy.interpolate import interp1d, splev, splrep
 
@@ -58,13 +56,13 @@ def rebin_jv(Wold, Sold, Wnew, verbose, logger=None):
      new endpoints are now allowed. Switched to new Solaris library in call_external.
     """
     #Determine spectrum attributes.
-    Nold = np.int(len(Wold)) #number of old points
-    Nnew = np.int(len(Wnew)) #number of new points
+    Nold = len(Wold) #number of old points
+    Nnew = len(Wnew) #number of new points
     PSold = (Wold[-1] - Wold[0]) / (Nold-1) #old pixel scale
     PSnew = (Wnew[-1] - Wnew[0]) / (Nnew-1) #new pixel scale
 
     #Verify that new wavelength scale is a subset of old wavelength scale.
-    if (verbose == True) and (logger is not None):
+    if verbose and (logger is not None):
         if (Wnew[0] < Wold[0]) or (Wnew[-1] > Wold[-1]):
             logger.debug('New wavelength scale not subset of old.')
 
@@ -73,11 +71,12 @@ def rebin_jv(Wold, Sold, Wnew, verbose, logger=None):
         #pixel scale decreased. Interpolation by cubic spline.
         #Dummy = long(0)
         #Snew = spline(Wold,Sold,Wnew) # inerpolated spectrum
-        f = interp1d(Wold,Sold,'cubic',bounds_error=False,fill_value='extrapolate') #interpolated old spectrum
+        f = interp1d(Wold, Sold, 'cubic', bounds_error=False,
+                        fill_value='extrapolate') #interpolated old spectrum
         Snew = f(Wnew)
     else:
         #pixel scale increased. Integration under cubic spline.
-        XFac = np.int(PSnew/PSold + 0.5) #pixel scale expansion factor
+        XFac = int(PSnew/PSold + 0.5) #pixel scale expansion factor
         #  Construct another wavelength scale (W) with a pixel scale close to that of
         #    the old wavelength scale (Wold), but with the additional constraint that
         #    every XFac pixels in W will exactly fill a pixel in the new wavelength
@@ -91,9 +90,11 @@ def rebin_jv(Wold, Sold, Wnew, verbose, logger=None):
         for i in range(XFac): #loop thru subpixels
             W[i,:] = Wnew + dW*(np.float(2*i+1)/(2.0*XFac) - 0.5) #pixel centers in W
 
-        W = np.transpose(W) #transpose W before Merging
-        nIG = Nnew * XFac #elements in interpolation grid
-        W = W.flatten() #make W into 1-dim vector
+        # W = np.transpose(W) #transpose W before Merging
+        W = W.T #same as np.transpose(W), but faster
+        # nIG = Nnew * XFac #elements in interpolation grid
+        # W = W.flatten() #make W into 1-dim vector
+        W = W.ravel() # faster than flatten
         #;  Interpolate old spectrum (Sold) onto wavelength scale W to make S. Then
         #;    sum every XFac pixels in S to make a single pixel in the new spectrum
         #;    (Snew). Equivalent to integrating under cubic spline through Sold.
@@ -101,6 +102,6 @@ def rebin_jv(Wold, Sold, Wnew, verbose, logger=None):
         S = splev(W,splrep(Wold, Sold))
         S /= XFac #take average in each pixel
         # Snew = S.reshape(Nnew,XFac).sum(1)
-        Snew = np.sum(S.reshape(Nnew,XFac), axis=1 )
+        Snew = np.sum(S.reshape(Nnew, XFac), axis=1 )
 
     return Snew
