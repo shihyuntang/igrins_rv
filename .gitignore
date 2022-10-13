@@ -1,0 +1,7 @@
+# Don't track content of these folders
+docs/build/*
+
+
+###################
+*.pyc
+*.DS_Store
