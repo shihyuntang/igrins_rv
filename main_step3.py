@@ -1323,6 +1323,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the
             for jerp in range(Nord):
                 rvmasterbox[:,jerp] = rvmasterbox[:,jerp] + ordermeans[masterjerp] - ordermeans[jerp]
 
+        rvmasterbox2_orig = rvmasterbox2.copy()
         if args.binary and offsets:
             ordermeans2 = np.ones(Nord)*np.nan
             orderstds2  = np.ones(Nord)*np.nan
@@ -1337,7 +1338,6 @@ For H band RVs: We do not expect any systematic changes in the H band as the
 
             std1_2 = np.sqrt(np.nansum([orderstds2[jerp]**2 for jerp in range(Nord)]))
 
-            rvmasterbox2_orig = rvmasterbox.copy()
             for jerp in range(Nord):
                 rvmasterbox2[:,jerp] = rvmasterbox2[:,jerp] + ordermeans2[masterjerp] - ordermeans2[jerp]
 
