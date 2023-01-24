@@ -343,7 +343,7 @@ def modtool(args,jerp,nightsbox,tagbox,parfitbox,inparam,index):
             #plt.plot(wave_shift,flux_corr,alpha=0.4)
             if firsttag:
                 stellstack = flux_corr.copy(); masterwave = wave_shift.copy(); s2nstack = s2n.copy();
-                residstack = flux_corrcomplete.copy()
+                residstack = flux_corrcomplete.copy();  stellmodsave = stell_reg/continuum_out;
                 firsttag = False
             else:
                 stellnew = rebin_jv(wave_shift,flux_corr,masterwave,False)
@@ -381,8 +381,9 @@ def modtool(args,jerp,nightsbox,tagbox,parfitbox,inparam,index):
             Cstell = np.array([np.nanmean(stellstack[:,jj]) for jj in range(len(stellstack[0,:]))])
             Cresid = np.array([np.nanmean(residstack[:,jj]) for jj in range(len(residstack[0,:]))])
             Cs2n   = np.array([np.sqrt(np.nansum(s2nstack[:,jj]**2)) for jj in range(len(s2nstack[0,:]))])
+            Cs2ncalc = 1/np.nanstd(Cstell[stellmodsave > 0.9975])
         except IndexError:
-            Cstell = stellstack.copy(); Cs2n = s2nstack.copy(); Cresid = residstack.copy();
+            Cstell = stellstack.copy(); Cs2n = s2nstack.copy(); Cresid = residstack.copy(); Cs2ncalc = Cs2n*0.;
 
         c0 = fits.Column(name = f'ERRORFLAG{order}',
                             array = np.array([0]),
@@ -392,7 +393,9 @@ def modtool(args,jerp,nightsbox,tagbox,parfitbox,inparam,index):
         c2 = fits.Column(name='FLUX',       array=Cstell,                  format='D')
         c4 = fits.Column(name='RESID',       array=Cresid,                  format='D')
         c3 = fits.Column(name='UNC',        array=Cstell/Cs2n,                  format='D')
-        cols = fits.ColDefs([c0,c1,c2,c3,c4])
+        c6 = fits.Column(name='UNC2',        array=Cstell/Cs2ncalc,                  format='D')
+        c5 = fits.Column(name='STELLMOD',        array=stellmodsave,                  format='D')
+        cols = fits.ColDefs([c0,c1,c2,c3,c4,c5,c6])
         hdu_1 = fits.BinTableHDU.from_columns(cols)
 
         if jerp == 0:
