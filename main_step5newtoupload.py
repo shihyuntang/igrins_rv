@@ -282,7 +282,8 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
         cols  = fits.ColDefs([c1,c2,c3])
         hdu_1 = fits.BinTableHDU.from_columns(cols)
 
-        if jerp == 0 or (jerp == 1 and orders[0] == 4): # If first time writing fits file, make up filler primary hdu
+        print(jerp, orders[0])
+        if (jerp == 0) or (jerp == 1 and orders[0] == 4): # If first time writing fits file, make up filler primary hdu
             bleh = np.ones((3,3))
             primary_hdu = fits.PrimaryHDU(bleh)
             hdul = fits.HDUList([primary_hdu,hdu_1])
