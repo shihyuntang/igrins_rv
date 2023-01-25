@@ -198,6 +198,7 @@ class InParams:
             }
         self.BImethodvariance_loose = {
             'K': np.array([np.nan,np.nan,np.nan])
+            }
 
     def addsecondary(self,initvsini2,vsinivary2,mwave2,mflux2,initguesses2):
         self.initvsini2   = initvsini2
