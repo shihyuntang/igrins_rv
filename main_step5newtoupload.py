@@ -210,8 +210,8 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
 
     name = f'Bisectors'
 
-    outpath = f'./Output/{args.targname}_{args.band}/RV_results_{args.run}/'
-    figpath0 = f'./Output/{args.targname}_{args.band}/figs/'
+    outpath = f'./Output/{args.targname}_{args.band}/RV_results_{args.run}'
+    figpath0 = f'./Output/{args.targname}_{args.band}/figs'
     figpath = f'./Output/{args.targname}_{args.band}/figs/main_step5_{args.run}'
 
     if not os.path.isdir(f'{figpath0}'):
