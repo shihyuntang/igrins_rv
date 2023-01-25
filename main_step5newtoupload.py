@@ -429,9 +429,13 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
         rvstdfinal = np.ones_like(bifinal)*np.nan
         for aa in range(len(nights_use)):
             ind = np.where(nightsRV == nights_use[aa])[0]
-            rvfinal[aa] =  rvfinal0[ind]
-            rvstdfinal[aa] = rvstdfinal0[ind]
-            jdfinal[aa] = jd0[ind]
+            print(ind)
+            print(rvfinal0)
+            print(rvfinal)
+            print(aa)
+            rvfinal[aa] =  rvfinal0[ind[0]]
+            rvstdfinal[aa] = rvstdfinal0[ind[0]]
+            jdfinal[aa] = jd0[ind[0]]
 
         # Combine RVs between orders using weights calculated from uncertainties
         for n in range(Nnights):
