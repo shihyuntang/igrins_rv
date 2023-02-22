@@ -303,30 +303,38 @@ def modtool(args,jerp,nightsbox,tagbox,parfitbox,inparam,index):
             #wave_shift = wave_reg*(1 - parfit[0]/c)
             wave_shift = wave_reg*(1 +inparam.bvcs[night+tag]/c)
 
+            #get spectra resolution
+            fwhmraw = parfit[5] + parfit[13]*(fitobj.x) + parfit[14]*(fitobj.x**2)
+
+            fwhmraw_mid = (fwhmraw[:-1] + fwhmraw[1:]) / 2
+            wave_shift_mid = (wave_shift[:-1] + wave_shift[1:]) / 2
+            resolution_out = wave_shift_mid/(fwhmraw*np.diff(wave_shift_mid))
+                    
             pre_err = False;
 
             c0 = fits.Column(name = f'ERRORFLAG{order}',
                                 array = np.array([0]),
                                 format='K'
                                 )
-            c1 = fits.Column(name='WAVE_RAW'+str(order),       array=wave_reg,                   format='D')
-            c2 = fits.Column(name='WAVE_ADJ'+str(order),       array=wave_shift,                   format='D')
-            c20= fits.Column(name='X',                        array=fitobj.x,                   format='D')
-            c3 = fits.Column(name='FLUX_RAW',       array=flux_reg,                  format='D')
-            c4 = fits.Column(name='FLUX_CORR',       array=flux_corr,                  format='D')
-            c40 = fits.Column(name='FLUX_RESID',       array=flux_corrcomplete,                  format='D')
-            c5 = fits.Column(name='CONT',       array=continuum_out,                  format='D')
-            c50 = fits.Column(name='S2N',       array=s2n,                  format='D')
-            c6 = fits.Column(name='STELL',       array=stell_reg,                  format='D')
-            c7 = fits.Column(name='STELL_ROTBROADONLY',       array=stell_brod,                  format='D')
-            c8 = fits.Column(name='STELL_NOBROAD',       array=stell_unbrod,                  format='D')
-            c9 = fits.Column(name='TELL',       array=tell_reg,                  format='D')
-            c10 = fits.Column(name='TELL_NOBROAD',       array=tell_unbrod,                  format='D')
-            c11 = fits.Column(name='A0WAVE',       array=a0wave,                   format='D')
-            c12 = fits.Column(name='A0FLUX',       array=a0flat,                  format='D')
-            c13 = fits.Column(name='RV',                    array=np.array([parfit[0]]),     format='D')
-            c14 = fits.Column(name='BVC',                    array=np.array([inparam.bvcs[night+tag]]),     format='D')
-            cols = fits.ColDefs([c0,c1,c2,c20,c3,c4,c5,c50,c6,c7,c8,c9,c10,c11,c12,c13,c14,c40])
+            c1 = fits.Column(name='WAVE_RAW'+str(order), array=wave_reg, format='D')
+            c2 = fits.Column(name='WAVE_ADJ'+str(order), array=wave_shift, format='D')
+            c20= fits.Column(name='X', array=fitobj.x, format='D')
+            c3 = fits.Column(name='FLUX_RAW', array=flux_reg, format='D')
+            c4 = fits.Column(name='FLUX_CORR', array=flux_corr, format='D')
+            c40 = fits.Column(name='FLUX_RESID', array=flux_corrcomplete, format='D')
+            c5 = fits.Column(name='CONT', array=continuum_out, format='D')
+            c50 = fits.Column(name='S2N', array=s2n, format='D')
+            c6 = fits.Column(name='STELL', array=stell_reg, format='D')
+            c7 = fits.Column(name='STELL_ROTBROADONLY', array=stell_brod, format='D')
+            c8 = fits.Column(name='STELL_NOBROAD', array=stell_unbrod, format='D')
+            c9 = fits.Column(name='TELL', array=tell_reg, format='D')
+            c10 = fits.Column(name='TELL_NOBROAD', array=tell_unbrod, format='D')
+            c11 = fits.Column(name='A0WAVE', array=a0wave, format='D')
+            c12 = fits.Column(name='A0FLUX', array=a0flat, format='D')
+            c13 = fits.Column(name='RV', array=np.array([parfit[0]]), format='D')
+            c14 = fits.Column(name='BVC', array=np.array([inparam.bvcs[night+tag]]), format='D')
+            c15 = fits.Column(name='RESOLUTION', array=resolution_out, format='D')
+            cols = fits.ColDefs([c0,c1,c2,c20,c3,c4,c5,c50,c6,c7,c8,c9,c10,c11,c12,c13,c14,c40,c15])
             hdu_1 = fits.BinTableHDU.from_columns(cols)
 
 
