@@ -308,7 +308,7 @@ def modtool(args,jerp,nightsbox,tagbox,parfitbox,inparam,index):
 
             fwhmraw_mid = (fwhmraw[:-1] + fwhmraw[1:]) / 2
             wave_shift_mid = (wave_shift[:-1] + wave_shift[1:]) / 2
-            resolution_out = wave_shift_mid/(fwhmraw*np.diff(wave_shift_mid))
+            resolution_out = wave_shift_mid/(fwhmraw_mid*np.diff(wave_shift))
                     
             pre_err = False;
 

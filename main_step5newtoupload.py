@@ -470,7 +470,10 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
         axes.text(0.05, 0.93, r'BI mean= ${:1.5f}$ $\pm$ {:1.5f} km/s'.format(
             np.nanmean(bifinal), np.nanstd(bifinal)),
             transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
-        axes.set_ylim(np.nanmin(bifinal)-.08, np.nanmax(bifinal)+.08)
+        try: 
+            axes.set_ylim(np.nanmin(bifinal)-.08, np.nanmax(bifinal)+.08)
+        except:
+            pass
         #axes.set_ylim(-0.3,0.3)
         axes.set_ylabel('Bisector Span [km/s]', size=6, style='normal', family='sans-serif' )
         axes.set_xlabel('Night (#)', size=6, style='normal', family='sans-serif' )
@@ -482,40 +485,42 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
             format='png', bbox_inches='tight')
 
 
-
-        f, axes = plt.subplots(1, 1, figsize=(4,3), facecolor='white', dpi=300)
-
         mask = np.ones_like(bifinal,dtype=bool)
         mask[np.isnan(bifinal) | np.isnan(rvfinal)] = False
-        pp = pearsonr(rvfinal[mask],bifinal[mask])
 
-        norm = matplotlib.colors.Normalize(vmin=jdfinal.min(), vmax=jdfinal.max())
-        s_m = cm.ScalarMappable(cmap=cm.jet_r, norm=norm)
-        s_m.set_array([])
-        cob_ax = f.add_axes([0.15, -0.03, 0.74, .02]) #left bottom width height
-        cob    = f.colorbar(s_m, cax=cob_ax, ticks=np.linspace(jdfinal.min(), jdfinal.max(), 10), pad=0.01,orientation='horizontal')
-        cob.ax.tick_params(axis='both', which='both', labelsize=3, width=.3, length=4, pad=.2, rotation=90)
-        xlabel_new = Time(np.linspace(jdfinal.min(), jdfinal.max(), 10), format='jd').isot
-        xlabel_new = [i[0:7] for i in xlabel_new]
-        cob.ax.set_xticklabels(xlabel_new)
-        cob.ax.set_xlabel(r'yyyy-mm', size=5, rotation=0, labelpad=6.0)
-        for ii in range(len(jdfinal)):
-            #ax.scatter(bitemp[ii],rvtemp[ii],s=50,c=s_m.to_rgba(jdtemp[ii]))
-            axes.plot(rvfinal[ii],bifinal[ii], '.', ms=3, c=s_m.to_rgba(jdfinal[ii]))
-            axes.errorbar(rvfinal[ii],bifinal[ii],xerr=rvstdfinal[ii],yerr=stdfinal[ii],ls='none',c=s_m.to_rgba(jdfinal[ii]))
-        #axes.plot(    rvfinal, bifinal, '.k', ms=5)
-        #axes.errorbar(rvfinal, bifinal, xerr=rvstdfinal,yerr=stdfinal, ls='none', lw=.5, ecolor='black')
-        axes.text(0.05, 0.93, 'Correlation Coeff = {} , P = {}'.format(round(pp[0],5),round(pp[1],5)),
-                             transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
-        axes.set_ylim(np.nanmin(bifinal)-.08,
-                     np.nanmax(bifinal)+.08)
-        #axes.set_ylim(-0.3,0.3)
-        axes.set_xlabel('RV [km/s]', size=6, style='normal', family='sans-serif' )
-        axes.set_ylabel('Bisector Span [km/s]', size=6, style='normal', family='sans-serif' )
-        axes.xaxis.set_minor_locator(AutoMinorLocator(5))
-        axes.yaxis.set_minor_locator(AutoMinorLocator(5))
-        axes.tick_params(axis='both', which='both', labelsize=5, right=True, top=True, direction='in', width=.6)
-        f.savefig('{}/FinalRVs_vs_BIs_{}_.png'.format(outpath, kind), format='png', bbox_inches='tight')
+        if len(rvfinal[mask]) <= 2:
+            print('No enough data points for pearsonr test, skip...')
+        else: 
+            pp = pearsonr(rvfinal[mask],bifinal[mask])
+            f, axes = plt.subplots(1, 1, figsize=(4,3), facecolor='white', dpi=300)
+
+            norm = matplotlib.colors.Normalize(vmin=jdfinal.min(), vmax=jdfinal.max())
+            s_m = cm.ScalarMappable(cmap=cm.jet_r, norm=norm)
+            s_m.set_array([])
+            cob_ax = f.add_axes([0.15, -0.03, 0.74, .02]) #left bottom width height
+            cob    = f.colorbar(s_m, cax=cob_ax, ticks=np.linspace(jdfinal.min(), jdfinal.max(), 10), pad=0.01,orientation='horizontal')
+            cob.ax.tick_params(axis='both', which='both', labelsize=3, width=.3, length=4, pad=.2, rotation=90)
+            xlabel_new = Time(np.linspace(jdfinal.min(), jdfinal.max(), 10), format='jd').isot
+            xlabel_new = [i[0:7] for i in xlabel_new]
+            cob.ax.set_xticklabels(xlabel_new)
+            cob.ax.set_xlabel(r'yyyy-mm', size=5, rotation=0, labelpad=6.0)
+            for ii in range(len(jdfinal)):
+                #ax.scatter(bitemp[ii],rvtemp[ii],s=50,c=s_m.to_rgba(jdtemp[ii]))
+                axes.plot(rvfinal[ii],bifinal[ii], '.', ms=3, c=s_m.to_rgba(jdfinal[ii]))
+                axes.errorbar(rvfinal[ii],bifinal[ii],xerr=rvstdfinal[ii],yerr=stdfinal[ii],ls='none',c=s_m.to_rgba(jdfinal[ii]))
+            #axes.plot(    rvfinal, bifinal, '.k', ms=5)
+            #axes.errorbar(rvfinal, bifinal, xerr=rvstdfinal,yerr=stdfinal, ls='none', lw=.5, ecolor='black')
+            axes.text(0.05, 0.93, 'Correlation Coeff = {} , P = {}'.format(round(pp[0],5),round(pp[1],5)),
+                                transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
+            axes.set_ylim(np.nanmin(bifinal)-.08,
+                        np.nanmax(bifinal)+.08)
+            #axes.set_ylim(-0.3,0.3)
+            axes.set_xlabel('RV [km/s]', size=6, style='normal', family='sans-serif' )
+            axes.set_ylabel('Bisector Span [km/s]', size=6, style='normal', family='sans-serif' )
+            axes.xaxis.set_minor_locator(AutoMinorLocator(5))
+            axes.yaxis.set_minor_locator(AutoMinorLocator(5))
+            axes.tick_params(axis='both', which='both', labelsize=5, right=True, top=True, direction='in', width=.6)
+            f.savefig('{}/FinalRVs_vs_BIs_{}_.png'.format(outpath, kind), format='png', bbox_inches='tight')
 
         # Save results to fits file separately for each tight/loose dataset
         c1 = fits.Column( name='NIGHT',         array=nights_use,    format='8A')
@@ -588,7 +593,10 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
     axes.text(0.05, 0.93, r'BI mean= ${:1.5f}$ $\pm$ {:1.5f} km/s'.format(
         np.nanmean(bifinalCombined), np.nanstd(bifinalCombined)),
         transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
-    axes.set_ylim(np.nanmin(bifinalCombined)-.08,np.nanmax(bifinalCombined)+.08)
+    try:
+        axes.set_ylim(np.nanmin(bifinalCombined)-.08,np.nanmax(bifinalCombined)+.08)
+    except:
+        pass
     #axes.set_ylim(-0.3,0.3)
     axes.set_ylabel('Bisector Span (km/s)', size=6, style='normal', family='sans-serif' )
     axes.set_xlabel('Night (#)', size=6, style='normal', family='sans-serif' )
@@ -604,14 +612,18 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
 
     mask = np.ones_like(bifinalCombined,dtype=bool)
     mask[np.isnan(bifinalCombined) | np.isnan(rvfinalCombined)] = False
-    pp = pearsonr(rvfinalCombined[mask],bifinalCombined[mask])
+    if len(rvfinalCombined[mask]) >=2 :
+        pp = pearsonr(rvfinalCombined[mask],bifinalCombined[mask])
+        axes.text(0.05, 0.93, 'Correlation Coeff = {} , P = {}'.format(round(pp[0],5),round(pp[1],5)),
+            transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
 
     axes.plot(    rvfinalCombined, bifinalCombined, '.k', ms=5)
     axes.errorbar(rvfinalCombined, bifinalCombined, xerr=rvstdfinalCombined,yerr=stdfinalCombined, ls='none', lw=.5, ecolor='black')
-    axes.text(0.05, 0.93, 'Correlation Coeff = {} , P = {}'.format(round(pp[0],5),round(pp[1],5)),
-                         transform=axes.transAxes, size=6, style='normal', family='sans-serif' )
-    axes.set_ylim(np.nanmin(bifinalCombined)-.08,
+    try:
+        axes.set_ylim(np.nanmin(bifinalCombined)-.08,
                  np.nanmax(bifinalCombined)+.08)
+    except:
+        pass
     #axes.set_ylim(-0.3,0.3)
     axes.set_xlabel('RV [km/s]', size=6, style='normal', family='sans-serif' )
     axes.set_ylabel('Bisector Span [km/s]', size=6, style='normal', family='sans-serif' )
