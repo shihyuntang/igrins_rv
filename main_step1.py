@@ -734,7 +734,7 @@ if __name__ == '__main__':
     ind    = [i != 'NA' for i in A0data['humid']]
     humids = {str(k):str(v) for k,v in zip(A0data[ind]['night'],A0data[ind]['humid'])}
     tags   = {str(k):str(v) for k,v in zip(A0data[ind]['night'],A0data[ind]['tag'])}
-    obs    = {str(k):str(v) for k,v in zip(A0data[ind]['night'],A0data[ind]['obs'])}
+    obs    = {str(k):str(v) for k,v in zip(A0data[ind]['night'],A0data[ind]['facility'])}
     temps  = {str(k):str(v) for k,v in zip(A0data[ind]['night'],A0data[ind]['temp'])}
     zds    = {str(k):str(v) for k,v in zip(A0data[ind]['night'],A0data[ind]['zd'])}
     press  = {str(k):str(v) for k,v in zip(A0data[ind]['night'],A0data[ind]['press'])}

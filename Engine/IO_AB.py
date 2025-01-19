@@ -35,18 +35,26 @@ def partial_loader(inpath0, order):
     tbdata_w = hdulist[1].data
     tbdata_f = hdulist[0].data
 
-    if os.path.exists(inpath0+'.sn.fits'):
-        hdulist_sn = fits.open(inpath0+'.sn.fits')
-    elif os.path.exists(inpath0+'.sn.fits.gz'):
-        hdulist_sn = fits.open(inpath0+'.sn.fits.gz')
+    # if os.path.exists(inpath0+'.sn.fits'):
+    #     hdulist_sn = fits.open(inpath0+'.sn.fits')
+    # elif os.path.exists(inpath0+'.sn.fits.gz'):
+    #     hdulist_sn = fits.open(inpath0+'.sn.fits.gz')
+    # else:
+    #     sys.exit(f'ERROR: data not found: {inpath0}.sn.fits')
+    if os.path.exists(inpath0+'.variance.fits'):
+        hdulist_variance = fits.open(inpath0+'.variance.fits')
+    elif os.path.exists(inpath0+'.variance.fits.gz'):
+        hdulist_variance = fits.open(inpath0+'.variance.fits.gz')
     else:
-        sys.exit(f'ERROR: data not found: {inpath0}.sn.fits')
+        sys.exit(f'ERROR: data not found: {inpath0}.variance.fits')
 
-    tbdata_sn = hdulist_sn[0].data
+    tbdata_variance = hdulist_variance[0].data
 
     wavelist = np.array(tbdata_w[order],dtype=np.float64)
     fluxlist = np.array(tbdata_f[order],dtype=np.float64)
-    s2nlist = np.array(tbdata_sn[order],dtype=np.float64)
+    var_list = np.array(tbdata_variance[order],dtype=np.float64)
+
+    s2nlist = fluxlist/np.sqrt(var_list)
 
     return wavelist,fluxlist,s2nlist
 
