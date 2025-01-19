@@ -127,7 +127,7 @@ def read_prepdata(args):
     nightsFinal : Dates of observations in YYYYMMDD
     orders      : Echelle orders, as characterized by file index (as opposed to 
                     m number; for conversion between the two, see Stahl et al. 2021)
-    obs         : Dictionary of observatory corresponding to observation, referenced by night
+    facility         : Dictionary of observatory corresponding to observation, referenced by night
     '''
 
     if 'Engine' in os.listdir():
@@ -140,7 +140,7 @@ def read_prepdata(args):
             format='ascii')
     A0nights = np.array(A0data['night'],dtype='str')
     ams0 = np.array(A0data['airmass'])
-    obs0 = {str(k):str(v) for k,v in zip(A0data['night'],A0data['obs'])}
+    obs0 = {str(k):str(v) for k,v in zip(A0data['night'],A0data['facility'])}
 
     if 'Engine' in os.listdir():
         targdata = Table.read(
