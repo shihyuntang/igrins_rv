@@ -187,19 +187,23 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args,
         
     # DCT data has parameters describing night of observation that the McDonald 
     # and GeminiS data does not.
-    # If temperature info. is available:
-    if inparam.temps[night] != 'NOINFO': 
+    if inparam.obses[night] == 'DCT':
         toadjust["angle"]       = np.float(inparam.zds[night]    )        # Zenith distance
         toadjust["pressure"]    = np.float(inparam.press[night]  )        # Pressure, in hPa
         toadjust["temperature"] = np.float(inparam.temps[night]  )+273.15 # Temperature in Kelvin
         tofit["h2o"]            = np.float(inparam.humids[night] )        # Percent humidity, at the observatory altitude
         tobound["h2o"]          = _telfit_default_vary_bound_dic["h2o"]
         
-    elif inparam.zds[night] != 'NOINFO': 
+    elif inparam.obses[night] == 'GeminiS':
         # If GeminiS data, some but not all parameters are in fits file.
         # If parameters are not in fits file, use initial guesses and letting them vary.
         # Guesses are taken from mean of parameters from DCT GJ281 data.
+        toadjust["angle"]       = np.float(inparam.zds[night]    )        # Zenith distance
+        tofit["h2o"]            = np.float(inparam.humids[night] )        # Percent humidity, at the observatory altitude
+        tobound["h2o"]          = _telfit_default_vary_bound_dic["h2o"]
 
+    elif (inparam.obses[night] == 'McD') and inparam.zds[night] != 'NOINFO':
+        # For the McD data, old version don't have zd, but the later one has.
         toadjust["angle"]       = np.float(inparam.zds[night]    )        # Zenith distance
         tofit["h2o"]            = np.float(inparam.humids[night] )        # Percent humidity, at the observatory altitude
         tobound["h2o"]          = _telfit_default_vary_bound_dic["h2o"]
