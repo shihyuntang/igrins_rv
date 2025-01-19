@@ -202,11 +202,9 @@ def telfitter(watm_in, satm_in, a0ucut, inparam, night, order, args,
         tofit["h2o"]            = np.float(inparam.humids[night] )        # Percent humidity, at the observatory altitude
         tobound["h2o"]          = _telfit_default_vary_bound_dic["h2o"]
 
-    elif (inparam.obses[night] == 'McD') and inparam.zds[night] != 'NOINFO':
+    elif (inparam.obses[night] == 'McD') and (inparam.zds[night] != 'NOINFO'):
         # For the McD data, old version don't have zd, but the later one has.
         toadjust["angle"]       = np.float(inparam.zds[night]    )        # Zenith distance
-        tofit["h2o"]            = np.float(inparam.humids[night] )        # Percent humidity, at the observatory altitude
-        tobound["h2o"]          = _telfit_default_vary_bound_dic["h2o"]
     else:
         pass
     
