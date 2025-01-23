@@ -580,7 +580,7 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
     #-------------------------------------------------------------------------------
 
     # if best fit stellar template power is very low, throw out result
-    if parfit[1] < 0.08:
+    if parfit[1] < 0.05:
         logger.warning(f'  --> Stellar template power is low for {night}! '
                             'Data likely being misfit! Throwing out result...')
         return night, np.nan, np.nan, np.nan, np.nan
