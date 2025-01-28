@@ -435,7 +435,7 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
     if Rstell < Rtell:
         sys.exit(f'Telluric template resolution ({round(Rtell,4)} AA) '
                     'must be finer than stellar template resolution '
-                    '({round(Rstell,4)} AA) !')
+                    f'({round(Rstell,4)} AA) !')
 
     # Rebin stellar template to uniform wavelength scale
     dstep = Rstell1
