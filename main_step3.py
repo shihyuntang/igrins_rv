@@ -764,11 +764,11 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
         #-------------------------------------------------------------------------------
 
         # if best fit stellar template power is very low, throw out result
-        if parfit[1] < 0.05:
+        if parfit[1] < 0.03:
             logger.warning(f'  --> Stellar template power is low for {night}! '
                                 'Data likely being misfit! Throwing out result...')
             continue
-        if args.binary and parfit[25] < 0.05:
+        if args.binary and parfit[25] < 0.03:
             logger.warning(f'  --> Secondary stellar template power is low for {night}! '
                                 'Data likely being misfit! Throwing out result...')
             continue
