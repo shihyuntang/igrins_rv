@@ -753,6 +753,7 @@ if __name__ == '__main__':
 
     logger.info(f'Analyze {len(nightsFinal)} nights')
     intnights = np.array( [np.int(i) for i in nightsFinal] )
+    print(intnights)
     if len(intnights[(intnights >= 20180401) & (intnights < 20190531)]) > 0:
         logger.info('''
 WARNING: Some of these nights were when the IGRINS K band was defocused!
