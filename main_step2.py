@@ -272,7 +272,7 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
         pars0 = setup_fitting_init_pars(args.band, inparam.initvsini, order)
 
     A0loc = f'./Output/{args.targname}_{args.band}/A0Fits/'\
-                f'{night[:8]}A0_{beam}treated_{args.band}.fits'
+                f'{night}A0_{beam}treated_{args.band}.fits'
 
     try:
         hdulist = fits.open(A0loc)
