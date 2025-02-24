@@ -287,7 +287,7 @@ def main(args, inparam, jerp, orders, masterbeam, i):
 
     elif masterbeam == 'A':
 
-        A0loc = f'./Output/{args.targname}_{args.band}/A0Fits/{night[:8]}A0_Btreated_{args.band}.fits'
+        A0loc = f'./Output/{args.targname}_{args.band}/A0Fits/{night}A0_Btreated_{args.band}.fits'
 
         try:
             hdulist = fits.open(A0loc)
@@ -783,13 +783,13 @@ For H band RVs: We do not expect any systematic changes in the H band as the
 
     # Run order by order, multiprocessing over nights within an order
     print('Processing the B nods first...')
-    for jerp in range(len(orders)):
-        if not args.debug:
-            print('Working on order {} ({:02d}/{:02d})'.format(
-                                orders[jerp], int(jerp+1), len(orders)))
-        # main( args, inparam, jerp, orders, 'B', 0)
-        func = partial(main, args, inparam, jerp, orders, 'B')
-        outs = pqdm(np.arange(len(nightsFinal)), func, n_jobs=args.Nthreads)
+    # for jerp in range(len(orders)):
+    #     if not args.debug:
+    #         print('Working on order {} ({:02d}/{:02d})'.format(
+    #                             orders[jerp], int(jerp+1), len(orders)))
+    #     # main( args, inparam, jerp, orders, 'B', 0)
+    #     func = partial(main, args, inparam, jerp, orders, 'B')
+    #     outs = pqdm(np.arange(len(nightsFinal)), func, n_jobs=args.Nthreads)
 
     print('B nods done! Halfway there! \n Now processing the A nods...')
     for jerp in range(len(orders)):
