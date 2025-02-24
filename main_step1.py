@@ -752,8 +752,7 @@ if __name__ == '__main__':
         logger.info(f'Only processing nights: {nightsFinal}')
 
     logger.info(f'Analyze {len(nightsFinal)} nights')
-    intnights = np.array( [np.int(i) for i in nightsFinal] )
-    print(intnights)
+    intnights = np.array([int(i[:8]) for i in nightsFinal])
     if len(intnights[(intnights >= 20180401) & (intnights < 20190531)]) > 0:
         logger.info('''
 WARNING: Some of these nights were when the IGRINS K band was defocused!
@@ -788,7 +787,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the
         if not args.debug:
             print('Working on order {} ({:02d}/{:02d})'.format(
                                 orders[jerp], int(jerp+1), len(orders)))
-        # main( args, inparam, jerp, orders, 'B',0)
+        main( args, inparam, jerp, orders, 'B',0)
         func = partial(main, args, inparam, jerp, orders, 'B')
         outs = pqdm(np.arange(len(nightsFinal)), func, n_jobs=args.Nthreads)
 
