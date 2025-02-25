@@ -830,8 +830,8 @@ For H band RVs: We do not expect any systematic changes in the H band as the res
     if not args.debug: logger.removeHandler(stream_hander)
     print('\n')
 
-    for ii in np.arange(len(nightsFinal)):
-        main(args, inparam, orders, int(args.label_use), trk, step2or3, ii)
+    # for ii in np.arange(len(nightsFinal)):
+    #     main(args, inparam, orders, int(args.label_use), trk, step2or3, ii)
 
     # Run order by order, multiprocessing over nights within an order
     func = partial(

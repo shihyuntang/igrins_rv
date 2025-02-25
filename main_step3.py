@@ -467,7 +467,7 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
         #-------------------------------------------------------------------------------
         # Load synthetic telluric template generated during Step 1.
         A0loc = f'./Output/{args.targname}_{args.band}/A0Fits/'\
-                    f'{night[:8]}A0_{beam}treated_{args.band}.fits'
+                    f'{night}A0_{beam}treated_{args.band}.fits'
 
         hdulist = fits.open(A0loc)
         num_orders = 0
