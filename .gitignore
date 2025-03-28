@@ -1,9 +1,13 @@
 # Don't track content of these folders
 docs/build/*
 Engine/dev/
+Output/
+Input/
 .vscode/*
 
 
 ###################
 *.pyc
 *.DS_Store
+*.gz
+chisq_summary*

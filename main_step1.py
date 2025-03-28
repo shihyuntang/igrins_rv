@@ -752,7 +752,12 @@ if __name__ == '__main__':
         logger.info(f'Only processing nights: {nightsFinal}')
 
     logger.info(f'Analyze {len(nightsFinal)} nights')
-    intnights = np.array([int(i[:8]) for i in nightsFinal])
+    #print([i[:8] for i in nightsFinal])
+    #if nightsFinal[0] > 8:
+    if isinstance(nightsFinal[0], int):
+    	intnights = np.array([int(i[:8]) for i in nightsFinal])
+    else:
+        intnights = np.array([int(i) for i in nightsFinal])
     if len(intnights[(intnights >= 20180401) & (intnights < 20190531)]) > 0:
         logger.info('''
 WARNING: Some of these nights were when the IGRINS K band was defocused!
@@ -780,7 +785,7 @@ For H band RVs: We do not expect any systematic changes in the H band as the
     # if not in debug mode than enter quite mode, i.e., all message saved in log file
     if not args.debug: logger.removeHandler(stream_hander)
     print('\n')
-
+    jerp = 4
     # Run order by order, multiprocessing over nights within an order
     print('Processing the B nods first...')
     for jerp in range(len(orders)):
