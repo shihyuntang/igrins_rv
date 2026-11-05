@@ -821,7 +821,7 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
 
         # Barycentric correction
         rvsminibox[t]   = rv0  + inparam.bvcs[night+tag] \
-                            + rv0*inparam.bvcs[night+tag]/(2.99792458e5**2)
+                            + rv0*inparam.bvcs[night+tag]/2.99792458e5
         parfitminibox[t]= parfit
         vsiniminibox[t] = parfit[4]
         tagsminibox[t]  = tag
@@ -830,7 +830,7 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
         if args.binary:
             rv2 = parfit[24]
             rvsminibox2[t]   = rv2  + inparam.bvcs[night+tag] \
-                        + rv2*inparam.bvcs[night+tag]/(2.99792458e5**2)
+                        + rv2*inparam.bvcs[night+tag]/2.99792458e5
             vsiniminibox2[t] = parfit[26]
 
     # If any tag has a chisq value 10x greater than the best fit, flag it
