@@ -279,7 +279,7 @@ def ini_MPinst(args, inparam, orders, order_use, trk, step2or3, i):
 
         rv0 = parfit[0] - parfit[2]  # Correct for RV of the atmosphere, since we're using that as the basis for the wavelength scale
 
-        rvsmini.append(rv0 + inparam.bvcs[night+tag] + rv0*inparam.bvcs[night+tag]/(3e5**2)) # Barycentric correction
+        rvsmini.append(rv0 + inparam.bvcs[night+tag] + rv0*inparam.bvcs[night+tag]/2.99792458e5) # Barycentric correction
         vsinismini.append(parfit[4])
 
     bestguess = round(np.nanmean(rvsmini),5)

@@ -635,7 +635,7 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
     rv0 = parfit[0]
     # Barycentric correction
     rvsmini = rv0 + inparam.bvcs[night+tag] \
-        + rv0*inparam.bvcs[night+tag]/(2.99792458e5**2)
+        + rv0*inparam.bvcs[night+tag]/2.99792458e5
     vsinismini = parfit[4]
 
     bestguess = np.round(rvsmini,5)
@@ -644,7 +644,7 @@ def main(args, inparam, orders, order_use, trk, step2or3, i):
     if args.binary:
         rv2 = parfit[24]
         bestguess2 = rv2  + inparam.bvcs[night+tag] \
-            + rv2*inparam.bvcs[night+tag]/(2.99792458e5**2)
+            + rv2*inparam.bvcs[night+tag]/2.99792458e5
         vsinimini2 = parfit[26]
     else:
         bestguess2 = np.nan
